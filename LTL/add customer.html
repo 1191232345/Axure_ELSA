@@ -595,11 +595,38 @@
                             </div>
                         </div>
                         
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-red-500">*</span>国家
+                                </label>
+                                <input type="text" id="sender-country" 
+                                       class="form-input" 
+                                       placeholder="请选择或输入国家" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-red-500">*</span>省州
+                                </label>
+                                <input type="text" id="sender-province" 
+                                       class="form-input" 
+                                       placeholder="请选择或输入省州" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-red-500">*</span>城市
+                                </label>
+                                <input type="text" id="sender-city" 
+                                       class="form-input" 
+                                       placeholder="请选择或输入城市" required>
+                            </div>
+                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
                                 详细地址
                             </label>
-                            <textarea id="sender-address" rows="3" class="form-input" placeholder="请输入详细地址" disabled>TEST</textarea>
+                            <textarea id="sender-address" rows="3" class="form-input" placeholder="请输入详细地址">TEST</textarea>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -607,13 +634,13 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     联系人
                                 </label>
-                                <input type="text" id="sender-name" class="form-input" placeholder="请输入联系人姓名" disabled value="张三">
+                                <input type="text" id="sender-name" class="form-input" placeholder="请输入联系人姓名" value="张三">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     联系电话
                                 </label>
-                                <input type="tel" id="sender-phone" class="form-input" placeholder="请输入联系电话" disabled value="13800138000">
+                                <input type="tel" id="sender-phone" class="form-input" placeholder="请输入联系电话" value="13800138000">
                             </div>
                         </div>
                         
@@ -707,19 +734,46 @@
                             </div>
                         </div>
                         
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-red-500">*</span>国家
+                                </label>
+                                <input type="text" id="receiver-country" 
+                                       class="form-input" 
+                                       placeholder="请选择或输入国家" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-red-500">*</span>省州
+                                </label>
+                                <input type="text" id="receiver-province" 
+                                       class="form-input" 
+                                       placeholder="请选择或输入省州" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    <span class="text-red-500">*</span>城市
+                                </label>
+                                <input type="text" id="receiver-city" 
+                                       class="form-input" 
+                                       placeholder="请选择或输入城市" required>
+                            </div>
+                        </div>
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">详细地址</label>
-                            <textarea id="receiver-address" rows="3" class="form-input" placeholder="请输入详细地址" disabled>TEST</textarea>
+                            <textarea id="receiver-address" rows="3" class="form-input" placeholder="请输入详细地址">TEST</textarea>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">联系人</label>
-                                <input type="text" id="receiver-name" class="form-input" placeholder="请输入联系人姓名" disabled value="zsw">
+                                <input type="text" id="receiver-name" class="form-input" placeholder="请输入联系人姓名" value="zsw">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
-                                <input type="tel" id="receiver-phone" class="form-input" placeholder="请输入联系电话" disabled value="13900139000">
+                                <input type="tel" id="receiver-phone" class="form-input" placeholder="请输入联系电话" value="13900139000">
                             </div>
                         </div>
                         
@@ -1111,7 +1165,6 @@
             // 创建单个托盘数据，不进行拆分
             const palletData = {
                 id: `pallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                processingType: 'Pallets',
                 palletCount: parsedData.count.toString(), // 将数量保存在palletCount中
                 length: parsedData.length.toString(),
                 width: parsedData.width.toString(),
@@ -1320,7 +1373,6 @@
                     // 创建托盘数据但不立即添加到数组
                     const palletData = {
                         id: `pallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        processingType: 'Pallets',
                         palletCount: parsed.count.toString(), // 将数量保存在palletCount中
                         length: parsed.length.toString(),
                         width: parsed.width.toString(),
@@ -1346,8 +1398,7 @@
                     existingPallet.length === newPallet.length &&
                     existingPallet.width === newPallet.width &&
                     existingPallet.height === newPallet.height &&
-                    existingPallet.weight === newPallet.weight &&
-                    existingPallet.processingType === newPallet.processingType
+                    existingPallet.weight === newPallet.weight
                 );
             });
             
@@ -1494,7 +1545,6 @@
             
             const palletData = {
                 id: `pallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                processingType: 'Pallets',
                 palletCount: '1',
                 length: defaultLength,
                 width: defaultWidth,
@@ -1530,18 +1580,9 @@
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- 处理类型 -->
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">
-                                <span class="text-red-500">*</span> 处理类型
-                            </label>
-                            <select class="form-input processing-type" onchange="updateProductData(${index}, 'processingType', this.value)">
-                                <option value="Pallets" ${productData.processingType === 'Pallets' ? 'selected' : ''}>托盘</option>
-                            </select>
-                        </div>
                         
                         <!-- 数量 -->
-                        <div>
+                        <div>W
                             <label class="block text-xs font-medium text-gray-700 mb-1">
                                 <span class="text-red-500">*</span> 数量
                             </label>
@@ -1750,12 +1791,15 @@
             const locationInfo = `${addressData.zipcode}, ${addressData.city}, ${addressData.state}, ${addressData.country}`;
             document.getElementById(`${prefix}-postcode`).value = locationInfo;
             
-            // 启用相关字段
-            const fields = ['address', 'name', 'phone'];
-            fields.forEach(field => {
-                const element = document.getElementById(`${prefix}-${field}`);
-                if (element) element.disabled = false;
-            });
+            // 填充国家、省州和城市字段，并禁用这些字段
+            document.getElementById(`${prefix}-country`).value = addressData.country;
+            document.getElementById(`${prefix}-country`).disabled = true;
+            
+            document.getElementById(`${prefix}-province`).value = addressData.state;
+            document.getElementById(`${prefix}-province`).disabled = true;
+            
+            document.getElementById(`${prefix}-city`).value = addressData.city;
+            document.getElementById(`${prefix}-city`).disabled = true;
             
             document.getElementById(`${prefix}-address-dropdown`).classList.add('hidden');
             
@@ -1969,7 +2013,7 @@
                                     <div class="text-sm font-medium">${quotation.deliveryTime}天</div>
                                 </div>
                                 <button class="px-4 py-2 ${isLowest ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105 select-quotation-btn">
-                                    选择此报价
+                                    下单
                                 </button>
                             </div>
                         </div>
@@ -2135,15 +2179,42 @@
             //     errors.push('请选择至少一个收货地址配送服务');
             // }
             
+            // 验证发货地址的国家、省州、城市必填
+            const senderCountry = document.getElementById('sender-country').value.trim();
+            const senderProvince = document.getElementById('sender-province').value.trim();
+            const senderCity = document.getElementById('sender-city').value.trim();
+            
+            if (!senderCountry) {
+                errors.push('请输入发货地址国家');
+            }
+            if (!senderProvince) {
+                errors.push('请输入发货地址省州');
+            }
+            if (!senderCity) {
+                errors.push('请输入发货地址城市');
+            }
+            
+            // 验证收货地址的国家、省州、城市必填
+            const receiverCountry = document.getElementById('receiver-country').value.trim();
+            const receiverProvince = document.getElementById('receiver-province').value.trim();
+            const receiverCity = document.getElementById('receiver-city').value.trim();
+            
+            if (!receiverCountry) {
+                errors.push('请输入收货地址国家');
+            }
+            if (!receiverProvince) {
+                errors.push('请输入收货地址省州');
+            }
+            if (!receiverCity) {
+                errors.push('请输入收货地址城市');
+            }
+            
             if (palletRows.length === 0) {
                 errors.push('请至少添加一个托盘');
             }
             
             // 验证托盘信息
             palletRows.forEach((pallet, index) => {
-                if (!pallet.processingType) {
-                    errors.push(`托盘 ${index + 1} 的处理类型不能为空`);
-                }
                 if (!pallet.palletCount) {
                     errors.push(`托盘 ${index + 1} 的托盘数量不能为空`);
                 }
@@ -2450,6 +2521,9 @@
             
             // 清空所有字段
             document.getElementById(`${prefix}-postcode`).value = '';
+            document.getElementById(`${prefix}-country`).value = '';
+            document.getElementById(`${prefix}-province`).value = '';
+            document.getElementById(`${prefix}-city`).value = '';
             document.getElementById(`${prefix}-address`).value = '';
             document.getElementById(`${prefix}-name`).value = '';
             document.getElementById(`${prefix}-phone`).value = '';
@@ -2461,11 +2535,6 @@
             // 清空服务选择
             const serviceCheckboxes = document.querySelectorAll(`input[name="${prefix}-service"]:checked`);
             serviceCheckboxes.forEach(checkbox => checkbox.checked = false);
-            
-            // 禁用相关字段（除了邮编搜索框）
-            document.getElementById(`${prefix}-address`).disabled = true;
-            document.getElementById(`${prefix}-name`).disabled = true;
-            document.getElementById(`${prefix}-phone`).disabled = true;
             
             // 显示清空成功提示
             const typeName = type === 'sender' ? '发货地址' : '收货地址';
@@ -2480,14 +2549,24 @@
             const locationInfo = `${address.city}, ${address.state}, ${address.country}, ${address.zipcode}`;
             document.getElementById(`${prefix}-postcode`).value = locationInfo;
             
-            // 其他信息展示在详细地址里
-            document.getElementById(`${prefix}-address`).value = address.address;
-            document.getElementById(`${prefix}-name`).value = address.contact;
-            document.getElementById(`${prefix}-phone`).value = address.phone;
+            // 填充国家、省州和城市字段，并禁用这些字段
+            document.getElementById(`${prefix}-country`).value = address.country;
+            document.getElementById(`${prefix}-country`).disabled = true;
             
-            // 启用相关字段
+            document.getElementById(`${prefix}-province`).value = address.state;
+            document.getElementById(`${prefix}-province`).disabled = true;
+            
+            document.getElementById(`${prefix}-city`).value = address.city;
+            document.getElementById(`${prefix}-city`).disabled = true;
+            
+            // 其他信息展示在详细地址里，并保持启用状态
+            document.getElementById(`${prefix}-address`).value = address.address;
             document.getElementById(`${prefix}-address`).disabled = false;
+            
+            document.getElementById(`${prefix}-name`).value = address.contact;
             document.getElementById(`${prefix}-name`).disabled = false;
+            
+            document.getElementById(`${prefix}-phone`).value = address.phone;
             document.getElementById(`${prefix}-phone`).disabled = false;
             
             // 关闭弹窗
@@ -2600,13 +2679,8 @@
                             rows="8" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="输入托盘信息，每行一个托盘，支持以下格式：
-15pallets-48*40*73INCH-480LBS
-1pallet 80*48*61INCH 1337LBS
-15pallets-48*40*73CM-480KG
-1pallet 80*48*61CM 1337KG
+    支持的分隔符：空格或横线(-)
 
-支持的分隔符：空格或横线(-)
-支持的单位：INCH/LBS 或 CM/KG"
                         ></textarea>
                         <div class="mt-2 text-xs text-gray-500">
                             <p><strong>格式说明：</strong>数量pallets[分隔符]长*宽*高单位[分隔符]重量单位</p>
@@ -2656,7 +2730,7 @@
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i class="fas fa-chart-line mr-2"></i>报价结果分析
+                    <i class="fas fa-chart-line mr-2"></i>报价查询
                 </h3>
                 <button class="modal-close" onclick="closeQuotationResult()">
                     <i class="fas fa-times"></i>
@@ -2669,9 +2743,9 @@
                     <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
                         <h4 class="text-lg font-semibold flex items-center">
                             <i class="fas fa-calendar-alt mr-2"></i>
-                            报价详情（按日期和价格排序）
+                            报价详情（近7天报价情况）
                         </h4>
-                        <p class="text-sm text-blue-100 mt-1">点击日期查看当天所有报价</p>
+                        <p class="text-sm text-blue-100 mt-1">请等待5-10分钟，系统会自动更新报价信息。</p>
                     </div>
                     
                     <!-- 日期选择标签 -->

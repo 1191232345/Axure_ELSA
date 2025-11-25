@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEST</title>
+  <!-- 引入必要依赖 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置（与价卡配置页面一致） -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            success: '#00B42A',
+            danger: '#F53F3F',
+            warning: '#FF7D00',
+            neutral: {
+              100: '#F2F3F5',
+              200: '#E5E6EB',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          transitionProperty: {
+            'all-300': 'all 0.3s ease',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+      .bg-primary\/10 {
+        background-color: rgba(22, 93, 255, 0.1);
+      }
+      .hover\:border-primary:hover {
+        border-color: #165DFF;
+      }
+      .hover\:text-primary:hover {
+        color: #165DFF;
+      }
+      .hover\:bg-neutral-50:hover {
+        background-color: #F9FAFB;
+      }
+      .status-tag {
+        @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+      }
+    }
+  </style>
+  
+  <!-- 基础样式 -->
+  <style>
+    body {
+      background-color: #F9FAFB;
+    }
+    .container {
+      max-width: 1200px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #E5E6EB;
+      font-weight: 600;
+      color: #4E5969;
+      background-color: #F2F3F5;
+    }
+    .table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #F2F3F5;
+      color: #272E3B;
+    }
+    .table tr:hover {
+      background-color: #F9FAFB;
+    }
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background-color: white;
+      border-radius: 0.5rem;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+    }
+    .modal-backdrop.active .modal-content {
+      transform: translateY(0);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- 主内容区域 -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- 页面标题与操作栏 -->
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+      <div class="flex flex-wrap gap-3">
+        <div class="relative">
+          <input type="text" id="searchInput" placeholder="搜索价卡名称/适用仓库" 
+                 class="pl-9 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300 w-full md:w-64">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+        </div>
+        <select id="statusFilter" class="px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          <option value="all">全部状态</option>
+          <option value="active">生效中</option>
+          <option value="inactive">未生效</option>
+          <option value="expired">已过期</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+      <div class="flex flex-wrap gap-3">
+        <button id="addPriceCardBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300 flex items-center">
+          <i class="fa fa-plus mr-1"></i> 新增价卡
+        </button>
+        <button id="customerListBtn" class="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-md text-sm hover:bg-neutral-200 transition-all-300 flex items-center">
+          <i class="fa fa-users mr-1"></i> 客户列表
+        </button>
+      </div>
+    </div>
+
+    <!-- 价卡列表区域 -->
+    <div class="bg-white rounded-lg shadow-sm border border-neutral-100 overflow-hidden">
+        <div class="overflow-x-auto"></div>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th width="20%">价卡名称</th>
+                <th width="15%">适用仓库</th>
+                <th width="15%">生效日期</th>
+                <th width="15%">失效日期</th>
+                <th width="10%">状态</th>
+                <th width="25%">操作</th>
+              </tr>
+            </thead>
+            <tbody id="priceCardTableBody">
+              <!-- 价卡数据将通过JS动态渲染 -->
+              <tr id="emptyRow">
+                <td colspan="6" class="text-center py-8 text-neutral-400">
+                  暂无数据
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+    </div>
+
+    <!-- 分页区域（模拟） -->
+    <div class="flex justify-between items-center mt-6 text-sm">
+      <div class="text-neutral-500">共 <span id="totalCount">0</span> 个价卡</div>
+      <div class="flex items-center space-x-2">
+        <button class="px-3 py-1 border border-neutral-200 rounded-md text-neutral-600 hover:bg-neutral-50 transition-all-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fa fa-angle-left"></i>
+        </button>
+        <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md">1</button>
+        <button class="px-3 py-1 border border-neutral-200 rounded-md text-neutral-600 hover:bg-neutral-50 transition-all-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          <i class="fa fa-angle-right"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- 价卡详情弹窗 -->
+  <div class="modal-backdrop" id="detailModal">
+    <div class="modal-content p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-neutral-700" id="modalTitle">价卡详情</h3>
+        <button class="text-neutral-400 hover:text-neutral-700 transition-all-300" id="closeModalBtn">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="border-t border-neutral-100 pt-4" id="modalContent">
+        <!-- 详情内容将通过JS动态渲染 -->
+      </div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button class="px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-600 hover:bg-neutral-50 transition-all-300" id="cancelModalBtn">
+          关闭
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认删除弹窗 -->
+  <div class="modal-backdrop" id="deleteModal">
+    <div class="modal-content p-6 max-w-md">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-danger/10 text-danger mb-3">
+          <i class="fa fa-exclamation-circle text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-neutral-700">确认删除</h3>
+        <p class="text-neutral-500 text-sm mt-1">您确定要删除该价卡吗？删除后数据无法恢复</p>
+      </div>
+      <div class="flex gap-3">
+        <button class="flex-1 px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-600 hover:bg-neutral-50 transition-all-300" id="cancelDeleteBtn">
+          取消
+        </button>
+        <button class="flex-1 px-4 py-2 bg-danger text-white rounded-md text-sm hover:bg-danger/90 transition-all-300" id="confirmDeleteBtn">
+          确认删除
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 核心元素
+      const priceCardTableBody = document.getElementById('priceCardTableBody');
+      const emptyRow = document.getElementById('emptyRow');
+      const totalCount = document.getElementById('totalCount');
+      const addPriceCardBtn = document.getElementById('addPriceCardBtn');
+      const searchInput = document.getElementById('searchInput');
+      const statusFilter = document.getElementById('statusFilter');
+      const detailModal = document.getElementById('detailModal');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const cancelModalBtn = document.getElementById('cancelModalBtn');
+      const modalContent = document.getElementById('modalContent');
+      const deleteModal = document.getElementById('deleteModal');
+      const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      
+      // 全局变量
+      let priceCards = [];
+      let currentEditId = '';
+      let currentDeleteId = '';
+      
+      // 初始化：从localStorage加载价卡数据
+      init();
+      
+      function init() {
+        // 读取localStorage中的价卡数据
+        const storedCards = localStorage.getItem('warehousePriceCards');
+        if (storedCards) {
+          priceCards = JSON.parse(storedCards);
+          // 按生效日期倒序排序
+          priceCards.sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate));
+        }
+        
+        // 渲染价卡列表
+        renderPriceCardList();
+        
+        // 绑定事件
+        bindEvents();
+      }
+      
+      // 绑定所有事件
+      function bindEvents() {
+        // 新增价卡
+        addPriceCardBtn.addEventListener('click', () => {
+          window.location.href = 'add.html?type=add';
+        });
+        
+        // 客户列表
+        const customerListBtn = document.getElementById('customerListBtn');
+        if (customerListBtn) {
+          customerListBtn.addEventListener('click', () => {
+            window.location.href = 'customer.html';
+          });
+        }
+        
+        // 搜索功能
+        searchInput.addEventListener('input', renderPriceCardList);
+        
+        // 状态筛选
+        statusFilter.addEventListener('change', renderPriceCardList);
+        
+        // 关闭详情弹窗
+        closeModalBtn.addEventListener('click', () => {
+          detailModal.classList.remove('active');
+        });
+        cancelModalBtn.addEventListener('click', () => {
+          detailModal.classList.remove('active');
+        });
+        
+        // 关闭删除弹窗
+        cancelDeleteBtn.addEventListener('click', () => {
+          deleteModal.classList.remove('active');
+        });
+        
+        // 确认删除
+        confirmDeleteBtn.addEventListener('click', () => {
+          if (currentDeleteId) {
+            priceCards = priceCards.filter(card => card.id !== currentDeleteId);
+            // 更新localStorage
+            localStorage.setItem('warehousePriceCards', JSON.stringify(priceCards));
+            // 重新渲染列表
+            renderPriceCardList();
+            // 关闭弹窗
+            deleteModal.classList.remove('active');
+          }
+        });
+        
+        // 点击弹窗背景关闭
+        detailModal.addEventListener('click', (e) => {
+          if (e.target === detailModal) detailModal.classList.remove('active');
+        });
+        deleteModal.addEventListener('click', (e) => {
+          if (e.target === deleteModal) deleteModal.classList.remove('active');
+        });
+        
+        // 阻止弹窗内容冒泡
+        detailModal.querySelector('.modal-content').addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+        deleteModal.querySelector('.modal-content').addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+      
+      // 渲染价卡列表
+      function renderPriceCardList() {
+        const searchKeyword = searchInput.value.trim().toLowerCase();
+        const filterStatus = statusFilter.value;
+        
+        // 过滤数据
+        const filteredCards = priceCards.filter(card => {
+          // 搜索过滤
+          const matchesSearch = card.priceCardName.toLowerCase().includes(searchKeyword) || 
+                               card.applyWarehouse.toLowerCase().includes(searchKeyword);
+          
+          // 状态过滤
+          if (filterStatus === 'all') return matchesSearch;
+          
+          const cardStatus = getCardStatus(card);
+          return matchesSearch && cardStatus === filterStatus;
+        });
+        
+        // 更新总数
+        totalCount.textContent = filteredCards.length;
+        
+        // 清空列表
+        priceCardTableBody.innerHTML = '';
+        
+        // 渲染空状态
+        if (filteredCards.length === 0) {
+          priceCardTableBody.appendChild(emptyRow);
+          return;
+        }
+        
+        // 渲染价卡列表
+        filteredCards.forEach(card => {
+          const status = getCardStatus(card);
+          const statusText = {
+            active: '生效中',
+            inactive: '未生效',
+            expired: '已过期'
+          }[status];
+          
+          const statusClass = {
+            active: 'bg-success/10 text-success',
+            inactive: 'bg-warning/10 text-warning',
+            expired: 'bg-neutral-100 text-neutral-500'
+          }[status];
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="font-medium">${card.priceCardName}</td>
+            <td>${card.applyWarehouse}</td>
+            <td>${formatDate(card.effectiveDate)}</td>
+            <td>${card.expireDate === '永久有效' ? '永久有效' : formatDate(card.expireDate)}</td>
+            <td>
+              <span class="status-tag ${statusClass}">${statusText}</span>
+            </td>
+            <td>
+              <div class="flex gap-2">
+                <button class="text-primary hover:text-primary/80 transition-all-300 text-sm view-btn" data-id="${card.id}">
+                  <i class="fa fa-eye mr-1"></i> 查看
+                </button>
+                <button class="text-neutral-600 hover:text-primary transition-all-300 text-sm edit-btn" data-id="${card.id}">
+                  <i class="fa fa-pencil mr-1"></i> 编辑
+                </button>
+                <button class="text-neutral-600 hover:text-danger transition-all-300 text-sm delete-btn" data-id="${card.id}">
+                  <i class="fa fa-trash mr-1"></i> 删除
+                </button>
+              </div>
+            </td>
+          `;
+          
+          priceCardTableBody.appendChild(tr);
+        });
+        
+        // 绑定列表操作按钮事件
+        bindListActionEvents();
+      }
+      
+      // 绑定列表操作按钮事件
+      function bindListActionEvents() {
+        // 查看按钮
+        document.querySelectorAll('.view-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            showCardDetail(id);
+          });
+        });
+        
+        // 编辑按钮
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            window.location.href = `warehouse-price-card-config.html?type=edit&id=${id}`;
+          });
+        });
+        
+        // 删除按钮
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            currentDeleteId = e.currentTarget.getAttribute('data-id');
+            deleteModal.classList.add('active');
+          });
+        });
+      }
+      
+      // 显示价卡详情
+      function showCardDetail(id) {
+        const card = priceCards.find(c => c.id === id);
+        if (!card) return;
+        
+        // 渲染阶梯价表格
+        let tierTableHtml = '<table class="w-full border-collapse mt-2"><thead><tr><th class="text-left px-2 py-1 border-b text-xs">起始天数</th><th class="text-left px-2 py-1 border-b text-xs">结束天数</th><th class="text-left px-2 py-1 border-b text-xs">阶梯单价（元）</th><th class="text-left px-2 py-1 border-b text-xs">说明</th></tr></thead><tbody>';
+        card.tieredPriceConfig.forEach(tier => {
+          tierTableHtml += `
+            <tr>
+              <td class="px-2 py-1 text-sm border-b">${tier.startDay}</td>
+              <td class="px-2 py-1 text-sm border-b">${tier.endDay || '无限'}</td>
+              <td class="px-2 py-1 text-sm border-b">${tier.tierPrice.toFixed(2)}</td>
+              <td class="px-2 py-1 text-sm border-b">${tier.remark || '-'}</td>
+            </tr>
+          `;
+        });
+        tierTableHtml += '</tbody></table>';
+        
+        // 渲染详情内容
+        modalContent.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">价卡名称</label>
+              <p class="text-neutral-700 font-medium">${card.priceCardName}</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">适用仓库</label>
+              <p class="text-neutral-700">${card.applyWarehouse}</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">生效日期</label>
+              <p class="text-neutral-700">${formatDate(card.effectiveDate)}</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">失效日期</label>
+              <p class="text-neutral-700">${card.expireDate === '永久有效' ? '永久有效' : formatDate(card.expireDate)}</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">计费单位</label>
+              <p class="text-neutral-700">${card.baseConfig.billingUnit}/${card.baseConfig.timeUnit}</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">基础单价</label>
+              <p class="text-neutral-700">${card.baseConfig.basePrice.toFixed(2)} 元</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">免仓期</label>
+              <p class="text-neutral-700">${card.baseConfig.freeStorageDays} 天</p>
+            </div>
+            <div>
+              <label class="text-sm text-neutral-500 block mb-1">创建时间</label>
+              <p class="text-neutral-700">${card.createTime}</p>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="text-sm text-neutral-500 block mb-1">备注</label>
+            <p class="text-neutral-700 bg-neutral-50 p-3 rounded-md min-h-[60px]">${card.remark || '无'}</p>
+          </div>
+          
+          <div class="mb-4">
+            <label class="text-sm text-neutral-500 block mb-1">阶梯式费用配置</label>
+            ${tierTableHtml}
+          </div>
+          
+          <div>
+            <label class="text-sm text-neutral-500 block mb-1">计算逻辑</label>
+            <p class="text-neutral-700 bg-primary/5 p-3 rounded-md font-medium">${card.calculationLogic}</p>
+          </div>
+        `;
+        
+        // 显示弹窗
+        detailModal.classList.add('active');
+      }
+      
+      // 辅助函数：获取价卡状态
+      function getCardStatus(card) {
+        const now = new Date();
+        const effectiveDate = new Date(card.effectiveDate);
+        const expireDate = card.expireDate === '永久有效' ? new Date('9999-12-31') : new Date(card.expireDate);
+        
+        if (now < effectiveDate) {
+          return 'inactive'; // 未生效
+        } else if (now > expireDate) {
+          return 'expired'; // 已过期
+        } else {
+          return 'active'; // 生效中
+        }
+      }
+      
+      // 辅助函数：格式化日期
+      function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+      }
+    });
+  </script>
+</body>
+</html>

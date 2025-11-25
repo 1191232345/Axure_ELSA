@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户列表 - 价卡配置</title>
+  <!-- 引入必要依赖 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            success: '#00B42A',
+            danger: '#F53F3F',
+            neutral: {
+              100: '#F2F3F5',
+              200: '#E5E6EB',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          transitionProperty: {
+            'all-300': 'all 0.3s ease',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+      .bg-primary\/10 {
+        background-color: rgba(22, 93, 255, 0.1);
+      }
+      .hover\:border-primary:hover {
+        border-color: #165DFF;
+      }
+      .hover\:text-primary:hover {
+        color: #165DFF;
+      }
+      .hover\:bg-neutral-50:hover {
+        background-color: #F9FAFB;
+      }
+      .hover\:bg-primary\/5:hover {
+        background-color: rgba(22, 93, 255, 0.05);
+      }
+      .hover\:text-danger:hover {
+        color: #F53F3F;
+      }
+    }
+  </style>
+  
+  <!-- 基础样式保障 -->
+  <style>
+    /* 基础布局样式 */
+    .mt-6 { margin-top: 1.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .border-t { border-top: 1px solid; }
+    .pt-6 { padding-top: 1.5rem; }
+    .pb-4 { padding-bottom: 1rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .ml-2 { margin-left: 0.5rem; }
+    .ml-1 { margin-left: 0.25rem; }
+    .mr-2 { margin-right: 0.5rem; }
+    .flex { display: flex; }
+    .flex-wrap { flex-wrap: wrap; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .text-left { text-align: left; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 1rem; }
+    .font-bold { font-weight: 600; }
+    .font-medium { font-weight: 500; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .rounded { border-radius: 0.25rem; }
+    .border { border: 1px solid; }
+    .min-h-\[60px\] { min-height: 60px; }
+    .min-h-\[100px\] { min-height: 100px; }
+    .overflow-x-auto { overflow-x: auto; }
+    .gap-3 { gap: 0.75rem; }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- 自定义逻辑模块（价卡版） -->
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <h2 class="text-xl font-bold text-neutral-700 mb-6 flex items-center">
+      <i class="fa fa-users text-primary mr-2"></i>客户列表
+    </h2>
+    
+    <!-- 客户列表表格 -->
+    <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+      <table class="w-full text-sm text-left">
+        <thead class="text-xs text-neutral-500 uppercase bg-neutral-50">
+          <tr>
+            <th class="px-6 py-3">客户名称</th>
+            <th class="px-6 py-3">客户编码</th>
+            <th class="px-6 py-3">联系人</th>
+            <th class="px-6 py-3">联系电话</th>
+            <th class="px-6 py-3">操作</th>
+          </tr>
+        </thead>
+        <tbody id="customerList">
+          <!-- 动态生成客户列表 -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- 关联价卡模态框 -->
+    <div id="associatePriceCardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <!-- 模态框头部 -->
+        <div class="px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
+          <h3 class="text-lg font-bold text-neutral-700">关联价卡</h3>
+          <button id="closeModalBtn" class="text-neutral-400 hover:text-neutral-600 text-xl">&times;</button>
+        </div>
+        
+        <!-- 模态框内容 -->
+        <div class="p-6">
+          <!-- 客户信息 -->
+          <div id="modalCustomerInfo" class="mb-6 p-4 bg-neutral-50 rounded-lg border border-neutral-100"></div>
+          
+          <!-- 价卡类型选择 -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-neutral-600 mb-2">选择价卡类型 <span class="text-danger">*</span></label>
+            <select id="modalPriceCardType" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+              <option value="">请选择价卡类型</option>
+              <option value="卸货费">卸货费</option>
+              <option value="仓储费">仓储费</option>
+              <option value="码头费">码头费</option>
+            </select>
+          </div>
+          
+          <!-- 预设价卡信息（默认隐藏） -->
+          <div id="presetPriceCardInfo" class="hidden">
+            <!-- 价卡基本信息 -->
+            <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-neutral-50">
+              <h4 class="text-sm font-bold text-neutral-700 mb-4 flex items-center">
+                <i class="fa fa-card text-primary mr-1"></i>基本信息
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-neutral-600 mb-1">名称 <span class="text-danger">*</span></label>
+                  <input type="text" id="modalPriceCardName" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-neutral-600 mb-1">适用范围 <span class="text-danger">*</span></label>
+                  <select id="modalApplyScope" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                    <option value="整柜">整柜</option>
+                    <option value="散货">散货</option>
+                    <option value="全部">全部</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-neutral-600 mb-1">生效日期 <span class="text-danger">*</span></label>
+                  <input type="date" id="modalEffectiveDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-neutral-600 mb-1">失效日期</label>
+                  <input type="date" id="modalExpireDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-neutral-600 mb-1">备注</label>
+                  <textarea id="modalRemark" rows="2" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300"></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 单价设置区域 -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold text-neutral-700 flex items-center">
+                  <i class="fa fa-tag text-primary mr-1"></i>单价设置
+                </h4>
+                <span class="text-xs text-neutral-500">注：散货按基础单价计算，整柜按柜型单价计算</span>
+              </div>
+              
+              <!-- 整柜单价设置（按柜型配置） -->
+              <div class="p-3 border border-neutral-100 rounded-lg bg-neutral-50 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                  <label class="block text-sm font-medium text-neutral-600">基础单价（整柜）</label>
+                  <button id="modalAddContainerType" class="px-3 py-1.5 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300 flex items-center">
+                    <i class="fa fa-plus mr-1"></i>新增柜型
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th width="30%">柜型 <span class="text-danger">*</span></th>
+                        <th width="30%">单价 <span class="text-danger">*</span></th>
+                        <th width="30%">备注</th>
+                        <th width="10%">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="modalContainerPriceTable">
+                      <!-- 动态生成整柜单价行 -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 散货单价设置 -->
+              <div class="mb-4 p-3 border border-neutral-100 rounded-lg bg-neutral-50">
+                <label class="block text-sm font-medium text-neutral-600 mb-2">基础单价（散货）</label>
+                <div class="flex items-center gap-2 mb-3">
+                  <input type="number" id="modalBulkPrice" min="0" step="0.01" class="flex-1 px-3 py-2 border border-neutral-200 rounded-md text-sm bg-neutral-100 cursor-not-allowed" placeholder="输入散货单价" required readonly>
+                  <select id="modalBulkUnit" class="px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                    <option value="托">托</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">折扣率 (%)</label>
+                    <input type="number" id="modalBulkDiscount" min="0" max="100" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入折扣率" oninput="calculateBulkPrice()">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">增加金额</label>
+                    <input type="number" id="modalBulkAddAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入增加金额" oninput="calculateBulkPrice()">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">减少金额</label>
+                    <input type="number" id="modalBulkReduceAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入减少金额" oninput="calculateBulkPrice()">
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="block text-sm font-medium text-neutral-600">调整后单价：</label>
+                  <span id="modalBulkAdjustedPrice" class="text-sm font-medium text-primary"></span>
+                </div>
+              </div>
+
+              <!-- 快递单价设置 -->
+              <div class="mb-4 p-3 border border-neutral-100 rounded-lg bg-neutral-50">
+                <label class="block text-sm font-medium text-neutral-600 mb-2">基础单价（快递）</label>
+                <div class="flex items-center gap-2 mb-3">
+                  <input type="number" id="modalExpressPrice" min="0" step="0.01" class="flex-1 px-3 py-2 border border-neutral-200 rounded-md text-sm bg-neutral-100 cursor-not-allowed" placeholder="输入快递单价" required readonly>
+                  <select id="modalExpressUnit" class="px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                    <option value="箱">箱</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">折扣率 (%)</label>
+                    <input type="number" id="modalExpressDiscount" min="0" max="100" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入折扣率" oninput="calculateExpressPrice()">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">增加金额</label>
+                    <input type="number" id="modalExpressAddAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入增加金额" oninput="calculateExpressPrice()">
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium text-neutral-600 mb-1">减少金额</label>
+                    <input type="number" id="modalExpressReduceAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入减少金额" oninput="calculateExpressPrice()">
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="block text-sm font-medium text-neutral-600">调整后单价：</label>
+                  <span id="modalExpressAdjustedPrice" class="text-sm font-medium text-primary"></span>
+                </div>
+              </div>
+            </div>
+            
+
+          </div>
+        </div>
+        
+        <!-- 模态框底部 -->
+        <div class="px-6 py-4 border-t border-neutral-200 flex justify-end gap-3">
+          <button id="cancelAssociateBtn" class="px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 transition-all-300">取消</button>
+          <button id="saveAssociateBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300">保存关联</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 预设客户数据
+    const presetCustomers = [
+      { id: 1, name: "上海物流有限公司", code: "SH-LOG-001", contact: "张三", phone: "13800138000" },
+      { id: 2, name: "北京货运代理有限公司", code: "BJ-FWD-002", contact: "李四", phone: "13900139000" },
+      { id: 3, name: "广州供应链管理有限公司", code: "GZ-SCM-003", contact: "王五", phone: "13700137000" },
+      { id: 4, name: "深圳国际物流有限公司", code: "SZ-INT-004", contact: "赵六", phone: "13600136000" },
+      { id: 5, name: "杭州跨境电商有限公司", code: "HZ-CBE-005", contact: "孙七", phone: "13500135000" }
+    ];
+    
+    // 预设价卡数据
+    const presetPriceCards = {
+      "卸货费": {
+        name: "标准卸货费价卡",
+        applyScope: "散货",
+        validFrom: "2024-01-01",
+        validTo: "2024-12-31",
+        description: "这是一个预设的卸货费价卡",
+        bulkConfig: {
+          price: 100.00,
+          unit: "托"
+        },
+        expressConfig: {
+          price: 20.00,
+          unit: "箱"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 500.00, remark: "标准柜" },
+          { containerType: "40GP", price: 900.00, remark: "标准柜" }
+        ],
+        calculationLogic: "基础单价 + 燃油附加费"
+      },
+      "仓储费": {
+        name: "标准仓储费价卡",
+        applyScope: "散货",
+        validFrom: "2024-01-01",
+        validTo: "2024-12-31",
+        description: "这是一个预设的仓储费价卡",
+        bulkConfig: {
+          price: 50.00,
+          unit: "托/天"
+        },
+        expressConfig: {
+          price: 5.00,
+          unit: "箱/天"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 300.00, remark: "标准柜" },
+          { containerType: "40GP", price: 500.00, remark: "标准柜" }
+        ],
+        calculationLogic: "基础单价 × 仓储天数"
+      },
+      "码头费": {
+        name: "标准码头费价卡",
+        applyScope: "整柜",
+        validFrom: "2024-01-01",
+        validTo: "2024-12-31",
+        description: "这是一个预设的码头费价卡",
+        bulkConfig: {
+          price: 0.00,
+          unit: "CBM"
+        },
+        expressConfig: {
+          price: 0.00,
+          unit: "箱"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 1000.00, remark: "标准柜" },
+          { containerType: "40GP", price: 1800.00, remark: "标准柜" },
+          { containerType: "40HQ", price: 2000.00, remark: "高柜" }
+        ],
+        calculationLogic: "整柜单价 + 码头操作费"
+      }
+    };
+    
+    // DOMContentLoaded事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+      // 生成客户列表
+      generateCustomerList();
+      
+      // 绑定事件
+      bindEvents();
+    });
+    
+    // 生成客户列表
+    function generateCustomerList() {
+      const customerList = document.getElementById('customerList');
+      customerList.innerHTML = presetCustomers.map(customer => `
+        <tr class="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
+          <td class="px-6 py-4 font-medium text-neutral-700">${customer.name}</td>
+          <td class="px-6 py-4 text-neutral-600">${customer.code}</td>
+          <td class="px-6 py-4 text-neutral-600">${customer.contact}</td>
+          <td class="px-6 py-4 text-neutral-600">${customer.phone}</td>
+          <td class="px-6 py-4">
+            <button class="associate-price-card-btn px-3 py-1 bg-primary/10 text-primary text-sm rounded-md hover:bg-primary/20 transition-all-300" data-customer-id="${customer.id}">
+              <i class="fa fa-link mr-1"></i>关联价卡
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // 绑定事件
+    function bindEvents() {
+      // 关联价卡按钮点击事件
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.associate-price-card-btn')) {
+          const btn = e.target.closest('.associate-price-card-btn');
+          const customerId = parseInt(btn.getAttribute('data-customer-id'));
+          openAssociatePriceCardModal(customerId);
+        }
+      });
+      
+      // 关闭模态框按钮点击事件
+      document.getElementById('closeModalBtn').addEventListener('click', closeAssociatePriceCardModal);
+      document.getElementById('cancelAssociateBtn').addEventListener('click', closeAssociatePriceCardModal);
+      
+      // 价卡类型选择事件
+      document.getElementById('modalPriceCardType').addEventListener('change', function() {
+        const selectedType = this.value;
+        if (selectedType) {
+          showPresetPriceCard(selectedType);
+        } else {
+          document.getElementById('presetPriceCardInfo').classList.add('hidden');
+        }
+      });
+      
+      // 保存关联按钮点击事件
+      document.getElementById('saveAssociateBtn').addEventListener('click', saveAssociatedPriceCard);
+      
+      // 新增柜型按钮点击事件
+      document.getElementById('modalAddContainerType').addEventListener('click', addContainerTypeRow);
+      
+    }
+    
+    // 打开关联价卡模态框
+    function openAssociatePriceCardModal(customerId) {
+      // 找到对应的客户信息
+      const customer = presetCustomers.find(c => c.id === customerId);
+      if (!customer) return;
+      
+      // 显示客户信息
+      document.getElementById('modalCustomerInfo').innerHTML = `
+        <h4 class="text-sm font-bold text-neutral-700 mb-2">客户信息</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs text-neutral-500">客户名称：</span>
+            <span class="text-sm font-medium text-neutral-700">${customer.name}</span>
+          </div>
+          <div>
+            <span class="text-xs text-neutral-500">客户编码：</span>
+            <span class="text-sm font-medium text-neutral-700">${customer.code}</span>
+          </div>
+          <div>
+            <span class="text-xs text-neutral-500">联系人：</span>
+            <span class="text-sm font-medium text-neutral-700">${customer.contact}</span>
+          </div>
+          <div>
+            <span class="text-xs text-neutral-500">联系电话：</span>
+            <span class="text-sm font-medium text-neutral-700">${customer.phone}</span>
+          </div>
+        </div>
+      `;
+      
+      // 重置模态框内容
+      document.getElementById('modalPriceCardType').value = '';
+      document.getElementById('presetPriceCardInfo').classList.add('hidden');
+      
+      // 显示模态框
+      document.getElementById('associatePriceCardModal').classList.remove('hidden');
+    }
+    
+    // 关闭关联价卡模态框
+    function closeAssociatePriceCardModal() {
+      document.getElementById('associatePriceCardModal').classList.add('hidden');
+    }
+    
+    // 显示预设价卡信息
+    function showPresetPriceCard(type) {
+      const priceCard = presetPriceCards[type];
+      if (!priceCard) return;
+      
+      // 填充价卡基本信息
+      document.getElementById('modalPriceCardName').value = priceCard.name;
+      document.getElementById('modalApplyScope').value = priceCard.applyScope;
+      document.getElementById('modalEffectiveDate').value = priceCard.validFrom;
+      document.getElementById('modalExpireDate').value = priceCard.validTo;
+      document.getElementById('modalRemark').value = priceCard.description;
+      
+      // 更新散货配置
+      document.getElementById('modalBulkPrice').value = priceCard.bulkConfig.price;
+      document.getElementById('modalBulkUnit').value = priceCard.bulkConfig.unit;
+      
+      // 更新快递配置
+      if (priceCard.expressConfig) {
+        document.getElementById('modalExpressPrice').value = priceCard.expressConfig.price;
+        document.getElementById('modalExpressUnit').value = priceCard.expressConfig.unit;
+      }
+      
+      // 更新整柜配置
+      const containerPriceTable = document.getElementById('modalContainerPriceTable');
+      // 清空现有行
+      containerPriceTable.innerHTML = '';
+      // 添加预设柜型数据
+      priceCard.containerConfig.forEach(config => {
+        const newRow = document.createElement('tr');
+        newRow.className = 'border-b border-neutral-100';
+        newRow.innerHTML = `
+          <td class="px-3 py-2">
+            <select class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+              <option value="20GP" ${config.containerType === '20GP' ? 'selected' : ''}>20GP</option>
+              <option value="40GP" ${config.containerType === '40GP' ? 'selected' : ''}>40GP</option>
+              <option value="40HQ" ${config.containerType === '40HQ' ? 'selected' : ''}>40HQ</option>
+              <option value="45HQ" ${config.containerType === '45HQ' ? 'selected' : ''}>45HQ</option>
+              <option value="其他" ${config.containerType === '其他' ? 'selected' : ''}>其他</option>
+            </select>
+          </td>
+          <td class="px-3 py-2">
+            <input type="number" min="0" step="0.01" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" value="${config.price}" required>
+          </td>
+          <td class="px-3 py-2">
+            <input type="text" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" value="${config.remark}">
+          </td>
+          <td class="px-3 py-2">
+            <button class="delete-container-row text-danger hover:text-danger/80 transition-all-300">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        `;
+        containerPriceTable.appendChild(newRow);
+        
+        // 绑定删除事件
+        newRow.querySelector('.delete-container-row').addEventListener('click', function() {
+          newRow.remove();
+        });
+      });
+      
+      // 显示预设价卡信息
+      document.getElementById('presetPriceCardInfo').classList.remove('hidden');
+    }
+    
+    // 保存关联价卡
+    function saveAssociatedPriceCard() {
+      // 验证价卡类型是否选择
+      const priceCardType = document.getElementById('modalPriceCardType').value;
+      if (!priceCardType) {
+        alert('请选择价卡类型');
+        return;
+      }
+      
+      // 验证价卡名称
+      const priceCardName = document.getElementById('modalPriceCardName').value;
+      if (!priceCardName) {
+        alert('请填写价卡名称');
+        return;
+      }
+      
+      // 收集数据（这里仅做演示）
+      const containerPrices = [];
+      document.querySelectorAll('#modalContainerPriceTable tr').forEach(row => {
+        const containerType = row.querySelector('select').value;
+        const price = parseFloat(row.querySelector('input[type="number"]').value);
+        const remark = row.querySelector('input[type="text"]').value;
+        containerPrices.push({ containerType, price, remark });
+      });
+      
+      const associatedData = {
+        priceCardType: priceCardType,
+        priceCardName: priceCardName,
+        applyScope: document.getElementById('modalApplyScope').value,
+        effectiveDate: document.getElementById('modalEffectiveDate').value,
+        expireDate: document.getElementById('modalExpireDate').value,
+        remark: document.getElementById('modalRemark').value,
+        bulkConfig: {
+          price: parseFloat(document.getElementById('modalBulkPrice').value) || 0,
+          unit: document.getElementById('modalBulkUnit').value,
+          discount: parseFloat(document.getElementById('modalBulkDiscount').value) || 0,
+          addAmount: parseFloat(document.getElementById('modalBulkAddAmount').value) || 0,
+          reduceAmount: parseFloat(document.getElementById('modalBulkReduceAmount').value) || 0
+        },
+        expressConfig: {
+          price: parseFloat(document.getElementById('modalExpressPrice').value) || 0,
+          unit: document.getElementById('modalExpressUnit').value,
+          discount: parseFloat(document.getElementById('modalExpressDiscount').value) || 0,
+          addAmount: parseFloat(document.getElementById('modalExpressAddAmount').value) || 0,
+          reduceAmount: parseFloat(document.getElementById('modalExpressReduceAmount').value) || 0
+        },
+        containerConfig: containerPrices
+      };
+      
+      console.log('保存的关联价卡数据：', associatedData);
+      alert('价卡关联成功！');
+      
+      // 关闭模态框
+      closeAssociatePriceCardModal();
+    }
+    
+    // 添加柜型行
+    function addContainerTypeRow() {
+      const containerPriceTable = document.getElementById('modalContainerPriceTable');
+      const newRow = document.createElement('tr');
+      newRow.className = 'border-b border-neutral-100';
+      newRow.innerHTML = `
+        <td class="px-3 py-2">
+          <select class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" required>
+            <option value="20GP">20GP</option>
+            <option value="40GP">40GP</option>
+            <option value="40HQ">40HQ</option>
+            <option value="45HQ">45HQ</option>
+            <option value="其他">其他</option>
+          </select>
+        </td>
+        <td class="px-3 py-2">
+          <input type="number" min="0" step="0.01" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入单价" required>
+        </td>
+        <td class="px-3 py-2">
+          <input type="text" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="例如：标准柜">
+        </td>
+        <td class="px-3 py-2">
+          <button class="delete-container-row text-danger hover:text-danger/80 transition-all-300">
+            <i class="fa fa-trash"></i>
+          </button>
+        </td>
+      `;
+      containerPriceTable.appendChild(newRow);
+      
+      // 绑定删除事件
+      newRow.querySelector('.delete-container-row').addEventListener('click', function() {
+        newRow.remove();
+      });
+    }
+    
+    // 计算散货调整后单价
+    function calculateBulkPrice() {
+      const basePrice = parseFloat(document.getElementById('modalBulkPrice').value) || 0;
+      const discount = parseFloat(document.getElementById('modalBulkDiscount').value) || 0;
+      const addAmount = parseFloat(document.getElementById('modalBulkAddAmount').value) || 0;
+      const reduceAmount = parseFloat(document.getElementById('modalBulkReduceAmount').value) || 0;
+      
+      const adjustedPrice = basePrice * (1 - discount / 100) + addAmount - reduceAmount;
+      document.getElementById('modalBulkAdjustedPrice').textContent = adjustedPrice.toFixed(2);
+    }
+    
+    // 计算快递调整后单价
+    function calculateExpressPrice() {
+      const basePrice = parseFloat(document.getElementById('modalExpressPrice').value) || 0;
+      const discount = parseFloat(document.getElementById('modalExpressDiscount').value) || 0;
+      const addAmount = parseFloat(document.getElementById('modalExpressAddAmount').value) || 0;
+      const reduceAmount = parseFloat(document.getElementById('modalExpressReduceAmount').value) || 0;
+      
+      const adjustedPrice = basePrice * (1 - discount / 100) + addAmount - reduceAmount;
+      document.getElementById('modalExpressAdjustedPrice').textContent = adjustedPrice.toFixed(2);
+    }
+
+  </script>
+</body>
+</html>
