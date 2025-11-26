@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>排柜计划看板</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            dark: '#1F2937',
+            light: '#F3F4F6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      /* Tab栏样式 */
+      .timeline-tabs {
+        @apply flex overflow-x-auto scrollbar-hide border-b border-gray-200;
+      }
+      .timeline-tab {
+        @apply flex-shrink-0 px-6 py-3 text-center cursor-pointer transition-all duration-300 relative whitespace-nowrap;
+      }
+      .timeline-tab.timeline-active {
+        @apply text-primary font-medium;
+      }
+      .timeline-tab.timeline-inactive {
+        @apply text-gray-600 hover:text-primary;
+      }
+      .timeline-tab::after {
+        content: '';
+        @apply absolute bottom-0 left-0 w-0 h-1 bg-primary transition-all duration-300;
+      }
+      .timeline-tab.timeline-active::after {
+        @apply w-full;
+      }
+      .timeline-tab-week {
+        @apply block text-sm font-medium transition-all duration-300;
+      }
+      .timeline-tab-date {
+        @apply block text-xs text-gray-500 transition-all duration-300;
+      }
+      .timeline-tab.timeline-active .timeline-tab-date {
+        @apply text-primary/70;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <main class="container mx-auto px-4 py-6">
+    <!-- 页面标题与筛选区 -->
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h2 class="text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-dark">排柜计划看板</h2>
+        <p class="text-gray-500 mt-1">按仓库维度展示整柜/散货入库数量统计</p>
+      </div>
+      
+      <div class="flex flex-wrap gap-3">
+        <div class="relative">
+          <select class="appearance-none bg-white border border-gray-200 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+            <option value="all">所有仓库</option>
+            <option value="warehouse1">DEMO</option>
+            <option value="warehouse2">DE001</option>
+            <option value="warehouse3">MD001</option>
+            <option value="warehouse4">NJ001</option>
+          </select>
+          <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 周计划Tab栏 -->
+    <div class="mb-8 bg-white rounded-xl p-4 card-shadow">
+      <h3 class="text-lg font-semibold mb-4 flex items-center">
+        <i class="fa fa-calendar-o text-primary mr-2"></i>
+        周计划
+      </h3>
+      
+      <!-- Tab栏容器 -->
+      <div class="timeline-tabs">
+        <!-- Tab项 - 第1周（活跃） -->
+        <div class="timeline-tab timeline-active" data-week="1">
+            06.28 - 07.04
+        </div>
+        
+        <!-- Tab项 - 第2周（非活跃） -->
+        <div class="timeline-tab timeline-inactive" data-week="2">
+            07.05 - 07.11
+        </div>
+        
+        <!-- Tab项 - 第3周（非活跃） -->
+        <div class="timeline-tab timeline-inactive" data-week="3">
+            07.12 - 7.18
+        </div>
+        
+        <!-- Tab项 - 第4周（非活跃） -->
+        <div class="timeline-tab timeline-inactive" data-week="4">
+            07.19 - 07.25
+        </div>
+        
+        <!-- Tab项 - 第5周（非活跃） -->
+        <div class="timeline-tab timeline-inactive" data-week="5">
+            07.26 - 08.01
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据概览卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <!-- 总入库量 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-gray-500 font-medium">总计</h3>
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <i class="fa fa-cubes"></i>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-2xl font-bold">1,286</span>
+          <span class="text-success text-sm flex items-center">
+            <i class="fa fa-arrow-up mr-1"></i> 12.5%
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">较上周增长</p>
+      </div>
+      
+      <!-- 整柜入库量 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all lg:col-span-2">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-gray-500 font-medium">整柜</h3>
+          <!-- 标题和logo中间添加柜型数量统计 -->
+          <div>
+            <div class="flex items-center space-x-8 text-sm">
+              <div class="flex items-center">
+                <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+                <span class="text-gray-600">20GP:</span>
+                <span class="ml-1 font-medium text-gray-900" id="20GP-count-header">156</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                <span class="text-gray-600">40GP:</span>
+                <span class="ml-1 font-medium text-gray-900" id="40GP-count-header">128</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
+                <span class="text-gray-600">40HQ:</span>
+                <span class="ml-1 font-medium text-gray-900" id="40HQ-count-header">98</span>
+              </div>
+              <div class="flex items-center">
+                <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                <span class="text-gray-600">45HQ:</span>
+                <span class="ml-1 font-medium text-gray-900" id="45HQ-count-header">50</span>
+              </div>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+            <i class="fa fa-ship"></i>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-2xl font-bold">432</span>
+          <span class="text-success text-sm flex items-center">
+            <i class="fa fa-arrow-up mr-1"></i> 8.3%
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">较上周增长</p>
+      </div>
+      
+      <!-- 散货入库量 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-gray-500 font-medium">散货</h3>
+          <div class="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+            <i class="fa fa-truck"></i>
+          </div>
+        </div>
+        <div class="flex items-end justify-between">
+          <span class="text-2xl font-bold">854</span>
+          <span class="text-success text-sm flex items-center">
+            <i class="fa fa-arrow-up mr-1"></i> 15.7%
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">较上周增长</p>
+      </div>
+    </div>
+
+    <!-- 主数据区域（表格） -->
+    <div class="bg-white rounded-xl p-4 card-shadow mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">入库统计</h3>
+        <div class="relative">
+          <input type="text" placeholder="搜索仓库..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary w-full md:w-64">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[600px]">
+          <thead>
+            <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">仓库</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">整柜</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">散货</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">总计</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">占比</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <i class="fa fa-building-o text-primary mr-2"></i>
+                  <span>DEMO</span>
+                </div>
+              </td>
+              <td class="text-center py-3 px-4">128</td>
+              <td class="text-center py-3 px-4">245</td>
+              <td class="text-center py-3 px-4 font-medium">373</td>
+              <td class="text-center py-3 px-4">
+                <div class="flex items-center justify-center">
+                  <span class="text-primary font-medium">29.0%</span>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+                <td class="py-3 px-4">
+                  <div class="flex items-center">
+                    <i class="fa fa-building-o text-primary mr-2"></i>
+                    <span>DE001</span>
+                  </div>
+                </td>
+                <td class="text-center py-3 px-4">96</td>
+                <td class="text-center py-3 px-4">187</td>
+                <td class="text-center py-3 px-4 font-medium">283</td>
+                <td class="text-center py-3 px-4">
+                <div class="flex items-center justify-center">
+                  <span class="text-primary font-medium">22.0%</span>
+                </div>
+                </td>
+            </tr>
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+            <td class="py-3 px-4">
+              <div class="flex items-center">
+                <i class="fa fa-building-o text-primary mr-2"></i>
+                <span>MD001</span>
+              </div>
+            </td>
+            <td class="text-center py-3 px-4">85</td>
+            <td class="text-center py-3 px-4">156</td>
+            <td class="text-center py-3 px-4 font-medium">241</td>
+            <td class="text-center py-3 px-4">
+              <div class="flex items-center justify-center">
+                <span class="text-primary font-medium">18.7%</span>
+              </div>
+            </td>
+            </tr>
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <i class="fa fa-building-o text-primary mr-2"></i>
+                  <span>NJ001</span>
+                </div>
+              </td>
+              <td class="text-center py-3 px-4">72</td>
+              <td class="text-center py-3 px-4">132</td>
+              <td class="text-center py-3 px-4 font-medium">204</td>
+              <td class="text-center py-3 px-4">
+                <div class="flex items-center justify-center">
+                  <span class="text-primary font-medium">15.9%</span>
+                </div>
+              </td>
+            </tr>
+            <tr class="hover:bg-gray-50 transition-all">
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <i class="fa fa-building-o text-primary mr-2"></i>
+                  <span>NJ006</span>
+                </div>
+              </td>
+              <td class="text-center py-3 px-4">51</td>
+              <td class="text-center py-3 px-4">134</td>
+              <td class="text-center py-3 px-4 font-medium">185</td>
+              <td class="text-center py-3 px-4">
+                <div class="flex items-center justify-center">
+                  <span class="text-primary font-medium">14.4%</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页 -->
+      <div class="flex items-center justify-between mt-4">
+        <div class="text-sm text-gray-500">
+          显示 1-5 条，共 16 条
+        </div>
+        <div class="flex space-x-1">
+          <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-left text-xs"></i>
+          </button>
+          <button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white">1</button>
+          <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">2</button>
+          <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">3</button>
+          <button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 统计图表 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+      <!-- 入库量分布图表 -->
+      <div class="bg-white rounded-xl p-4 card-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">入库占比</h3>
+          <div class="flex space-x-2">
+            <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
+              <i class="fa fa-pie-chart mr-1"></i> 分布
+            </button>
+            <button class="text-sm px-2 py-1 rounded text-gray-500 hover:bg-gray-100 flex items-center">
+              <i class="fa fa-download mr-1"></i> 导出
+            </button>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="inventoryChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 柜型分布图表 -->
+      <div class="bg-white rounded-xl p-4 card-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">柜型分布</h3>
+          <div class="flex space-x-2">
+            <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
+              <i class="fa fa-cubes mr-1"></i> 分布
+            </button>
+            <button class="text-sm px-2 py-1 rounded text-gray-500 hover:bg-gray-100 flex items-center">
+              <i class="fa fa-download mr-1"></i> 导出
+            </button>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="containerTypesChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 近期趋势图表 -->
+      <div class="bg-white rounded-xl p-4 card-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">入库趋势</h3>
+          <div class="flex space-x-2">
+            <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
+              <i class="fa fa-line-chart mr-1"></i> 趋势
+            </button>
+            <button class="text-sm px-2 py-1 rounded text-gray-500 hover:bg-gray-100 flex items-center">
+              <i class="fa fa-download mr-1"></i> 导出
+            </button>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+  <!-- JavaScript 代码 -->
+  <script>
+    // 柜型分布默认显示，不再需要下拉逻辑
+
+    // 初始化图表和筛选功能
+    document.addEventListener('DOMContentLoaded', function() {
+      // 模拟数据
+      const warehouseData = [
+        { warehouse: 'DEMO', fullContainer: 128, looseCargo: 245, total: 373 },
+        { warehouse: 'DE001', fullContainer: 96, looseCargo: 187, total: 283 },
+        { warehouse: 'MD001', fullContainer: 112, looseCargo: 220, total: 332 },
+        { warehouse: 'NJ001', fullContainer: 96, looseCargo: 202, total: 300 }
+      ];
+      
+      // 原始图表实例
+      let inventoryChart, containerTypesChart, trendChart;
+      
+      // 初始化图表函数
+      function initCharts(data) {
+        // 计算总计
+        const totalFullContainer = data.reduce((sum, item) => sum + item.fullContainer, 0);
+        const totalLooseCargo = data.reduce((sum, item) => sum + item.looseCargo, 0);
+        const total = totalFullContainer + totalLooseCargo;
+        
+        // 入库量分布图表（饼图）
+        if (inventoryChart) {
+          inventoryChart.destroy();
+        }
+        const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+        inventoryChart = new Chart(inventoryCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['整柜', '散货'],
+            datasets: [{
+              data: [totalFullContainer, totalLooseCargo],
+              backgroundColor: ['#36CFC9', '#FAAD14'],
+              borderColor: ['#ffffff'],
+              borderWidth: 2,
+              hoverOffset: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.raw || 0;
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = Math.round((value / total) * 100);
+                    return `${label}: ${value} (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            cutout: '65%'
+          }
+        });
+        
+        // 柜型分布图表 - 根据筛选数据调整比例
+        if (containerTypesChart) {
+          containerTypesChart.destroy();
+        }
+        const containerTypesCtx = document.getElementById('containerTypesChart').getContext('2d');
+        // 按比例调整柜型数据
+        const containerTypesData = [156, 128, 98, 50].map(value => Math.round((value / 432) * totalFullContainer));
+        containerTypesChart = new Chart(containerTypesCtx, {
+          type: 'bar',
+          data: {
+            labels: ['20GP', '40GP', '40HQ', '45HQ'],
+            datasets: [{
+              label: '柜型数量',
+              data: containerTypesData,
+              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+        
+        // 更新标题栏中的柜型数量统计
+        const containerTypes = ['20GP', '40GP', '40HQ', '45HQ'];
+        containerTypes.forEach((type, index) => {
+          const count = containerTypesData[index];
+          
+          // 更新标题栏中的柜型数量统计
+          const headerCountElement = document.getElementById(`${type}-count-header`);
+          if (headerCountElement) {
+            headerCountElement.textContent = count;
+          }
+        });
+        
+        // 近7天入库趋势图表 - 根据筛选数据调整比例
+        if (trendChart) {
+          trendChart.destroy();
+        }
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        // 按比例调整趋势数据
+        const fullContainerTrend = [62, 58, 75, 68, 72, 85, 92].map(value => Math.round((value / 432) * totalFullContainer));
+        const looseCargoTrend = [125, 118, 132, 124, 145, 156, 154].map(value => Math.round((value / 854) * totalLooseCargo));
+        trendChart = new Chart(trendCtx, {
+          type: 'line',
+          data: {
+            labels: ['1月1日', '1月2日', '1月3日', '1月4日', '1月5日', '1月6日', '1月7日'],
+            datasets: [
+              {
+                label: '整柜入库量',
+                data: fullContainerTrend,
+                borderColor: '#36CFC9',
+                backgroundColor: 'rgba(54, 207, 201, 0.1)',
+                tension: 0.3,
+                fill: true
+              },
+              {
+                label: '散货入库量',
+                data: looseCargoTrend,
+                borderColor: '#FAAD14',
+                backgroundColor: 'rgba(250, 173, 20, 0.1)',
+                tension: 0.3,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              }
+            },
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            }
+          }
+        });
+      }
+      
+      // 更新统计卡片
+      function updateStats(data) {
+        // 计算总计
+        const totalFullContainer = data.reduce((sum, item) => sum + item.fullContainer, 0);
+        const totalLooseCargo = data.reduce((sum, item) => sum + item.looseCargo, 0);
+        const total = totalFullContainer + totalLooseCargo;
+        
+        // 更新总计卡片
+        document.querySelectorAll('.text-2xl.font-bold')[0].textContent = total.toLocaleString();
+        // 更新整柜卡片
+        document.querySelectorAll('.text-2xl.font-bold')[1].textContent = totalFullContainer.toLocaleString();
+        // 更新散货卡片
+        document.querySelectorAll('.text-2xl.font-bold')[2].textContent = totalLooseCargo.toLocaleString();
+        // 更新仓库数量卡片
+        document.querySelectorAll('.text-2xl.font-bold')[3].textContent = data.length;
+      }
+      
+      // 更新表格数据
+      function updateTable(data) {
+        const tbody = document.querySelector('tbody');
+        const total = data.reduce((sum, item) => sum + item.total, 0);
+        
+        tbody.innerHTML = '';
+        data.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-gray-100 hover:bg-gray-50 transition-all';
+          const percentage = ((item.total / total) * 100).toFixed(1);
+          
+          tr.innerHTML = `
+            <td class="py-3 px-4">
+              <div class="flex items-center">
+                <i class="fa fa-building-o text-primary mr-2"></i>
+                <span>${item.warehouse}</span>
+              </div>
+            </td>
+            <td class="text-center py-3 px-4">${item.fullContainer}</td>
+            <td class="text-center py-3 px-4">${item.looseCargo}</td>
+            <td class="text-center py-3 px-4 font-medium">${item.total}</td>
+            <td class="text-center py-3 px-4">
+              <div class="flex items-center justify-center">
+                <span class="text-primary font-medium">${percentage}%</span>
+              </div>
+            </td>
+          `;
+          
+          tbody.appendChild(tr);
+        });
+      }
+      
+      // 筛选函数
+      function filterByWarehouse(warehouse) {
+        let filteredData;
+        
+        if (warehouse === 'all') {
+          filteredData = warehouseData;
+        } else {
+          // 根据仓库名称查找数据
+          const warehouseName = warehouse === 'warehouse1' ? 'DEMO' :
+                               warehouse === 'warehouse2' ? 'DE001' :
+                               warehouse === 'warehouse3' ? 'MD001' : 'NJ001';
+          filteredData = warehouseData.filter(item => item.warehouse === warehouseName);
+        }
+        
+        // 更新统计卡片
+        updateStats(filteredData);
+        // 更新表格
+        updateTable(filteredData);
+        // 更新图表
+        initCharts(filteredData);
+      }
+      
+      // 为仓库选择器添加事件监听器
+      const warehouseSelect = document.querySelector('select');
+      warehouseSelect.addEventListener('change', function() {
+        filterByWarehouse(this.value);
+      });
+      
+      // 初始化图表和数据
+      initCharts(warehouseData);
+      updateStats(warehouseData);
+      updateTable(warehouseData);
+      
+      // Tab栏点击事件
+      const timelineTabs = document.querySelectorAll('.timeline-tab');
+      
+      timelineTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // 移除所有Tab的活跃状态
+          timelineTabs.forEach(t => {
+            t.classList.remove('timeline-active');
+            t.classList.add('timeline-inactive');
+          });
+          
+          // 添加当前Tab的活跃状态
+          this.classList.remove('timeline-inactive');
+          this.classList.add('timeline-active');
+          
+          // 添加点击动画
+          this.classList.add('scale-105');
+          setTimeout(() => {
+            this.classList.remove('scale-105');
+          }, 200);
+          
+          // 这里可以添加切换周数据的逻辑
+          console.log('切换到', this.innerHTML.trim());
+        });
+      });
+    });
+  </script>
+</body>
+</html>
