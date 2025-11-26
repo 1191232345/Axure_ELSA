@@ -266,7 +266,7 @@
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
           <div class="md:col-span-5">
             <label for="warehouse-postal" class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span>仓库邮编</label>
-            <input type="text" id="warehouse-postal" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus h-10" placeholder="输入仓库邮编">
+            <input type="text" id="warehouse-postal" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus h-10 " placeholder="输入仓库邮编">
           </div>
           <div class="md:col-span-5">
             <label for="container-no" class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span>柜号</label>
@@ -321,7 +321,7 @@
               </div>
               <div>
                 <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>入库时间 </label>
-                <input type="datetime-local" id="global-warehouse-time" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <input type="date" id="global-warehouse-time" class="w-full px-3 py-2 border border-gray-300 rounded-md">
               </div>
             </div>
           </div>
@@ -336,7 +336,9 @@
               </div>
               <div class="md:col-span-1">
                 <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>邮箱</label>
-                <input type="text" id="global-team-email" placeholder="请输入车队邮箱" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <div class="border border-gray-300 rounded-md px-3 py-2 flex flex-wrap gap-2 items-center" id="global-email-tags">
+                  <input type="text" id="global-team-email" placeholder="请输入车队邮箱，回车添加多个" class="flex-grow border-none outline-none focus:ring-0 py-0">
+                </div>
                 <p id="global-email-error" class="text-red-500 text-xs mt-1 hidden">请输入有效的邮箱地址</p>
               </div>
               <div>
@@ -1463,20 +1465,59 @@
         const teamPhone = document.getElementById('global-team-phone').value;
         const teamBackupPhone = document.getElementById('global-team-backup-phone').value;
         const teamRemark = document.getElementById('global-team-remark').value;
-        const teamEmail = document.getElementById('global-team-email').value;
         
-        // 获取邮箱数据（从单一输入框）
-        const emails = teamEmail ? [teamEmail] : [];
+        // 获取邮箱数据（从邮箱标签和输入框）
+        const emailTags = document.querySelectorAll('#global-email-tags .email-tag');
+        const teamEmailInput = document.getElementById('global-team-email');
+        const emails = [];
         
-        // 筛选状态为待预约或待仓库确认（审核）的订单
+        // 从标签中收集邮箱
+        emailTags.forEach(tag => {
+          const email = tag.getAttribute('data-email');
+          if (email) {
+            emails.push(email);
+          }
+        });
+        
+        // 检查输入框中是否还有未添加的邮箱
+        const inputEmail = teamEmailInput.value.trim();
+        if (inputEmail) {
+          // 简单验证邮箱格式
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (emailRegex.test(inputEmail)) {
+            emails.push(inputEmail);
+          }
+        }
+        
+        // 筛选状态为待预约、待仓库确认（审核）或待送仓的订单
         const pendingOrders = orderData.filter(order => 
-          order.status === '待预约' || order.status === '待仓库审核' || order.status === '待仓库确认'
+          order.status === '待预约' || order.status === '待仓库审核' || order.status === '待仓库确认' || order.status === '待送仓'
         );
         
         // 检查是否存在可提交的订单
         if (pendingOrders.length === 0) {
-          alert('没有可提交的订单，仅支持提交状态为"待预约"和"待仓库确认"的订单');
+          alert('没有可提交的订单，仅支持提交状态为"待预约"、"待仓库确认"和"待送仓"的订单');
           return;
+        }
+        
+        // 检查柜号是否已提交过时间
+        const historyKey = `history_${currentUser ? currentUser.username : 'guest'}`;
+        const historyData = localStorage.getItem(historyKey);
+        const records = historyData ? JSON.parse(historyData) : [];
+        
+        // 检查是否有相同柜号的历史记录
+        const hasSubmittedContainer = records.some(record => {
+          // 假设历史记录中也保存了柜号信息，如果没有，这里可以调整逻辑
+          // 或者检查是否有相关订单的历史记录
+          return pendingOrders.some(order => order.orderNo === record.orderNo);
+        });
+        
+        // 如果柜号已提交过，显示确认提示
+        if (hasSubmittedContainer) {
+          const confirmUpdate = confirm('该柜号已提交过时间，是否确认更新送仓时间');
+          if (!confirmUpdate) {
+            return; // 用户取消更新
+          }
         }
         
         // 获取待提交订单的ID
@@ -1507,7 +1548,8 @@
             teamName: order.teamName,
             appointmentTime: warehouseTime,
             createTime: new Date().toISOString(),
-            status: 'pending'
+            status: 'pending',
+            containerNo: containerNo // 保存柜号信息到历史记录
           };
           
           // 添加到历史记录
@@ -1516,7 +1558,7 @@
         
         // 模拟提交成功，统计成功数量
         // 显示更突出的提示信息
-        alert(`✅ 预约提交成功！\n📋 已成功提交 ${pendingOrders.length} 个订单\n⚠️ ⚠️ ⚠️ 重要提示：系统仅处理"待预约"和"待仓库确认"状态的订单 ⚠️ ⚠️ ⚠️`);
+        alert(`✅ 预约提交成功！\n📋 已成功提交 ${pendingOrders.length} 个订单\n重要提示：系统已处理"待预约"、"待仓库确认"和"待送仓"状态的订单 `);
       }
       
       // 为全局表单添加事件监听
@@ -1554,7 +1596,7 @@
             if (email && emailRegex.test(email)) {
               // 创建邮箱标签
               const tag = document.createElement('div');
-              tag.className = 'email-tag bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1 h-8';
+              tag.className = 'email-tag bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1';
               tag.setAttribute('data-email', email);
               
               // 创建标签内容
@@ -1576,8 +1618,8 @@
               tag.appendChild(emailSpan);
               tag.appendChild(deleteBtn);
               
-              // 插入到输入框之前
-              globalEmailTagsContainer.insertBefore(tag, globalEmailInput);
+              // 添加到标签容器中
+              globalEmailTagsContainer.appendChild(tag);
               
               this.value = '';
             } else {
