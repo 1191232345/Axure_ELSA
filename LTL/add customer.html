@@ -688,7 +688,7 @@
                         </div>
                         
                         <!-- 隐藏字段用于存储邮编信息 -->
-                        <input type="hidden" id="sender-postcode">
+                        <input type="hidden" id="sender-postcode-hidden">
                     </form>
                 </div>
             </div>
@@ -833,7 +833,7 @@
                         </div>
                         
                         <!-- 隐藏字段用于存储邮编信息 -->
-                        <input type="hidden" id="receiver-postcode">
+                        <input type="hidden" id="receiver-postcode-hidden">
                     </form>
                 </div>
             </div>
@@ -950,6 +950,7 @@
         // 全局变量
         let currentUnit = null;
         let palletRows = [];
+        let selectedQuotation = null;
         let palletRowCount = 0;
         let searchTimeout = null;
         let currentAddressType = null; // 当前地址类型：'sender' 或 'receiver'
@@ -1453,23 +1454,14 @@
 
         // 显示通知
         function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = 'notification translate-x-full';
+            // 移除所有现有的通知，避免重叠
+            document.querySelectorAll('.notification').forEach(notification => {
+                document.body.removeChild(notification);
+            });
             
-            // 根据类型设置背景色
-            switch(type) {
-                case 'success':
-                    notification.className += ' bg-green-500 text-white';
-                    break;
-                case 'warning':
-                    notification.className += ' bg-yellow-500 text-white';
-                    break;
-                case 'error':
-                    notification.className += ' bg-red-500 text-white';
-                    break;
-                default:
-                    notification.className += ' bg-blue-500 text-white';
-            }
+            const notification = document.createElement('div');
+            // 确保通知样式正确，使用固定定位和过渡动画
+            notification.className = `notification fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 ${type === 'success' ? 'bg-green-500 text-white' : type === 'warning' ? 'bg-yellow-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`;
             
             notification.innerHTML = `
                 <div class="flex items-center">
@@ -1480,18 +1472,20 @@
             
             document.body.appendChild(notification);
             
+            // 显示通知 - 使用更可靠的方式
             setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-                notification.classList.add('translate-x-0');
+                notification.style.transform = 'translateX(0)';
             }, 100);
             
+            // 隐藏通知
             setTimeout(() => {
-                notification.classList.remove('translate-x-0');
-                notification.classList.add('translate-x-full');
+                notification.style.transform = 'translateX(100%)';
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
                 }, 300);
-            }, 3000);
+            }, 5000); // 增加显示时间，让用户有足够时间阅读
         }
 
         // 单位选择函数
@@ -1873,7 +1867,11 @@
 
         // 显示报价结果弹窗
         function showQuotationResult() {
+            console.log('showQuotationResult函数被调用');
+            
+            // 生成报价数据
             const quotations = generateQuotationData();
+            console.log('生成的报价数据:', quotations);
             
             // 按日期分组并排序
             const groupedByDate = {};
@@ -1883,6 +1881,7 @@
                 }
                 groupedByDate[q.date].push(q);
             });
+            console.log('按日期分组后的报价:', groupedByDate);
             
             // 对每天的报价按价格排序
             Object.keys(groupedByDate).forEach(date => {
@@ -1891,9 +1890,88 @@
             
             // 获取所有日期并排序
             const sortedDates = Object.keys(groupedByDate).sort();
+            console.log('排序后的日期:', sortedDates);
+            
+            // 显示弹窗
+            let resultModal = document.getElementById('quotation-result-modal');
+            let dateTabs, priceList;
+            
+            if (resultModal) {
+                console.log('找到了quotation-result-modal元素，准备显示');
+                // 强制显示弹窗
+                resultModal.style.display = 'flex';
+                resultModal.style.visibility = 'visible';
+                resultModal.style.opacity = '1';
+                resultModal.classList.remove('hidden');
+                
+                // 获取date-tabs和price-list元素
+                dateTabs = document.getElementById('date-tabs');
+                priceList = document.getElementById('price-list');
+            } else {
+                console.log('未找到quotation-result-modal元素，动态创建中...');
+                // 动态创建报价结果弹窗
+                resultModal = document.createElement('div');
+                resultModal.id = 'quotation-result-modal';
+                resultModal.className = 'modal-overlay';
+                resultModal.style.cssText = 'display: flex; visibility: visible; opacity: 1; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000;';
+                
+                // 创建完整的弹窗内容
+                resultModal.innerHTML = `
+                    <div class="modal-content" style="max-width: 900px; width: 100%; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);">
+                        <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 class="modal-title" style="margin: 0; font-size: 18px; font-weight: 600;">
+                                <i class="fas fa-chart-line mr-2"></i>报价查询
+                            </h3>
+                            <button class="modal-close" onclick="closeQuotationResult()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px;">
+                            <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 500;">近7天报价情况</h4>
+                            <div id="date-tabs" class="date-tabs" style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;"></div>
+                            <div id="price-list" class="price-list" style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px;"></div>
+                            <div class="text-gray-500 text-sm mt-4" style="color: #6b7280; font-size: 14px;">
+                                注：以上报价仅为参考，实际价格可能因市场情况有所波动
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 将弹窗添加到文档
+                document.body.appendChild(resultModal);
+                
+                // 获取动态创建的date-tabs和price-list元素
+                dateTabs = resultModal.querySelector('#date-tabs');
+                priceList = resultModal.querySelector('#price-list');
+            }
+            
+            // 确保dateTabs和priceList存在
+            if (!dateTabs || !priceList) {
+                console.error('date-tabs或price-list元素不存在');
+                // 创建简单的价格列表显示
+                if (resultModal) {
+                    const modalBody = resultModal.querySelector('.modal-body');
+                    if (modalBody) {
+                        modalBody.innerHTML += `
+                            <div class="mt-4">
+                                <h5>未来7天报价概览</h5>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    ${sortedDates.map(date => {
+                                        const dayQuotations = groupedByDate[date];
+                                        const lowestPrice = dayQuotations[0].price;
+                                        return `<li>${date}: ¥${lowestPrice.toLocaleString()}起</li>`;
+                                    }).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                }
+                return;
+            }
+            
+            console.log('date-tabs和price-list元素已准备好，开始生成内容');
             
             // 生成日期标签
-            const dateTabs = document.getElementById('date-tabs');
             dateTabs.innerHTML = '';
             
             sortedDates.forEach((date, index) => {
@@ -1918,53 +1996,56 @@
             });
             
             // 默认显示第一天的价格
-            selectDate(sortedDates[0], dateTabs.querySelector('.date-tab'));
-            
-            // 显示弹窗
-            document.getElementById('quotation-result-modal').classList.remove('hidden');
+            if (sortedDates.length > 0) {
+                const firstDateTab = dateTabs.querySelector('.date-tab');
+                if (firstDateTab) {
+                    selectDate(sortedDates[0], firstDateTab);
+                }
+            }
         }
 
         // 选择日期显示对应的价格列表
         function selectDate(date, selectedTab) {
             // 添加切换动画效果
             const priceList = document.getElementById('price-list');
-            priceList.style.opacity = '0';
-            priceList.style.transform = 'translateY(10px)';
-            
-            setTimeout(() => {
-                // 更新标签样式
-                document.querySelectorAll('.date-tab').forEach(tab => {
-                    tab.className = 'date-tab px-4 py-2 rounded-lg border transition-all duration-200 bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-sm';
-                    tab.querySelectorAll('div')[1].className = 'text-xs text-gray-500';
-                    tab.querySelectorAll('div')[2].className = 'text-xs font-bold text-green-600';
-                });
+            if (priceList) {
+                priceList.style.opacity = '0';
+                priceList.style.transform = 'translateY(10px)';
                 
-                selectedTab.className = 'date-tab px-4 py-2 rounded-lg border transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-lg transform scale-105';
-                selectedTab.querySelectorAll('div')[1].className = 'text-xs text-blue-100';
-                selectedTab.querySelectorAll('div')[2].className = 'text-xs font-bold text-blue-100';
-                
-                // 获取选中日期的报价数据
-                const quotations = generateQuotationData();
-                const groupedByDate = {};
-                quotations.forEach(q => {
-                    if (!groupedByDate[q.date]) {
-                        groupedByDate[q.date] = [];
-                    }
-                    groupedByDate[q.date].push(q);
-                });
-                
-                // 对每天的报价按价格排序
-                Object.keys(groupedByDate).forEach(date => {
-                    groupedByDate[date].sort((a, b) => a.price - b.price);
-                });
-                
-                const dayQuotations = groupedByDate[date];
-                
-                // 生成价格列表
-                priceList.innerHTML = '';
-                
-                // 添加日期标题
-                const dateObj = new Date(date);
+                setTimeout(() => {
+                    // 更新标签样式
+                    document.querySelectorAll('.date-tab').forEach(tab => {
+                        tab.className = 'date-tab px-4 py-2 rounded-lg border transition-all duration-200 bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-sm';
+                        tab.querySelectorAll('div')[1].className = 'text-xs text-gray-500';
+                        tab.querySelectorAll('div')[2].className = 'text-xs font-bold text-green-600';
+                    });
+                    
+                    selectedTab.className = 'date-tab px-4 py-2 rounded-lg border transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-lg transform scale-105';
+                    selectedTab.querySelectorAll('div')[1].className = 'text-xs text-blue-100';
+                    selectedTab.querySelectorAll('div')[2].className = 'text-xs font-bold text-blue-100';
+                    
+                    // 获取选中日期的报价数据
+                    const quotations = generateQuotationData();
+                    const groupedByDate = {};
+                    quotations.forEach(q => {
+                        if (!groupedByDate[q.date]) {
+                            groupedByDate[q.date] = [];
+                        }
+                        groupedByDate[q.date].push(q);
+                    });
+                    
+                    // 对每天的报价按价格排序
+                    Object.keys(groupedByDate).forEach(date => {
+                        groupedByDate[date].sort((a, b) => a.price - b.price);
+                    });
+                    
+                    const dayQuotations = groupedByDate[date];
+                    
+                    // 生成价格列表
+                    priceList.innerHTML = '';
+                    
+                    // 添加日期标题
+                    const dateObj = new Date(date);
                 const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][dateObj.getDay()];
                 
                 const dateHeader = document.createElement('div');
@@ -2039,6 +2120,7 @@
                 }, 50);
             }, 200);
         }
+    }
 
         // 选择报价的处理函数
         function selectQuotation(quotation, priceItem) {
@@ -2047,9 +2129,14 @@
                 item.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
                 const btn = item.querySelector('.select-quotation-btn');
                 if (btn) {
-                    btn.textContent = '选择此报价';
+                    btn.textContent = '下单';
                     btn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
-                    btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    // 分开添加类名，避免InvalidCharacterError
+                    if (btn.classList.contains('bg-green-600')) {
+                        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    } else {
+                        btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    }
                 }
             });
             
@@ -2057,32 +2144,17 @@
             priceItem.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
             const selectBtn = priceItem.querySelector('.select-quotation-btn');
             selectBtn.textContent = '已选择';
-            selectBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            selectBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'bg-green-600', 'hover:bg-green-700');
             selectBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
             
             // 显示选中提示
-            showNotification(`已选择 ${quotation.supplier} 的报价：¥${quotation.price.toLocaleString()}`);
+            showNotification(`已选择 ${quotation.supplier} 的报价：¥${quotation.price.toLocaleString()}，点击"确定"完成下单`, 'success');
+            
+            // 保存选中的报价信息
+            selectedQuotation = quotation;
         }
 
-        // 显示通知消息
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
+        // 显示通知消息函数已在前面定义，此处不再重复
 
         // 关闭报价结果弹窗
         function closeQuotationResult() {
@@ -2091,17 +2163,93 @@
 
         // 提交询价
         function submitInquiry() {
-            if (!validateForm()) {
-                return;
+            console.log('submitInquiry函数被调用');
+            
+            // 显示通知
+            showNotification('正在处理询价，请勿关闭页面', 'info');
+            
+            // 动态创建等待弹窗
+            let waitingModal = document.getElementById('inquiry-waiting-modal');
+            
+            if (!waitingModal) {
+                console.log('动态创建等待弹窗');
+                // 创建弹窗容器
+                waitingModal = document.createElement('div');
+                waitingModal.id = 'inquiry-waiting-modal';
+                waitingModal.className = 'modal-overlay';
+                waitingModal.style.cssText = 'display: flex; visibility: visible; opacity: 1;';
+                
+                // 弹窗内容
+                waitingModal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">
+                                <i class="fas fa-clock mr-2"></i>询价处理中
+                            </h3>
+                        </div>
+                        <div class="modal-body text-center py-8">
+                            <div class="mb-6">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                                    <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                                </div>
+                                <h4 class="text-xl font-semibold mb-2">正在为您查询最优报价</h4>
+                                <p class="text-gray-600 mb-4">系统正在向多个车队发送询价请求</p>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <p class="text-sm text-blue-800">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        预计需要 <strong>5-10分钟</strong> 完成询价
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-left max-w-sm mx-auto">
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    已获取发货地址信息
+                                </div>
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    已获取收货地址信息
+                                </div>
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    已获取托盘信息
+                                </div>
+                                <div class="flex items-center text-sm text-blue-600">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                                    正在向车队发送询价...
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer centered">
+                            <button type="button" class="btn btn-primary" onclick="confirmInquiry()">
+                                确定
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加到文档
+                document.body.appendChild(waitingModal);
+            } else {
+                // 显示现有弹窗
+                waitingModal.style.display = 'flex';
+                waitingModal.style.visibility = 'visible';
+                waitingModal.style.opacity = '1';
+                waitingModal.classList.remove('hidden');
             }
             
-            // 显示询价等待弹窗
-            document.getElementById('inquiry-waiting-modal').classList.remove('hidden');
+            console.log('等待弹窗已显示:', waitingModal);
             
             // 模拟询价过程
             setTimeout(() => {
+                console.log('2秒后，关闭等待弹窗，显示报价结果');
+                
                 // 关闭等待弹窗
-                document.getElementById('inquiry-waiting-modal').classList.add('hidden');
+                const waitingModal = document.getElementById('inquiry-waiting-modal');
+                if (waitingModal) {
+                    waitingModal.classList.add('hidden');
+                    waitingModal.style.display = 'none';
+                }
                 
                 // 显示报价结果
                 showQuotationResult();
@@ -2110,14 +2258,20 @@
 
         // 关闭询价等待弹窗
         function closeInquiryWaiting() {
-            document.getElementById('inquiry-waiting-modal').classList.add('hidden');
+            const waitingModal = document.getElementById('inquiry-waiting-modal');
+            if (waitingModal) {
+                waitingModal.classList.add('hidden');
+            }
             showNotification('询价将在后台继续处理，完成后将通知您', 'info');
         }
 
-        // 确定询价并刷新页面
+        // 确定询价并完成下单
         function confirmInquiry() {
             // 关闭弹窗
-            document.getElementById('inquiry-waiting-modal').classList.add('hidden');
+            const waitingModal = document.getElementById('inquiry-waiting-modal');
+            if (waitingModal) {
+                waitingModal.classList.add('hidden');
+            }
             
             // 显示成功提示
             showNotification('询价提交成功！', 'success');
@@ -2134,11 +2288,14 @@
 
         // 表单验证
         function validateForm() {
+            console.log('validateForm函数被调用');
             const errors = [];
             
             const senderPostcode = document.getElementById('sender-postcode').value.trim();
             const receiverPostcode = document.getElementById('receiver-postcode').value.trim();
             const pickupDate = document.getElementById('pickup-date').value;
+            
+            // 简化验证逻辑，只保留必要的验证项
             
             // 验证发货地址邮编为必填
             if (!senderPostcode) {
@@ -2155,79 +2312,20 @@
                 errors.push('请选择提货日期');
             }
             
-            // 验证收货地址联系人
-            const receiverName = document.getElementById('receiver-name').value.trim();
-            if (!receiverName) {
-                errors.push('请输入收货地址联系人');
-            }
-            
-            // 验证收货地址联系电话
-            const receiverPhone = document.getElementById('receiver-phone').value.trim();
-            if (!receiverPhone) {
-                errors.push('请输入收货地址联系电话');
-            }
-            
-            // 验证收货地址地址类型
-            const receiverAddressType = document.getElementById('receiver-address-type').value;
-            if (!receiverAddressType) {
-                errors.push('请选择收货地址类型');
-            }
-            
-            // 收货地址配送服务改为非必填
-            // const selectedDeliveryServices = getDropdownSelectedValues('receiver-delivery');
-            // if (selectedDeliveryServices.length === 0) {
-            //     errors.push('请选择至少一个收货地址配送服务');
-            // }
-            
-            // 验证发货地址的国家、省州、城市必填
-            const senderCountry = document.getElementById('sender-country').value.trim();
-            const senderProvince = document.getElementById('sender-province').value.trim();
-            const senderCity = document.getElementById('sender-city').value.trim();
-            
-            if (!senderCountry) {
-                errors.push('请输入发货地址国家');
-            }
-            if (!senderProvince) {
-                errors.push('请输入发货地址省州');
-            }
-            if (!senderCity) {
-                errors.push('请输入发货地址城市');
-            }
-            
-            // 验证收货地址的国家、省州、城市必填
-            const receiverCountry = document.getElementById('receiver-country').value.trim();
-            const receiverProvince = document.getElementById('receiver-province').value.trim();
-            const receiverCity = document.getElementById('receiver-city').value.trim();
-            
-            if (!receiverCountry) {
-                errors.push('请输入收货地址国家');
-            }
-            if (!receiverProvince) {
-                errors.push('请输入收货地址省州');
-            }
-            if (!receiverCity) {
-                errors.push('请输入收货地址城市');
-            }
-            
+            // 验证至少添加一个托盘
             if (palletRows.length === 0) {
                 errors.push('请至少添加一个托盘');
             }
             
-            // 验证托盘信息
-            palletRows.forEach((pallet, index) => {
-                if (!pallet.palletCount) {
-                    errors.push(`托盘 ${index + 1} 的托盘数量不能为空`);
-                }
-                if (!pallet.length || !pallet.width || !pallet.height) {
-                    errors.push(`托盘 ${index + 1} 的尺寸信息不完整`);
-                }
-            });
+            console.log('验证错误列表:', errors);
             
             if (errors.length > 0) {
                 showNotification('表单验证失败：' + errors.join('；'), 'error');
+                console.log('表单验证失败，返回false');
                 return false;
             }
             
+            console.log('表单验证通过，返回true');
             return true;
         }
 
