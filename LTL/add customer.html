@@ -602,6 +602,7 @@
                                 </label>
                                 <input type="text" id="sender-country" 
                                        class="form-input" 
+                                       value="US"
                                        placeholder="请选择或输入国家" required>
                             </div>
                             <div>
@@ -682,6 +683,10 @@
                                             <input type="checkbox" value="limited" onchange="updateSelectedText('sender-pickup')">
                                             <span>预约服务</span>
                                         </label>
+                                        <label class="dropdown-checkbox-item">
+                                            <input type="checkbox" value="limited" onchange="updateSelectedText('sender-pickup')">
+                                            <span>住宅区派送</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -741,6 +746,7 @@
                                 </label>
                                 <input type="text" id="receiver-country" 
                                        class="form-input" 
+                                       value="US"
                                        placeholder="请选择或输入国家" required>
                             </div>
                             <div>
@@ -868,22 +874,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <!-- 单位选择 -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">选择测量单位</label>
-                    <div class="flex space-x-4">
-                        <button onclick="selectUnit('inch')" class="unit-btn" data-unit="inch">
-                            </i>英寸 (inch)
-                        </button>
-                        <button onclick="selectUnit('cm')" class="unit-btn" data-unit="cm">
-                            </i>厘米 (cm)
-                        </button>
-                    </div>
-                    <div id="unit-status" class="hidden mt-2 text-sm text-green-600">
-                        <i class="fas fa-check-circle mr-1"></i>
-                        <span id="unit-text"></span>
-                    </div>
-                </div>
+
 
                 <!-- 全局属性选项 -->
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -920,14 +911,14 @@
                 </div>
 
                 <!-- 托盘列表容器 -->
-                <div id="product-table-container" class="hidden">
+                <div id="product-table-container">
                     <div id="product-list-container" class="space-y-4 mb-6">
                         <!-- 托盘项将动态添加到这里 -->
                     </div>
                     
                     <!-- 操作按钮 -->
                     <div class="flex flex-wrap gap-3">
-                        <button id="add-product-row" onclick="addProductRow()" class="btn-primary" disabled>
+                        <button id="add-product-row" onclick="addProductRow()" class="btn-primary">
                             <i class="fas fa-plus mr-2"></i>添加托盘
                         </button>
                     </div>
@@ -948,7 +939,6 @@
 
     <script>
         // 全局变量
-        let currentUnit = null;
         let palletRows = [];
         let selectedQuotation = null;
         let palletRowCount = 0;
@@ -1154,15 +1144,6 @@
                 return;
             }
             
-            // 检查当前单位是否匹配
-            const expectedDimensionUnit = currentUnit === 'cm' ? 'cm' : 'inch';
-            const expectedWeightUnit = currentUnit === 'cm' ? 'kg' : 'lb';
-            
-            if (parsedData.dimensionUnit !== expectedDimensionUnit || parsedData.weightUnit !== expectedWeightUnit) {
-                showNotification(`单位不匹配！当前选择的是${expectedDimensionUnit}/${expectedWeightUnit}，但输入的是${parsedData.dimensionUnit}/${parsedData.weightUnit}`, 'warning');
-                return;
-            }
-            
             // 创建单个托盘数据，不进行拆分
             const palletData = {
                 id: `pallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1173,6 +1154,8 @@
                 weight: parsedData.weight.toString(),
                 value: '',
                 productName: '',
+                lengthUnit: parsedData.dimensionUnit, // 使用解析出的尺寸单位
+                weightUnit: parsedData.weightUnit,     // 使用解析出的重量单位
                 // 应用全局属性设置
                 ...globalProperties
             };
@@ -1197,11 +1180,6 @@
                 return;
             }
             
-            if (!currentUnit) {
-                showNotification('请先选择测量单位', 'warning');
-                return;
-            }
-            
             const parsedData = parsePalletString(input);
             
             if (parsedData) {
@@ -1220,11 +1198,6 @@
 
         // 打开托盘解析器模态窗口
         function openPalletParserModal() {
-            if (!currentUnit) {
-                showNotification('请先选择测量单位', 'warning');
-                return;
-            }
-            
             // 清空之前的输入和预览
             document.getElementById('batch-pallet-input').value = '';
             document.getElementById('batch-pallet-preview').classList.add('hidden');
@@ -1361,16 +1334,6 @@
             lines.forEach((line, index) => {
                 const parsed = parsePalletString(line.trim());
                 if (parsed && parsed.isValid) {
-                    // 检查单位匹配 - 移除严格限制，改为警告提示
-                    const expectedDimensionUnit = currentUnit === 'cm' ? 'cm' : 'inch';
-                    const expectedWeightUnit = currentUnit === 'cm' ? 'kg' : 'lb';
-                    
-                    if (parsed.dimensionUnit !== expectedDimensionUnit || parsed.weightUnit !== expectedWeightUnit) {
-                        // 单位不匹配时，记录但继续处理
-                        unitMismatchCount++;
-                        console.log(`第${index + 1}行单位不匹配: 输入单位(${parsed.dimensionUnit}/${parsed.weightUnit}) vs 期望单位(${expectedDimensionUnit}/${expectedWeightUnit})`);
-                    }
-                    
                     // 创建托盘数据但不立即添加到数组
                     const palletData = {
                         id: `pallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1381,6 +1344,8 @@
                         weight: parsed.weight.toString(),
                         value: '',
                         productName: '',
+                        lengthUnit: parsed.dimensionUnit, // 使用解析出的尺寸单位
+                        weightUnit: parsed.weightUnit,     // 使用解析出的重量单位
                         // 应用全局属性设置
                         ...globalProperties
                     };
@@ -1488,54 +1453,15 @@
             }, 5000); // 增加显示时间，让用户有足够时间阅读
         }
 
-        // 单位选择函数
-        function selectUnit(unit) {
-            document.querySelectorAll('.unit-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-unit="${unit}"]`).classList.add('active');
-            
-            currentUnit = unit;
-            
-            document.getElementById('unit-status').classList.remove('hidden');
-            document.getElementById('unit-text').textContent = `已选择${unit === 'cm' ? '厘米' : '英寸'}单位`;
-            
-            document.getElementById('product-table-container').classList.remove('hidden');
-            
-            document.getElementById('add-product-row').disabled = false;
-            
-            updateUnitLabels(unit);
-            
-            if (palletRows.length > 0) {
-                const container = document.getElementById('product-list-container');
-                container.innerHTML = '';
-                
-                palletRows.forEach((palletData, i) => {
-                    const palletItem = createProductListItem(i, palletData);
-                    container.insertAdjacentHTML('beforeend', palletItem);
-                });
-            }
-            
-            showNotification(`已切换到${unit === 'cm' ? '厘米' : '英寸'}单位`, 'success');
-        }
-
-        // 更新单位标签
-        function updateUnitLabels(unit) {
-            // 单位标签已集成到每个产品项中
-        }
+        // 单位选择功能已移除，每个托盘条目现在可以独立选择单位
 
         // 添加托盘行
         function addProductRow() {
-            if (!currentUnit) {
-                showNotification('请先选择测量单位', 'warning');
-                return;
-            }
-            
             // 设置默认值：尺寸40*48*72英寸，重量50磅
-            const defaultLength = currentUnit === 'cm' ? '102' : '40';  // 40英寸 = 101.6厘米
-            const defaultWidth = currentUnit === 'cm' ? '122' : '48';   // 48英寸 = 121.92厘米  
-            const defaultHeight = currentUnit === 'cm' ? '183' : '72';  // 72英寸 = 182.88厘米
-            const defaultWeight = currentUnit === 'cm' ? '23' : '50';  // 50磅 = 22.68千克
+            const defaultLength = '40';
+            const defaultWidth = '48';
+            const defaultHeight = '72';
+            const defaultWeight = '50';
             
             const palletData = {
                 id: `pallet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1546,6 +1472,8 @@
                 weight: defaultWeight,
                 value: '1000',
                 productName: '电子产品',
+                lengthUnit: 'inch', // 默认尺寸单位
+                weightUnit: 'lb',     // 默认重量单位
                 // 应用全局属性设置
                 ...globalProperties
             };
@@ -1561,8 +1489,9 @@
 
         // 创建产品列表项
         function createProductListItem(index, productData) {
-            const lengthUnit = currentUnit === 'cm' ? 'cm' : 'inch';
-            const weightUnit = currentUnit === 'cm' ? 'kg' : 'lb';
+            // 获取当前产品的单位，默认使用英寸和磅
+            const lengthUnit = productData.lengthUnit || 'inch';
+            const weightUnit = productData.weightUnit || 'lb';
             
             return `
                 <div class="product-item" data-index="${index}">
@@ -1576,7 +1505,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         
                         <!-- 数量 -->
-                        <div>W
+                        <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">
                                 <span class="text-red-500">*</span> 数量
                             </label>
@@ -1588,7 +1517,7 @@
                         <!-- 尺寸 -->
                         <div class="lg:col-span-1">
                             <label class="block text-xs font-medium text-gray-700 mb-1">
-                                <span class="text-red-500">*</span> 尺寸 (${lengthUnit})
+                                <span class="text-red-500">*</span> 尺寸
                             </label>
                             <div class="flex space-x-2">
                                 <input type="number" class="form-input length" 
@@ -1600,17 +1529,29 @@
                                 <input type="number" class="form-input height" 
                                        value="${productData.height || ''}"
                                        placeholder="高" min="0" onchange="updateProductData(${index}, 'height', this.value)">
+                                <select class="form-input length-unit" 
+                                        onchange="updateProductData(${index}, 'lengthUnit', this.value)" style="width: auto;">
+                                    <option value="inch" ${lengthUnit === 'inch' ? 'selected' : ''}>inch</option>
+                                    <option value="cm" ${lengthUnit === 'cm' ? 'selected' : ''}>cm</option>
+                                </select>
                             </div>
                         </div>
                         
                         <!-- 总重量-->
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">
-                                <span class="text-red-500">*</span> 总重量(${weightUnit})
+                                <span class="text-red-500">*</span> 总重量
                             </label>
-                            <input type="number" class="form-input weight" 
-                                   value="${productData.weight || ''}"
-                                   placeholder="0" min="0" step="0.1" onchange="updateProductData(${index}, 'weight', this.value)">
+                            <div class="flex space-x-2">
+                                <input type="number" class="form-input weight" 
+                                       value="${productData.weight || ''}"
+                                       placeholder="0" min="0" step="0.1" onchange="updateProductData(${index}, 'weight', this.value)">
+                                <select class="form-input weight-unit" 
+                                        onchange="updateProductData(${index}, 'weightUnit', this.value)" style="width: auto;">
+                                    <option value="lb" ${weightUnit === 'lb' ? 'selected' : ''}>lb</option>
+                                    <option value="kg" ${weightUnit === 'kg' ? 'selected' : ''}>kg</option>
+                                </select>
+                            </div>
                         </div>
                         
                         <!-- 货值 -->
@@ -1660,7 +1601,7 @@
         // 计算总计
         function calculateTotals() {
             let totalQuantity = 0;
-            let totalWeight = 0;
+            let totalWeightInLb = 0; // 统一使用lb作为内部计算单位
             let totalVolume = 0;
             let totalValue = 0;
             
@@ -1669,14 +1610,22 @@
                 totalQuantity += quantity;
                 
                 const weight = parseFloat(pallet.weight) || 0;
-                totalWeight += weight;
+                // 将重量转换为lb统一计算
+                let weightInLb;
+                if (pallet.weightUnit === 'kg') {
+                    weightInLb = weight * 2.20462; // 1kg = 2.20462lb
+                } else {
+                    weightInLb = weight; // 默认使用lb
+                }
+                totalWeightInLb += weightInLb;
                 
                 const length = parseFloat(pallet.length) || 0;
                 const width = parseFloat(pallet.width) || 0;
                 const height = parseFloat(pallet.height) || 0;
                 
                 let lengthInMeters, widthInMeters, heightInMeters;
-                if (currentUnit === 'cm') {
+                // 根据每个托盘的单位转换尺寸
+                if (pallet.lengthUnit === 'cm') {
                     lengthInMeters = length / 100;
                     widthInMeters = width / 100;
                     heightInMeters = height / 100;
@@ -1692,11 +1641,35 @@
                 totalValue += value;
             });
             
-            document.getElementById('total-quantity').textContent = totalQuantity.toFixed(0);
-            const weightUnit = currentUnit === 'cm' ? 'kg' : 'lb';
-            document.getElementById('total-weight').textContent = `${totalWeight.toFixed(2)} ${weightUnit}`;
-            document.getElementById('total-volume').textContent = `${totalVolume.toFixed(3)} m³`;
-            document.getElementById('total-value').textContent = `$${totalValue.toFixed(2)}`;
+            // 使用第一个托盘的重量单位显示总重量，或者默认使用lb
+            const displayWeightUnit = palletRows.length > 0 && palletRows[0].weightUnit ? palletRows[0].weightUnit : 'lb';
+            // 将总重量转换为显示单位
+            let displayWeight = totalWeightInLb;
+            if (displayWeightUnit === 'kg') {
+                displayWeight = totalWeightInLb / 2.20462;
+            }
+            
+            // 更新总计显示，只设置存在的元素
+            const totalWeightEl = document.getElementById('total-weight');
+            if (totalWeightEl) {
+                totalWeightEl.textContent = `${displayWeight.toFixed(2)} ${displayWeightUnit}`;
+            }
+            
+            const totalVolumeEl = document.getElementById('total-volume');
+            if (totalVolumeEl) {
+                totalVolumeEl.textContent = `${totalVolume.toFixed(3)} m³`;
+            }
+            
+            // 可选：添加其他总计元素的检查
+            const totalQuantityEl = document.getElementById('total-quantity');
+            if (totalQuantityEl) {
+                totalQuantityEl.textContent = totalQuantity.toFixed(0);
+            }
+            
+            const totalValueEl = document.getElementById('total-value');
+            if (totalValueEl) {
+                totalValueEl.textContent = `$${totalValue.toFixed(2)}`;
+            }
         }
 
         // 美国邮编数据
@@ -1811,14 +1784,10 @@
                 document.getElementById('product-list-container').innerHTML = '';
                 calculateTotals();
                 
-                // 重置单位选择
-                document.querySelectorAll('.unit-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                currentUnit = null;
+                // 重置托盘信息
                 document.getElementById('unit-status').classList.add('hidden');
-                document.getElementById('product-table-container').classList.add('hidden');
-                document.getElementById('add-product-row').disabled = true;
+                document.getElementById('product-table-container').classList.remove('hidden');
+                document.getElementById('add-product-row').disabled = false;
                 
                 showNotification('已取消并清空表单', 'info');
             }
@@ -1933,6 +1902,10 @@
                             <div class="text-gray-500 text-sm mt-4" style="color: #6b7280; font-size: 14px;">
                                 注：以上报价仅为参考，实际价格可能因市场情况有所波动
                             </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 16px 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: center; gap: 10px;">
+                            <button onclick="closeQuotationResult()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">取消</button>
+                            <button id="confirm-order-btn" onclick="confirmOrder()" class="btn-primary px-6 py-2 font-medium" disabled>确认下单</button>
                         </div>
                     </div>
                 `;
@@ -2152,13 +2125,25 @@
             
             // 保存选中的报价信息
             selectedQuotation = quotation;
+            
+            // 启用确认下单按钮
+            const confirmBtn = document.getElementById('confirm-order-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+            }
         }
 
         // 显示通知消息函数已在前面定义，此处不再重复
 
         // 关闭报价结果弹窗
         function closeQuotationResult() {
-            document.getElementById('quotation-result-modal').classList.add('hidden');
+            const resultModal = document.getElementById('quotation-result-modal');
+            if (resultModal) {
+                // 确保能正确关闭弹窗，无论它是静态还是动态创建的
+                resultModal.style.display = 'none';
+                resultModal.style.visibility = 'hidden';
+                resultModal.classList.add('hidden');
+            }
         }
 
         // 提交询价
@@ -2254,6 +2239,153 @@
                 // 显示报价结果
                 showQuotationResult();
             }, 2000); // 2秒后显示结果
+        }
+        
+        // 确认下单
+        function confirmOrder() {
+            if (!selectedQuotation) {
+                showNotification('请先选择一个报价', 'warning');
+                return;
+            }
+            
+            // 显示确认信息
+            const confirmMessage = `
+                您已选择以下报价：
+                供应商：${selectedQuotation.supplier}
+                日期：${selectedQuotation.date}
+                价格：¥${selectedQuotation.price.toLocaleString()}
+                时效：${selectedQuotation.deliveryTime}天
+                
+                确认下单吗？
+            `;
+            
+            if (confirm(confirmMessage)) {
+                // 这里可以添加实际的下单逻辑，比如调用API
+                
+                // 关闭报价结果弹窗
+                closeQuotationResult();
+                
+                // 显示下单成功提示弹窗
+                showOrderSuccessModal();
+            }
+        }
+        
+        // 显示下单成功提示弹窗
+        function showOrderSuccessModal() {
+            // 移除现有弹窗（如果存在）
+            let successModal = document.getElementById('order-success-modal');
+            if (successModal) {
+                successModal.remove();
+            }
+            
+            // 创建成功提示弹窗
+            successModal = document.createElement('div');
+            successModal.id = 'order-success-modal';
+            successModal.className = 'modal-overlay';
+            successModal.style.cssText = 'display: flex; visibility: visible; opacity: 1;';
+            
+            successModal.innerHTML = `
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>下单成功！
+                        </h3>
+                    </div>
+                    <div class="modal-body py-6">
+                        <div class="text-center mb-4">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                                <i class="fas fa-check text-green-600 text-3xl"></i>
+                            </div>
+                            <p class="text-lg font-semibold text-gray-800">您的订单已提交成功！</p>
+                            <p class="text-gray-600 mt-2">订单号：${generateOrderNumber()}</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer centered space-x-4">
+                        <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors" onclick="closeOrderSuccessModal()">
+                            查看订单
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" onclick="resetPage()">
+                            继续下单
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加到文档
+            document.body.appendChild(successModal);
+        }
+        
+        // 关闭下单成功弹窗
+        function closeOrderSuccessModal() {
+            const successModal = document.getElementById('order-success-modal');
+            if (successModal) {
+                successModal.remove();
+            }
+            // 这里可以添加查看订单的逻辑
+        }
+        
+        // 重置页面
+        function resetPage() {
+            // 关闭成功弹窗
+            closeOrderSuccessModal();
+            
+            // 重置选中的报价
+            selectedQuotation = null;
+            
+            // 重置所有表单字段
+            document.querySelectorAll('form input, form select, form textarea').forEach(field => {
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    field.checked = false;
+                } else {
+                    field.value = '';
+                }
+            });
+            
+            // 重置确认下单按钮状态
+            const confirmBtn = document.getElementById('confirm-order-btn');
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+            }
+            
+            // 重置托盘列表
+            const palletTable = document.getElementById('pallet-list');
+            if (palletTable) {
+                const tbody = palletTable.querySelector('tbody');
+                if (tbody) {
+                    tbody.innerHTML = '';
+                }
+            }
+            
+            // 重置地址信息
+            document.querySelectorAll('[id*="address-detail"]').forEach(el => {
+                el.innerHTML = '<span class="text-red-500">未选择地址</span>';
+            });
+            
+            // 重置数量统计
+            const totalWeightEl = document.getElementById('total-weight');
+            if (totalWeightEl) {
+                totalWeightEl.textContent = '0 kg';
+            }
+            const totalVolumeEl = document.getElementById('total-volume');
+            if (totalVolumeEl) {
+                totalVolumeEl.textContent = '0 m³';
+            }
+            
+            // 刷新页面以确保完全重置
+            location.reload();
+        }
+        
+        // 生成订单号
+        function generateOrderNumber() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `ELSA${year}${month}${day}${hours}${minutes}${seconds}${random}`;
         }
 
         // 关闭询价等待弹窗
@@ -2384,9 +2516,21 @@
             if (checkboxes.length === 0) {
                 selectedText.textContent = defaultText;
                 selectedText.classList.add('placeholder');
+                selectedText.title = ''; // 清空悬浮提示
             } else {
                 const selectedValues = Array.from(checkboxes).map(cb => cb.nextElementSibling.textContent);
-                selectedText.textContent = selectedValues.join(', ');
+                let displayText = '';
+                
+                // 优化展示逻辑：默认展示第一个选择内容，其余通过+数据展示
+                if (checkboxes.length === 1) {
+                    displayText = selectedValues[0];
+                } else {
+                    displayText = `${selectedValues[0]} +${checkboxes.length - 1}`;
+                }
+                
+                // 设置悬浮提示，显示所有选中项
+                selectedText.title = selectedValues.join(', ');
+                selectedText.textContent = displayText;
                 selectedText.classList.remove('placeholder');
             }
         }
@@ -2692,8 +2836,8 @@
                 field.disabled = false;
             });
             
-            // 默认选中英寸单位并添加一行产品
-            selectUnit('inch');
+            // 启用添加托盘按钮
+            document.getElementById('add-product-row').disabled = false;
             
             // 自动添加一行产品
             setTimeout(() => {

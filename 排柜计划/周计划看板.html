@@ -92,10 +92,10 @@
         <div class="relative">
           <select class="appearance-none bg-white border border-gray-200 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
             <option value="all">所有仓库</option>
-            <option value="warehouse1">DEMO</option>
-            <option value="warehouse2">DE001</option>
-            <option value="warehouse3">MD001</option>
-            <option value="warehouse4">NJ001</option>
+            <option value="DEMO">DEMO</option>
+            <option value="DE001">DE001</option>
+            <option value="MD001">MD001</option>
+            <option value="NJ001">NJ001</option>
           </select>
           <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
         </div>
@@ -110,31 +110,36 @@
       </h3>
       
       <!-- Tab栏容器 -->
-      <div class="timeline-tabs">
-        <!-- Tab项 - 第1周（活跃） -->
-        <div class="timeline-tab timeline-active" data-week="1">
-            06.28 - 07.04
-        </div>
-        
-        <!-- Tab项 - 第2周（非活跃） -->
-        <div class="timeline-tab timeline-inactive" data-week="2">
-            07.05 - 07.11
-        </div>
-        
-        <!-- Tab项 - 第3周（非活跃） -->
-        <div class="timeline-tab timeline-inactive" data-week="3">
-            07.12 - 7.18
-        </div>
-        
-        <!-- Tab项 - 第4周（非活跃） -->
-        <div class="timeline-tab timeline-inactive" data-week="4">
-            07.19 - 07.25
-        </div>
-        
-        <!-- Tab项 - 第5周（非活跃） -->
-        <div class="timeline-tab timeline-inactive" data-week="5">
-            07.26 - 08.01
-        </div>
+        <div class="timeline-tabs">
+          <!-- Tab项 - 全部（活跃） -->
+          <div class="timeline-tab timeline-active" data-week="all">
+              全部
+          </div>
+          
+          <!-- Tab项 - 第1周（非活跃） -->
+          <div class="timeline-tab timeline-inactive" data-week="1">
+              06/28 - 07/04
+          </div>
+          
+          <!-- Tab项 - 第2周（非活跃） -->
+          <div class="timeline-tab timeline-inactive" data-week="2">
+              07/05 - 07/11
+          </div>
+          
+          <!-- Tab项 - 第3周（非活跃） -->
+          <div class="timeline-tab timeline-inactive" data-week="3">
+              07/12 - 07/18
+          </div>
+          
+          <!-- Tab项 - 第4周（非活跃） -->
+          <div class="timeline-tab timeline-inactive" data-week="4">
+              07/19 - 07/25
+          </div>
+          
+          <!-- Tab项 - 第5周（非活跃） -->
+          <div class="timeline-tab timeline-inactive" data-week="5">
+              07/26 - 08/01
+          </div>
       </div>
     </div>
 
@@ -150,7 +155,7 @@
         </div>
         <div class="flex items-end justify-between">
           <span class="text-2xl font-bold">1,286</span>
-          <span class="text-success text-sm flex items-center">
+          <span class="text-red-500 text-sm flex items-center">
             <i class="fa fa-arrow-up mr-1"></i> 12.5%
           </span>
         </div>
@@ -192,7 +197,7 @@
         </div>
         <div class="flex items-end justify-between">
           <span class="text-2xl font-bold">432</span>
-          <span class="text-success text-sm flex items-center">
+          <span class="text-red-500 text-sm flex items-center">
             <i class="fa fa-arrow-up mr-1"></i> 8.3%
           </span>
         </div>
@@ -209,7 +214,7 @@
         </div>
         <div class="flex items-end justify-between">
           <span class="text-2xl font-bold">854</span>
-          <span class="text-success text-sm flex items-center">
+          <span class="text-red-500 text-sm flex items-center">
             <i class="fa fa-arrow-up mr-1"></i> 15.7%
           </span>
         </div>
@@ -343,12 +348,31 @@
       </div>
     </div>
 
-    <!-- 统计图表 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-      <!-- 入库量分布图表 -->
-      <div class="bg-white rounded-xl p-4 card-shadow">
+    <!-- 统计图表区域 -->
+    <!-- 入库占比图表（默认显示） -->
+    <div id="warehouseChartSection" class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+      <!-- 库占比分析（玫瑰图） -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold">入库占比</h3>
+          <h3 class="font-semibold">库占比分析</h3>
+          <div class="flex space-x-2">
+            <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
+              <i class="fa fa-rose mr-1"></i> 玫瑰图
+            </button>
+            <button class="text-sm px-2 py-1 rounded text-gray-500 hover:bg-gray-100 flex items-center">
+              <i class="fa fa-download mr-1"></i> 导出
+            </button>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="warehouseRoseChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 整柜入库占比 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">整柜入库占比</h3>
           <div class="flex space-x-2">
             <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
               <i class="fa fa-pie-chart mr-1"></i> 分布
@@ -363,13 +387,13 @@
         </div>
       </div>
       
-      <!-- 柜型分布图表 -->
-      <div class="bg-white rounded-xl p-4 card-shadow">
+      <!-- 散货入库占比 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold">柜型分布</h3>
+          <h3 class="font-semibold">散货入库占比</h3>
           <div class="flex space-x-2">
             <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
-              <i class="fa fa-cubes mr-1"></i> 分布
+              <i class="fa fa-pie-chart mr-1"></i> 分布
             </button>
             <button class="text-sm px-2 py-1 rounded text-gray-500 hover:bg-gray-100 flex items-center">
               <i class="fa fa-download mr-1"></i> 导出
@@ -377,12 +401,33 @@
           </div>
         </div>
         <div class="h-64">
-          <canvas id="containerTypesChart"></canvas>
+          <canvas id="looseCargoChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 柜型统计和入库趋势图表（默认隐藏） -->
+    <div id="containerTypeChartSection" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8 hidden">
+      <!-- 柜型统计 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">柜型统计</h3>
+          <div class="flex space-x-2">
+            <button class="text-sm px-2 py-1 rounded bg-primary/10 text-primary flex items-center">
+              <i class="fa fa-bar-chart mr-1"></i> 分布
+            </button>
+            <button class="text-sm px-2 py-1 rounded text-gray-500 hover:bg-gray-100 flex items-center">
+              <i class="fa fa-download mr-1"></i> 导出
+            </button>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="containerTypeChart"></canvas>
         </div>
       </div>
       
-      <!-- 近期趋势图表 -->
-      <div class="bg-white rounded-xl p-4 card-shadow">
+      <!-- 入库趋势 -->
+      <div class="bg-white rounded-xl p-4 card-shadow hover:shadow-lg transition-all">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold">入库趋势</h3>
           <div class="flex space-x-2">
@@ -395,7 +440,7 @@
           </div>
         </div>
         <div class="h-64">
-          <canvas id="trendChart"></canvas>
+          <canvas id="inventoryTrendChart"></canvas>
         </div>
       </div>
     </div>
@@ -409,39 +454,88 @@
     // 初始化图表和筛选功能
     document.addEventListener('DOMContentLoaded', function() {
       // 模拟数据
-      const warehouseData = [
-        { warehouse: 'DEMO', fullContainer: 128, looseCargo: 245, total: 373 },
-        { warehouse: 'DE001', fullContainer: 96, looseCargo: 187, total: 283 },
-        { warehouse: 'MD001', fullContainer: 112, looseCargo: 220, total: 332 },
-        { warehouse: 'NJ001', fullContainer: 96, looseCargo: 202, total: 300 }
-      ];
+      // 原始数据 - 按周划分
+      const weeklyData = {
+        all: [
+          { warehouse: 'DEMO', fullContainer: 128, looseCargo: 245, total: 373 },
+          { warehouse: 'DE001', fullContainer: 96, looseCargo: 187, total: 283 },
+          { warehouse: 'MD001', fullContainer: 112, looseCargo: 220, total: 332 },
+          { warehouse: 'NJ001', fullContainer: 96, looseCargo: 202, total: 300 }
+        ],
+        '1': [
+          { warehouse: 'DEMO', fullContainer: 32, looseCargo: 61, total: 93 },
+          { warehouse: 'DE001', fullContainer: 24, looseCargo: 47, total: 71 },
+          { warehouse: 'MD001', fullContainer: 28, looseCargo: 55, total: 83 },
+          { warehouse: 'NJ001', fullContainer: 24, looseCargo: 51, total: 75 }
+        ],
+        '2': [
+          { warehouse: 'DEMO', fullContainer: 25, looseCargo: 49, total: 74 },
+          { warehouse: 'DE001', fullContainer: 19, looseCargo: 37, total: 56 },
+          { warehouse: 'MD001', fullContainer: 22, looseCargo: 44, total: 66 },
+          { warehouse: 'NJ001', fullContainer: 19, looseCargo: 40, total: 59 }
+        ],
+        '3': [
+          { warehouse: 'DEMO', fullContainer: 28, looseCargo: 54, total: 82 },
+          { warehouse: 'DE001', fullContainer: 21, looseCargo: 41, total: 62 },
+          { warehouse: 'MD001', fullContainer: 25, looseCargo: 49, total: 74 },
+          { warehouse: 'NJ001', fullContainer: 21, looseCargo: 45, total: 66 }
+        ],
+        '4': [
+          { warehouse: 'DEMO', fullContainer: 22, looseCargo: 43, total: 65 },
+          { warehouse: 'DE001', fullContainer: 16, looseCargo: 32, total: 48 },
+          { warehouse: 'MD001', fullContainer: 19, looseCargo: 39, total: 58 },
+          { warehouse: 'NJ001', fullContainer: 16, looseCargo: 35, total: 51 }
+        ],
+        '5': [
+          { warehouse: 'DEMO', fullContainer: 21, looseCargo: 40, total: 61 },
+          { warehouse: 'DE001', fullContainer: 16, looseCargo: 30, total: 46 },
+          { warehouse: 'MD001', fullContainer: 18, looseCargo: 33, total: 51 },
+          { warehouse: 'NJ001', fullContainer: 16, looseCargo: 31, total: 47 }
+        ]
+      };
       
-      // 原始图表实例
-      let inventoryChart, containerTypesChart, trendChart;
+      // 默认显示所有数据
+      const warehouseData = weeklyData.all;
+      let currentWeek = 'all'; // 记录当前选中的周
+        
+      // 图表实例
+      let inventoryChart, looseCargoChart, containerTypeChart, inventoryTrendChart, warehouseRoseChart;
       
-      // 初始化图表函数
-      function initCharts(data) {
+      // 初始化入库占比图表函数
+      function initWarehouseCharts(data) {
         // 计算总计
         const totalFullContainer = data.reduce((sum, item) => sum + item.fullContainer, 0);
         const totalLooseCargo = data.reduce((sum, item) => sum + item.looseCargo, 0);
-        const total = totalFullContainer + totalLooseCargo;
         
-        // 入库量分布图表（饼图）
+        // 整柜入库占比 - 按仓库占比统计
         if (inventoryChart) {
           inventoryChart.destroy();
         }
         const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+        
+        // 按仓库分组计算整柜占比
+        const warehouseFullContainerData = data.map(item => ({
+          warehouse: item.warehouse,
+          value: item.fullContainer
+        }));
+        
         inventoryChart = new Chart(inventoryCtx, {
           type: 'doughnut',
           data: {
-            labels: ['整柜', '散货'],
-            datasets: [{
-              data: [totalFullContainer, totalLooseCargo],
-              backgroundColor: ['#36CFC9', '#FAAD14'],
-              borderColor: ['#ffffff'],
-              borderWidth: 2,
-              hoverOffset: 8
-            }]
+            labels: warehouseFullContainerData.map(item => item.warehouse),
+            datasets: [
+              {
+                data: warehouseFullContainerData.map(item => item.value),
+                backgroundColor: [
+                  '#36CFC9',
+                  '#1890FF',
+                  '#52C41A',
+                  '#FAAD14',
+                  '#F5222D'
+                ],
+                borderWidth: 0
+              }
+            ]
           },
           options: {
             responsive: true,
@@ -459,35 +553,176 @@
                 callbacks: {
                   label: function(context) {
                     const label = context.label || '';
-                    const value = context.raw || 0;
-                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                    const percentage = Math.round((value / total) * 100);
+                    const value = context.parsed || 0;
+                    const percentage = Math.round((value / totalFullContainer) * 100);
                     return `${label}: ${value} (${percentage}%)`;
                   }
                 }
               }
             },
-            cutout: '65%'
+            cutout: '60%'
           }
         });
         
-        // 柜型分布图表 - 根据筛选数据调整比例
-        if (containerTypesChart) {
-          containerTypesChart.destroy();
+        // 散货入库占比 - 按仓库占比统计
+        if (looseCargoChart) {
+          looseCargoChart.destroy();
         }
-        const containerTypesCtx = document.getElementById('containerTypesChart').getContext('2d');
-        // 按比例调整柜型数据
-        const containerTypesData = [156, 128, 98, 50].map(value => Math.round((value / 432) * totalFullContainer));
-        containerTypesChart = new Chart(containerTypesCtx, {
+        const looseCargoCtx = document.getElementById('looseCargoChart').getContext('2d');
+        
+        // 按仓库分组计算散货占比
+        const warehouseLooseCargoData = data.map(item => ({
+          warehouse: item.warehouse,
+          value: item.looseCargo
+        }));
+        
+        looseCargoChart = new Chart(looseCargoCtx, {
+          type: 'doughnut',
+          data: {
+            labels: warehouseLooseCargoData.map(item => item.warehouse),
+            datasets: [
+              {
+                data: warehouseLooseCargoData.map(item => item.value),
+                backgroundColor: [
+                  '#FAAD14',
+                  '#F5222D',
+                  '#722ED1',
+                  '#13C2C2',
+                  '#EB2F96'
+                ],
+                borderWidth: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed || 0;
+                    const percentage = Math.round((value / totalLooseCargo) * 100);
+                    return `${label}: ${value} (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            cutout: '60%'
+          }
+        });
+        
+        // 库占比分析 - 按地区分布（堆叠矩形）
+        if (warehouseRoseChart) {
+          warehouseRoseChart.destroy();
+        }
+        const warehouseRoseCtx = document.getElementById('warehouseRoseChart').getContext('2d');
+        
+        // 准备地区数据（美东、美西、美南）
+        const regions = ['美东', '美西', '美南'];
+        // 模拟数据 - 实际项目中应从API获取
+        const fullContainerByRegion = [286, 324, 198];
+        const looseCargoByRegion = [542, 618, 389];
+        
+        warehouseRoseChart = new Chart(warehouseRoseCtx, {
           type: 'bar',
           data: {
-            labels: ['20GP', '40GP', '40HQ', '45HQ'],
-            datasets: [{
-              label: '柜型数量',
-              data: containerTypesData,
-              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
-              borderRadius: 4
-            }]
+            labels: regions,
+            datasets: [
+              {
+                label: '整柜',
+                data: fullContainerByRegion,
+                backgroundColor: '#1890FF',
+                borderRadius: 4
+              },
+              {
+                label: '散货',
+                data: looseCargoByRegion,
+                backgroundColor: '#52C41A',
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  padding: 20
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const datasetLabel = context.dataset.label || '';
+                    const value = context.parsed.y || 0;
+                    return `${datasetLabel}: ${value}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                stacked: true,
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      // 初始化柜型统计图表函数
+      function initContainerTypeChart(data) {
+        // 模拟柜型数据（实际项目中应从API获取）
+        const containerTypes = [
+          { type: '20GP', value: 156 },
+          { type: '40GP', value: 128 },
+          { type: '40HQ', value: 98 },
+          { type: '45HQ', value: 50 }
+        ];
+        
+        if (containerTypeChart) {
+          containerTypeChart.destroy();
+        }
+        const containerTypeCtx = document.getElementById('containerTypeChart').getContext('2d');
+        
+        containerTypeChart = new Chart(containerTypeCtx, {
+          type: 'bar',
+          data: {
+            labels: containerTypes.map(item => item.type),
+            datasets: [
+              {
+                label: '柜型数量',
+                data: containerTypes.map(item => item.value),
+                backgroundColor: [
+                  '#1890FF',
+                  '#52C41A',
+                  '#FAAD14',
+                  '#F5222D'
+                ],
+                borderRadius: 4
+              }
+            ]
           },
           options: {
             responsive: true,
@@ -495,54 +730,62 @@
             plugins: {
               legend: {
                 display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.label}: ${context.parsed.y}`;
+                  }
+                }
               }
             },
             scales: {
               y: {
-                beginAtZero: true
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
               }
             }
           }
         });
+      }
+      
+      // 初始化入库趋势图表函数
+      function initInventoryTrendChart(data, warehouseName) {
+        // 模拟入库趋势数据（按具体日期）
+        const dates = ['11-25', '11-26', '11-27', '11-28', '11-29', '11-30', '12-01'];
+        const fullContainerData = [5, 4, 6, 5, 7, 3, 2];
+        const looseCargoData = [10, 8, 12, 9, 11, 6, 5];
         
-        // 更新标题栏中的柜型数量统计
-        const containerTypes = ['20GP', '40GP', '40HQ', '45HQ'];
-        containerTypes.forEach((type, index) => {
-          const count = containerTypesData[index];
-          
-          // 更新标题栏中的柜型数量统计
-          const headerCountElement = document.getElementById(`${type}-count-header`);
-          if (headerCountElement) {
-            headerCountElement.textContent = count;
-          }
-        });
-        
-        // 近7天入库趋势图表 - 根据筛选数据调整比例
-        if (trendChart) {
-          trendChart.destroy();
+        if (inventoryTrendChart) {
+          inventoryTrendChart.destroy();
         }
-        const trendCtx = document.getElementById('trendChart').getContext('2d');
-        // 按比例调整趋势数据
-        const fullContainerTrend = [62, 58, 75, 68, 72, 85, 92].map(value => Math.round((value / 432) * totalFullContainer));
-        const looseCargoTrend = [125, 118, 132, 124, 145, 156, 154].map(value => Math.round((value / 854) * totalLooseCargo));
-        trendChart = new Chart(trendCtx, {
+        const inventoryTrendCtx = document.getElementById('inventoryTrendChart').getContext('2d');
+        
+        inventoryTrendChart = new Chart(inventoryTrendCtx, {
           type: 'line',
           data: {
-            labels: ['1月1日', '1月2日', '1月3日', '1月4日', '1月5日', '1月6日', '1月7日'],
+            labels: dates,
             datasets: [
               {
-                label: '整柜入库量',
-                data: fullContainerTrend,
-                borderColor: '#36CFC9',
-                backgroundColor: 'rgba(54, 207, 201, 0.1)',
+                label: '整柜',
+                data: fullContainerData,
+                borderColor: '#1890FF',
+                backgroundColor: 'rgba(24, 144, 255, 0.1)',
                 tension: 0.3,
                 fill: true
               },
               {
-                label: '散货入库量',
-                data: looseCargoTrend,
-                borderColor: '#FAAD14',
-                backgroundColor: 'rgba(250, 173, 20, 0.1)',
+                label: '散货',
+                data: looseCargoData,
+                borderColor: '#52C41A',
+                backgroundColor: 'rgba(82, 196, 26, 0.1)',
                 tension: 0.3,
                 fill: true
               }
@@ -553,38 +796,47 @@
             maintainAspectRatio: false,
             plugins: {
               legend: {
-                position: 'top',
+                position: 'bottom',
                 labels: {
-                  padding: 20,
-                  usePointStyle: true,
-                  pointStyle: 'circle'
+                  padding: 20
                 }
-              },
-              tooltip: {
-                mode: 'index',
-                intersect: false
               }
             },
             scales: {
-              x: {
-                grid: {
-                  display: false
-                }
-              },
               y: {
                 beginAtZero: true,
                 grid: {
                   color: 'rgba(0, 0, 0, 0.05)'
                 }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
               }
-            },
-            interaction: {
-              mode: 'nearest',
-              axis: 'x',
-              intersect: false
             }
           }
         });
+      }
+      
+      // 初始化图表函数
+      function initCharts(data, isSingleWarehouse = false, warehouseName = '') {
+        if (isSingleWarehouse) {
+          // 显示柜型统计和入库趋势图表
+          document.getElementById('warehouseChartSection').classList.add('hidden');
+          document.getElementById('containerTypeChartSection').classList.remove('hidden');
+          
+          // 初始化柜型统计和入库趋势图表
+          initContainerTypeChart(data);
+          initInventoryTrendChart(data, warehouseName);
+        } else {
+          // 显示入库占比图表
+          document.getElementById('warehouseChartSection').classList.remove('hidden');
+          document.getElementById('containerTypeChartSection').classList.add('hidden');
+          
+          // 初始化入库占比图表
+          initWarehouseCharts(data);
+        }
       }
       
       // 更新统计卡片
@@ -600,8 +852,6 @@
         document.querySelectorAll('.text-2xl.font-bold')[1].textContent = totalFullContainer.toLocaleString();
         // 更新散货卡片
         document.querySelectorAll('.text-2xl.font-bold')[2].textContent = totalLooseCargo.toLocaleString();
-        // 更新仓库数量卡片
-        document.querySelectorAll('.text-2xl.font-bold')[3].textContent = data.length;
       }
       
       // 更新表格数据
@@ -639,23 +889,24 @@
       // 筛选函数
       function filterByWarehouse(warehouse) {
         let filteredData;
+        // 获取当前周的数据
+        const currentData = weeklyData[currentWeek];
         
         if (warehouse === 'all') {
-          filteredData = warehouseData;
+          filteredData = currentData;
+          // 更新图表 - 显示入库占比图表
+          initCharts(filteredData, false);
         } else {
-          // 根据仓库名称查找数据
-          const warehouseName = warehouse === 'warehouse1' ? 'DEMO' :
-                               warehouse === 'warehouse2' ? 'DE001' :
-                               warehouse === 'warehouse3' ? 'MD001' : 'NJ001';
-          filteredData = warehouseData.filter(item => item.warehouse === warehouseName);
+          // 根据仓库名称直接过滤数据
+          filteredData = currentData.filter(item => item.warehouse === warehouse);
+          // 更新图表 - 显示柜型统计和入库趋势图表
+          initCharts(filteredData, true, warehouse);
         }
         
         // 更新统计卡片
         updateStats(filteredData);
         // 更新表格
         updateTable(filteredData);
-        // 更新图表
-        initCharts(filteredData);
       }
       
       // 为仓库选择器添加事件监听器
@@ -671,6 +922,26 @@
       
       // Tab栏点击事件
       const timelineTabs = document.querySelectorAll('.timeline-tab');
+      
+      // 切换周数据的函数
+      function switchWeekData(week) {
+        currentWeek = week; // 更新当前选中的周
+        const data = weeklyData[week];
+        const warehouseSelect = document.querySelector('select');
+        const selectedWarehouse = warehouseSelect.value;
+        
+        // 更新统计卡片
+        updateStats(data);
+        // 更新表格
+        updateTable(data);
+        // 更新图表
+        if (selectedWarehouse === 'all') {
+          initCharts(data, false);
+        } else {
+          const filteredData = data.filter(item => item.warehouse === selectedWarehouse);
+          initCharts(filteredData, true, selectedWarehouse);
+        }
+      }
       
       timelineTabs.forEach(tab => {
         tab.addEventListener('click', function() {
@@ -690,8 +961,9 @@
             this.classList.remove('scale-105');
           }, 200);
           
-          // 这里可以添加切换周数据的逻辑
-          console.log('切换到', this.innerHTML.trim());
+          // 获取周数并切换数据
+          const week = this.getAttribute('data-week');
+          switchWeekData(week);
         });
       });
     });
