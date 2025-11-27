@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetFlow - 车队预约</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome图标 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Tailwind配置（自定义颜色、工具类） -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4F46E5', // 主色调（紫色系，传达专业感）
+            secondary: '#64748B', // 次要色调（中性灰，用于辅助文字）
+            neutral: '#F8FAFC', // 中性背景色
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .transition-fade {
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+      }
+      .card-shadow {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .input-focus {
+        @apply focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200;
+      }
+      /* 统一输入框高度 */
+      input, select, textarea {
+        @apply h-10;
+      }
+      /* 禁用状态样式 */
+      .disabled, select:disabled, input:disabled, textarea:disabled {
+        @apply bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed opacity-60;
+      }
+      .mobile-guide-btn {
+        @apply md:hidden fixed right-4 bottom-4 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg z-50;
+      }
+    }
+  </style>
+  
+  <!-- 补充媒体查询样式优化移动端显示 -->
+  <style>
+    @media (max-width: 640px) {
+      /* 优化移动端输入框尺寸 */
+      input:not([disabled]), select:not([disabled]), textarea:not([disabled]) {
+        touch-action: manipulation;
+      }
+      
+      /* 确保时间线在移动端可以水平滚动 */
+      #timeline-container {
+        overflow-x: auto;
+      }
+      
+      /* 优化按钮触摸区域 */
+      button {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      /* 优化移动端表单标签字体 */
+      label {
+        font-size: 0.875rem;
+      }
+    }
+
+    /* 国际化语言切换logo按钮样式 */
+    .lang-logo-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      color: #374151;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .lang-logo-btn:hover {
+      border-color: #4f46e5;
+      color: #4f46e5;
+      background: #f8fafc;
+      box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+      transform: scale(1.05);
+    }
+
+    .lang-logo-btn:active {
+      transform: scale(0.95);
+    }
+
+    .lang-logo {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .lang-icon {
+      font-size: 18px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .lang-short {
+      position: absolute;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .lang-logo-btn:hover .lang-icon {
+      opacity: 0.3;
+      transform: scale(1.2);
+    }
+
+    .lang-logo-btn:hover .lang-short {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* 国际化内容过渡效果 */
+    .i18n-transition {
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .i18n-loading {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body class="bg-neutral font-inter min-h-screen">
+  <div class="flex flex-col h-screen relative">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm px-4 sm:px-6 py-4 flex justify-between items-center">
+      <h1 class="text-lg font-semibold text-gray-800" data-i18n="title">车队预约</h1>
+      <div class="flex items-center space-x-4">
+        <!-- 语言切换logo按钮 -->
+        <button id="lang-toggle" class="lang-logo-btn" title="切换语言">
+          <div class="lang-logo">
+            <span class="lang-icon">🌐</span>
+            <span class="lang-short" id="current-lang-short">中</span>
+          </div>
+        </button>
+        <!-- 登录状态区域 -->
+        <div id="auth-section" class="flex items-center space-x-3">
+          <!-- 未登录状态 -->
+          <div id="login-status" class="flex items-center space-x-3">
+            <span class="text-sm text-gray-600" data-i18n="notLoggedIn">未登录</span>
+            <button id="login-btn" class="px-3 py-1.5 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors duration-200" data-i18n="login">
+              登录
+            </button>
+          </div>
+          <!-- 已登录状态（默认隐藏） -->
+          <div id="user-info" class="hidden flex items-center space-x-3">
+            <span id="username" class="text-sm text-gray-700"></span>
+            <button id="history-btn" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200" title="历史记录" data-i18n-title="history">
+              <i class="fas fa-history"></i>
+            </button>
+            <img id="user-avatar" src="https://picsum.photos/32/32" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+            <button id="logout-btn" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200">
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 操作指引侧边栏 - 桌面端 -->
+    <div id="desktop-guide" class="fixed left-6 top-24 bg-amber-50 border border-amber-200 rounded-lg p-3 w-56 z-40 max-h-[80vh] overflow-auto hidden md:block">
+      <div class="flex items-center gap-1.5 mb-1.5">
+        <h3 class="font-semibold text-gray-800" data-i18n="guide.title">📋 操作指引</h3>
+        <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 text-xs rounded-full" data-i18n="guide.important">重要</span>
+      </div>
+      <ol class="space-y-1.5 text-sm">
+        <li class="flex items-start">
+          <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center mr-1.5 text-xs mt-0.5">1</span>
+          <span class="text-gray-700" data-i18n="guide.step1">输入仓库邮编和柜号</span>
+        </li>
+        <li class="flex items-start">
+          <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center mr-1.5 text-xs mt-0.5">2</span>
+          <span class="text-gray-700" data-i18n="guide.step2">填写预约信息</span>
+        </li>
+        <!-- <li class="flex items-start">
+          <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center mr-1.5 text-xs mt-0.5">3</span>
+          <span class="text-gray-700">提交预约</span>
+        </li> -->
+      </ol>
+      <p class="mt-2 text-xs text-gray-500 italic" data-i18n="guide.tip">提示：请按照上述步骤完成车队预约流程</p>
+    </div>
+    
+    <!-- 操作指引按钮 - 移动端 -->
+    <button id="mobile-guide-btn" class="mobile-guide-btn" aria-label="显示操作指引" data-i18n-aria="guide.showGuide">
+      <i class="fas fa-question text-xl"></i>
+    </button>
+    
+    <!-- 操作指引弹窗 - 移动端 -->
+    <div id="mobile-guide-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+      <div class="bg-white rounded-lg p-4 m-4 w-full max-w-md">
+        <div class="flex justify-between items-center mb-3">
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-semibold text-gray-800" data-i18n="guide.title">📋 操作指引</h3>
+            <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 text-xs rounded-full" data-i18n="guide.important">重要</span>
+          </div>
+          <button id="close-guide-btn" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <ol class="space-y-2 text-sm">
+          <li class="flex items-start">
+            <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center mr-1.5 text-xs mt-0.5">1</span>
+            <span class="text-gray-700" data-i18n="guide.mobileStep1">查询预约信息</span>
+          </li>
+          <li class="flex items-start">
+            <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center mr-1.5 text-xs mt-0.5">2</span>
+            <span class="text-gray-700" data-i18n="guide.mobileStep2">填写预约信息</span>
+          </li>
+          <li class="flex items-start">
+            <span class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center mr-1.5 text-xs mt-0.5">3</span>
+            <span class="text-gray-700" data-i18n="guide.mobileStep3">提交预约（仅'待预约'和'待仓库确认'状态）</span>
+          </li>
+        </ol>
+        <p class="mt-3 text-xs text-gray-500 italic" data-i18n="guide.tip">提示：请按照上述步骤完成车队预约流程</p>
+      </div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <main class="flex-1 overflow-auto p-4 sm:p-6 md:pl-72">
+
+      <!-- 业务类型选项卡区域 -->
+      <div class="mb-4 max-w-6xl mx-auto">
+        <!-- 业务类型选项卡（整柜/散货） -->
+        <div class="inline-flex bg-gray-100 rounded-lg p-1">
+          <button type="button" id="tab-full" class="px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-primary bg-white rounded-md shadow-sm">整柜</button>
+          <button type="button" id="tab-bulk" class="px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-gray-600 hover:text-primary transition-colors">散货</button>
+        </div>
+      </div>
+
+
+      <!-- 搜索区域 -->
+      <div class="bg-white p-4 rounded-lg card-shadow mb-4 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+          <div class="md:col-span-5">
+            <label for="warehouse-postal" class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span>仓库邮编</label>
+            <input type="text" id="warehouse-postal" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus h-10 " placeholder="输入仓库邮编">
+          </div>
+          <div class="md:col-span-5">
+            <label for="container-no" class="block text-sm font-medium text-gray-700 mb-1"><span class="text-red-500">*</span>柜号</label>
+            <input type="text" id="container-no" class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus h-10" placeholder="输入柜号">
+          </div>
+          <div class="md:col-span-2 flex gap-2">
+            <button id="reset-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 h-10 w-full sm:w-auto">重置</button>
+            <button id="search-btn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors duration-200 h-10 w-full sm:w-auto">搜索</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主内容：空状态（默认） & 订单卡片列表（查询后） -->
+      <div class="space-y-4 max-w-6xl mx-auto">
+        <!-- 订单卡片区域 -->
+        <div>
+          <!-- 空状态（默认显示） -->
+          <div id="empty-state" class="bg-white rounded-lg card-shadow p-6 flex flex-col items-center justify-center min-h-[350px] transition-fade">
+            <div class="text-primary/30 text-3xl sm:text-4xl mb-4">
+              <i class="fas fa-box-open"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">暂无数据，请搜索要预约的柜子</h3>
+            <p class="text-sm text-gray-500 text-center max-w-xs">输入仓库邮编和柜号，即可获取柜子的预约相关信息</p>
+          </div>
+
+          <!-- 查询结果提示 -->
+          <div id="search-result-info" class="hidden mb-4 text-sm text-gray-600">
+            查询到<span id="order-count"></span> 个订单
+          </div>
+
+          <!-- 订单卡片容器（默认隐藏） -->
+          <div id="order-cards-container" class="hidden space-y-4 transition-fade">
+            <!-- 订单卡片将通过JS动态生成 -->
+          </div>
+        </div>
+        
+        <!-- 下方：预约信息和车队信息 -->
+        <div id="reservation-info-panel" class="hidden bg-white rounded-lg card-shadow p-4 sm:p-5 transition-fade">
+          <h3 class="text-base font-medium text-gray-800 mb-4">预约与车队信息</h3>
+          
+          <!-- 预约信息区块 -->
+          <div class="mb-5">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">预约信息</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>卸货方式</label>
+                <select id="global-delivery-method" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                  <option value="">请选择卸货方式</option>
+                  <option value="forklift">live</option>
+                  <option value="manual">drop</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>入库时间 </label>
+                <input type="date" id="global-warehouse-time" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 车队信息区块 -->
+          <div class="mb-5">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">车队信息</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-1">
+                <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>名称</label>
+                <input type="text" id="global-team-name" placeholder="请输入车队名称" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              </div>
+              <div class="md:col-span-1">
+                <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>邮箱</label>
+                <div class="border border-gray-300 rounded-md px-3 py-2 flex flex-wrap gap-2 items-center" id="global-email-tags">
+                  <input type="text" id="global-team-email" placeholder="请输入车队邮箱，回车添加多个" class="flex-grow border-none outline-none focus:ring-0 py-0">
+                </div>
+                <p id="global-email-error" class="text-red-500 text-xs mt-1 hidden">请输入有效的邮箱地址</p>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">电话号码</label>
+                <input type="tel" id="global-team-phone" placeholder="请输入电话号码" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">备用电话号</label>
+                <input type="tel" id="global-team-backup-phone" placeholder="请输入备用电话号码" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs text-gray-500 mb-1">备注</label>
+                <textarea id="global-team-remark" placeholder="请输入备注信息" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 提交按钮区域 -->
+          <div class="border-t border-gray-100 pt-4">
+            <button id="global-submit-btn" class="w-full bg-gray-300 text-gray-500 cursor-not-allowed px-5 py-2 rounded-md transition-colors" disabled>提交预约</button>
+          </div>
+        </div>
+
+        <!-- 时间线区域将在每个订单卡片内显示 -->
+      </div>
+
+      <!-- 提交按钮 -->
+      <!-- <div class="mt-5 text-center p-4">
+        <button id="submit-btn" class="px-6 py-3 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>提交预约</button>
+      </div> -->
+    </main>
+  </div>
+
+  <!-- 历史记录模态框 -->
+  <div id="history-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg p-6 m-4 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">历史预约记录</h3>
+        <button id="history-close" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- 筛选区域 -->
+      <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">开始日期</label>
+            <input type="date" id="history-start-date" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">结束日期</label>
+            <input type="date" id="history-end-date" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">订单状态</label>
+            <select id="history-status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+              <option value="">全部状态</option>
+              <option value="pending">待处理</option>
+              <option value="processing">处理中</option>
+              <option value="completed">已完成</option>
+              <option value="cancelled">已取消</option>
+            </select>
+          </div>
+          <div class="flex items-end gap-2">
+            <button id="history-filter-btn" class="flex-1 px-3 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+              筛选
+            </button>
+            <button id="history-reset-btn" class="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+              重置
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 历史记录列表 -->
+      <div class="flex-1 overflow-y-auto">
+        <div id="history-list" class="space-y-4">
+          <!-- 历史记录项将通过JS动态生成 -->
+        </div>
+        <div id="history-empty" class="text-center py-8 text-gray-500">
+          <i class="fas fa-history text-4xl text-gray-300 mb-4"></i>
+          <p>暂无历史记录</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登录模态框 -->
+  <div id="login-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg p-6 m-4 w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">用户账户</h3>
+        <button id="close-login-btn" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- 登录表单 -->
+      <div id="login-form-container" class="space-y-4">
+        <form id="login-form" class="space-y-4">          <div>
+            <label for="login-username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+            <input type="text" id="login-username" name="username" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                   placeholder="请输入用户名">
+          </div>
+          
+          <div>
+            <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+            <input type="password" id="login-password" name="password" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                   placeholder="请输入密码">
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input type="checkbox" id="remember-me" name="remember" class="mr-2">
+              <label for="remember-me" class="text-sm text-gray-600">记住我</label>
+            </div>
+            <button type="button" id="register-btn" class="text-sm text-primary hover:text-primary/80 font-medium">
+              注册
+            </button>
+          </div>
+          
+          <div class="flex gap-3 pt-2">
+            <button type="submit" 
+                    class="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+              登录
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- 注册表单 -->
+      <div id="register-form-container" class="space-y-4 hidden">
+        <form id="register-form" class="space-y-4">
+          <div>
+            <label for="register-role" class="block text-sm font-medium text-gray-700 mb-1">角色 <span class="text-red-500">*</span></label>
+            <select id="register-role" name="role" required disabled
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed opacity-60">
+              <option value="车队">车队</option>
+            </select>
+          </div>
+
+  
+          <div>
+            <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">邮箱 <span class="text-red-500">*</span></label>
+            <input type="email" id="register-email" name="email" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                   placeholder="请输入邮箱地址">
+          </div>
+          
+          <div>
+            <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">密码 <span class="text-red-500">*</span></label>
+            <input type="password" id="register-password" name="password" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                   placeholder="请输入密码（至少6个字符）">
+            <p class="text-xs text-gray-500 mt-1">密码长度至少6个字符</p>
+          </div>
+          
+          <div>
+            <label for="register-confirm-password" class="block text-sm font-medium text-gray-700 mb-1">确认密码 <span class="text-red-500">*</span></label>
+            <input type="password" id="register-confirm-password" name="confirmPassword" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                   placeholder="请再次输入密码">
+          </div>
+          
+          <div>
+            <label for="register-phone" class="block text-sm font-medium text-gray-700 mb-1">手机号码</label>
+            <input type="tel" id="register-phone" name="phone"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                   placeholder="请输入手机号码（选填）">
+            <p class="text-xs text-gray-500 mt-1">请输入有效的11位手机号码（选填）</p>
+          </div>
+          
+          <div class="flex items-center">
+            <input type="checkbox" id="register-agree" name="agree" required class="mr-2">
+            <label for="register-agree" class="text-sm text-gray-600">我同意<a href="#" class="text-primary hover:underline">服务条款</a>和<a href="#" class="text-primary hover:underline">隐私政策</a></label>
+          </div>
+          
+          <div class="flex gap-3 pt-2">
+            <button type="submit" 
+                    class="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+              注册
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- 注册成功信息显示区域 -->
+      <div id="register-success-container" class="space-y-4 hidden">
+        <div class="text-center py-6">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+            <i class="fas fa-check text-green-600 text-2xl"></i>
+          </div>
+          <h4 class="text-lg font-semibold text-gray-800 mb-2">注册成功！</h4>
+          <div id="register-info" class="text-left bg-gray-50 rounded-lg p-4 mb-4">
+            <!-- 注册信息将在这里显示 -->
+          </div>
+          <div class="flex gap-3">
+            <button type="button" id="back-to-login-btn" 
+                    class="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+              返回登录
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 交互逻辑JS -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化demo账号数据
+      function initDemoAccount() {
+        const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        
+        // 如果没有用户数据，则添加demo账号
+        if (existingUsers.length === 0) {
+          const demoUser = {
+            role: '车队',
+            username: 'demo',
+            email: 'demo@example.com',
+            phone: '',
+            password: '123456',
+            registrationTime: new Date().toISOString(),
+            teamName: '车队团队',
+            teamEmail: 'demo@example.com'
+          };
+          
+          existingUsers.push(demoUser);
+          localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+          console.log('Demo账号已初始化:', demoUser);
+        }
+      }
+      
+      // 初始化demo账号
+      initDemoAccount();
+      
+      // 初始化页面
+      const searchBtn = document.getElementById('search-btn');
+      const resetBtn = document.getElementById('reset-btn');
+      const emptyState = document.getElementById('empty-state');
+      const searchResultInfo = document.getElementById('search-result-info');
+      const orderCount = document.getElementById('order-count');
+      const orderCardsContainer = document.getElementById('order-cards-container');
+      const submitBtn = document.getElementById('submit-btn');
+      const mobileGuideBtn = document.getElementById('mobile-guide-btn');
+      const mobileGuideModal = document.getElementById('mobile-guide-modal');
+      const closeGuideBtn = document.getElementById('close-guide-btn');
+      // 自动填充车队信息到表单
+      function autoFillTeamInfo() {
+        if (currentUser && currentUser.teamName) {
+          // 填充全局车队信息表单
+          const globalTeamNameInput = document.getElementById('global-team-name');
+          const globalTeamEmailInput = document.getElementById('global-team-email');
+          
+          if (globalTeamNameInput) {
+            globalTeamNameInput.value = currentUser.teamName;
+          }
+          
+          if (globalTeamEmailInput && currentUser.teamEmail) {
+            globalTeamEmailInput.value = currentUser.teamEmail;
+          }
+          
+          // 如果已有订单卡片，也更新它们的车队信息
+          const teamNameInputs = document.querySelectorAll('input[data-field="teamName"]');
+          const teamEmailInputs = document.querySelectorAll('input[data-field="teamEmail"]');
+          
+          teamNameInputs.forEach(input => {
+            if (!input.disabled) {
+              input.value = currentUser.teamName;
+            }
+          });
+          
+          teamEmailInputs.forEach(input => {
+            if (!input.disabled && currentUser.teamEmail) {
+              input.value = currentUser.teamEmail;
+            }
+          });
+          
+          console.log('车队信息已自动填充:', {
+            teamName: currentUser.teamName,
+            teamEmail: currentUser.teamEmail
+          });
+        }
+      }
+      
+      // 登录相关DOM元素
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const loginModal = document.getElementById('login-modal');
+      const closeLoginBtn = document.getElementById('close-login-btn');
+      const cancelLoginBtn = document.getElementById('cancel-login-btn');
+      const loginForm = document.getElementById('login-form');
+      const loginUsername = document.getElementById('login-username');
+      const loginPassword = document.getElementById('login-password');
+      const rememberMe = document.getElementById('remember-me');
+      const loginStatus = document.getElementById('login-status');
+      const userInfo = document.getElementById('user-info');
+      const username = document.getElementById('username');
+      
+      // 注册相关DOM元素
+      const registerBtn = document.getElementById('register-btn');
+      const loginFormContainer = document.getElementById('login-form-container');
+      const registerFormContainer = document.getElementById('register-form-container');
+      const registerSuccessContainer = document.getElementById('register-success-container');
+      const registerForm = document.getElementById('register-form');
+      const backToLoginBtn = document.getElementById('back-to-login-btn');
+      
+      // 历史记录相关DOM元素
+      const historyBtn = document.getElementById('history-btn');
+      const historyModal = document.getElementById('history-modal');
+      const historyClose = document.getElementById('history-close');
+      const historyList = document.getElementById('history-list');
+      const historyEmpty = document.getElementById('history-empty');
+      const historyStartDate = document.getElementById('history-start-date');
+      const historyEndDate = document.getElementById('history-end-date');
+      const historyStatusFilter = document.getElementById('history-status-filter');
+      const historyFilterBtn = document.getElementById('history-filter-btn');
+      const historyResetBtn = document.getElementById('history-reset-btn');
+      
+      // 登录状态管理
+      let currentUser = null;
+      
+      // 检查登录状态
+      function checkLoginStatus() {
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+          updateLoginUI(true);
+          hideLoginModal();
+          
+          // 自动填充车队信息到表单
+          autoFillTeamInfo();
+          
+          // 显示登录成功提示
+          showToast(`登录成功！欢迎回来，${username}`);
+        } else {
+          updateLoginUI(false);
+        }
+      }
+      
+      // 更新登录UI显示
+      function updateLoginUI(isLoggedIn) {
+        if (isLoggedIn && currentUser) {
+          // 显示已登录状态
+          loginStatus.classList.add('hidden');
+          userInfo.classList.remove('hidden');
+          username.textContent = currentUser.username;
+        } else {
+          // 显示未登录状态
+          loginStatus.classList.remove('hidden');
+          userInfo.classList.add('hidden');
+          username.textContent = '';
+          currentUser = null;
+          localStorage.removeItem('currentUser');
+        }
+      }
+      
+      // 显示登录模态框
+      function showLoginModal() {
+        loginModal.classList.remove('hidden');
+        loginUsername.value = '';
+        loginPassword.value = '';
+        rememberMe.checked = false;
+        loginUsername.focus();
+        // 重置到登录选项卡
+        showLoginForm();
+      }
+      
+      // 隐藏登录模态框
+      function hideLoginModal() {
+        loginModal.classList.add('hidden');
+      }
+      
+      // 显示登录表单
+      function showLoginForm() {
+        loginFormContainer.classList.remove('hidden');
+        registerFormContainer.classList.add('hidden');
+        registerSuccessContainer.classList.add('hidden');
+      }
+      
+      // 显示注册表单
+      function showRegisterForm() {
+        registerFormContainer.classList.remove('hidden');
+        loginFormContainer.classList.add('hidden');
+        registerSuccessContainer.classList.add('hidden');
+      }
+      
+      // 显示注册成功信息
+      function showRegisterSuccess(userInfo) {
+        registerSuccessContainer.classList.remove('hidden');
+        loginFormContainer.classList.add('hidden');
+        registerFormContainer.classList.add('hidden');
+        
+        // 显示注册信息
+        const registerInfo = document.getElementById('register-info');
+        registerInfo.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">账户角色：</span>
+              <span class="text-sm font-medium">${userInfo.role}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">邮箱：</span>
+              <span class="text-sm font-medium">${userInfo.email}</span>
+            </div>
+            ${userInfo.phone ? `
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">手机号码：</span>
+              <span class="text-sm font-medium">${userInfo.phone}</span>
+            </div>
+            ` : ''}
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">团队名称：</span>
+              <span class="text-sm font-medium">${userInfo.role}团队</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">注册时间：</span>
+              <span class="text-sm font-medium">${new Date().toLocaleString()}</span>
+            </div>
+          </div>
+        `;
+      }
+      
+      // 验证注册表单
+      function validateRegisterForm(formData) {
+        const { email, password, confirmPassword, phone } = formData;
+        
+        // 角色已默认为"车队"，无需验证
+        
+        // 验证邮箱格式
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          return { success: false, message: '请输入有效的邮箱地址' };
+        }
+        
+        // 验证密码长度
+        if (password.length < 6) {
+          return { success: false, message: '密码长度至少6个字符' };
+        }
+        
+        // 验证密码确认
+        if (password !== confirmPassword) {
+          return { success: false, message: '两次输入的密码不一致' };
+        }
+        
+        // 验证手机号码（选填，如果填写了则需要验证格式）
+        if (phone && phone !== '') {
+          const phoneRegex = /^1[3-9]\d{9}$/;
+          if (!phoneRegex.test(phone)) {
+            return { success: false, message: '请输入有效的11位手机号码' };
+          }
+        }
+        
+        return { success: true };
+      }
+      
+      // 处理注册
+      function handleRegister(e) {
+        e.preventDefault();
+        
+        const formData = {
+          role: '车队', // 角色默认为车队
+          username: document.getElementById('register-username').value.trim(),
+          email: document.getElementById('register-email').value.trim(),
+          password: document.getElementById('register-password').value,
+          confirmPassword: document.getElementById('register-confirm-password').value,
+          phone: document.getElementById('register-phone').value.trim(),
+          agree: document.getElementById('register-agree').checked
+        };
+        
+        // 验证表单
+        const validation = validateRegisterForm(formData);
+        if (!validation.success) {
+          alert(validation.message);
+          return;
+        }
+        
+        // 检查是否同意条款
+        if (!formData.agree) {
+          alert('请同意服务条款和隐私政策');
+          return;
+        }
+        
+        // 模拟注册过程（实际应用中应该调用后端API）
+        // 检查邮箱是否已存在
+        const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        if (existingUsers.some(user => user.email === formData.email)) {
+          alert('邮箱已被注册，请使用其他邮箱');
+          return;
+        }
+        
+        // 检查手机号是否已存在（如果填写了手机号）
+        if (formData.phone && existingUsers.some(user => user.phone === formData.phone)) {
+          alert('手机号码已被注册，请使用其他手机号码');
+          return;
+        }
+        
+        // 保存用户信息
+        const newUser = {
+          role: formData.role,
+          username: formData.username,
+          email: formData.email,
+          phone: formData.phone || '', // 确保手机号码为空时保存为空字符串
+          password: formData.password, // 实际应用中应该加密存储
+          registrationTime: new Date().toISOString(),
+          teamName: `${formData.role}团队`,
+          teamEmail: formData.email
+        };
+        
+        existingUsers.push(newUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+        
+        // 显示注册成功信息
+        showRegisterSuccess({
+          role: formData.role,
+          email: formData.email,
+          phone: formData.phone
+        });
+        
+        showToast('注册成功！');
+      }
+      
+      function handleLogin(e) {
+        e.preventDefault();
+        
+        const username = loginUsername.value.trim();
+        const password = loginPassword.value.trim();
+        
+        if (!username || !password) {
+          alert('请输入用户名和密码');
+          return;
+        }
+        
+        // 模拟登录验证（支持任意用户名和密码）
+        if (username && password) {
+          // 检查是否为注册用户
+          const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+          // 支持用户名或邮箱登录
+          let user = registeredUsers.find(u => u.username === username || u.email === username);
+          
+          // 如果找不到注册用户，创建一个临时用户
+          if (!user) {
+            user = {
+              username: username,
+              email: username + '@example.com',
+              role: '车队', // 默认角色
+              password: password
+            };
+          }
+          
+          // 任意用户名和密码都允许登录
+          // 根据角色分配车队信息
+          let teamInfo = {};
+          if (user.role === '车队') {
+            teamInfo = {
+              teamName: `${user.role}团队`,
+              teamEmail: user.email
+            };
+          } else if (user.role === '仓库') {
+            teamInfo = {
+              teamName: `${user.role}团队`,
+              teamEmail: user.email
+            };
+          } else if (user.role === '管理员') {
+            teamInfo = {
+              teamName: `${user.role}团队`,
+              teamEmail: user.email
+            };
+          } else {
+            // 默认团队信息
+            teamInfo = {
+              teamName: '默认团队',
+              teamEmail: user.email
+            };
+          }
+          
+          currentUser = {
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            loginTime: new Date().toISOString(),
+            ...teamInfo
+          };
+          
+          // 初始化历史记录数据（如果不存在）
+          initHistoryRecords();
+          
+          // 如果选择记住我，则保存到localStorage
+          if (rememberMe.checked) {
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          }
+          
+          updateLoginUI(true);
+          hideLoginModal();
+          
+          // 自动填充车队信息到表单
+          autoFillTeamInfo();
+          
+          // 显示登录成功提示
+          showToast(`登录成功！欢迎回来，${user.username}`);
+        } else {
+          alert('请输入用户名和密码');
+        }
+      }
+      
+      // 处理登出
+      function handleLogout() {
+        if (currentUser && confirm('确定要退出登录吗？')) {
+          updateLoginUI(false);
+          showToast('已成功退出登录');
+        }
+      }
+      
+      // 显示提示消息
+      function showToast(message) {
+        // 创建提示元素
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 transition-opacity duration-300';
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        // 3秒后自动消失
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => {
+            document.body.removeChild(toast);
+          }, 300);
+        }, 3000);
+      }
+      
+      // 搜索按钮点击事件
+      searchBtn.addEventListener('click', function() {
+        // 获取输入值
+        const warehousePostal = document.getElementById('warehouse-postal').value;
+        const containerNo = document.getElementById('container-no').value;
+        
+        // 简单验证
+        if (!warehousePostal) {
+          alert('请输入仓库邮编');
+          return;
+        }
+        if (!containerNo) {
+          alert('请输入柜号');
+          return;
+        }
+        
+        console.log('搜索参数:', { warehousePostal, containerNo });
+        
+        // 显示搜索结果，隐藏空状态
+        emptyState.classList.add('hidden');
+        searchResultInfo.classList.remove('hidden');
+        orderCardsContainer.classList.remove('hidden');
+        
+        // 显示右侧预约信息面板
+        document.getElementById('reservation-info-panel').classList.remove('hidden');
+        
+        // 更新订单数量显示
+        orderCount.textContent = orderData.length;
+        
+        // 清空并重新生成订单卡片
+        orderCardsContainer.innerHTML = '';
+        orderData.forEach(order => {
+          const card = generateOrderCard(order);
+          orderCardsContainer.appendChild(card);
+        });
+      });
+      
+      // 重置按钮点击事件
+      resetBtn.addEventListener('click', function() {
+        document.getElementById('warehouse-postal').value = '';
+        document.getElementById('container-no').value = '';
+        
+        // 恢复初始状态
+        emptyState.classList.remove('hidden');
+        searchResultInfo.classList.add('hidden');
+        orderCardsContainer.classList.add('hidden');
+        orderCardsContainer.innerHTML = '';
+        
+        // 隐藏预约信息面板
+        document.getElementById('reservation-info-panel').classList.add('hidden');
+      });
+
+      // 移动端操作指引显示/隐藏
+      mobileGuideBtn.addEventListener('click', function() {
+        mobileGuideModal.classList.remove('hidden');
+      });
+      
+      closeGuideBtn.addEventListener('click', function() {
+        mobileGuideModal.classList.add('hidden');
+      });
+      
+      // 点击弹窗外部关闭
+      mobileGuideModal.addEventListener('click', function(e) {
+        if (e.target === mobileGuideModal) {
+          mobileGuideModal.classList.add('hidden');
+        }
+      });
+
+      // 登录相关事件监听器
+      // 登录按钮点击事件
+      if (loginBtn) {
+        loginBtn.addEventListener('click', showLoginModal);
+      }
+      
+      // 登出按钮点击事件
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+      }
+      
+      // 关闭登录模态框
+      if (closeLoginBtn) {
+        closeLoginBtn.addEventListener('click', hideLoginModal);
+      }
+      if (cancelLoginBtn) {
+        cancelLoginBtn.addEventListener('click', hideLoginModal);
+      }
+      
+      // 点击模态框外部关闭
+      if (loginModal) {
+        loginModal.addEventListener('click', function(e) {
+          if (e.target === loginModal) {
+            hideLoginModal();
+          }
+        });
+      }
+      
+      // 登录表单提交事件
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+      }
+      
+      // 注册相关事件监听器
+      // 注册按钮点击事件
+      if (registerBtn) {
+        registerBtn.addEventListener('click', showRegisterForm);
+      }
+      
+      // 注册表单提交事件
+      if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+      }
+      
+      // 返回登录按钮点击事件
+      if (backToLoginBtn) {
+        backToLoginBtn.addEventListener('click', showLoginForm);
+      }
+      
+      // ESC键关闭登录模态框
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && loginModal && !loginModal.classList.contains('hidden')) {
+          hideLoginModal();
+        }
+      });
+
+      // 历史记录相关事件监听器
+      // 历史记录按钮点击事件
+      if (historyBtn) {
+        historyBtn.addEventListener('click', showHistoryModal);
+      }
+      
+      // 关闭历史记录模态框
+      if (historyClose) {
+        historyClose.addEventListener('click', hideHistoryModal);
+      }
+      
+      // 筛选按钮点击事件
+      if (historyFilterBtn) {
+        historyFilterBtn.addEventListener('click', filterHistoryRecords);
+      }
+      
+      // 重置筛选按钮点击事件
+      if (historyResetBtn) {
+        historyResetBtn.addEventListener('click', resetHistoryFilter);
+      }
+      
+      // 点击模态框外部关闭
+      if (historyModal) {
+        historyModal.addEventListener('click', function(e) {
+          if (e.target === historyModal) {
+            hideHistoryModal();
+          }
+        });
+      }
+      
+      // ESC键关闭历史记录模态框
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && historyModal && !historyModal.classList.contains('hidden')) {
+          hideHistoryModal();
+        }
+      });
+
+      // 根据订单状态获取对应的样式类
+      function getStatusStyle(status) {
+        if (status === '待预约') {
+          return 'bg-red-100 text-red-800';
+        } else if (status === '待仓库审核') {
+          return 'bg-orange-100 text-orange-800';
+        } else {
+          return 'bg-green-100 text-green-800';
+        }
+      }
+
+      // 订单数据示例
+      const orderData = [
+        {
+          id: 1,
+          orderNo: 'ORD20241210001',
+          warehouseNo: 'WH20241210001',
+          contactPerson: '张三',
+          contactPhone: '13800138000',
+          warehouseAddress: '北京市朝阳区建国路88号仓库A区',
+          teamName: '顺丰车队',
+          status: '待预约'
+        },
+        {
+          id: 2,
+          orderNo: 'ORD20241210002',
+          warehouseNo: 'WH20241210002',
+          contactPerson: '李四',
+          contactPhone: '13900139000',
+          warehouseAddress: '上海市浦东新区张江高科技园区博云路2号仓库B区',
+          teamName: '中客车队',
+          status: '待仓库审核'
+        },
+        {
+          id: 3,
+          orderNo: 'ORD20241210003',
+          warehouseNo: 'WH20241210003',
+          contactPerson: '王五',
+          contactPhone: '13700137000',
+          warehouseAddress: '广州市天河区天河路385号仓库C区',
+          teamName: '韵达车队',
+          status: '待送仓'
+        }
+      ];
+
+      // 生成订单卡片
+      function generateOrderCard(orderData) {
+        const cardId = `order-card-${orderData.id}`;
+        const collapseId = `collapse-${orderData.id}`;
+        
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-lg card-shadow transition-fade';
+        card.id = cardId;
+        
+        // 卡片标题部分（可点击折叠/展开）
+        card.innerHTML = `
+          <div class="p-4 sm:p-5 border-b border-gray-100 flex justify-between items-center cursor-pointer" id="card-header-${orderData.id}">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <i class="fas fa-box"></i>
+              </div>
+              <h3 class="text-base font-medium text-gray-800">入库单号: ${orderData.orderNo}</h3>
+                  <span class="px-2 py-0.5 text-xs rounded-full ${getStatusStyle(orderData.status)}">${orderData.status || '待预约'}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-500">参考单号: ${orderData.warehouseNo}</span>
+              <button class="text-gray-400 hover:text-primary transition-colors transform transition-transform duration-200" id="toggle-icon-${orderData.id}">
+                <i class="fas fa-chevron-down"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- 卡片内容（默认折叠） -->
+          <div id="${collapseId}" class="hidden">
+            <!-- 左右布局容器 -->
+            <div class="flex flex-col md:flex-row">
+              <!-- 左侧：订单信息 -->
+              <div class="w-full md:w-3/5 p-4 sm:p-5">
+                <!-- 基本信息区块 -->
+                <div class="mb-5">
+                  <h4 class="text-sm font-semibold text-gray-700 mb-3">基本信息</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">订单号</label>
+                      <input type="text" value="${orderData.orderNo}" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1"></label>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">仓库联系人</label>
+                      <input type="text" value="${orderData.contactPerson}" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">仓库联系方式</label>
+                      <input type="text" value="${orderData.contactPhone}" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled>
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-xs text-gray-500 mb-1">仓库地址</label>
+                      <input type="text" value="${orderData.warehouseAddress}" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 预约信息区块 -->
+                <div class="mb-5">
+                  <h4 class="text-sm font-semibold text-gray-700 mb-3">预约信息</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>卸货方式</label>
+                      <select class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="deliveryMethod">
+                        <option value="forklift" selected>live</option>
+                        <option value="manual">drop</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>入库时间</label>
+                      <input type="datetime-local" value="2024-12-20T10:30" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="warehouseTime">
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 车队信息区块 -->
+                <div class="mb-5">
+                  <h4 class="text-sm font-semibold text-gray-700 mb-3">车队信息</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>名称</label>
+                      <input type="text" value="${orderData.teamName || '顺丰物流车队'}" placeholder="请输入车队名称" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="teamName">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1"><span class="text-red-500">*</span>邮箱</label>
+                      <input type="text" value="team${orderData.id}@example.com" placeholder="请输入车队邮箱" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="teamEmail">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">电话号码</label>
+                      <input type="tel" value="13800${orderData.id}0000" placeholder="请输入电话号码" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="teamPhone">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">备用电话号</label>
+                      <input type="tel" value="13900${orderData.id}0000" placeholder="请输入备用电话号码" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="teamBackupPhone">
+                    </div>
+                    <div class="md:col-span-2">
+                      <label class="block text-xs text-gray-500 mb-1">备注</label>
+                      <textarea value="" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 cursor-not-allowed" disabled data-order-id="${orderData.id}" data-field="teamRemark">标准运输，请注意防护措施</textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 右侧：时间线 -->
+              <div class="w-full md:w-2/5 p-4 sm:p-5 border-t md:border-t-0 md:border-l border-gray-200">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">入库时间流程</h4>
+                <ul class="space-y-4 relative before:absolute before:top-0 before:bottom-0 before:left-4 before:w-0.5 before:bg-gray-200">
+                  <li class="relative flex items-start pl-10">
+                    <div class="absolute left-0 top-1">
+                      <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <i class="fas fa-calendar-check text-sm"></i>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-800">创建预约</p>
+                      <p class="text-xs text-gray-400">2024/12/10 09:00</p>
+                    </div>
+                  </li>
+                  <li class="relative flex items-start pl-10">
+                    <div class="absolute left-0 top-1">
+                      <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <i class="fas fa-file-alt text-sm"></i>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-800">预报审核</p>
+                      <p class="text-xs text-gray-400">2024/12/10 10:30</p>
+                    </div>
+                  </li>
+                  <li class="relative flex items-start pl-10">
+                    <div class="absolute left-0 top-1">
+                      <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <i class="fas fa-truck text-sm"></i>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-800">车辆到仓</p>
+                      <p class="text-xs text-gray-400">2024/12/12 10:00</p>
+                    </div>
+                  </li>
+                  <li class="relative flex items-start pl-10">
+                    <div class="absolute left-0 top-1">
+                      <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        <i class="fas fa-sync-alt text-sm"></i>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500">排队等待</p>
+                      <p class="text-xs text-gray-400">待处理</p>
+                    </div>
+                  </li>
+                  <li class="relative flex items-start pl-10">
+                    <div class="absolute left-0 top-1">
+                      <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        <i class="fas fa-box-open text-sm"></i>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500">卸货/打托</p>
+                      <p class="text-xs text-gray-400">待处理</p>
+                    </div>
+                  </li>
+                  <li class="relative flex items-start pl-10">
+                    <div class="absolute left-0 top-1">
+                      <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                        <i class="fas fa-boxes text-sm"></i>
+                      </div>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-500">卸货/打托/上架</p>
+                      <p class="text-xs text-gray-400">2024/12/12 14:00</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // 折叠/展开功能
+        const header = card.querySelector(`#card-header-${orderData.id}`);
+        const collapseContent = card.querySelector(`#${collapseId}`);
+        const toggleIcon = card.querySelector(`#toggle-icon-${orderData.id}`);
+        
+        if (header && collapseContent && toggleIcon) {
+          header.addEventListener('click', function(e) {
+            if (!e.target.closest('button')) {
+              collapseContent.classList.toggle('hidden');
+              toggleIcon.querySelector('i').classList.toggle('fa-chevron-down');
+              toggleIcon.querySelector('i').classList.toggle('fa-chevron-up');
+            }
+          });
+        }
+        
+        // 初始化邮箱标签功能
+        const emailInput = card.querySelector(`.team-email[data-order-id="${orderData.id}"]`);
+        const emailTagsContainer = card.querySelector(`.email-tags-${orderData.id}`);
+        const emailError = card.querySelector(`.email-error-${orderData.id}`);
+        
+        if (emailInput && emailTagsContainer && emailError) {
+          // 邮箱验证正则表达式
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          
+          // 处理邮箱输入
+          emailInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const email = this.value.trim();
+              
+              if (email && emailRegex.test(email)) {
+                // 创建邮箱标签
+                const tag = document.createElement('div');
+                tag.className = 'email-tag bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1 h-8';
+                tag.setAttribute('data-email', email);
+                
+                // 创建标签内容
+                const emailSpan = document.createElement('span');
+                emailSpan.textContent = email;
+                
+                // 创建删除按钮
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'delete-email ml-1 text-primary/70 hover:text-primary';
+                deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+                
+                // 添加删除事件
+                deleteBtn.addEventListener('click', function() {
+                  tag.remove();
+                });
+                
+                // 组装标签
+                tag.appendChild(emailSpan);
+                tag.appendChild(deleteBtn);
+                
+                // 插入到输入框之前
+                emailTagsContainer.insertBefore(tag, emailInput);
+                
+                this.value = '';
+              } else {
+                emailError.classList.remove('hidden');
+                setTimeout(() => {
+                  emailError.classList.add('hidden');
+                }, 3000);
+              }
+            }
+          });
+        }
+        
+        // 移除了单个卡片的表单验证和提交逻辑，统一使用全局表单
+        
+        return card;
+      }
+      
+      // 验证全局表单并更新提交按钮状态
+      function validateGlobalForm() {
+        const deliveryMethod = document.getElementById('global-delivery-method').value;
+        const warehouseTime = document.getElementById('global-warehouse-time').value;
+        const submitBtn = document.getElementById('global-submit-btn');
+        
+        if (submitBtn) {
+          // 只检查必填项是否已填写
+          const hasRequiredFields = deliveryMethod && warehouseTime;
+          
+          // 逻辑：只有当所有必填项已填写时，才启用按钮
+          if (hasRequiredFields) {
+            submitBtn.disabled = false;
+            submitBtn.className = 'w-full bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-md transition-colors';
+          } else {
+            submitBtn.disabled = true;
+            submitBtn.className = 'w-full bg-gray-300 text-gray-500 cursor-not-allowed px-5 py-2 rounded-md transition-colors';
+          }
+        }
+      }
+      
+      // 全局提交订单表单
+      function submitGlobalOrderForm() {
+        // 获取柜号（相同柜号只提交一次）
+        const containerNo = document.getElementById('container-no').value;
+        
+        // 获取全局表单数据
+        const deliveryMethod = document.getElementById('global-delivery-method').value;
+        const warehouseTime = document.getElementById('global-warehouse-time').value;
+        const teamPhone = document.getElementById('global-team-phone').value;
+        const teamBackupPhone = document.getElementById('global-team-backup-phone').value;
+        const teamRemark = document.getElementById('global-team-remark').value;
+        
+        // 获取邮箱数据（从邮箱标签和输入框）
+        const emailTags = document.querySelectorAll('#global-email-tags .email-tag');
+        const teamEmailInput = document.getElementById('global-team-email');
+        const emails = [];
+        
+        // 从标签中收集邮箱
+        emailTags.forEach(tag => {
+          const email = tag.getAttribute('data-email');
+          if (email) {
+            emails.push(email);
+          }
+        });
+        
+        // 检查输入框中是否还有未添加的邮箱
+        const inputEmail = teamEmailInput.value.trim();
+        if (inputEmail) {
+          // 简单验证邮箱格式
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (emailRegex.test(inputEmail)) {
+            emails.push(inputEmail);
+          }
+        }
+        
+        // 筛选状态为待预约、待仓库确认（审核）或待送仓的订单
+        const pendingOrders = orderData.filter(order => 
+          order.status === '待预约' || order.status === '待仓库审核' || order.status === '待仓库确认' || order.status === '待送仓'
+        );
+        
+        // 检查是否存在可提交的订单
+        if (pendingOrders.length === 0) {
+          alert('没有可提交的订单，仅支持提交状态为"待预约"、"待仓库确认"和"待送仓"的订单');
+          return;
+        }
+        
+        // 检查是否有待送仓状态的订单
+        const hasPendingDeliveryOrders = pendingOrders.some(order => order.status === '待送仓');
+        
+        // 如果有待送仓状态的订单，提示是否变更送仓时间
+        if (hasPendingDeliveryOrders) {
+          const confirmChangeTime = confirm('检测到有订单状态为"待送仓"，是否变更送仓时间？');
+          if (!confirmChangeTime) {
+            return; // 用户取消变更送仓时间
+          }
+        }
+        
+        // 检查历史记录，展示已有提交记录
+        const historyKey = `history_${currentUser ? currentUser.username : 'guest'}`;
+        const historyData = localStorage.getItem(historyKey);
+        const records = historyData ? JSON.parse(historyData) : [];
+        
+        // 检查是否有相同订单的历史记录
+        const existingRecords = [];
+        pendingOrders.forEach(order => {
+          const matchedRecords = records.filter(record => 
+            record.orderNo === order.orderNo && 
+            record.containerNo === containerNo
+          );
+          if (matchedRecords.length > 0) {
+            existingRecords.push({
+              orderNo: order.orderNo,
+              warehouseNo: order.warehouseNo,
+              contactPerson: order.contactPerson,
+              lastSubmitted: new Date(matchedRecords[0].createTime).toLocaleString()
+            });
+          }
+        });
+        
+        // 如果有重复提交记录，展示并询问
+        if (existingRecords.length > 0) {
+          const duplicateMessage = `发现以下订单已有相同柜号的提交记录：\n\n${existingRecords.map(record => 
+            `订单号: ${record.orderNo}\n仓库: ${record.warehouseNo}\n联系人: ${record.contactPerson}\n上次提交时间: ${record.lastSubmitted}`
+          ).join('\n\n')}\n\n是否确认继续提交？`;
+          
+          const confirmDuplicate = confirm(duplicateMessage);
+          if (!confirmDuplicate) {
+            return; // 用户取消重复提交
+          }
+        }
+        
+        // 显示预约记录确认提示
+        const orderDetails = pendingOrders.map(order => 
+          `订单号: ${order.orderNo}\n仓库: ${order.warehouseNo}\n联系人: ${order.contactPerson}`
+        ).join('\n\n');
+        
+        const confirmRecord = confirm(`预约记录确认:\n\n${orderDetails}\n\n是否确认提交？`);
+        
+        if (!confirmRecord) {
+          return; // 用户取消提交
+        }
+        
+        // 获取待提交订单的ID
+        const orderIds = pendingOrders.map(order => order.id);
+        
+        // 构造提交数据 - 只提交符合状态要求的订单
+        const formData = {
+          containerNo,
+          orderIds,
+          deliveryMethod,
+          warehouseTime,
+          teamPhone,
+          teamBackupPhone,
+          teamRemark,
+          emails
+        };
+        
+        console.log('全局提交订单数据:', formData);
+        
+        // 模拟提交过程，实际项目中这里会调用API
+        let successCount = 0;
+        let failedCount = 0;
+        const failedOrders = [];
+        
+        pendingOrders.forEach(order => {
+          try {
+            // 这里模拟API调用成功
+            const historyRecord = {
+              id: Date.now() + order.id, // 使用时间戳+订单ID确保唯一性
+              orderNo: order.orderNo,
+              warehouseNo: order.warehouseNo,
+              contactPerson: order.contactPerson,
+              contactPhone: order.contactPhone,
+              teamName: order.teamName,
+              appointmentTime: warehouseTime,
+              createTime: new Date().toISOString(),
+              status: 'pending',
+              containerNo: containerNo // 保存柜号信息到历史记录
+            };
+            
+            // 添加到历史记录
+            addHistoryRecord(historyRecord);
+            successCount++;
+          } catch (error) {
+            failedCount++;
+            failedOrders.push(order.orderNo);
+            console.error(`订单 ${order.orderNo} 提交失败:`, error);
+          }
+        });
+        
+        // 构造简洁的提交成功信息
+        let resultMessage = `✅ 预约提交成功！\n\n`;
+        resultMessage += `📋 共提交订单数: ${pendingOrders.length}\n`;
+        resultMessage += `✅ 成功提交: ${successCount}\n`;
+        
+        if (failedCount > 0) {
+          resultMessage += `❌ 提交失败: ${failedCount}\n`;
+          resultMessage += `📝 失败订单: ${failedOrders.join(', ')}\n`;
+        }
+        
+        // 显示提交成功信息
+        alert(resultMessage);
+      }
+      
+      // 为全局表单添加事件监听
+      const globalDeliveryMethod = document.getElementById('global-delivery-method');
+      const globalWarehouseTime = document.getElementById('global-warehouse-time');
+      const globalSubmitBtn = document.getElementById('global-submit-btn');
+      
+      if (globalDeliveryMethod) {
+        globalDeliveryMethod.addEventListener('change', validateGlobalForm);
+      }
+      
+      if (globalWarehouseTime) {
+        globalWarehouseTime.addEventListener('change', validateGlobalForm);
+      }
+      
+      if (globalSubmitBtn) {
+        globalSubmitBtn.addEventListener('click', submitGlobalOrderForm);
+      }
+      
+      // 初始化全局邮箱标签功能
+      const globalEmailInput = document.getElementById('global-team-email');
+      const globalEmailTagsContainer = document.getElementById('global-email-tags');
+      const globalEmailError = document.getElementById('global-email-error');
+      
+      if (globalEmailInput && globalEmailTagsContainer && globalEmailError) {
+        // 邮箱验证正则表达式
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        // 处理邮箱输入
+        globalEmailInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const email = this.value.trim();
+            
+            if (email && emailRegex.test(email)) {
+              // 创建邮箱标签
+              const tag = document.createElement('div');
+              tag.className = 'email-tag bg-primary/10 text-primary px-2 py-1 rounded-md text-sm flex items-center gap-1';
+              tag.setAttribute('data-email', email);
+              
+              // 创建标签内容
+              const emailSpan = document.createElement('span');
+              emailSpan.textContent = email;
+              
+              // 创建删除按钮
+              const deleteBtn = document.createElement('button');
+              deleteBtn.type = 'button';
+              deleteBtn.className = 'delete-email ml-1 text-primary/70 hover:text-primary';
+              deleteBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+              
+              // 添加删除事件
+              deleteBtn.addEventListener('click', function() {
+                tag.remove();
+              });
+              
+              // 组装标签
+              tag.appendChild(emailSpan);
+              tag.appendChild(deleteBtn);
+              
+              // 添加到标签容器中
+              globalEmailTagsContainer.appendChild(tag);
+              
+              this.value = '';
+            } else {
+              globalEmailError.classList.remove('hidden');
+              setTimeout(() => {
+                globalEmailError.classList.add('hidden');
+              }, 3000);
+            }
+          }
+        });
+      }
+
+      // 历史记录相关函数
+      function showHistoryModal() {
+        if (!currentUser) {
+          showToast('请先登录后再查看历史记录');
+          showLoginModal();
+          return;
+        }
+        
+        // 初始化历史记录数据（如果不存在）
+        initHistoryRecords();
+        
+        // 加载历史记录
+        loadHistoryRecords();
+        
+        // 显示模态框
+        historyModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+      
+      function hideHistoryModal() {
+        historyModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }
+      
+      function loadHistoryRecords() {
+        // 从localStorage获取历史记录
+        const historyKey = `history_${currentUser.username}`;
+        const historyData = localStorage.getItem(historyKey);
+        const records = historyData ? JSON.parse(historyData) : [];
+        
+        // 显示历史记录
+        displayHistoryRecords(records);
+      }
+      
+      // 格式化时间为am/pm格式
+      function formatTimeToAMPM(dateString) {
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) {
+            return 'Invalid Date';
+          }
+          
+          const hours = date.getHours();
+          const minutes = date.getMinutes();
+          const ampm = hours >= 12 ? 'pm' : 'am';
+          const displayHours = hours % 12 || 12; // 0点显示为12点
+          const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
+          
+          return `${displayHours}:${displayMinutes}${ampm}`;
+        } catch (error) {
+          return 'Invalid Date';
+        }
+      }
+
+      // 格式化预约时间（只显示日期和am/pm）
+      function formatAppointmentTime(dateString) {
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) {
+            return 'Invalid Date';
+          }
+          
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const ampm = date.getHours() >= 12 ? 'pm' : 'am';
+          
+          return `${year}-${month}-${day} ${ampm}`;
+        } catch (error) {
+          return 'Invalid Date';
+        }
+      }
+
+      // 格式化创建时间（显示完整时分秒）
+      function formatCreateTime(dateString) {
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) {
+            return 'Invalid Date';
+          }
+          
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          const seconds = String(date.getSeconds()).padStart(2, '0');
+          
+          return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        } catch (error) {
+          return 'Invalid Date';
+        }
+      }
+
+      function displayHistoryRecords(records) {
+        if (records.length === 0) {
+          historyList.innerHTML = '';
+          historyEmpty.classList.remove('hidden');
+          return;
+        }
+        
+        historyEmpty.classList.add('hidden');
+        historyList.innerHTML = '';
+        
+        records.forEach(record => {
+          const recordElement = createHistoryRecordElement(record);
+          historyList.appendChild(recordElement);
+        });
+      }
+      
+      function createHistoryRecordElement(record) {
+        const div = document.createElement('div');
+        div.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow';
+        
+        const statusClass = getStatusClass(record.status);
+        const statusText = getStatusText(record.status);
+        
+        div.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-medium text-gray-800">订单号: ${record.orderNo}</h4>
+              <p class="text-sm text-gray-600">仓库编号: ${record.warehouseNo}</p>
+            </div>
+            <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${statusText}</span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
+            <div>
+              <span class="font-medium">联系人:</span> ${record.contactPerson}
+            </div>
+            <div>
+              <span class="font-medium">电话:</span> ${record.contactPhone}
+            </div>
+            <div>
+              <span class="font-medium">车队:</span> ${record.teamName}
+            </div>
+            <div>
+              <span class="font-medium">预约时间:</span> ${formatAppointmentTime(record.appointmentTime)}
+            </div>
+          </div>
+          
+          <div class="text-sm text-gray-500">
+            <span class="font-medium">提交时间:</span> ${formatCreateTime(record.createTime)}
+          </div>
+        `;
+        
+        return div;
+      }
+      
+      function getStatusClass(status) {
+        switch (status) {
+          case 'pending':
+            return 'bg-yellow-100 text-yellow-800';
+          case 'approved':
+            return 'bg-green-100 text-green-800';
+          case 'rejected':
+            return 'bg-red-100 text-red-800';
+          default:
+            return 'bg-gray-100 text-gray-800';
+        }
+      }
+      
+      function getStatusText(status) {
+        switch (status) {
+          case 'pending':
+            return '待审核';
+          case 'approved':
+            return '已审核';
+          case 'rejected':
+            return '已拒绝';
+          default:
+            return '未知状态';
+        }
+      }
+      
+      function filterHistoryRecords() {
+        const startDate = historyStartDate.value;
+        const endDate = historyEndDate.value;
+        const statusFilter = historyStatusFilter.value;
+        
+        // 获取所有历史记录
+        const historyKey = `history_${currentUser.username}`;
+        const historyData = localStorage.getItem(historyKey);
+        let records = historyData ? JSON.parse(historyData) : [];
+        
+        // 应用筛选条件
+        if (startDate) {
+          records = records.filter(record => {
+            return new Date(record.createTime) >= new Date(startDate);
+          });
+        }
+        
+        if (endDate) {
+          records = records.filter(record => {
+            return new Date(record.createTime) <= new Date(endDate + ' 23:59:59');
+          });
+        }
+        
+        if (statusFilter) {
+          records = records.filter(record => record.status === statusFilter);
+        }
+        
+        // 显示筛选后的记录
+        displayHistoryRecords(records);
+      }
+      
+      function resetHistoryFilter() {
+        historyStartDate.value = '';
+        historyEndDate.value = '';
+        historyStatusFilter.value = '';
+        
+        // 重新加载所有记录
+        loadHistoryRecords();
+      }
+      
+      function initHistoryRecords() {
+        // 初始化历史记录数据（如果不存在）
+        if (currentUser) {
+          const historyKey = `history_${currentUser.username}`;
+          const historyData = localStorage.getItem(historyKey);
+          
+          if (!historyData) {
+            // 创建示例历史记录
+            const sampleRecords = [
+              {
+                id: 1,
+                orderNo: 'ORD20241201001',
+                warehouseNo: 'WH20241201001',
+                contactPerson: 'TEST',
+                contactPhone: '123456',
+                teamName: 'TEST',
+                appointmentTime: '2024-12-01T10:30:00',
+                createTime: '2024-12-01 09:00:00',
+                status: 'approved'
+              },
+              {
+                id: 2,
+                orderNo: 'ORD20241128001',
+                warehouseNo: 'WH20241128001',
+                contactPerson: 'TEST',
+                contactPhone: '123456',
+                teamName: 'TEST',
+                appointmentTime: '2024-11-28T14:00:00',
+                createTime: '2024-11-28 10:30:00',
+                status: 'pending'
+              }
+            ];
+            
+            localStorage.setItem(historyKey, JSON.stringify(sampleRecords));
+          }
+        }
+      }
+      
+      // 添加历史记录函数
+      function addHistoryRecord(orderData) {
+        if (!currentUser) return;
+        
+        const historyKey = `history_${currentUser.username}`;
+        const historyData = localStorage.getItem(historyKey);
+        const records = historyData ? JSON.parse(historyData) : [];
+        
+        const newRecord = {
+          id: Date.now(),
+          orderNo: orderData.orderNo,
+          warehouseNo: orderData.warehouseNo,
+          contactPerson: orderData.contactPerson,
+          contactPhone: orderData.contactPhone,
+          teamName: orderData.teamName,
+          appointmentTime: new Date().toISOString(),
+          createTime: new Date().toISOString(),
+          status: 'pending'
+        };
+        
+        records.unshift(newRecord);
+        localStorage.setItem(historyKey, JSON.stringify(records));
+      }
+
+      // 初始化页面
+      function initPage() {
+        // 检查登录状态
+        checkLoginStatus();
+        
+        // 检查修复状态
+        checkFixStatus();
+        
+        // 页面默认只显示空状态，其他内容保持隐藏
+        // 不自动显示订单和预约信息，等待用户查询
+      }
+
+      // 检查修复状态
+      function checkFixStatus() {
+        console.log('🔧 开始检查登录功能修复状态...');
+        
+        // 检查loginUsername变量是否正确定义
+        if (typeof loginUsername !== 'undefined') {
+          console.log('✅ 成功：loginUsername变量已正确定义');
+        } else {
+          console.error('❌ 错误：loginUsername变量未定义');
+        }
+        
+        // 检查登录表单元素
+        const loginUsernameElement = document.getElementById('login-username');
+        const loginPasswordElement = document.getElementById('login-password');
+        const loginEmail = document.getElementById('login-email');
+        const loginRole = document.getElementById('login-role');
+        
+        if (loginUsernameElement && loginPasswordElement && !loginEmail && !loginRole) {
+          console.log('✅ 成功：登录表单包含用户名和密码输入框，没有邮箱和角色选择框');
+        } else if (loginEmail && !loginRole) {
+          console.error('❌ 错误：登录表单仍使用邮箱输入框，应改为用户名输入框');
+        } else if (!loginEmail && loginRole) {
+          console.error('❌ 错误：登录表单仍包含角色选择框，应该移除');
+        } else if (!loginUsernameElement || !loginPasswordElement) {
+          console.error('❌ 错误：登录表单缺少用户名或密码输入框');
+        } else {
+          console.error('❌ 错误：登录表单结构异常');
+        }
+        
+        console.log('🔧 修复状态检查完成');
+      }
+
+      // 页面加载完成后初始化
+      initPage();
+      
+      // 语言切换功能
+      const langToggle = document.getElementById('lang-toggle');
+      const currentLangShort = document.getElementById('current-lang-short');
+      
+      // 语言配置
+      const languages = {
+        zh: {
+          short: '中',
+          text: '中文',
+          title: '切换语言'
+        },
+        en: {
+          short: 'EN',
+          text: 'English',
+          title: 'Switch Language'
+        }
+      };
+      
+      let currentLang = localStorage.getItem('preferredLanguage') || 'zh';
+      
+      // 更新语言按钮显示
+      function updateLangButton(lang) {
+        const langConfig = languages[lang];
+        if (langConfig && currentLangShort && langToggle) {
+          currentLangShort.textContent = langConfig.short;
+          langToggle.title = langConfig.title;
+          currentLang = lang;
+          localStorage.setItem('preferredLanguage', lang);
+        }
+      }
+      
+      // 切换语言
+      function toggleLanguage() {
+        const newLang = currentLang === 'zh' ? 'en' : 'zh';
+        updateLangButton(newLang);
+        
+        // 添加切换动画效果
+        if (langToggle) {
+          const langLogo = langToggle.querySelector('.lang-logo');
+          if (langLogo) {
+            langLogo.style.transform = 'rotate(360deg) scale(0.8)';
+            setTimeout(() => {
+              langLogo.style.transform = 'rotate(0deg) scale(1)';
+            }, 300);
+          }
+        }
+        
+        // 这里可以添加实际的页面内容语言切换逻辑
+        console.log(`语言已切换到: ${newLang}`);
+      }
+      
+      // 绑定语言切换事件
+      if (langToggle) {
+        langToggle.addEventListener('click', toggleLanguage);
+        
+        // 初始化语言按钮状态
+        updateLangButton(currentLang);
+      }
+    });
+    </script>
+  </body>
+</html>
