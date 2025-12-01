@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>客户列表 - 价卡配置</title>
+  <title>客户列表</title>
   <!-- 引入必要依赖 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -98,25 +98,137 @@
     .min-h-\[100px\] { min-height: 100px; }
     .overflow-x-auto { overflow-x: auto; }
     .gap-3 { gap: 0.75rem; }
+    /* 表格优化样式 */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 0.375rem;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .table {
+      width: 100%;
+      text-align: left;
+      border-collapse: collapse;
+      background-color: #ffffff;
+    }
+    
+    .table th {
+      background-color: #f9fafb;
+      color: #374151;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    
+    .table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+    
+    .table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+    
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    /* 输入框优化 */
+    .table input, .table select {
+      width: 100%;
+      min-width: 80px;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+    
+    .table input:focus, .table select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* 只读输入框样式 */
+    .table input:read-only, .table input[readonly] {
+      background-color: #f3f4f6;
+      cursor: not-allowed;
+    }
+    
+    /* 价格显示样式 */
+    .price-display {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 500;
+      color: #16a34a;
+    }
+    
+    .price-unit {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: normal;
+    }
+    
+    /* 表格标题样式 */
+    .table-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    
+    /* 模态框最大高度限制，确保在小屏幕上也能正常滚动 */
+    @media (max-height: 768px) {
+      #associatePriceCardModal .max-h\[90vh\] {
+        max-height: 80vh;
+      }
+    }
+    
+    /* 小屏幕下的表格优化 */
+    @media (max-width: 768px) {
+      .table th,
+      .table td {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+      }
+      
+      .table-container {
+        font-size: 0.75rem;
+      }
+      
+      /* 在小屏幕上允许关键列换行 */
+      .table th:nth-child(7),
+      .table td:nth-child(7) {
+        white-space: normal;
+        word-break: break-word;
+      }
+    }
   </style>
 </head>
 <body class="bg-white">
   <!-- 自定义逻辑模块（价卡版） -->
   <div class="container mx-auto px-4 py-8 max-w-6xl">
-    <h2 class="text-xl font-bold text-neutral-700 mb-6 flex items-center">
-      <i class="fa fa-users text-primary mr-2"></i>客户列表
-    </h2>
-    
     <!-- 客户列表表格 -->
     <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
-      <table class="w-full text-sm text-left">
-        <thead class="text-xs text-neutral-500 uppercase bg-neutral-50">
+      <table class="table">
+        <thead>
           <tr>
-            <th class="px-6 py-3">客户名称</th>
-            <th class="px-6 py-3">客户编码</th>
-            <th class="px-6 py-3">联系人</th>
-            <th class="px-6 py-3">联系电话</th>
-            <th class="px-6 py-3">操作</th>
+            <th>客户名称</th>
+            <th>客户编码</th>
+            <th>联系人</th>
+            <th>联系电话</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody id="customerList">
@@ -191,89 +303,109 @@
                 <h4 class="text-sm font-bold text-neutral-700 flex items-center">
                   <i class="fa fa-tag text-primary mr-1"></i>单价设置
                 </h4>
-                <span class="text-xs text-neutral-500">注：散货按基础单价计算，整柜按柜型单价计算</span>
               </div>
               
               <!-- 整柜单价设置（按柜型配置） -->
-              <div class="p-3 border border-neutral-100 rounded-lg bg-neutral-50 mb-4">
-                <div class="flex justify-between items-center mb-3">
-                  <label class="block text-sm font-medium text-neutral-600">基础单价（整柜）</label>
-                  <button id="modalAddContainerType" class="px-3 py-1.5 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300 flex items-center">
-                    <i class="fa fa-plus mr-1"></i>新增柜型
-                  </button>
+              <div class="mb-4">
+                <label class="table-title">整柜</label>
+                <div id="modalContainerPriceTable" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+                  <!-- 动态生成整柜单价卡片 -->
                 </div>
-                <div class="overflow-x-auto">
+              </div>
+
+              <!-- 散货单价设置 -->
+              <div class="mb-4 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+                <label class="table-title">散货</label>
+                <div class="table-container">
                   <table class="table">
                     <thead>
                       <tr>
-                        <th width="30%">柜型 <span class="text-danger">*</span></th>
-                        <th width="30%">单价 <span class="text-danger">*</span></th>
-                        <th width="30%">备注</th>
-                        <th width="10%">操作</th>
+                        <th>公报价</th>
+                        <th>单位</th>
+                        <th>折扣率 (%)</th>
+                        <th>增加金额</th>
+                        <th>减少金额</th>
+                        <th>客单价</th>
                       </tr>
                     </thead>
-                    <tbody id="modalContainerPriceTable">
-                      <!-- 动态生成整柜单价行 -->
+                    <tbody>
+                      <tr>
+                        <td>
+                          <input type="number" id="modalBulkPrice" min="0" step="0.01" placeholder="输入散货单价" required readonly>
+                        </td>
+                        <td>
+                          <select id="modalBulkUnit">
+                            <option value="托">托</option>
+                            <option value="CBM">CBM</option>
+                            <option value="KG">KG</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input type="number" id="modalBulkDiscount" min="0" max="100" step="0.01" placeholder="请输入" oninput="calculateBulkPrice()">
+                        </td>
+                        <td>
+                          <input type="number" id="modalBulkAddAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateBulkPrice()">
+                        </td>
+                        <td>
+                          <input type="number" id="modalBulkReduceAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateBulkPrice()">
+                        </td>
+                        <td>
+                          <div class="price-display">
+                            <span id="modalBulkAdjustedPrice"></span>
+                            <span id="modalBulkAdjustedUnit" class="price-unit"></span>
+                          </div>
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              <!-- 散货单价设置 -->
-              <div class="mb-4 p-3 border border-neutral-100 rounded-lg bg-neutral-50">
-                <label class="block text-sm font-medium text-neutral-600 mb-2">基础单价（散货）</label>
-                <div class="flex items-center gap-2 mb-3">
-                  <input type="number" id="modalBulkPrice" min="0" step="0.01" class="flex-1 px-3 py-2 border border-neutral-200 rounded-md text-sm bg-neutral-100 cursor-not-allowed" placeholder="输入散货单价" required readonly>
-                  <select id="modalBulkUnit" class="px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
-                    <option value="托">托</option>
-                  </select>
-                </div>
-                <div class="flex items-center gap-3 mb-3">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-neutral-600 mb-1">折扣率 (%)</label>
-                    <input type="number" id="modalBulkDiscount" min="0" max="100" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入折扣率" oninput="calculateBulkPrice()">
-                  </div>
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-neutral-600 mb-1">增加金额</label>
-                    <input type="number" id="modalBulkAddAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入增加金额" oninput="calculateBulkPrice()">
-                  </div>
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-neutral-600 mb-1">减少金额</label>
-                    <input type="number" id="modalBulkReduceAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入减少金额" oninput="calculateBulkPrice()">
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <label class="block text-sm font-medium text-neutral-600">调整后单价：</label>
-                  <span id="modalBulkAdjustedPrice" class="text-sm font-medium text-primary"></span>
-                </div>
-              </div>
-
               <!-- 快递单价设置 -->
-              <div class="mb-4 p-3 border border-neutral-100 rounded-lg bg-neutral-50">
-                <label class="block text-sm font-medium text-neutral-600 mb-2">基础单价（快递）</label>
-                <div class="flex items-center gap-2 mb-3">
-                  <input type="number" id="modalExpressPrice" min="0" step="0.01" class="flex-1 px-3 py-2 border border-neutral-200 rounded-md text-sm bg-neutral-100 cursor-not-allowed" placeholder="输入快递单价" required readonly>
-                  <select id="modalExpressUnit" class="px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
-                    <option value="箱">箱</option>
-                  </select>
-                </div>
-                <div class="flex items-center gap-3 mb-3">
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-neutral-600 mb-1">折扣率 (%)</label>
-                    <input type="number" id="modalExpressDiscount" min="0" max="100" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入折扣率" oninput="calculateExpressPrice()">
-                  </div>
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-neutral-600 mb-1">增加金额</label>
-                    <input type="number" id="modalExpressAddAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入增加金额" oninput="calculateExpressPrice()">
-                  </div>
-                  <div class="flex-1">
-                    <label class="block text-sm font-medium text-neutral-600 mb-1">减少金额</label>
-                    <input type="number" id="modalExpressReduceAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入减少金额" oninput="calculateExpressPrice()">
-                  </div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <label class="block text-sm font-medium text-neutral-600">调整后单价：</label>
-                  <span id="modalExpressAdjustedPrice" class="text-sm font-medium text-primary"></span>
+              <div class="mb-4 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+                <label class="table-title">快递</label>
+                <div class="table-container">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>公报价</th>
+                        <th>单位</th>
+                        <th>折扣率 (%)</th>
+                        <th>增加金额</th>
+                        <th>减少金额</th>
+                        <th>客单价</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <input type="number" id="modalExpressPrice" min="0" step="0.01" placeholder="输入快递单价" required readonly>
+                        </td>
+                        <td>
+                          <select id="modalExpressUnit">
+                            <option value="箱">箱</option>
+                            <option value="KG">KG</option>
+                            <option value="件">件</option>
+                          </select>
+                        </td>
+                        <td>
+                          <input type="number" id="modalExpressDiscount" min="0" max="100" step="0.01" placeholder="请输入" oninput="calculateExpressPrice()">
+                        </td>
+                        <td>
+                          <input type="number" id="modalExpressAddAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateExpressPrice()">
+                        </td>
+                        <td>
+                          <input type="number" id="modalExpressReduceAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateExpressPrice()">
+                        </td>
+                        <td>
+                          <div class="price-display">
+                            <span id="modalExpressAdjustedPrice"></span>
+                            <span id="modalExpressAdjustedUnit" class="price-unit"></span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -294,11 +426,7 @@
   <script>
     // 预设客户数据
     const presetCustomers = [
-      { id: 1, name: "上海物流有限公司", code: "SH-LOG-001", contact: "张三", phone: "13800138000" },
-      { id: 2, name: "北京货运代理有限公司", code: "BJ-FWD-002", contact: "李四", phone: "13900139000" },
-      { id: 3, name: "广州供应链管理有限公司", code: "GZ-SCM-003", contact: "王五", phone: "13700137000" },
-      { id: 4, name: "深圳国际物流有限公司", code: "SZ-INT-004", contact: "赵六", phone: "13600136000" },
-      { id: 5, name: "杭州跨境电商有限公司", code: "HZ-CBE-005", contact: "孙七", phone: "13500135000" }
+      { id: 1, name: "Demo", code: "Demo", contact: "zsw", phone: "13800138000" }
     ];
     
     // 预设价卡数据
@@ -421,9 +549,6 @@
       // 保存关联按钮点击事件
       document.getElementById('saveAssociateBtn').addEventListener('click', saveAssociatedPriceCard);
       
-      // 新增柜型按钮点击事件
-      document.getElementById('modalAddContainerType').addEventListener('click', addContainerTypeRow);
-      
     }
     
     // 打开关联价卡模态框
@@ -492,44 +617,73 @@
       
       // 更新整柜配置
       const containerPriceTable = document.getElementById('modalContainerPriceTable');
-      // 清空现有行
+      // 清空现有卡片
       containerPriceTable.innerHTML = '';
       // 添加预设柜型数据
       priceCard.containerConfig.forEach(config => {
-        const newRow = document.createElement('tr');
-        newRow.className = 'border-b border-neutral-100';
-        newRow.innerHTML = `
-          <td class="px-3 py-2">
-            <select class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
-              <option value="20GP" ${config.containerType === '20GP' ? 'selected' : ''}>20GP</option>
-              <option value="40GP" ${config.containerType === '40GP' ? 'selected' : ''}>40GP</option>
-              <option value="40HQ" ${config.containerType === '40HQ' ? 'selected' : ''}>40HQ</option>
-              <option value="45HQ" ${config.containerType === '45HQ' ? 'selected' : ''}>45HQ</option>
-              <option value="其他" ${config.containerType === '其他' ? 'selected' : ''}>其他</option>
-            </select>
-          </td>
-          <td class="px-3 py-2">
-            <input type="number" min="0" step="0.01" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" value="${config.price}" required>
-          </td>
-          <td class="px-3 py-2">
-            <input type="text" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" value="${config.remark}">
-          </td>
-          <td class="px-3 py-2">
-            <button class="delete-container-row text-danger hover:text-danger/80 transition-all-300">
-              <i class="fa fa-trash"></i>
-            </button>
-          </td>
-        `;
-        containerPriceTable.appendChild(newRow);
+        const containerTypeDisplay = {
+          '20GP': '20GP (标准柜)',
+          '40GP': '40GP (标准柜)',
+          '40HQ': '40HQ (高柜)',
+          '45HQ': '45HQ (超高柜)',
+          '其他': '其他柜型'
+        };
         
-        // 绑定删除事件
-        newRow.querySelector('.delete-container-row').addEventListener('click', function() {
-          newRow.remove();
-        });
+        const newCard = document.createElement('div');
+        newCard.className = 'p-4 border border-neutral-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow';
+        newCard.innerHTML = `
+          <h5 class="text-md font-semibold text-neutral-700 mb-4">${containerTypeDisplay[config.containerType] || config.containerType}</h5>
+          
+          <div class="space-y-3">
+            <!-- 公报价 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">公报价</label>
+              <input type="number" min="0" step="0.01" value="${config.price}" required readonly class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 折扣率 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">折扣率 (%)</label>
+              <input type="number" min="0" max="100" step="0.01" placeholder="请输入" oninput="calculateContainerPrice(this)" class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 增加金额 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">增加金额</label>
+              <input type="number" min="0" step="0.01" placeholder="请输入" oninput="calculateContainerPrice(this)" class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 减少金额 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">减少金额</label>
+              <input type="number" min="0" step="0.01" placeholder="请输入" oninput="calculateContainerPrice(this)" class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 客单价 -->
+            <div class="flex items-center justify-between pt-3 border-t border-neutral-100">
+              <label class="text-sm font-semibold text-neutral-700">客单价</label>
+              <div class="flex items-center space-x-2">
+                <span class="container-adjusted-price text-lg font-bold text-primary"></span>
+              </div>
+            </div>
+          </div>
+        `;
+        containerPriceTable.appendChild(newCard);
+        
+        // 初始计算客单价
+        calculateContainerPrice(newCard.querySelector('input[type="number"]'));
       });
       
       // 显示预设价卡信息
       document.getElementById('presetPriceCardInfo').classList.remove('hidden');
+      
+      // 初始计算客单价
+      calculateBulkPrice();
+      calculateExpressPrice();
+      
+      // 绑定单位变化事件，动态更新客单价的单位
+      document.getElementById('modalBulkUnit').addEventListener('change', calculateBulkPrice);
+      document.getElementById('modalExpressUnit').addEventListener('change', calculateExpressPrice);
     }
     
     // 保存关联价卡
@@ -550,11 +704,18 @@
       
       // 收集数据（这里仅做演示）
       const containerPrices = [];
-      document.querySelectorAll('#modalContainerPriceTable tr').forEach(row => {
-        const containerType = row.querySelector('select').value;
-        const price = parseFloat(row.querySelector('input[type="number"]').value);
-        const remark = row.querySelector('input[type="text"]').value;
-        containerPrices.push({ containerType, price, remark });
+      document.querySelectorAll('#modalContainerPriceTable > div').forEach(card => {
+        // 从卡片标题中提取柜型（如：20GP (标准柜) -> 20GP）
+        const title = card.querySelector('h5').textContent;
+        const containerType = title.split(' ')[0];
+        
+        const inputs = card.querySelectorAll('input[type="number"]');
+        const price = parseFloat(inputs[0].value);
+        const discount = parseFloat(inputs[1].value) || 0;
+        const addAmount = parseFloat(inputs[2].value) || 0;
+        const reduceAmount = parseFloat(inputs[3].value) || 0;
+        
+        containerPrices.push({ containerType, price, discount, addAmount, reduceAmount });
       });
       
       const associatedData = {
@@ -588,61 +749,90 @@
       closeAssociatePriceCardModal();
     }
     
-    // 添加柜型行
-    function addContainerTypeRow() {
-      const containerPriceTable = document.getElementById('modalContainerPriceTable');
-      const newRow = document.createElement('tr');
-      newRow.className = 'border-b border-neutral-100';
-      newRow.innerHTML = `
-        <td class="px-3 py-2">
-          <select class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" required>
-            <option value="20GP">20GP</option>
-            <option value="40GP">40GP</option>
-            <option value="40HQ">40HQ</option>
-            <option value="45HQ">45HQ</option>
-            <option value="其他">其他</option>
-          </select>
-        </td>
-        <td class="px-3 py-2">
-          <input type="number" min="0" step="0.01" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="输入单价" required>
-        </td>
-        <td class="px-3 py-2">
-          <input type="text" class="w-full px-2 py-1 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300" placeholder="例如：标准柜">
-        </td>
-        <td class="px-3 py-2">
-          <button class="delete-container-row text-danger hover:text-danger/80 transition-all-300">
-            <i class="fa fa-trash"></i>
-          </button>
-        </td>
-      `;
-      containerPriceTable.appendChild(newRow);
+    // 计算整柜客单价
+    function calculateContainerPrice(element) {
+      // 获取当前卡片
+      const card = element.closest('.border');
+      if (!card) return;
       
-      // 绑定删除事件
-      newRow.querySelector('.delete-container-row').addEventListener('click', function() {
-        newRow.remove();
-      });
+      const inputs = card.querySelectorAll('input[type="number"]');
+      // 确保输入框存在
+      if (inputs.length < 4) return;
+      
+      const basePrice = parseFloat(inputs[0]?.value) || 0;
+      const discount = parseFloat(inputs[1]?.value) || 0;
+      const addAmount = parseFloat(inputs[2]?.value) || 0;
+      const reduceAmount = parseFloat(inputs[3]?.value) || 0;
+      
+      // 计算客单价
+      const adjustedPrice = (basePrice * (1 - discount / 100)) + addAmount - reduceAmount;
+      const finalPrice = Math.max(adjustedPrice, 0); // 确保价格不低于0
+      
+      // 更新显示
+      const priceDisplay = card.querySelector('.container-adjusted-price');
+      if (priceDisplay) {
+        priceDisplay.textContent = finalPrice.toFixed(2);
+      }
     }
     
-    // 计算散货调整后单价
+    // 计算散货客单价
     function calculateBulkPrice() {
-      const basePrice = parseFloat(document.getElementById('modalBulkPrice').value) || 0;
-      const discount = parseFloat(document.getElementById('modalBulkDiscount').value) || 0;
-      const addAmount = parseFloat(document.getElementById('modalBulkAddAmount').value) || 0;
-      const reduceAmount = parseFloat(document.getElementById('modalBulkReduceAmount').value) || 0;
+      // 获取元素并进行存在性检查
+      const bulkPriceEl = document.getElementById('modalBulkPrice');
+      const bulkDiscountEl = document.getElementById('modalBulkDiscount');
+      const bulkAddAmountEl = document.getElementById('modalBulkAddAmount');
+      const bulkReduceAmountEl = document.getElementById('modalBulkReduceAmount');
+      const bulkUnitEl = document.getElementById('modalBulkUnit');
+      const bulkAdjustedPriceEl = document.getElementById('modalBulkAdjustedPrice');
+      const bulkAdjustedUnitEl = document.getElementById('modalBulkAdjustedUnit');
       
-      const adjustedPrice = basePrice * (1 - discount / 100) + addAmount - reduceAmount;
-      document.getElementById('modalBulkAdjustedPrice').textContent = adjustedPrice.toFixed(2);
+      // 确保所有必要元素都存在
+      if (!bulkPriceEl || !bulkDiscountEl || !bulkAddAmountEl || !bulkReduceAmountEl || 
+          !bulkUnitEl || !bulkAdjustedPriceEl || !bulkAdjustedUnitEl) return;
+      
+      const basePrice = parseFloat(bulkPriceEl?.value) || 0;
+      const discount = parseFloat(bulkDiscountEl?.value) || 0;
+      const addAmount = parseFloat(bulkAddAmountEl?.value) || 0;
+      const reduceAmount = parseFloat(bulkReduceAmountEl?.value) || 0;
+      const unit = bulkUnitEl?.value || '';
+      
+      // 计算客单价
+      const adjustedPrice = (basePrice * (1 - discount / 100)) + addAmount - reduceAmount;
+      const finalPrice = Math.max(adjustedPrice, 0); // 确保价格不低于0
+      
+      // 更新显示
+      bulkAdjustedPriceEl.textContent = finalPrice.toFixed(2);
+      bulkAdjustedUnitEl.textContent = unit;
     }
     
-    // 计算快递调整后单价
+    // 计算快递客单价
     function calculateExpressPrice() {
-      const basePrice = parseFloat(document.getElementById('modalExpressPrice').value) || 0;
-      const discount = parseFloat(document.getElementById('modalExpressDiscount').value) || 0;
-      const addAmount = parseFloat(document.getElementById('modalExpressAddAmount').value) || 0;
-      const reduceAmount = parseFloat(document.getElementById('modalExpressReduceAmount').value) || 0;
+      // 获取元素并进行存在性检查
+      const expressPriceEl = document.getElementById('modalExpressPrice');
+      const expressDiscountEl = document.getElementById('modalExpressDiscount');
+      const expressAddAmountEl = document.getElementById('modalExpressAddAmount');
+      const expressReduceAmountEl = document.getElementById('modalExpressReduceAmount');
+      const expressUnitEl = document.getElementById('modalExpressUnit');
+      const expressAdjustedPriceEl = document.getElementById('modalExpressAdjustedPrice');
+      const expressAdjustedUnitEl = document.getElementById('modalExpressAdjustedUnit');
       
-      const adjustedPrice = basePrice * (1 - discount / 100) + addAmount - reduceAmount;
-      document.getElementById('modalExpressAdjustedPrice').textContent = adjustedPrice.toFixed(2);
+      // 确保所有必要元素都存在
+      if (!expressPriceEl || !expressDiscountEl || !expressAddAmountEl || !expressReduceAmountEl || 
+          !expressUnitEl || !expressAdjustedPriceEl || !expressAdjustedUnitEl) return;
+      
+      const basePrice = parseFloat(expressPriceEl?.value) || 0;
+      const discount = parseFloat(expressDiscountEl?.value) || 0;
+      const addAmount = parseFloat(expressAddAmountEl?.value) || 0;
+      const reduceAmount = parseFloat(expressReduceAmountEl?.value) || 0;
+      const unit = expressUnitEl?.value || '';
+      
+      // 计算客单价
+      const adjustedPrice = (basePrice * (1 - discount / 100)) + addAmount - reduceAmount;
+      const finalPrice = Math.max(adjustedPrice, 0); // 确保价格不低于0
+      
+      // 更新显示
+      expressAdjustedPriceEl.textContent = finalPrice.toFixed(2);
+      expressAdjustedUnitEl.textContent = unit;
     }
 
   </script>
