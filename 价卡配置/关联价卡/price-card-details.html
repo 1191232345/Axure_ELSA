@@ -224,17 +224,17 @@
         const customers = {
             "1": {
                 id: 1,
-                name: "MD001",
-                code: "MD001",
+                name: "Demo",
+                code: "Demo",
                 contact: "zsw",
                 phone: "13800138000",
-                associatedPriceCards: ["卸货费", "仓储费", "码头费"]
+                associatedPriceCards: ["卸货费", "仓储费", "出库费"]
             }
         };
         
         // 预设价卡详情数据
         const priceCardsDetails = {
-            "MD001": {
+            "Demo": {
                 "卸货费": {
                     name: "标准卸货费价卡",
                     type: "卸货费",
@@ -261,13 +261,13 @@
                     bulkConfig: { price: 100.00, unit: "元/吨/天", discountRate: 0, addAmount: 0, subtractAmount: 0, unitPrice: 100.00 },
                     expressConfig: { price: 15.00, unit: "元/件/天", discountRate: 0, addAmount: 0, subtractAmount: 0, unitPrice: 15.00 }
                 },
-                "码头费": {
-                    name: "标准码头费价卡",
-                    type: "码头费",
+                "出库费": {
+                    name: "标准出库费价卡",
+                    type: "出库费",
                     applyScope: "全部",
                     validFrom: "2024-01-01",
                     validTo: "2024-12-31",
-                    description: "这是一个预设的码头费价卡",
+                    description: "这是一个预设的出库费价卡",
                     containerConfig: [
                         { containerType: "20GP", price: 300.00, discountRate: 0, addAmount: 0, subtractAmount: 0, unitPrice: 300.00, remark: "标准柜" },
                         { containerType: "40GP", price: 500.00, discountRate: 0, addAmount: 0, subtractAmount: 0, unitPrice: 500.00, remark: "标准柜" },

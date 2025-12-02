@@ -185,21 +185,20 @@
         <div class="mb-4 bg-white p-4 border border-neutral-100 rounded-lg shadow-sm">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <!-- 搜索 -->
-            <div class="flex flex-col">
+            <!-- <div class="flex flex-col">
               <label for="priceCardSearch" class="text-sm font-medium text-neutral-600 mb-1">搜索</label>
               <input type="text" id="priceCardSearch" placeholder="搜索价卡类型..." 
                      class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
-            </div>
+            </div> -->
             
             <!-- 类型筛选 -->
             <div class="flex flex-col">
               <label for="priceCardTypeFilter" class="text-sm font-medium text-neutral-600 mb-1">类型</label>
               <select id="priceCardTypeFilter" class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
                 <option value="">全部类型</option>
-                <option value="LCL">拼箱</option>
-                <option value="FCL">整柜</option>
-                <option value="BULK">散货</option>
-                <option value="EXPRESS">快递</option>
+                <option value="LCL">卸货费</option>
+                <option value="FCL">仓储费</option>
+                <option value="BULK">出库费</option>
               </select>
             </div>
             
@@ -298,6 +297,8 @@
           <select id="priceCardType" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
             <option value="">请选择价卡类型</option>
             <option value="卸货费">卸货费</option>
+            <option value="仓储费">仓储费</option>
+            <option value="出库费">出库费</option>
           </select>
         </div>
         
@@ -323,11 +324,11 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-600 mb-1">生效日期 <span class="text-danger">*</span></label>
-                <input type="date" id="effectiveDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                <input type="datetime-local" id="effectiveDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-600 mb-1">失效日期</label>
-                <input type="date" id="expireDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                <input type="datetime-local" id="expireDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
               </div>
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-neutral-600 mb-1">备注</label>
@@ -585,8 +586,12 @@
       const container = document.getElementById('priceCardTypesList');
       container.innerHTML = '';
       
-      // 获取搜索关键词
-      const searchKeyword = document.getElementById('priceCardSearch').value.toLowerCase();
+      // 获取搜索关键词，处理搜索框可能被隐藏的情况
+      let searchKeyword = '';
+      const searchInput = document.getElementById('priceCardSearch');
+      if (searchInput) {
+        searchKeyword = searchInput.value.toLowerCase();
+      }
       
       // 获取所有筛选条件
       const typeFilter = document.getElementById('priceCardTypeFilter').value;
@@ -598,6 +603,8 @@
       // 先创建一个包含所有预设价卡的映射
       const priceCardMap = new Map();
       Object.values(presetPriceCards).forEach(priceCard => {
+        // 添加默认type属性，避免类型筛选错误
+        priceCard.type = priceCard.type || '卸货费';
         priceCardMap.set(priceCard.id, priceCard);
       });
       
@@ -988,8 +995,11 @@
       // 保存关联按钮点击事件
       document.getElementById('saveAssociateBtn').addEventListener('click', saveAssociatedPriceCard);
       
-      // 搜索框输入事件
-      document.getElementById('priceCardSearch').addEventListener('input', renderPriceCardTypes);
+      // 搜索框输入事件，只有当搜索框存在时才添加事件监听器
+      const priceCardSearch = document.getElementById('priceCardSearch');
+      if (priceCardSearch) {
+        priceCardSearch.addEventListener('input', renderPriceCardTypes);
+      }
       
       // 价卡类型筛选事件
       document.getElementById('priceCardTypeFilter').addEventListener('change', renderPriceCardTypes);
@@ -1017,6 +1027,30 @@
         // 重新渲染价卡列表
         renderPriceCardTypes();
       });
+      
+      // 为有效期输入框添加时分秒自动设置
+      const effectiveDateInput = document.getElementById('effectiveDate');
+      const expireDateInput = document.getElementById('expireDate');
+      
+      if (effectiveDateInput) {
+        // 生效日期自动设置为00:00:00
+        effectiveDateInput.addEventListener('change', function() {
+          if (this.value) {
+            const datePart = this.value.split('T')[0];
+            this.value = datePart + 'T00:00:00';
+          }
+        });
+      }
+      
+      if (expireDateInput) {
+        // 失效日期自动设置为23:59:59
+        expireDateInput.addEventListener('change', function() {
+          if (this.value) {
+            const datePart = this.value.split('T')[0];
+            this.value = datePart + 'T23:59:59';
+          }
+        });
+      }
       
       // 套餐引用按钮事件
       document.getElementById('packageReferenceBtn').addEventListener('click', openPackageModal);
@@ -1218,8 +1252,8 @@
       // 填充价卡基本信息
       document.getElementById('priceCardName').value = priceCard.name;
       document.getElementById('applyScope').value = priceCard.applyScope;
-      document.getElementById('effectiveDate').value = priceCard.validFrom.split(' ')[0];
-      document.getElementById('expireDate').value = priceCard.validTo.split(' ')[0];
+      document.getElementById('effectiveDate').value = priceCard.validFrom.replace(' ', 'T');
+      document.getElementById('expireDate').value = priceCard.validTo.replace(' ', 'T');
       document.getElementById('remark').value = priceCard.description;
       
       // 填充散货配置
