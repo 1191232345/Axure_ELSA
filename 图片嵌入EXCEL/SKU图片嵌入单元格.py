@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify, send_file, render_template_string
 import os
 import uuid
 import shutil
+from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.drawing.image import Image
 from openpyxl.utils import get_column_letter
+from PIL import Image as PILImage
 import socket
 
 app = Flask(__name__)
@@ -66,11 +68,14 @@ def get_local_ip():
         return "127.0.0.1"
 
 def is_image_file(filename):
-    """检查是否为图片文件"""
+    """检查文件是否为图片类型"""
     # 跳过Mac系统生成的隐藏文件（以._开头）
     if filename.startswith('._'):
         return False
-    return filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp'))
+    # 排除不支持的格式
+    if filename.lower().endswith(('.mpo', '.mp')):
+        return False
+    return filename.lower().endswith(('.png', '.jpg', '.jpeg', '.jpge', '.gif', '.bmp'))
 
 import re
 
@@ -93,12 +98,16 @@ def process_directories_and_generate_excel(directory_paths):
     for dir_path in directory_paths:
         # 获取文件夹中的图片文件数量
         image_count = 0
-        for file in os.listdir(dir_path):
-            file_path = os.path.join(dir_path, file)
-            if os.path.isfile(file_path) and is_image_file(file):
-                image_count += 1
-        if image_count > max_images:
-            max_images = image_count
+        try:
+            for file in os.listdir(dir_path):
+                file_path = os.path.join(dir_path, file)
+                if os.path.isfile(file_path) and is_image_file(file):
+                    image_count += 1
+            if image_count > max_images:
+                max_images = image_count
+        except Exception as e:
+            print(f"统计图片数量错误 {dir_path}: {e}")
+            continue
     
     # 设置图片列的表头
     for i in range(max_images):
@@ -127,15 +136,23 @@ def process_directories_and_generate_excel(directory_paths):
                 ws.column_dimensions[get_column_letter(col_idx)].width = 15
                 ws.row_dimensions[row_idx].height = 70
                 
-                # 插入图片
-                img = Image(img_path)
-                img.width = 80
-                img.height = 80
-                
-                # 将图片锚定到特定单元格
-                cell_address = f"{get_column_letter(col_idx)}{row_idx}"
-                img.anchor = cell_address
-                ws.add_image(img)
+                # 转换图片为PNG格式
+                with PILImage.open(img_path) as pil_img:
+                    # 创建内存中的BytesIO对象来存储PNG图片
+                    png_buffer = BytesIO()
+                    # 将图片转换为PNG格式并保存到缓冲区
+                    pil_img.save(png_buffer, format='PNG')
+                    png_buffer.seek(0)  # 重置缓冲区指针到开始位置
+                    
+                    # 使用转换后的PNG图片创建openpyxl Image对象
+                    img = Image(png_buffer)
+                    img.width = 80
+                    img.height = 80
+                    
+                    # 将图片锚定到特定单元格
+                    cell_address = f"{get_column_letter(col_idx)}{row_idx}"
+                    img.anchor = cell_address
+                    ws.add_image(img)
             except Exception as e:
                 print(f"插入图片错误: {e}")
                 continue
@@ -727,14 +744,18 @@ def process():
                 # 跳过Mac系统生成的__MACOSX文件夹
                 if '__MACOSX' in root:
                     continue
-                # 检查目录中是否有图片文件
-                has_images = any(is_image_file(file) for file in files)
-                sku_name = os.path.basename(root)  # 使用文件夹名称作为SKU
-                # 删除中文，只保留英文、数字和常见符号
-                sku_name = remove_chinese(sku_name)
-                if has_images and sku_name not in processed_skus:
-                    all_directory_paths.append(root)
-                    processed_skus.add(sku_name)
+                try:
+                    # 检查目录中是否有图片文件
+                    has_images = any(is_image_file(file) for file in files)
+                    sku_name = os.path.basename(root)  # 使用文件夹名称作为SKU
+                    # 删除中文，只保留英文、数字和常见符号
+                    sku_name = remove_chinese(sku_name)
+                    if has_images and sku_name not in processed_skus:
+                        all_directory_paths.append(root)
+                        processed_skus.add(sku_name)
+                except Exception as e:
+                    print(f"处理目录错误 {root}: {e}")
+                    continue
         
         # 处理文件夹并生成Excel
         output_excel_path = process_directories_and_generate_excel(all_directory_paths)
