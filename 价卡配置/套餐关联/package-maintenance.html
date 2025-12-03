@@ -128,9 +128,12 @@
       
       <!-- 套餐价卡列表 -->
       <div class="bg-white p-4 border border-neutral-100 rounded-lg shadow-sm mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-start mb-4 gap-3">
           <button id="addPriceCardToPackageBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center gap-1">
-            <i class="fa fa-plus"></i> 添加价卡
+            <i class="fa fa-plus"></i> 添加成本价卡
+          </button>
+          <button id="addMiscPriceCardToPackageBtn" class="px-5 py-2 bg-orange-500 text-white text-sm rounded-md hover:bg-orange-600 transition-all-300 flex items-center gap-1">
+            <i class="fa fa-plus"></i> 添加杂费价卡
           </button>
         </div>
         
@@ -208,19 +211,7 @@
                 
 
                 
-                <!-- 生效日期筛选 -->
-                <div class="flex flex-col">
-                  <label for="effectiveDateFilter" class="text-sm font-medium text-neutral-600 mb-1">生效日期</label>
-                  <input type="date" id="effectiveDateFilter" 
-                         class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
-                </div>
-                
-                <!-- 失效日期筛选 -->
-                <div class="flex flex-col">
-                  <label for="expireDateFilter" class="text-sm font-medium text-neutral-600 mb-1">失效日期</label>
-                  <input type="date" id="expireDateFilter" 
-                         class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
-                </div>
+
               </div>
               
               <!-- 查询和重置按钮 -->
@@ -247,8 +238,6 @@
                 </th>
                 <th class="px-6 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">价卡类型</th>
                 <th class="px-6 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">价卡名称</th>
-                <th class="px-6 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">生效日期</th>
-                <th class="px-6 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">失效日期</th>
               </tr>
                 </thead>
                 <tbody id="availablePriceCardsList" class="bg-white divide-y divide-neutral-200">
@@ -302,8 +291,6 @@
     function renderAvailablePriceCards() {
       const searchKeyword = document.getElementById('priceCardSearch').value.toLowerCase();
       const typeFilter = document.getElementById('priceCardTypeFilter').value;
-      const effectiveDateFilter = document.getElementById('effectiveDateFilter').value;
-      const expireDateFilter = document.getElementById('expireDateFilter').value;
       
       // 筛选价卡
       const filteredPriceCards = mockPriceCards.filter(card => {
@@ -313,22 +300,16 @@
         // 类型筛选
         const matchesType = !typeFilter || card.type === typeFilter;
         
-        // 生效日期筛选
-        const matchesEffectiveDate = !effectiveDateFilter || card.effectiveDate >= effectiveDateFilter;
-        
-        // 失效日期筛选
-        const matchesExpireDate = !expireDateFilter || card.expireDate <= expireDateFilter;
-        
         // 检查是否已在套餐中
         const isInPackage = packagePriceCards.some(packageCard => packageCard.id === card.id);
         
-        return matchesSearch && matchesType && matchesEffectiveDate && matchesExpireDate && !isInPackage;
+        return matchesSearch && matchesType && !isInPackage;
       });
       
       // 渲染价卡列表
       const availablePriceCardsList = document.getElementById('availablePriceCardsList');
       if (filteredPriceCards.length === 0) {
-        availablePriceCardsList.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-neutral-500"><i class="fa fa-inbox text-4xl mb-2"></i><p>暂无可用价卡</p></td></tr>';
+        availablePriceCardsList.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-neutral-500"><i class="fa fa-inbox text-4xl mb-2"></i><p>暂无可用价卡</p></td></tr>';
         return;
       }
       
@@ -342,8 +323,6 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">${typeInfo.text}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">${card.name}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">${card.effectiveDate}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">${card.expireDate}</td>
           </tr>
         `;
       }).join('');
@@ -498,7 +477,7 @@
       const card = packagePriceCards.find(c => c.id === cardId);
       if (card) {
         card.discount = parseFloat(discount) || 0;
-        savePackage(); // 保存套餐数据
+        // 移除立即保存，只在用户点击保存按钮时保存
       }
     }
     
@@ -507,7 +486,7 @@
       const card = packagePriceCards.find(c => c.id === cardId);
       if (card) {
         card.adjustmentType = adjustmentType;
-        savePackage(); // 保存套餐数据
+        // 移除立即保存，只在用户点击保存按钮时保存
       }
     }
     
@@ -516,7 +495,7 @@
       const card = packagePriceCards.find(c => c.id === cardId);
       if (card) {
         card.amountAdjustment = parseFloat(amountAdjustment) || 0;
-        savePackage(); // 保存套餐数据
+        // 移除立即保存，只在用户点击保存按钮时保存
       }
     }
     
@@ -644,8 +623,14 @@
       // 保存套餐按钮点击事件
       document.getElementById('savePackageBtn').addEventListener('click', savePackage);
       
-      // 添加价卡按钮点击事件
+      // 添加成本价卡按钮点击事件
       document.getElementById('addPriceCardToPackageBtn').addEventListener('click', showPriceCardModal);
+      
+      // 添加杂费价卡按钮点击事件
+      document.getElementById('addMiscPriceCardToPackageBtn').addEventListener('click', function() {
+        // 可以在这里添加杂费价卡的特殊逻辑，或者直接复用showPriceCardModal
+        showPriceCardModal();
+      });
       
       // 弹窗关闭按钮点击事件
       document.getElementById('closeModalBtn').addEventListener('click', hidePriceCardModal);
@@ -671,8 +656,6 @@
         // 重置所有筛选条件
         document.getElementById('priceCardSearch').value = '';
         document.getElementById('priceCardTypeFilter').value = '';
-        document.getElementById('effectiveDateFilter').value = '';
-        document.getElementById('expireDateFilter').value = '';
         // 重新渲染价卡列表
         renderAvailablePriceCards();
       });

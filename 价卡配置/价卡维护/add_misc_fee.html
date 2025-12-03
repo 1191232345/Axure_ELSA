@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增杂费</title>
+  <!-- 引入必要依赖 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            success: '#00B42A',
+            danger: '#F53F3F',
+            neutral: {
+              100: '#F2F3F5',
+              200: '#E5E6EB',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          transitionProperty: {
+            'all-300': 'all 0.3s ease',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+      .bg-primary\/10 {
+        background-color: rgba(22, 93, 255, 0.1);
+      }
+      .hover\:border-primary:hover {
+        border-color: #165DFF;
+      }
+      .hover\:text-primary:hover {
+        color: #165DFF;
+      }
+      .hover\:bg-neutral-50:hover {
+        background-color: #F9FAFB;
+      }
+      .hover\:bg-primary\/5:hover {
+        background-color: rgba(22, 93, 255, 0.05);
+      }
+      .hover\:text-danger:hover {
+        color: #F53F3F;
+      }
+      .status-tag {
+        @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+      }
+    }
+  </style>
+  
+  <!-- 基础样式保障 -->
+  <style>
+    /* 基础布局样式 */
+    .mt-6 { margin-top: 1.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .border-t { border-top: 1px solid; }
+    .pt-6 { padding-top: 1.5rem; }
+    .pb-4 { padding-bottom: 1rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .ml-2 { margin-left: 0.5rem; }
+    .ml-1 { margin-left: 0.25rem; }
+    .mr-2 { margin-right: 0.5rem; }
+    .flex { display: flex; }
+    .flex-wrap { flex-wrap: wrap; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .text-left { text-align: left; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 1rem; }
+    .font-bold { font-weight: 600; }
+    .font-medium { font-weight: 500; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .rounded { border-radius: 0.25rem; }
+    .border { border: 1px solid; }
+    .min-h-\[60px\] { min-height: 60px; }
+    .min-h-\[100px\] { min-height: 100px; }
+    .overflow-x-auto { overflow-x: auto; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-2 { gap: 0.5rem; }
+    .grid { display: grid; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .transition-all-300 { transition: all 0.3s ease; }
+    .w-full { width: 100%; }
+    .outline-none { outline: none; }
+    .focus\:border-primary:focus { border-color: #165DFF; }
+    
+    /* 颜色样式 */
+    .border-neutral-100 { border-color: #F2F3F5; }
+    .border-neutral-200 { border-color: #E5E6EB; }
+    .border-primary { border-color: #165DFF; }
+    .text-neutral-700 { color: #1D2129; }
+    .text-neutral-600 { color: #272E3B; }
+    .text-neutral-500 { color: #4E5969; }
+    .text-neutral-400 { color: #86909C; }
+    .text-primary { color: #165DFF; }
+    .text-success { color: #00B42A; }
+    .text-danger { color: #F53F3F; }
+    .bg-neutral-50 { background-color: #F9FAFB; }
+    .bg-neutral-100 { background-color: #F2F3F5; }
+    .bg-primary\/10 { background-color: rgba(22, 93, 255, 0.1); }
+    .bg-neutral-200 { background-color: #E5E6EB; }
+    .bg-primary { background-color: #165DFF; }
+    .text-white { color: #FFFFFF; }
+    
+    /* 交互样式 */
+    .hover\:border-primary:hover { border-color: #165DFF; }
+    .hover\:text-primary:hover { color: #165DFF; }
+    .hover\:bg-neutral-50:hover { background-color: #F9FAFB; }
+    .hover\:bg-primary\/5:hover { background-color: rgba(22, 93, 255, 0.05); }
+    .hover\:bg-primary\/10:hover { background-color: rgba(22, 93, 255, 0.1); }
+    .hover\:text-danger:hover { color: #F53F3F; }
+    .hover\:bg-primary:hover { background-color: #0E4BDB; }
+    
+    /* 状态样式 */
+    .hidden { display: none; }
+    .cursor-pointer { cursor: pointer; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- 主内容区域 -->
+  <main class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 页面标题与操作栏 -->
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+      <div class="flex items-center">
+        <button id="backBtn" class="px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-md text-sm hover:bg-neutral-200 transition-all-300 mr-4 flex items-center">
+          <i class="fa fa-arrow-left mr-1"></i> 返回
+        </button>
+      </div>
+    </div>
+
+    <!-- 杂费内容 -->
+    <div id="miscFeeContent">
+      <!-- 杂费类型卡片 -->
+      <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
+        <h2 class="text-base font-bold text-neutral-700 mb-4">杂费类型</h2>
+        <div class="flex items-center">
+          <select id="miscFeeType" name="miscFeeType" class="w-64 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <option value="超箱费">超箱费</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- 基本信息卡片 -->
+      <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6 mt-6">
+        <h2 class="text-base font-bold text-neutral-700 mb-4">基本信息</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="miscFeeName" class="block text-sm font-medium text-neutral-600 mb-1">名称</label>
+            <input type="text" id="miscFeeName" value="超箱费" placeholder="请输入杂费名称" 
+                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+          <div>
+            <label for="applyScope" class="block text-sm font-medium text-neutral-600 mb-1">适用范围</label>
+            <select id="applyScope" class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+              <option value="全部">全部</option>
+              <option value="特定仓库">特定仓库</option>
+              <option value="特定客户">特定客户</option>
+            </select>
+          </div>
+          <!-- 特定仓库选择区域，默认隐藏 -->
+          <div id="warehouseSelection" class="hidden md:col-span-2">
+            <label class="block text-sm font-medium text-neutral-600 mb-1">指定仓库</label>
+            <div class="relative">
+              <!-- 下拉触发器 -->
+              <button id="warehouseDropdownTrigger" class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm text-left focus:border-primary focus:outline-none transition-all-300 flex justify-between items-center bg-white">
+                <span id="warehouseSelectedText">请选择仓库</span>
+                <i class="fa fa-chevron-down text-neutral-500 transition-transform duration-300"></i>
+              </button>
+              <!-- 下拉面板 -->
+              <div id="warehouseDropdownPanel" class="hidden absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg p-3 max-h-60 overflow-y-auto">
+                <div class="grid grid-cols-1 gap-2">
+                  <label class="flex items-center space-x-2 cursor-pointer hover:bg-neutral-50 p-1 rounded">
+                    <input type="checkbox" name="warehouse" value="warehouse1" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
+                    <span class="text-sm text-neutral-700">DE001</span>
+                  </label>
+                  <label class="flex items-center space-x-2 cursor-pointer hover:bg-neutral-50 p-1 rounded">
+                    <input type="checkbox" name="warehouse" value="warehouse2" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
+                    <span class="text-sm text-neutral-700">MD001</span>
+                  </label>
+                  <label class="flex items-center space-x-2 cursor-pointer hover:bg-neutral-50 p-1 rounded">
+                    <input type="checkbox" name="warehouse" value="warehouse3" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
+                    <span class="text-sm text-neutral-700">DEMO</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label for="validFrom" class="block text-sm font-medium text-neutral-600 mb-1">生效日期</label>
+            <input type="date" id="validFrom" 
+                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+          <div>
+            <label for="validTo" class="block text-sm font-medium text-neutral-600 mb-1">失效日期</label>
+            <input type="date" id="validTo" 
+                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+        </div>
+        <div class="mt-4">
+          <label for="description" class="block text-sm font-medium text-neutral-600 mb-1">描述</label>
+          <textarea id="description" rows="3" placeholder="请输入杂费描述" value="当货物超出集装箱装载标准时收取的费用"
+                    class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300"></textarea>
+        </div>
+      </div>
+
+      <!-- 单价设置 -->
+      <div class="space-y-6 mt-6">
+        <h2 class="text-base font-bold text-neutral-700">单箱费用设置</h2>
+        
+        <!-- 整柜单价卡片 -->
+        <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
+          <h3 class="text-sm font-medium text-neutral-600 mb-3">整柜</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-neutral-50 border-b border-neutral-200">
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">柜型</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">起始箱数</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">结束箱数</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">单价</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">备注</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-12">操作</th>
+                </tr>
+              </thead>
+              <tbody id="containerPriceList">
+                <!-- 整柜单价项目将通过JS动态添加 -->
+                <tr class="border-b border-neutral-200 container-price-item">
+                  <td class="px-4 py-3">
+                    <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <option value="20GP">20GP</option>
+                      <option value="40GP">40GP</option>
+                      <option value="40HQ">40HQ</option>
+                      <option value="45HQ">45HQ</option>
+                    </select>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="起始箱数" value="1"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="结束箱数" value="10"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="0.01" placeholder="请输入单价" value="300"
+                             class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <input type="text" placeholder="可选" value="20尺标准柜超箱费（1-10箱）"
+                           class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                  </td>
+                  <td class="px-4 py-3">
+                    <button type="button" class="remove-container-item p-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-all-300">
+                      <i class="fa fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="border-b border-neutral-200 container-price-item">
+                  <td class="px-4 py-3">
+                    <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <option value="20GP">20GP</option>
+                      <option value="40GP">40GP</option>
+                      <option value="40HQ">40HQ</option>
+                      <option value="45HQ">45HQ</option>
+                    </select>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="起始箱数" value="11"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="结束箱数" value="20"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="0.01" placeholder="请输入单价" value="280"
+                             class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <input type="text" placeholder="可选" value="20尺标准柜超箱费（11-20箱）"
+                           class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                  </td>
+                  <td class="px-4 py-3">
+                    <button type="button" class="remove-container-item p-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-all-300">
+                      <i class="fa fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="border-b border-neutral-200 container-price-item">
+                  <td class="px-4 py-3">
+                    <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <option value="20GP">20GP</option>
+                      <option value="40GP">40GP</option>
+                      <option value="40HQ">40HQ</option>
+                      <option value="45HQ">45HQ</option>
+                    </select>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="起始箱数" value="21"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="结束箱数" value="99999"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="0.01" placeholder="请输入单价" value="250"
+                             class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <input type="text" placeholder="可选" value="20尺标准柜超箱费（21箱以上）"
+                           class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                  </td>
+                  <td class="px-4 py-3">
+                    <button type="button" class="remove-container-item p-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-all-300">
+                      <i class="fa fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" id="addContainerPrice" class="mt-3 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-md text-sm hover:bg-neutral-200 transition-all-300 flex items-center">
+            <i class="fa fa-plus mr-1"></i> 添加柜型
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 底部按钮区域 -->
+  <div class="flex justify-center items-center gap-4 py-8 bg-white border-t border-neutral-100 mt-8">
+    <button id="cancelBtn" class="px-6 py-2 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 focus:border-primary focus:outline-none transition-all-300">
+      取消
+    </button>
+    <button id="saveBtn" class="px-6 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 focus:outline-none transition-all-300">
+      保存
+    </button>
+  </div>
+
+  <script>
+    // DOMContentLoaded事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+      // 设置默认日期
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('validFrom').value = formattedDate;
+      
+      // 设置默认失效日期为一年后
+      const oneYearLater = new Date(today.setFullYear(today.getFullYear() + 1));
+      const formattedOneYearLater = oneYearLater.toISOString().split('T')[0];
+      document.getElementById('validTo').value = formattedOneYearLater;
+      
+      // 绑定事件
+      bindEvents();
+    });
+
+    // 绑定事件
+    function bindEvents() {
+      // 返回按钮点击事件
+      document.getElementById('backBtn').addEventListener('click', function() {
+        window.location.href = '杂费维护.html';
+      });
+      
+      // 适用范围选择事件监听
+      document.getElementById('applyScope').addEventListener('change', function() {
+        const warehouseSelection = document.getElementById('warehouseSelection');
+        if (this.value === '特定仓库') {
+          warehouseSelection.classList.remove('hidden');
+        } else {
+          warehouseSelection.classList.add('hidden');
+          // 隐藏下拉面板
+          document.getElementById('warehouseDropdownPanel').classList.add('hidden');
+        }
+      });
+
+      // 仓库下拉checkbox逻辑
+      const warehouseDropdownTrigger = document.getElementById('warehouseDropdownTrigger');
+      const warehouseDropdownPanel = document.getElementById('warehouseDropdownPanel');
+      const warehouseSelectedText = document.getElementById('warehouseSelectedText');
+      const warehouseCheckboxes = document.querySelectorAll('input[name="warehouse"]');
+      
+      // 切换下拉面板显示/隐藏
+      warehouseDropdownTrigger.addEventListener('click', function() {
+        const isHidden = warehouseDropdownPanel.classList.toggle('hidden');
+        // 旋转箭头
+        const icon = this.querySelector('i');
+        if (isHidden) {
+          icon.classList.remove('rotate-180');
+        } else {
+          icon.classList.add('rotate-180');
+        }
+      });
+      
+      // 更新选中文本
+      function updateWarehouseSelectedText() {
+        const checkedBoxes = document.querySelectorAll('input[name="warehouse"]:checked');
+        const checkedCount = checkedBoxes.length;
+        if (checkedCount === 0) {
+          warehouseSelectedText.textContent = '请选择仓库';
+        } else if (checkedCount === 1) {
+          const label = checkedBoxes[0].closest('label').querySelector('span').textContent;
+          warehouseSelectedText.textContent = label;
+        } else {
+          warehouseSelectedText.textContent = `${checkedCount}个仓库已选择`;
+        }
+      }
+      
+      // 为每个checkbox添加事件监听
+      warehouseCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateWarehouseSelectedText);
+      });
+      
+      // 点击外部关闭下拉面板
+      document.addEventListener('click', function(event) {
+        if (!warehouseDropdownTrigger.contains(event.target) && !warehouseDropdownPanel.contains(event.target)) {
+          warehouseDropdownPanel.classList.add('hidden');
+          const icon = warehouseDropdownTrigger.querySelector('i');
+          icon.classList.remove('rotate-180');
+        }
+      });
+      
+      // 添加柜型按钮点击事件
+      document.getElementById('addContainerPrice').addEventListener('click', function() {
+        addContainerPriceItem();
+      });
+      
+      // 初始绑定删除柜型按钮事件
+      bindRemoveContainerPriceEvents();
+      
+      // 取消按钮点击事件
+      document.getElementById('cancelBtn').addEventListener('click', function() {
+        if (confirm('确定要取消吗？未保存的内容将丢失。')) {
+          window.location.href = '杂费维护.html';
+        }
+      });
+      
+      // 保存按钮点击事件
+      document.getElementById('saveBtn').addEventListener('click', function() {
+        saveMiscFee();
+      });
+    }
+    
+    // 添加柜型单价项目
+    function addContainerPriceItem() {
+      // 每次都重新获取最新的containerPriceList$素
+      const containerPriceList = document.getElementById('containerPriceList');
+      const itemCount = containerPriceList.querySelectorAll('.container-price-item').length + 1;
+      
+      const newRow = document.createElement('tr');
+      newRow.className = 'border-b border-neutral-200 container-price-item';
+      newRow.innerHTML = `
+        <td class="px-4 py-3">
+          <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <option value="">请选择柜型</option>
+            <option value="20GP">20GP</option>
+            <option value="40GP">40GP</option>
+            <option value="40HQ">40HQ</option>
+            <option value="45HQ">45HQ</option>
+            <option value="20RF">20RF</option>
+            <option value="40RF">40RF</option>
+            <option value="40RH">40RH</option>
+            <option value="20OT">20OT</option>
+            <option value="40OT">40OT</option>
+            <option value="20FR">20FR</option>
+            <option value="40FR">40FR</option>
+          </select>
+        </td>
+        <td class="px-4 py-3">
+          <div class="relative">
+            <input type="number" step="1" placeholder="起始箱数" 
+                   class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="relative">
+            <input type="number" step="1" placeholder="结束箱数" 
+                   class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="relative">
+            <input type="number" step="0.01" placeholder="请输入单价" 
+                   class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <input type="text" placeholder="可选" 
+                 class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+        </td>
+        <td class="px-4 py-3">
+          <button type="button" class="remove-container-item p-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-all-300">
+            <i class="fa fa-trash text-xs"></i>
+          </button>
+        </td>
+      `;
+      
+      containerPriceList.appendChild(newRow);
+      
+      // 绑定新添加的删除按钮事件
+      bindRemoveContainerPriceEvents();
+    }
+    
+    // 绑定删除柜型按钮事件
+    function bindRemoveContainerPriceEvents() {
+      // 先移除所有现有事件监听器（通过事件委托方式实现）
+      const containerPriceList = document.getElementById('containerPriceList');
+      
+      // 移除所有现有事件监听器
+      const newContainer = containerPriceList.cloneNode(true);
+      containerPriceList.parentNode.replaceChild(newContainer, containerPriceList);
+      
+      // 重新绑定事件委托
+      newContainer.addEventListener('click', function(event) {
+        if (event.target.closest('.remove-container-item')) {
+          const itemCount = newContainer.querySelectorAll('.container-price-item').length;
+          if (itemCount > 1) {
+            event.target.closest('.container-price-item').remove();
+          } else {
+            alert('至少需要保留一个柜型');
+          }
+        }
+      });
+    }
+    
+    // 保存杂费
+    function saveMiscFee() {
+      // 获取表单数据
+      // 获取选中的仓库
+      const selectedWarehouseCheckboxes = document.querySelectorAll('input[name="warehouse"]:checked');
+      const selectedWarehouses = Array.from(selectedWarehouseCheckboxes).map(checkbox => checkbox.value);
+      
+      // 构建杂费数据
+      const miscFeeData = {
+        type: document.getElementById('miscFeeType').value,
+        name: document.getElementById('miscFeeName').value,
+        applyScope: document.getElementById('applyScope').value,
+        warehouses: selectedWarehouses,
+        validFrom: document.getElementById('validFrom').value + ' 00:00:00',
+        validTo: document.getElementById('validTo').value + ' 23:59:59',
+        description: document.getElementById('description').value,
+        calculationLogic: '根据超出的集装箱规格和数量计算',
+        containerConfig: getContainerConfig(),
+        status: 'pending' // 默认保存为未生效状态
+      };
+      
+      // 验证必填字段
+      if (!miscFeeData.type) {
+        alert('请选择杂费类型');
+        return;
+      }
+      
+      if (!miscFeeData.name) {
+        alert('请输入杂费名称');
+        return;
+      }
+      
+      // 验证至少有一个柜型
+      if (miscFeeData.containerConfig.length === 0) {
+        alert('至少需要设置一个柜型的费用');
+        return;
+      }
+      
+      // 模拟保存操作
+      console.log('保存杂费数据:', miscFeeData);
+      
+      // 显示保存成功提示
+      alert('杂费保存成功！');
+      
+      // 跳转到杂费维护页面
+      window.location.href = '杂费维护.html';
+    }
+    
+    // 获取整柜配置
+    function getContainerConfig() {
+      const containerConfig = [];
+      const containerItems = document.querySelectorAll('.container-price-item');
+      
+      containerItems.forEach((item) => {
+        const select = item.querySelector('select');
+        const inputs = item.querySelectorAll('input');
+        const type = select.value;
+        const startBox = parseInt(inputs[0].value) || 0;
+        const endBox = parseInt(inputs[1].value) || 0;
+        const price = parseFloat(inputs[2].value) || 0;
+        const remark = inputs[3].value;
+        
+        if (type) {
+          containerConfig.push({
+            containerType: type,
+            startBox: startBox,
+            endBox: endBox,
+            price: price,
+            remark: remark
+          });
+        }
+      });
+      
+      return containerConfig;
+    }
+  </script>
+</body>
+</html>

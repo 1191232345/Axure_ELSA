@@ -361,20 +361,76 @@
       window.location.href = `package-maintenance.html?id=${packageId}`;
     }
     
+    // 从localStorage获取价卡数据
+    function getPriceCardsFromStorage() {
+      const priceCards = localStorage.getItem('priceCards');
+      if (priceCards) {
+        return JSON.parse(priceCards);
+      } else {
+        // 返回空数组或默认数据
+        return [];
+      }
+    }
+    
     // 删除套餐
     function deletePackage(packageId) {
-      if (confirm('确定要删除该套餐吗？')) {
-        // 从localStorage中删除套餐
-        let packages = getPackagesFromStorage();
-        const index = packages.findIndex(pkg => pkg.id === packageId);
-        if (index > -1) {
-          packages.splice(index, 1);
-          savePackagesToStorage(packages);
-          alert('套餐已删除');
-          // 更新当前数据并重新渲染
-          currentPackages = packages;
-          renderPackages(currentPackages);
-        }
+      // 从localStorage获取套餐数据
+      const packages = getPackagesFromStorage();
+      const packageToDelete = packages.find(pkg => pkg.id === packageId);
+      
+      if (!packageToDelete) {
+        alert('套餐不存在');
+        return;
+      }
+      
+      // 检查套餐关联价卡的有效期状态
+      const now = new Date();
+      const expiredCards = [];
+      const activeCards = [];
+      
+      // 获取所有价卡数据
+      const allPriceCards = getPriceCardsFromStorage();
+      
+      // 根据套餐的priceCardIds找到对应的价卡
+      if (packageToDelete.priceCardIds && packageToDelete.priceCardIds.length > 0) {
+        packageToDelete.priceCardIds.forEach(cardId => {
+          const card = allPriceCards.find(c => c.id === cardId);
+          if (card) {
+            const validFrom = new Date(card.validFrom);
+            const validTo = new Date(card.validTo);
+            
+            if (validTo < now) {
+              expiredCards.push(card);
+            } else {
+              activeCards.push(card);
+            }
+          }
+        });
+      }
+      
+      // 构建删除确认信息
+      let confirmMessage = '确定要删除该套餐吗？';
+      
+      if (expiredCards.length > 0 && activeCards.length === 0) {
+        confirmMessage += '\n\n注意：该套餐关联的所有价卡均已过期。';
+      } else if (activeCards.length > 0) {
+        confirmMessage += `\n\n注意：该套餐关联了 ${activeCards.length} 个有效价卡和 ${expiredCards.length} 个已过期价卡。`;
+        confirmMessage += '\n删除后，这些价卡将不再关联到该套餐。';
+      }
+      
+      if (confirm(confirmMessage)) {
+        // 删除指定ID的套餐
+        const updatedPackages = packages.filter(pkg => pkg.id !== packageId);
+        
+        // 保存更新后的套餐数据
+        savePackagesToStorage(updatedPackages);
+        
+        // 显示删除成功提示
+        alert('套餐删除成功');
+        
+        // 重新渲染套餐列表
+        currentPackages = updatedPackages;
+        renderPackages(currentPackages);
       }
     }
     

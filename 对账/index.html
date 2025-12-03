@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收入明细</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* 标签页样式 */
+        .tab {
+            background-color: #007bff;
+            color: #fff;
+            padding: 8px 20px;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+        }
+        
+        /* 导航标签栏 */
+        .nav-tabs {
+            background-color: #fff;
+            padding: 12px 20px;
+            border-bottom: 1px solid #e1e5e9;
+            overflow-x: auto;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .nav-tabs span {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 14px;
+            color: #6c757d;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            margin-right: 8px;
+        }
+        
+        .nav-tabs span:hover {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        
+        .nav-tabs span.active {
+            background-color: #e7f3ff;
+            border-bottom: 2px solid #007bff;
+            color: #007bff;
+            font-weight: 500;
+        }
+        
+        /* 筛选栏 */
+        .filter-bar {
+            background-color: #fff;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            border-bottom: 1px solid #e1e5e9;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .filter-bar select,
+        .filter-bar input {
+            padding: 8px 12px;
+            border: 1px solid #d1d9e0;
+            border-radius: 4px;
+            min-width: 140px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .filter-bar select:focus,
+        .filter-bar input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+        }
+        
+        .filter-bar button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        /* 搜索和重置按钮样式 */
+        .btn-reset, .btn-search {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-reset {
+            background-color: #ffffff;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+        
+        .btn-reset:hover {
+            background-color: #f8f9fa;
+            color: #495057;
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-reset:active {
+            transform: translateY(0);
+        }
+        
+        .btn-search {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+        
+        .btn-search:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,123,255,0.3);
+        }
+        
+        .btn-search:active {
+            transform: translateY(0);
+        }
+        
+        /* 数据弹窗搜索按钮组样式 */
+        .search-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+        
+        /* 仓库下拉勾选框样式 */
+        .warehouse-dropdown-group {
+            min-width: 200px;
+        }
+        
+        .dropdown-checkbox-container {
+            position: relative;
+            margin-top: 4px;
+        }
+        
+        .dropdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border: 1px solid #d1d9e0;
+            border-radius: 4px;
+            background-color: #ffffff;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .dropdown-header:hover {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+        }
+        
+        .dropdown-arrow {
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+        
+        .dropdown-checkbox-container.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #ffffff;
+            border: 1px solid #d1d9e0;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            margin-top: 2px;
+        }
+        
+        .dropdown-checkbox-container.active .dropdown-options {
+            display: block;
+        }
+        
+        .dropdown-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #495057;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .dropdown-option:hover {
+            background-color: #f8fafc;
+            color: #007bff;
+        }
+        
+        .dropdown-option input[type="checkbox"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #d1d9e0;
+            border-radius: 3px;
+            background-color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .dropdown-option input[type="checkbox"]:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .dropdown-option input[type="checkbox"]:checked::after {
+            content: "✓";
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .dropdown-option input[type="checkbox"]:hover {
+            border-color: #007bff;
+        }
+        
+        .btn-expand {
+            background-color: #fff;
+            border: 1px solid #d1d9e0;
+            color: #495057;
+        }
+        
+        .btn-expand:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+            transform: translateY(-1px);
+        }
+        
+        /* 操作按钮栏 */
+        .action-bar {
+            background-color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            border-bottom: 1px solid #e1e5e9;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .action-bar button {
+            padding: 9px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-right: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .btn-batch-confirm {
+            background-color: #007bff;
+            color: #fff;
+        }
+        
+        .btn-batch-confirm:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.25);
+        }
+        
+        .btn-batch-delete {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .btn-batch-delete:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(220,53,69,0.25);
+        }
+        
+        .btn-import, .btn-export {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+        
+        .btn-import:hover, .btn-export:hover {
+            background-color: #e06a00;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(253,126,20,0.25);
+        }
+        
+        .action-bar button:last-child {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .action-bar button:last-child:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(40,167,69,0.25);
+        }
+        
+        .total-amount {
+            font-weight: 600;
+            color: #212529;
+            font-size: 15px;
+            background-color: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* 表格容器 */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            background-color: #fff;
+            margin: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border: 1px solid #e1e5e9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th, td {
+            border: 1px solid #e1e5e9;
+            padding: 10px 12px;
+            text-align: left;
+            color: #495057;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #212529;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        }
+        
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #fefefe;
+        }
+        
+        tbody tr:nth-child(odd) {
+            background-color: #fcfcfc;
+        }
+        
+        .product-detail a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .product-detail a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        
+        .operation span {
+            margin-right: 12px;
+            cursor: pointer;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .operation span:hover {
+            transform: scale(1.1);
+        }
+        
+        .operation span:first-child:hover {
+            color: #28a745;
+        }
+        
+        .operation span:nth-child(2):hover {
+            color: #007bff;
+        }
+        
+        .operation span:last-child:hover {
+            color: #dc3545;
+        }
+        
+        /* 复选框样式 */
+        input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: #007bff;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="checkbox"]:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            margin: 3% auto;
+            border: none;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 16px 20px;
+            background: #ffffff;
+            color: #212529;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .close {
+            color: #6c757d;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            background-color: transparent;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #495057;
+            background-color: #f8fafc;
+            transform: none;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-top: 1px solid #e1e5e9;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #e1e5e9;
+        }
+        
+        /* 检索条件区域样式 */
+        .search-section {
+            margin-bottom: 20px;
+        }
+        
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .search-header h4 {
+            margin: 0;
+            font-size: 15px;
+            color: #212529;
+            font-weight: 600;
+        }
+        
+        .btn-toggle {
+            background: none;
+            border: 1px solid #d1d9e0;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-toggle:hover {
+            background-color: #f8fafc;
+            border-color: #007bff;
+        }
+        
+        .search-form {
+            background-color: #ffffff;
+            padding: 0;
+            border-radius: 6px;
+            border: none;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: flex-end;
+        }
+        
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .form-group label {
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .form-group select,
+        .form-group input {
+            padding: 8px 10px;
+            border: 1px solid #d1d9e0;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+            background-color: #ffffff;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+        }
+        
+        /* 调整搜索按钮样式，使其与表单组在同一行 */
+        .visible-conditions .search-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+            flex-shrink: 0;
+        }
+        
+        /* 隐藏条件的搜索按钮保持原样式 */
+        .hidden-conditions .search-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e1e5e9;
+        }
+        
+        .hidden-conditions {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed #e9ecef;
+        }
+        
+        .hidden-conditions.expanded {
+            display: flex;
+        }
+        
+        /* 数据列表区域样式 */
+        .data-section {
+            margin-top: 20px;
+        }
+        
+        .data-section h4 {
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: #212529;
+            font-weight: 600;
+        }
+        
+        .data-table-container {
+            overflow-x: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            box-shadow: none;
+        }
+        
+        #modalDataTable {
+            min-width: 800px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        #modalDataTable th,
+        #modalDataTable td {
+            padding: 10px 12px;
+            font-size: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        #modalDataTable th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #495057;
+            border-top: 1px solid #e1e5e9;
+        }
+        
+        #modalDataTable tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        #modalDataTable tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d9e0;
+            background-color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .page-btn:hover {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            transform: translateY(-1px);
+        }
+        
+        .page-btn:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .page-info {
+            font-size: 14px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        /* 按钮样式 */
+        .btn-cancel {
+            padding: 10px 20px;
+            border: 1px solid #d1d9e0;
+            background-color: #fff;
+            color: #495057;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+            transform: translateY(-1px);
+        }
+        
+        .btn-save {
+            padding: 10px 20px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .btn-save:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.25);
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        tbody tr {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- 标签页 -->
+    <div class="tab">收入明细 ×</div>
+
+    <!-- 导航标签栏 -->
+    <div class="nav-tabs">
+        <span class="active">出库+快递(YC)</span>
+        <span>出库+快递(TMS)</span>
+        <span>操作费</span>
+        <span>卸货费</span>
+        <span>仓储费</span>
+        <span>退货运费</span>
+        <span>退货处理费</span>
+        <span>销毁费</span>
+        <span>快递费</span>
+        <span>转仓费</span>
+        <span>快递补收(YC)</span>
+        <span>快递补收(TMS)</span>
+        <span>MTW运输费</span>
+        <span>快递赔付</span>
+        <span>合并订单费</span>
+        <span>未上网返退</span>
+        <span>库内赔付(错发)</span>
+        <span>库内赔付(丢件)</span>
+        <span>库内服</span>
+    </div>
+
+    <!-- 筛选栏 -->
+    <div class="filter-bar">
+        <label>客户代码</label>
+        <select>
+            <option>请选择客户代码</option>
+        </select>
+        <label>客服</label>
+        <select>
+            <option>请选择客服</option>
+        </select>
+        <label>仓库</label>
+        <select>
+            <option>请选择仓库</option>
+        </select>
+        <label>状态</label>
+        <select>
+            <option>请选择状态</option>
+        </select>
+        <button class="btn-reset">重置</button>
+        <button class="btn-search">搜索</button>
+        <button class="btn-expand">展开 ▾</button>
+    </div>
+
+    <!-- 操作按钮栏 -->
+    <div class="action-bar">
+        <div>
+            <button class="btn-batch-confirm">批量确认</button>
+            <button class="btn-batch-delete">批量删除</button>
+            <button class="btn-import">导入</button>
+            <button class="btn-export">导出</button>
+            <button>获取数据</button>
+        </div>
+        <div class="total-amount">总金额: 3886.654</div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="table-container">
+        <table id="mainTable">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="mainTableCheckAll"></th>
+                    <th>状态</th>
+                    <th>账单月</th>
+                    <th>航期</th>
+                    <th>创建时间</th>
+                    <th>仓库</th>
+                    <th>客户代码</th>
+                    <th>客服</th>
+                    <th>参考号</th>
+                    <th>订单号</th>
+                    <th>快递单号</th>
+                    <th>运输方式</th>
+                    <th>下单时间</th>
+                    <th>出货时间</th>
+                    <th>出库费合</th>
+                    <th>快递费合</th>
+                    <th>合计</th>
+                    <th>币种</th>
+                    <th>产品详情</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="mainTableBody">
+                <tr>
+                    <td><input type="checkbox"></td>
+                    <td>草稿</td>
+                    <td>2025-11</td>
+                    <td>2025-11</td>
+                    <td>2025-12-01 13:34:12</td>
+                    <td>CA008</td>
+                    <td>ZJJS</td>
+                    <td>钟荷花</td>
+                    <td>8876065...</td>
+                    <td>ZJJS-20...</td>
+                    <td>3949886...</td>
+                    <td>FEDEX...</td>
+                    <td>2025-11...</td>
+                    <td>2025-11...</td>
+                    <td>2</td>
+                    <td>42.108</td>
+                    <td>44.108</td>
+                    <td>USD</td>
+                    <td class="product-detail"><a href="#">查看</a></td>
+                    <td class="operation">
+                        <span>确定</span>
+                        <span>编辑</span>
+                        <span>删除</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 数据弹窗 -->
+    <div id="dataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>获取数据</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- 检索条件区域 -->
+                <div class="search-section">
+                    <div class="search-header">
+                        <h4>检索条件</h4>
+                        <button class="btn-toggle" id="toggleSearch" onclick="toggleSearchConditions()">▼</button>
+                    </div>
+                    <div class="search-form">
+                        <div class="form-row visible-conditions">
+                            <div class="form-group">
+                                <label>客户代码</label>
+                                <select id="modalCustomerCode">
+                                    <option>请选择客户代码</option>
+                                    <option>ZJJS</option>
+                                    <option>ZJHW</option>
+                                    <option>ZJWL</option>
+                                </select>
+                            </div>
+                            <div class="form-group warehouse-dropdown-group">
+                                <label>仓库</label>
+                                <div class="dropdown-checkbox-container">
+                                    <div class="dropdown-header" onclick="toggleWarehouseDropdown()">
+                                        <span class="dropdown-text">请选择仓库</span>
+                                        <span class="dropdown-arrow">▼</span>
+                                    </div>
+                                    <div class="dropdown-options" id="warehouseOptions">
+                                        <label class="dropdown-option">
+                                            <input type="checkbox" name="warehouse" value="CA008" onchange="updateWarehouseDropdownText()">
+                                            <span>CA008</span>
+                                        </label>
+                                        <label class="dropdown-option">
+                                            <input type="checkbox" name="warehouse" value="CA009" onchange="updateWarehouseDropdownText()">
+                                            <span>CA009</span>
+                                        </label>
+                                        <label class="dropdown-option">
+                                            <input type="checkbox" name="warehouse" value="CA010" onchange="updateWarehouseDropdownText()">
+                                            <span>CA010</span>
+                                        </label>
+                                        <label class="dropdown-option">
+                                            <input type="checkbox" name="warehouse" value="CA011" onchange="updateWarehouseDropdownText()">
+                                            <span>CA011</span>
+                                        </label>
+                                        <label class="dropdown-option">
+                                            <input type="checkbox" name="warehouse" value="CA012" onchange="updateWarehouseDropdownText()">
+                                            <span>CA012</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>出账时间</label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="date" id="modalBillStartDate" placeholder="开始日期" style="flex: 1;">
+                                    <span style="color: #6c757d; font-weight: 500;">至</span>
+                                    <input type="date" id="modalBillEndDate" placeholder="结束日期" style="flex: 1;">
+                                </div>
+                            </div>
+                            <div class="search-buttons">
+                                <button class="btn-reset" id="modalReset">重置</button>
+                                <button class="btn-search" id="modalSearch">搜索</button>
+                            </div>
+                        </div>
+                        <div class="form-row hidden-conditions" id="hiddenSearchConditions">
+                            <div class="form-group">
+                                <label>创建时间</label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="date" id="modalCreateStartDate" placeholder="开始日期" style="flex: 1;">
+                                    <span style="color: #6c757d; font-weight: 500;">至</span>
+                                    <input type="date" id="modalCreateEndDate" placeholder="结束日期" style="flex: 1;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据列表区域 -->
+                <div class="data-section">
+                    <h4>数据列表</h4>
+                    <div class="data-table-container">
+                        <table id="modalDataTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="modalCheckAll"></th>
+                                    <th>客户代码</th>
+                                    <th>仓库</th>
+                                    <th>账单类型</th>
+                                    <th>订单号</th>
+                                    <th>计费金额</th>
+                                    <th>货币类型</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td>DEMO-demo</td>
+                                    <td>DEMO</td>
+                                    <td>出库单</td>
+                                    <td>
+                                        <div>出库单号: OUT-20231201-001</div>
+                                        <div>参考单号: REF-20231201-001</div>
+                                        <div>跟踪号: TRK-20231201-001</div>
+                                    </td>
+                                    <td>4</td>
+                                    <td>USD</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox"></td>
+                                    <td>DEMO-demo</td>
+                                    <td>DEMO</td>
+                                    <td>出库单</td>
+                                    <td>
+                                        <div>出库单号: OUT-20231201-002</div>
+                                        <div>参考单号: REF-20231201-002</div>
+                                        <div>跟踪号: TRK-20231201-002</div>
+                                    </td>
+                                    <td>10</td>
+                                    <td>USD</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="modalCancel">关闭</button>
+                <button class="btn-save" id="modalSave">生成账单</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 弹窗逻辑
+        const modal = document.getElementById('dataModal');
+        const btn = document.querySelector('.action-bar button:last-child'); // 获取数据按钮
+        const span = document.querySelector('.close');
+        const modalSave = document.getElementById('modalSave');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalCheckAll = document.getElementById('modalCheckAll');
+        const modalDataChecks = document.querySelectorAll('.modalDataCheck');
+        const mainTableBody = document.getElementById('mainTableBody');
+        const mainTableCheckAll = document.getElementById('mainTableCheckAll');
+        const modalReset = document.getElementById('modalReset');
+        const modalSearch = document.getElementById('modalSearch');
+
+        // 打开弹窗
+        btn.onclick = function() {
+            modal.style.display = 'block';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        // 关闭弹窗函数
+        function closeModal() {
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // 关闭弹窗
+        span.onclick = function() {
+            closeModal();
+        }
+
+        modalCancel.onclick = function() {
+            closeModal();
+        }
+
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // 全选/取消全选
+        modalCheckAll.onchange = function() {
+            const isChecked = this.checked;
+            document.querySelectorAll('.modalDataCheck').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        }
+
+        // 单个复选框变化时更新全选状态
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('modalDataCheck')) {
+                const allChecked = document.querySelectorAll('.modalDataCheck').length === 
+                                   document.querySelectorAll('.modalDataCheck:checked').length;
+                modalCheckAll.checked = allChecked;
+            }
+        });
+
+        // 主表全选/取消全选
+        mainTableCheckAll.onchange = function() {
+            const isChecked = this.checked;
+            mainTableBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        }
+
+        // 保存选中的数据到主表
+        modalSave.onclick = function() {
+            const checkedRows = document.querySelectorAll('.modalDataCheck:checked');
+            if (checkedRows.length === 0) {
+                alert('请至少选择一条数据');
+                return;
+            }
+
+            // 遍历选中的行，添加到主表
+            checkedRows.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const cells = row.querySelectorAll('td');
+                
+                // 创建主表行
+                const newRow = document.createElement('tr');
+                
+                // 复选框
+                newRow.innerHTML += `<td><input type="checkbox"></td>`;
+                
+                // 状态
+                newRow.innerHTML += `<td>${cells[1].textContent}</td>`;
+                
+                // 账单月
+                newRow.innerHTML += `<td>${cells[2].textContent}</td>`;
+                
+                // 航期
+                newRow.innerHTML += `<td>${cells[3].textContent}</td>`;
+                
+                // 创建时间
+                newRow.innerHTML += `<td>${cells[4].textContent}</td>`;
+                
+                // 仓库
+                newRow.innerHTML += `<td>${cells[5].textContent}</td>`;
+                
+                // 客户代码
+                newRow.innerHTML += `<td>${cells[6].textContent}</td>`;
+                
+                // 客服
+                newRow.innerHTML += `<td>${cells[7].textContent}</td>`;
+                
+                // 参考号
+                newRow.innerHTML += `<td>${cells[8].textContent}</td>`;
+                
+                // 订单号
+                newRow.innerHTML += `<td>${cells[9].textContent}</td>`;
+                
+                // 快递单号
+                newRow.innerHTML += `<td>${cells[10].textContent}</td>`;
+                
+                // 运输方式
+                newRow.innerHTML += `<td>${cells[11].textContent}</td>`;
+                
+                // 下单时间
+                newRow.innerHTML += `<td>2025-11-01</td>`;
+                
+                // 出货时间
+                newRow.innerHTML += `<td>2025-11-02</td>`;
+                
+                // 出库费合
+                newRow.innerHTML += `<td>5</td>`;
+                
+                // 快递费合
+                newRow.innerHTML += `<td>${parseFloat(cells[12].textContent) - 5}</td>`;
+                
+                // 合计
+                newRow.innerHTML += `<td>${cells[12].textContent}</td>`;
+                
+                // 币种
+                newRow.innerHTML += `<td>${cells[13].textContent}</td>`;
+                
+                // 产品详情
+                newRow.innerHTML += `<td class="product-detail"><a href="#">查看</a></td>`;
+                
+                // 操作
+                newRow.innerHTML += `<td class="operation">
+                    <span>确认</span>
+                    <span>编辑</span>
+                    <span>删除</span>
+                </td>`;
+                
+                // 添加到主表
+                mainTableBody.appendChild(newRow);
+            });
+
+            // 关闭弹窗
+            closeModal();
+            alert('数据已成功添加到主表');
+        }
+
+        // 仓库下拉勾选框功能
+        // 切换下拉菜单
+        function toggleWarehouseDropdown() {
+            const dropdownContainer = document.querySelector('.dropdown-checkbox-container');
+            dropdownContainer.classList.toggle('active');
+        }
+        
+        // 更新下拉文本
+        function updateWarehouseDropdownText() {
+            const dropdownText = document.getElementById('warehouseDropdownText');
+            const selectedCheckboxes = document.querySelectorAll('.dropdown-options input[type="checkbox"]:checked');
+            const selectedValues = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
+            
+            if (selectedValues.length === 0) {
+                dropdownText.textContent = '请选择仓库';
+            } else if (selectedValues.length === 1) {
+                dropdownText.textContent = selectedValues[0];
+            } else {
+                dropdownText.textContent = `${selectedValues.length}个仓库`;
+            }
+        }
+        
+        // 点击外部关闭下拉菜单
+        document.addEventListener('click', function(event) {
+            const dropdownContainer = document.querySelector('.dropdown-checkbox-container');
+            const dropdownHeader = document.querySelector('.dropdown-header');
+            
+            if (dropdownContainer && !dropdownContainer.contains(event.target)) {
+                dropdownContainer.classList.remove('active');
+            }
+        });
+        
+        // 检索条件折叠/展开功能
+        function toggleSearchConditions() {
+            const hiddenConditions = document.getElementById('hiddenSearchConditions');
+            const toggleBtn = document.getElementById('toggleSearch');
+            
+            if (hiddenConditions.classList.contains('expanded')) {
+                hiddenConditions.classList.remove('expanded');
+                toggleBtn.textContent = '▼';
+            } else {
+                hiddenConditions.classList.add('expanded');
+                toggleBtn.textContent = '▲';
+            }
+        }
+        
+        // 重置检索条件
+        modalReset.onclick = function() {
+            // 重置客户代码
+            document.getElementById('modalCustomerCode').value = '请选择客户代码';
+            // 重置日期段
+            document.getElementById('modalStartDate').value = '';
+            document.getElementById('modalEndDate').value = '';
+            // 重置仓库复选框
+            document.querySelectorAll('input[name="warehouse"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateWarehouseDropdownText();
+        }
+
+        // 搜索功能
+        modalSearch.onclick = function() {
+            // 获取搜索条件
+            const customerCode = document.getElementById('modalCustomerCode').value;
+            const startDate = document.getElementById('modalStartDate').value;
+            const endDate = document.getElementById('modalEndDate').value;
+            const selectedWarehouses = Array.from(document.querySelectorAll('input[name="warehouse"]:checked')).map(checkbox => checkbox.value);
+            
+            // 构建搜索条件字符串
+            let searchConditions = [];
+            if (customerCode !== '请选择客户代码') {
+                searchConditions.push(`客户代码: ${customerCode}`);
+            }
+            if (startDate && endDate) {
+                searchConditions.push(`创建日期: ${startDate} 至 ${endDate}`);
+            } else if (startDate) {
+                searchConditions.push(`创建日期: 从 ${startDate}`);
+            } else if (endDate) {
+                searchConditions.push(`创建日期: 至 ${endDate}`);
+            }
+            if (selectedWarehouses.length > 0) {
+                searchConditions.push(`仓库: ${selectedWarehouses.join(', ')}`);
+            }
+            
+            // 显示搜索条件
+            let message = '搜索条件：\n';
+            if (searchConditions.length > 0) {
+                message += searchConditions.join('\n');
+            } else {
+                message += '无筛选条件（全部数据）';
+            }
+            
+            message += '\n\n实际项目中会根据以上条件查询数据并更新表格';
+            alert(message);
+            
+            // 实际项目中这里会发送AJAX请求获取数据并更新表格
+        }
+
+        // 批量删除逻辑
+        const batchDeleteBtn = document.querySelector('.btn-batch-delete');
+        
+        batchDeleteBtn.onclick = function() {
+            const mainTableRows = mainTableBody.querySelectorAll('tr');
+            const checkedCheckboxes = mainTableBody.querySelectorAll('input[type="checkbox"]:checked');
+            
+            if (mainTableRows.length === 0) {
+                alert('没有数据可删除');
+                return;
+            }
+            
+            let confirmMessage;
+            let rowsToDelete;
+            
+            if (checkedCheckboxes.length > 0) {
+                // 有勾选数据，只删除勾选的
+                confirmMessage = `确定要删除选中的 ${checkedCheckboxes.length} 条数据吗？`;
+                rowsToDelete = Array.from(checkedCheckboxes).map(checkbox => checkbox.closest('tr'));
+            } else {
+                // 没有勾选数据，删除所有
+                confirmMessage = '确定要删除所有数据吗？';
+                rowsToDelete = Array.from(mainTableRows);
+            }
+            
+            if (confirm(confirmMessage)) {
+                // 删除选中的行
+                rowsToDelete.forEach(row => {
+                    row.remove();
+                });
+                
+                // 重置全选状态
+                mainTableCheckAll.checked = false;
+                
+                alert(`成功删除 ${rowsToDelete.length} 条数据`);
+            }
+        };
+        
+        // 单个删除逻辑
+        mainTableBody.onclick = function(e) {
+            if (e.target.textContent === '🗑️') {
+                const row = e.target.closest('tr');
+                if (confirm('确定要删除这条数据吗？')) {
+                    row.remove();
+                    
+                    // 重置全选状态
+                    mainTableCheckAll.checked = false;
+                    
+                    alert('数据已删除');
+                }
+            }
+        };
+        
+        // 模拟分页功能
+        let currentPage = 1;
+        const totalPages = 2;
+        
+        document.getElementById('prevPage').onclick = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                document.getElementById('currentPage').textContent = currentPage;
+                // 实际项目中这里会加载上一页数据
+            }
+        };
+        
+        document.getElementById('nextPage').onclick = function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                document.getElementById('currentPage').textContent = currentPage;
+                // 实际项目中这里会加载下一页数据
+            }
+        };
+    </script>
+</body>
+</html>
