@@ -224,8 +224,8 @@
       <table class="table">
         <thead>
           <tr>
-            <th>客户名称</th>
-            <th>客户编码</th>
+            <th>名称</th>
+            <th>代码</th>
             <th>联系人</th>
             <th>联系电话</th>
             <th>操作</th>
@@ -243,7 +243,7 @@
   <script>
     // 预设客户数据
     const presetCustomers = [
-      { id: 1, name: "Demo", code: "Demo", contact: "zsw", phone: "13800138000" }
+      { id: 1, name: "DEMO客户", code: "DEMO", contact: "zsw", phone: "13800138000" }
     ];
     
     // 预设价卡数据
@@ -291,13 +291,13 @@
           <td class="px-6 py-4">
             <div class="flex gap-2">
               <a href="price-card-details.html?customerId=${customer.id}" class="view-price-card-btn px-3 py-1.5 bg-primary/10 text-primary text-sm rounded-md hover:bg-primary/20 transition-all-300 flex items-center justify-center min-w-[90px]">
-                <i class="fa fa-eye mr-1"></i>查看价卡
+                <i class="fa fa-eye mr-1"></i>查看
               </a>
               <a href="associate-price-card.html?customerId=${customer.id}" class="associate-price-card-btn px-3 py-1.5 bg-primary/10 text-primary text-sm rounded-md hover:bg-primary/20 transition-all-300 flex items-center justify-center min-w-[90px]">
-                <i class="fa fa-link mr-1"></i>关联成本价卡
+                <i class="fa fa-link mr-1"></i>关联成本
               </a>
               <a href="associate-price-card.html?customerId=${customer.id}" class="associate-price-card-btn px-3 py-1.5 bg-primary/10 text-primary text-sm rounded-md hover:bg-primary/20 transition-all-300 flex items-center justify-center min-w-[90px]">
-                <i class="fa fa-link mr-1"></i>关联杂费价卡
+                <i class="fa fa-link mr-1"></i>关联杂费
               </a>
             </div>
           </td>

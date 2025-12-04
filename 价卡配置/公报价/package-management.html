@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>方案管理</title>
+  <!-- 引入必要依赖 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            success: '#00B42A',
+            danger: '#F53F3F',
+            neutral: {
+              100: '#F2F3F5',
+              200: '#E5E6EB',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          transitionProperty: {
+            'all-300': 'all 0.3s ease',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+      .bg-primary\/10 {
+        background-color: rgba(22, 93, 255, 0.1);
+      }
+      .hover\:border-primary:hover {
+        border-color: #165DFF;
+      }
+      .hover\:text-primary:hover {
+        color: #165DFF;
+      }
+      .hover\:bg-neutral-50:hover {
+        background-color: #F9FAFB;
+      }
+      .hover\:bg-primary\/5:hover {
+        background-color: rgba(22, 93, 255, 0.05);
+      }
+      .hover\:text-danger:hover {
+        color: #F53F3F;
+      }
+      .bg-danger\/10 {
+        background-color: rgba(245, 63, 63, 0.1);
+      }
+      .hover\:bg-danger\/20:hover {
+        background-color: rgba(245, 63, 63, 0.2);
+      }
+    }
+  </style>
+  
+  <!-- 基础样式保障 -->
+  <style>
+    /* 确保页面整体样式统一 */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f9fafb;
+    }
+    
+    /* 为特定元素添加样式 */
+    .card-shadow {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 确保按钮有统一的交互效果 */
+    button {
+      cursor: pointer;
+    }
+    
+    /* 表格优化样式 */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 0.375rem;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    
+    .table {
+      width: 100%;
+      text-align: left;
+      border-collapse: collapse;
+      background-color: #ffffff;
+    }
+    
+    .table th {
+      background-color: #f9fafb;
+      color: #374151;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    
+    .table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+    
+    .table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+    
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body class="bg-neutral-50">
+  <!-- 页面容器 -->
+  <div class="min-h-screen">
+    <!-- 页面头部 -->
+    
+    <!-- 页面内容 -->
+    <main class="container mx-auto px-4 py-6">
+      <!-- 查询条件区域 -->
+      <div class="bg-white p-4 border border-neutral-100 rounded-lg shadow-sm mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 搜索 -->
+          <div class="flex flex-col">
+            <label for="packageSearch" class="text-sm font-medium text-neutral-600 mb-1">搜索</label>
+            <input type="text" id="packageSearch" placeholder="搜索名称或描述..." 
+                   class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
+          </div>
+          
+          <!-- 查询和重置按钮 -->
+          <div class="flex items-end gap-2">
+            <!-- 查询按钮 -->
+            <button id="searchBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center justify-center gap-1">
+              <i class="fa fa-search"></i> 查询
+            </button>
+            
+            <!-- 重置按钮 -->
+            <button id="resetBtn" class="px-5 py-2 bg-white border border-neutral-200 text-neutral-700 text-sm rounded-md hover:bg-neutral-50 transition-all-300 flex items-center justify-center gap-1">
+              <i class="fa fa-refresh"></i> 重置
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 方案列表区域 -->
+    <div id="packagesListContainer" class="bg-white border border-neutral-100 rounded-lg shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-neutral-100">
+        <div class="flex items-center justify-start mb-0 gap-3">
+          <button id="addPackageBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center gap-1">
+            <i class="fa fa-plus"></i> 更新
+          </button>
+        </div>
+      </div>
+      <!-- 始终显示表头 -->
+      <table class="table w-full">
+        <thead>
+          <tr class="bg-neutral-50">
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">仓群</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">适用仓库</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">价卡数量</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">创建时间</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">更新时间</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+          </tr>
+        </thead>
+        <!-- 数据部分默认隐藏 -->
+        <tbody id="packagesList" class="hidden">
+          <!-- 方案行将通过JavaScript动态生成 -->
+        </tbody>
+      </table>
+      
+      <!-- 数据相关区域（空状态和分页）默认隐藏 -->
+      <div id="packagesDataArea" class="hidden">
+        <!-- 空状态提示 -->
+        <div id="emptyPackagesList" class="text-center py-8 text-neutral-500">
+          <i class="fa fa-inbox text-4xl mb-2"></i>
+          <p>暂无方案数据</p>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="mt-4 flex items-center justify-between">
+          <div class="text-sm text-neutral-500">
+            显示第 <span id="startIndex">0</span>-<span id="endIndex">0</span> 条，共 <span id="totalItems">0</span> 条记录
+          </div>
+          <div class="flex items-center gap-1">
+            <button id="prevPage" class="px-3 py-1.5 bg-white border border-neutral-200 text-neutral-700 text-sm rounded-md hover:bg-neutral-50 transition-all-300 min-w-[36px]">
+              <i class="fa fa-chevron-left"></i>
+            </button>
+            <button id="currentPage" class="px-3 py-1.5 bg-primary border border-primary text-white text-sm rounded-md min-w-[36px]">1</button>
+            <button id="nextPage" class="px-3 py-1.5 bg-white border border-neutral-200 text-neutral-700 text-sm rounded-md hover:bg-neutral-50 transition-all-300 min-w-[36px]">
+              <i class="fa fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    
+    <!-- Loading弹窗 -->
+    <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg p-6 text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p class="text-lg text-neutral-700">正在更新...</p>
+      </div>
+    </div>
+    </main>
+  </div>
+  
+  <script>
+    // 当前页码和每页数量
+    let currentPage = 1;
+    const pageSize = 10;
+    
+    // 当前方案数据
+    let currentPackages;
+    
+    // 从localStorage获取缓存的公报价数据
+    function getCachedPackages() {
+      const cachedData = localStorage.getItem('packageQuotes');
+      return cachedData ? JSON.parse(cachedData) : null;
+    }
+    
+    // 将公报价数据缓存到localStorage
+    function cachePackages(packages) {
+      localStorage.setItem('packageQuotes', JSON.stringify(packages));
+    }
+    
+    // 提供预设的默认方案数据
+    function getDefaultPackages() {
+      // 预设的默认方案数据
+      return [
+        {
+          id: 1,
+          name: "美东仓库公报价",
+          warehouseGroup: "美东仓群",
+          warehouseCount: 5,
+          priceCardCount: 3,
+          createTime: "2023-01-15 10:30:00",
+          updateTime: "2023-01-20 16:45:00"
+        },
+        {
+          id: 2,
+          name: "美西仓库公报价",
+          warehouseGroup: "美西仓群",
+          warehouseCount: 8,
+          priceCardCount: 5,
+          createTime: "2023-02-20 14:20:00",
+          updateTime: "2023-02-25 09:15:00"
+        },
+        {
+          id: 3,
+          name: "美南仓库公报价",
+          warehouseGroup: "美南仓群",
+          warehouseCount: 12,
+          priceCardCount: 8,
+          createTime: "2023-03-10 09:45:00",
+          updateTime: "2023-03-15 14:30:00"
+        }
+      ];
+    }
+    
+    // 初始化页面
+    function initPage() {
+      // 检查localStorage中是否有缓存的公报价数据
+      let cachedPackages = getCachedPackages();
+      
+      if (cachedPackages) {
+        // 迁移旧数据，确保每个方案都有正确的属性
+        currentPackages = cachedPackages.map(pkg => {
+          return {
+            ...pkg,
+            warehouseGroup: pkg.warehouseGroup || '未知仓群',
+            warehouseCount: pkg.warehouseCount || 0,
+            updateTime: pkg.updateTime || pkg.createTime
+          };
+        });
+      } else {
+        // 如果没有缓存数据，使用默认数据
+        currentPackages = getDefaultPackages();
+      }
+      
+      // 显示数据部分
+      const packagesList = document.getElementById('packagesList');
+      const packagesDataArea = document.getElementById('packagesDataArea');
+      packagesList.classList.remove('hidden');
+      packagesDataArea.classList.remove('hidden');
+      
+      // 渲染数据
+      renderPackages(currentPackages);
+      
+      // 绑定事件
+      bindEvents();
+    }
+    
+    // 更新数据
+    function fetchPackageQuotes() {
+      // 显示loading弹窗
+      const loadingModal = document.getElementById('loadingModal');
+      loadingModal.classList.remove('hidden');
+      loadingModal.classList.add('flex');
+      
+      // 2秒后获取数据并显示
+      setTimeout(() => {
+        // 获取数据（这里模拟从服务器获取数据）
+        let fetchedPackages = getDefaultPackages();
+        
+        // 处理获取到的数据，确保每个方案都有正确的默认值
+        currentPackages = fetchedPackages.map(pkg => {
+          return {
+            ...pkg,
+            warehouseGroup: pkg.warehouseGroup || '未知仓群',
+            warehouseCount: pkg.warehouseCount || 0,
+            priceCardCount: pkg.priceCardCount || 0,
+            createTime: pkg.createTime || new Date().toISOString().slice(0, 19).replace('T', ' '),
+            updateTime: pkg.updateTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
+          };
+        });
+        
+        // 将数据缓存到localStorage
+        cachePackages(currentPackages);
+        
+        // 显示数据部分
+        const packagesList = document.getElementById('packagesList');
+        const packagesDataArea = document.getElementById('packagesDataArea');
+        packagesList.classList.remove('hidden');
+        packagesDataArea.classList.remove('hidden');
+        
+        // 渲染数据
+        renderPackages(currentPackages);
+        
+        // 隐藏loading弹窗
+        loadingModal.classList.remove('flex');
+        loadingModal.classList.add('hidden');
+      }, 2000);
+    }
+    
+    // 渲染方案列表
+    function renderPackages(packages) {
+      const packagesList = document.getElementById('packagesList');
+      const emptyPackagesList = document.getElementById('emptyPackagesList');
+      
+      if (packages.length === 0) {
+        packagesList.innerHTML = '';
+        emptyPackagesList.style.display = 'block';
+        return;
+      }
+      
+      emptyPackagesList.style.display = 'none';
+      
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, packages.length);
+      const paginatedPackages = packages.slice(startIndex, endIndex);
+      
+      packagesList.innerHTML = paginatedPackages.map(pkg => `
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.id || 0}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.name || '未命名方案'}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.warehouseGroup || '未知仓群'}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.warehouseCount || 0}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.priceCardCount || 0}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.createTime || '未知时间'}</td>
+          <td class="px-6 py-4 whitespace-nowrap">${pkg.updateTime || '未知时间'}</td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex gap-2">
+              <button onclick="viewPackage(${pkg.id || 0})" class="px-3 py-1.5 bg-neutral-100 text-neutral-700 text-sm rounded-md hover:bg-neutral-200 transition-all-300 flex items-center justify-center min-w-[90px]">
+                <i class="fa fa-eye mr-1"></i>查看
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+      
+      // 更新分页信息
+      document.getElementById('startIndex').textContent = startIndex + 1;
+      document.getElementById('endIndex').textContent = endIndex;
+      document.getElementById('totalItems').textContent = packages.length;
+      document.getElementById('currentPage').textContent = currentPage;
+      
+      // 更新分页按钮状态
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+      const totalPages = Math.ceil(packages.length / pageSize);
+      
+      // 禁用或启用上一页按钮
+      if (currentPage === 1) {
+        prevBtn.disabled = true;
+        prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        prevBtn.disabled = false;
+        prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+      
+      // 禁用或启用下一页按钮
+      if (currentPage === totalPages || totalPages === 0) {
+        nextBtn.disabled = true;
+        nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        nextBtn.disabled = false;
+        nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+    
+    // 绑定事件
+    function bindEvents() {
+      // 更新按钮
+      document.getElementById('addPackageBtn').addEventListener('click', fetchPackageQuotes);
+      
+      // 查询按钮
+      document.getElementById('searchBtn').addEventListener('click', searchPackages);
+      
+      // 重置按钮
+      document.getElementById('resetBtn').addEventListener('click', resetSearch);
+      
+      // 搜索框回车事件
+      document.getElementById('packageSearch').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          searchPackages();
+        }
+      });
+      
+      // 分页按钮
+      document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPackages(currentPackages);
+        }
+      });
+      
+      document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPage < Math.ceil(currentPackages.length / pageSize)) {
+          currentPage++;
+          renderPackages(currentPackages);
+        }
+      });
+    }
+    
+    // 搜索方案
+    function searchPackages() {
+      const searchText = document.getElementById('packageSearch').value.toLowerCase();
+      
+      // 这里可以添加实际的搜索逻辑
+      const filteredPackages = currentPackages.filter(pkg => {
+        const matchesSearch = pkg.name.toLowerCase().includes(searchText);
+        
+        return matchesSearch;
+      });
+      
+      currentPage = 1;
+      renderPackages(filteredPackages);
+    }
+    
+    // 重置搜索
+    function resetSearch() {
+      document.getElementById('packageSearch').value = '';
+      
+      currentPage = 1;
+      renderPackages(currentPackages);
+    }
+    
+    // 编辑方案
+    function editPackage(packageId) {
+      window.location.href = `package-price-card.html?id=${packageId}`;
+    }
+    
+    // 提供预设的默认价卡数据
+    function getPriceCardsFromStorage() {
+      // 预设的默认价卡数据
+      return [
+        {
+          id: 1,
+          name: "价卡1",
+          validFrom: "2023-01-01",
+          validTo: "2023-12-31"
+        },
+        {
+          id: 2,
+          name: "价卡2",
+          validFrom: "2023-02-01",
+          validTo: "2023-11-30"
+        },
+        {
+          id: 3,
+          name: "价卡3",
+          validFrom: "2023-03-01",
+          validTo: "2023-10-31"
+        }
+      ];
+    }
+    
+    // 删除方案
+    function deletePackage(packageId) {
+      // 从当前方案数据中查找要删除的方案
+      const packageToDelete = currentPackages.find(pkg => pkg.id === packageId);
+      
+      if (!packageToDelete) {
+        alert('方案不存在');
+        return;
+      }
+      
+      // 检查方案关联价卡的有效期状态
+      const now = new Date();
+      const expiredCards = [];
+      const activeCards = [];
+      
+      // 获取所有价卡数据
+      const allPriceCards = getPriceCardsFromStorage();
+      
+      // 根据方案的priceCardIds找到对应的价卡
+      if (packageToDelete.priceCardIds && packageToDelete.priceCardIds.length > 0) {
+        packageToDelete.priceCardIds.forEach(cardId => {
+          const card = allPriceCards.find(c => c.id === cardId);
+          if (card) {
+            const validFrom = new Date(card.validFrom);
+            const validTo = new Date(card.validTo);
+            
+            if (validTo < now) {
+              expiredCards.push(card);
+            } else {
+              activeCards.push(card);
+            }
+          }
+        });
+      }
+      
+      // 构建删除确认信息
+      let confirmMessage = '确定要删除该方案吗？';
+      
+      if (expiredCards.length > 0 && activeCards.length === 0) {
+        confirmMessage += '\n\n注意：该方案关联的所有价卡均已过期。';
+      } else if (activeCards.length > 0) {
+        confirmMessage += `\n\n注意：该方案关联了 ${activeCards.length} 个有效价卡和 ${expiredCards.length} 个已过期价卡。`;
+        confirmMessage += '\n删除后，这些价卡将不再关联到该方案。';
+      }
+      
+      if (confirm(confirmMessage)) {
+        // 删除指定ID的方案
+        const updatedPackages = currentPackages.filter(pkg => pkg.id !== packageId);
+        
+        // 更新缓存
+        cachePackages(updatedPackages);
+        
+        // 显示删除成功提示
+        alert('方案删除成功');
+        
+        // 重新渲染方案列表
+        currentPackages = updatedPackages;
+        renderPackages(currentPackages);
+      }
+    }
+    
+    // 查看方案
+    function viewPackage(packageId) {
+      // 跳转到方案详情页面，并传递方案ID
+      window.location.href = `package-details.html?id=${packageId}`;
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initPage);
+  </script>
+</body>
+</html>

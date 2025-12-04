@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>杂费维护</title>
+  <title>成本管理</title>
   <!-- 引入必要依赖 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -57,9 +57,6 @@
       }
       .hover\:text-danger:hover {
         color: #F53F3F;
-      }
-      .status-tag {
-        @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
       }
     }
   </style>
@@ -138,7 +135,6 @@
     .hover\:text-danger:hover { color: #F53F3F; }
     .hover\:bg-primary:hover { background-color: #0E4BDB; }
     
-    /* 状态样式 */
     .hidden { display: none; }
     .cursor-pointer { cursor: pointer; }
   </style>
@@ -150,42 +146,40 @@
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
       <div class="flex flex-wrap gap-3">
         <div class="relative">
-          <input type="text" id="miscFeeSearch" placeholder="搜索杂费类型/名称" 
+          <input type="text" id="priceCardSearch" placeholder="搜索成本类型/名称" 
                  class="pl-9 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300 w-full md:w-64">
           <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
         </div>
-        <select id="miscFeeStatusFilter" class="px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-            <option value="">全部状态</option>
-            <option value="draft">失效</option>
-            <option value="pending">未生效</option>
-            <option value="published">生效</option>
-          </select>
+
+        <select id="applyScopeFilter" class="px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <option value="">全部适用范围</option>
+            <option value="美东仓群">美东仓群</option>
+            <option value="美西仓群">美西仓群</option>
+            <option value="美南仓群">美南仓群</option>
+          </select>  
       </div>
     </div>
 
     <!-- 页面标题与操作栏 -->
     <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-      <button id="addMiscFeeBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 focus:outline-none transition-all-300 flex items-center">
-        <i class="fa fa-plus mr-1"></i> 新增杂费
+      <button id="addPriceCardBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300 flex items-center">
+        <i class="fa fa-plus mr-1"></i> 新增
       </button>
     </div>
 
-    <!-- 杂费列表区域 -->
-    <div id="miscFeeTypesList" class="bg-white border border-neutral-100 rounded-lg shadow-sm overflow-hidden">
+    <!-- 成本列表区域 -->
+    <div id="priceCardTypesList" class="bg-white border border-neutral-100 rounded-lg shadow-sm overflow-hidden">
       <table class="table w-full">
         <thead>
           <tr class="bg-neutral-50">
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">杂费类型</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">杂费名称</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">成本类型</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">适用范围</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">生效日期</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">失效日期</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">状态</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
           </tr>
         </thead>
-        <tbody id="miscFeeTableBody">
-          <!-- 杂费数据将通过JS动态渲染 -->
+        <tbody id="priceCardTableBody">
+          <!-- 成本数据将通过JS动态渲染 -->
         </tbody>
       </table>
     </div>
@@ -193,16 +187,16 @@
     <!-- 空状态提示 -->
     <div id="emptyState" class="hidden bg-white border border-neutral-100 rounded-lg shadow-sm p-8 text-center mt-4">
       <i class="fa fa-folder-open-o text-4xl text-neutral-300 mb-3"></i>
-      <p class="text-neutral-400">暂无杂费数据</p>
+      <p class="text-neutral-400">暂无成本数据</p>
     </div>
   </main>
 
   <!-- 详情弹窗 -->
-  <div id="miscFeeDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div id="priceCardDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
     <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
       <!-- 弹窗头部 -->
       <div class="flex justify-between items-center p-4 border-b border-neutral-200">
-        <h3 class="text-lg font-bold text-neutral-700">杂费详情</h3>
+        <h3 class="text-lg font-bold text-neutral-700">成本详情</h3>
         <button id="closeDetailModal" class="text-neutral-400 hover:text-neutral-600">
           <i class="fa fa-times text-xl"></i>
         </button>
@@ -223,15 +217,15 @@
   </div>
 
   <script>
-    // 预设杂费数据
-    const presetMiscFees = {
-      "超箱费": {
+    // 预设成本数据
+    const presetPriceCards = {
+      "卸货费1": {
         id: 1,
-        name: "超箱费",
-        applyScope: "全部",
+        name: "标准卸货费成本",
+        applyScope: "美东仓群",
         validFrom: "2024-01-01 00:00:00",
         validTo: "2024-12-31 23:59:59",
-        description: "当货物超出集装箱装载标准时收取的费用",
+        description: "这是一个预设的生效卸货费成本",
         status: "published", // 生效
         bulkConfig: {
           price: 100.00,
@@ -242,152 +236,122 @@
           unit: "箱"
         },
         containerConfig: [
-          { containerType: "20GP", price: 300.00, remark: "20尺标准柜" },
-          { containerType: "40GP", price: 600.00, remark: "40尺标准柜" },
-          { containerType: "40HQ", price: 700.00, remark: "40尺高柜" }
+          { containerType: "20GP", price: 500.00, remark: "标准柜" },
+          { containerType: "40GP", price: 900.00, remark: "标准柜" }
         ],
-        calculationLogic: "根据超出的集装箱规格和数量计算"
+        calculationLogic: "基础单价 + 燃油附加费"
       },
-      "超重费": {
+      "卸货费2": {
         id: 2,
-        name: "超重费",
-        applyScope: "全部",
-        validFrom: "2024-01-01 00:00:00",
+        name: "新版卸货费成本",
+        applyScope: "美西仓群",
+        validFrom: "2024-06-01 00:00:00",
         validTo: "2024-12-31 23:59:59",
-        description: "当货物重量超过规定标准时收取的费用",
-        status: "published", // 生效
+        description: "这是一个未生效的新版卸货费成本",
+        status: "pending", // 未生效
         bulkConfig: {
-          price: 50.00,
-          unit: "吨"
+          price: 120.00,
+          unit: "托"
         },
         expressConfig: {
-          price: 10.00,
-          unit: "公斤"
+          price: 25.00,
+          unit: "箱"
         },
         containerConfig: [
-          { containerType: "20GP", price: 200.00, remark: "每超重1吨" },
-          { containerType: "40GP", price: 400.00, remark: "每超重1吨" }
+          { containerType: "20GP", price: 550.00, remark: "标准柜" },
+          { containerType: "40GP", price: 950.00, remark: "标准柜" }
         ],
-        calculationLogic: "根据超出的重量计算费用"
+        calculationLogic: "基础单价 + 燃油附加费 + 旺季附加费"
       },
-      "sku超量费": {
+      "卸货费3": {
         id: 3,
-        name: "SKU超量费",
-        applyScope: "全部",
-        validFrom: "2024-01-01 00:00:00",
-        validTo: "2024-12-31 23:59:59",
-        description: "当货物SKU数量超过规定标准时收取的费用",
-        status: "published", // 生效
+        name: "旧版卸货费成本",
+        applyScope: "美南仓群",
+        validFrom: "2023-01-01 00:00:00",
+        validTo: "2023-12-31 23:59:59",
+        description: "这是一个已失效的旧版卸货费成本",
+        status: "draft", // 失效
         bulkConfig: {
-          price: 2.00,
-          unit: "个"
+          price: 90.00,
+          unit: "托"
         },
         expressConfig: {
-          price: 1.00,
-          unit: "个"
+          price: 18.00,
+          unit: "箱"
         },
         containerConfig: [
-          { containerType: "20GP", price: 50.00, remark: "每超10个SKU" },
-          { containerType: "40GP", price: 100.00, remark: "每超10个SKU" }
+          { containerType: "20GP", price: 450.00, remark: "标准柜" },
+          { containerType: "40GP", price: 850.00, remark: "标准柜" }
         ],
-        calculationLogic: "根据超出的SKU数量计算费用"
+        calculationLogic: "基础单价 + 燃油附加费"
       }
     };
 
     // DOMContentLoaded事件监听
     document.addEventListener('DOMContentLoaded', function() {
-      // 渲染杂费类型列表
-      renderMiscFeeTypes();
+      // 渲染成本类型列表
+      renderPriceCardTypes();
       
       // 绑定事件
       bindEvents();
     });
 
-    // 渲染杂费类型列表
-    function renderMiscFeeTypes() {
-      const tbody = document.getElementById('miscFeeTableBody');
+    // 渲染成本类型列表
+    function renderPriceCardTypes() {
+      const tbody = document.getElementById('priceCardTableBody');
       tbody.innerHTML = '';
       
-      // 获取搜索关键词和状态筛选
-      const searchKeyword = document.getElementById('miscFeeSearch').value.toLowerCase();
-      const statusFilter = document.getElementById('miscFeeStatusFilter').value;
+      // 获取搜索关键词
+      const searchKeyword = document.getElementById('priceCardSearch').value.toLowerCase();
       
-      // 过滤杂费数据
-      const filteredMiscFees = Object.entries(presetMiscFees).filter(([type, miscFee]) => {
+      // 过滤成本数据
+      const filteredPriceCards = Object.entries(presetPriceCards).filter(([type, priceCard]) => {
         // 应用搜索筛选
         const matchesSearch = !searchKeyword || 
           type.toLowerCase().includes(searchKeyword) || 
-          miscFee.name.toLowerCase().includes(searchKeyword);
+          priceCard.name.toLowerCase().includes(searchKeyword);
         
-        // 应用状态筛选
-        const matchesStatus = !statusFilter || miscFee.status === statusFilter;
-        
-        return matchesSearch && matchesStatus;
+        return matchesSearch;
       });
       
-      // 显示空状态或渲染杂费
-      if (filteredMiscFees.length === 0) {
+      // 显示空状态或渲染成本
+      if (filteredPriceCards.length === 0) {
         document.getElementById('emptyState').classList.remove('hidden');
-        document.getElementById('miscFeeTypesList').classList.add('hidden');
+        document.getElementById('priceCardTypesList').classList.add('hidden');
         return;
       } else {
         document.getElementById('emptyState').classList.add('hidden');
-        document.getElementById('miscFeeTypesList').classList.remove('hidden');
+        document.getElementById('priceCardTypesList').classList.remove('hidden');
       }
       
-      // 遍历过滤后的杂费
-      filteredMiscFees.forEach(([type, miscFee]) => {
-        // 根据状态获取状态显示文本和样式
-          const statusConfig = {
-            'draft': { text: '失效', className: 'bg-red-100 text-red-800' },
-            'pending': { text: '未生效', className: 'bg-gray-100 text-gray-800' },
-            'published': { text: '生效', className: 'bg-green-100 text-green-800' }
-          };
+      // 遍历过滤后的成本
+      filteredPriceCards.forEach(([type, priceCard]) => {
         
-        const status = statusConfig[miscFee.status] || statusConfig.draft;
-        
-        // 生成操作按钮
+        // 生成操作按钮（所有状态都显示编辑按钮）
         let actionButtons = `
-          <button class="detail-btn px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition-all-300 mr-2" data-misc-type="${type}">
+          <button class="detail-btn px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600 transition-all-300 mr-2" data-price-type="${type}">
             详情
+          </button>
+          <button class="edit-btn px-3 py-1 bg-primary text-white text-xs rounded-md hover:bg-primary/90 transition-all-300 mr-2" data-price-type="${type}">
+            编辑
           </button>
         `;
         
-          // 仅未生效状态显示编辑按钮
-          if (miscFee.status === 'pending') {
-            actionButtons += `
-              <button class="edit-btn px-3 py-1 bg-primary text-white text-xs rounded-md hover:bg-primary/90 transition-all-300 mr-2" data-misc-type="${type}">
-                编辑
-              </button>
-            `;
-          }
-        
         // 创建表格行
         const row = document.createElement('tr');
-        row.className = 'border-b border-neutral-100 hover:bg-neutral-50 transition-colors misc-fee-item';
-        row.dataset.miscType = type;
-        row.dataset.miscId = miscFee.id;
+        row.className = 'border-b border-neutral-100 hover:bg-neutral-50 transition-colors price-card-item';
+        row.dataset.priceType = type;
+        row.dataset.priceId = priceCard.id;
         
         row.innerHTML = `
           <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm font-medium text-neutral-900">${type}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-neutral-900">${miscFee.name}</div>
+            <div class="text-sm text-neutral-900">${priceCard.name}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-neutral-900">${miscFee.applyScope}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-neutral-900">${miscFee.validFrom}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-neutral-900">${miscFee.validTo}</div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.className}">
-              ${status.text}
-            </span>
+            <div class="text-sm text-neutral-900">${priceCard.applyScope}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             ${actionButtons}
@@ -407,8 +371,8 @@
       document.querySelectorAll('.detail-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          const miscType = this.dataset.misc-type;
-          showMiscFeeDetail(miscType);
+          const priceType = this.dataset.priceType;
+          showPriceCardDetail(priceType);
         });
       });
       
@@ -416,20 +380,21 @@
       document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          const miscType = this.dataset.misc-type;
-          // 跳转到编辑页面，传递杂费类型
-          window.location.href = `add_misc_fee.html?type=${encodeURIComponent(miscType)}`;
+          const priceType = this.dataset.priceType;
+          // 跳转到编辑页面，传递成本类型
+          window.location.href = `add.html?type=${encodeURIComponent(priceType)}`;
         });
       });
       
       // 只保留编辑按钮点击事件
-       
+      
+
     }
 
-    // 显示杂费详情
-    function showMiscFeeDetail(miscType) {
-      const miscFee = presetMiscFees[miscType];
-      if (!miscFee) return;
+    // 显示成本详情
+    function showPriceCardDetail(priceType) {
+      const priceCard = presetPriceCards[priceType];
+      if (!priceCard) return;
       
       // 根据状态获取状态显示文本
           const statusConfig = {
@@ -438,7 +403,7 @@
             'published': { text: '生效' }
           };
           
-          const statusText = statusConfig[miscFee.status] || statusConfig.draft;
+          const statusText = statusConfig[priceCard.status] || statusConfig.draft;
       
       // 渲染详情内容
       const content = `
@@ -449,8 +414,8 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 class="text-sm font-medium text-neutral-600 mb-1">杂费类型</h4>
-                <p class="text-base font-bold text-neutral-700">${miscType}</p>
+                <h4 class="text-sm font-medium text-neutral-600 mb-1">成本类型</h4>
+                <p class="text-base font-bold text-neutral-700">${priceType}</p>
               </div>
               <div>
                 <h4 class="text-sm font-medium text-neutral-600 mb-1">状态</h4>
@@ -461,24 +426,15 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <h4 class="text-sm font-medium text-neutral-600 mb-1">名称</h4>
-                <p class="text-base text-neutral-700">${miscFee.name}</p>
+                <p class="text-base text-neutral-700">${priceCard.name}</p>
               </div>
               <div>
                 <h4 class="text-sm font-medium text-neutral-600 mb-1">适用范围</h4>
-                <p class="text-base text-neutral-700">${miscFee.applyScope}</p>
+                <p class="text-base text-neutral-700">${priceCard.applyScope}</p>
               </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <h4 class="text-sm font-medium text-neutral-600 mb-1">生效日期</h4>
-                <p class="text-base text-neutral-700">${miscFee.validFrom}</p>
-              </div>
-              <div>
-                <h4 class="text-sm font-medium text-neutral-600 mb-1">失效日期</h4>
-                <p class="text-base text-neutral-700">${miscFee.validTo}</p>
-              </div>
-            </div>
+
           </div>
           
           <!-- 描述与计算逻辑卡片 -->
@@ -487,12 +443,12 @@
             
             <div class="mb-4">
               <h4 class="text-sm font-medium text-neutral-600 mb-1">描述</h4>
-              <p class="text-base text-neutral-700">${miscFee.description}</p>
+              <p class="text-base text-neutral-700">${priceCard.description}</p>
             </div>
             
             <div>
               <h4 class="text-sm font-medium text-neutral-600 mb-1">计算逻辑</h4>
-              <p class="text-base text-neutral-700">${miscFee.calculationLogic}</p>
+              <p class="text-base text-neutral-700">${priceCard.calculationLogic}</p>
             </div>
           </div>
           
@@ -501,11 +457,11 @@
             <h3 class="text-base font-bold text-neutral-700 mb-4">单价设置</h3>
             
             <!-- 整柜单价 -->
-            ${miscFee.containerConfig.length > 0 ? `
+            ${priceCard.containerConfig.length > 0 ? `
               <div class="mb-4">
                 <h4 class="text-sm font-medium text-neutral-600 mb-2">整柜</h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  ${miscFee.containerConfig.map(config => `
+                  ${priceCard.containerConfig.map(config => `
                     <div class="bg-neutral-50 p-3 rounded-md">
                       <div class="flex justify-between items-center">
                         <span class="text-sm text-neutral-600">${config.containerType}</span>
@@ -519,26 +475,26 @@
             ` : ''}
             
             <!-- 散货单价 -->
-            ${miscFee.bulkConfig.price > 0 ? `
+            ${priceCard.bulkConfig.price > 0 ? `
               <div class="mb-4">
                 <h4 class="text-sm font-medium text-neutral-600 mb-2">散货</h4>
                 <div class="bg-neutral-50 p-3 rounded-md">
                   <div class="flex justify-between items-center">
                     <span class="text-sm text-neutral-600">散货单价</span>
-                    <span class="text-base font-bold text-primary">${miscFee.bulkConfig.price.toFixed(2)} 元/${miscFee.bulkConfig.unit}</span>
+                    <span class="text-base font-bold text-primary">${priceCard.bulkConfig.price.toFixed(2)} 元/${priceCard.bulkConfig.unit}</span>
                   </div>
                 </div>
               </div>
             ` : ''}
             
             <!-- 快递单价 -->
-            ${miscFee.expressConfig.price > 0 ? `
+            ${priceCard.expressConfig.price > 0 ? `
               <div class="mb-4">
                 <h4 class="text-sm font-medium text-neutral-600 mb-2">快递</h4>
                 <div class="bg-neutral-50 p-3 rounded-md">
                   <div class="flex justify-between items-center">
                     <span class="text-sm text-neutral-600">快递单价</span>
-                    <span class="text-base font-bold text-primary">${miscFee.expressConfig.price.toFixed(2)} 元/${miscFee.expressConfig.unit}</span>
+                    <span class="text-base font-bold text-primary">${priceCard.expressConfig.price.toFixed(2)} 元/${priceCard.expressConfig.unit}</span>
                   </div>
                 </div>
               </div>
@@ -548,33 +504,33 @@
       `;
       
       document.getElementById('detailModalContent').innerHTML = content;
-      document.getElementById('miscFeeDetailModal').classList.remove('hidden');
+      document.getElementById('priceCardDetailModal').classList.remove('hidden');
     }
 
     // 绑定事件
     function bindEvents() {
-      // 新增杂费按钮点击事件
-      document.getElementById('addMiscFeeBtn').addEventListener('click', function() {
-        window.location.href = 'add_misc_fee.html';
+      // 新增成本按钮点击事件
+      document.getElementById('addPriceCardBtn').addEventListener('click', function() {
+        window.location.href = 'add.html';
       });
       
       // 搜索输入事件
-      document.getElementById('miscFeeSearch').addEventListener('input', renderMiscFeeTypes);
+      document.getElementById('priceCardSearch').addEventListener('input', renderPriceCardTypes);
       
       // 状态筛选变化事件
-      document.getElementById('miscFeeStatusFilter').addEventListener('change', renderMiscFeeTypes);
+      document.getElementById('statusFilter').addEventListener('change', renderPriceCardTypes);
       
       // 关闭详情弹窗
       document.getElementById('closeDetailModal').addEventListener('click', function() {
-        document.getElementById('miscFeeDetailModal').classList.add('hidden');
+        document.getElementById('priceCardDetailModal').classList.add('hidden');
       });
       
       document.getElementById('detailModalCloseBtn').addEventListener('click', function() {
-        document.getElementById('miscFeeDetailModal').classList.add('hidden');
+        document.getElementById('priceCardDetailModal').classList.add('hidden');
       });
       
       // 点击弹窗外部关闭弹窗
-      document.getElementById('miscFeeDetailModal').addEventListener('click', function(event) {
+      document.getElementById('priceCardDetailModal').addEventListener('click', function(event) {
         if (event.target === this) {
           this.classList.add('hidden');
         }

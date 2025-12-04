@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关联价卡</title>
+  <!-- 引入必要依赖 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            success: '#00B42A',
+            danger: '#F53F3F',
+            neutral: {
+              100: '#F2F3F5',
+              200: '#E5E6EB',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          transitionProperty: {
+            'all-300': 'all 0.3s ease',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+      .bg-primary\/10 {
+        background-color: rgba(22, 93, 255, 0.1);
+      }
+      .hover\:border-primary:hover {
+        border-color: #165DFF;
+      }
+      .hover\:text-primary:hover {
+        color: #165DFF;
+      }
+      .hover\:bg-neutral-50:hover {
+        background-color: #F9FAFB;
+      }
+      .hover\:bg-primary\/5:hover {
+        background-color: rgba(22, 93, 255, 0.05);
+      }
+      .hover\:text-danger:hover {
+        color: #F53F3F;
+      }
+    }
+  </style>
+  
+  <!-- 基础样式保障 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+        .content-auto {
+            content-visibility: auto;
+        }
+        .transition-all-300 {
+            transition: all 300ms ease;
+        }
+        .table-title {
+            @apply text-sm font-semibold text-neutral-600 mb-2 block;
+        }
+        .table-container {
+            @apply overflow-x-auto;
+        }
+        .table {
+            @apply min-w-full divide-y divide-neutral-200;
+        }
+        .table th {
+            @apply px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider;
+        }
+        .table td {
+            @apply px-4 py-3 whitespace-nowrap text-sm text-neutral-700;
+        }
+        .table tr:nth-child(even) {
+            @apply bg-neutral-50;
+        }
+        .card {
+            @apply p-4 border border-neutral-100 rounded-lg bg-white shadow-sm hover:shadow-md transition-all-300;
+        }
+        .btn-primary {
+            @apply px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300 flex items-center;
+        }
+        .btn-secondary {
+            @apply px-4 py-2 bg-white border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 transition-all-300 flex items-center;
+        }
+    }
+  </style>
+  
+  <style>
+    /* 基础布局样式 */
+    body {
+      font-family: Inter, system-ui, sans-serif;
+    }
+    
+    /* 输入框样式 */
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      transition: all 0.2s ease;
+    }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #165DFF;
+      box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+    }
+    
+    /* 按钮样式 */
+    button {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- 自定义逻辑模块（价卡版） -->
+  <div class="container mx-auto px-4 py-6">
+    <!-- 页面头部 -->
+      <div class="mb-6 flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <button id="backBtn" class="px-5 py-2 bg-white border border-neutral-200 text-neutral-700 text-sm rounded-md hover:bg-neutral-50 transition-all-300 flex items-center gap-1">
+            <i class="fa fa-arrow-left"></i> 返回
+          </button>
+        </div>
+      </div>
+      
+      <!-- 客户信息 -->
+      <div id="customerInfo" class="mb-6 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+        <h2 class="text-lg font-semibold text-neutral-700 mb-4">客户信息</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-neutral-500">客户名称</label>
+            <p id="customerName" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-500">客户编码</label>
+            <p id="customerCode" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-500">联系人</label>
+            <p id="contactPerson" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-neutral-500">联系电话</label>
+            <p id="contactPhone" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 价卡类型列表 -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-neutral-700">关联价卡</h2>
+          <div class="flex items-center gap-3">
+          </div>
+        </div>
+        
+        <!-- 搜索和多条件筛选 -->
+        <div class="mb-4 bg-white p-4 border border-neutral-100 rounded-lg shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- 搜索 -->
+            <!-- <div class="flex flex-col">
+              <label for="priceCardSearch" class="text-sm font-medium text-neutral-600 mb-1">搜索</label>
+              <input type="text" id="priceCardSearch" placeholder="搜索价卡类型..." 
+                     class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
+            </div> -->
+            
+            <!-- 类型筛选 -->
+            <div class="flex flex-col">
+              <label for="priceCardTypeFilter" class="text-sm font-medium text-neutral-600 mb-1">类型</label>
+              <select id="priceCardTypeFilter" class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
+                <option value="">全部类型</option>
+                <option value="LCL">卸货费</option>
+                <option value="FCL">仓储费</option>
+                <option value="BULK">出库费</option>
+              </select>
+            </div>
+            
+
+            
+            <!-- 生效日期筛选 -->
+            <div class="flex flex-col">
+              <label for="effectiveDateFilter" class="text-sm font-medium text-neutral-600 mb-1">生效日期</label>
+              <input type="date" id="effectiveDateFilter" 
+                     class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
+            </div>
+            
+            <!-- 失效日期筛选 -->
+            <div class="flex flex-col">
+              <label for="expireDateFilter" class="text-sm font-medium text-neutral-600 mb-1">失效日期</label>
+              <input type="date" id="expireDateFilter" 
+                     class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
+            </div>
+          </div>
+          
+          <!-- 查询和重置按钮 -->
+          <div class="mt-4 flex gap-2">
+            <!-- 查询按钮 -->
+            <button id="searchBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center justify-center gap-1">
+              <i class="fa fa-search"></i> 查询
+            </button>
+            
+            <!-- 重置按钮 -->
+            <button id="resetBtn" class="px-5 py-2 bg-white border border-neutral-200 text-neutral-700 text-sm rounded-md hover:bg-neutral-50 transition-all-300 flex items-center justify-center gap-1">
+              <i class="fa fa-refresh"></i> 重置
+            </button>
+          </div>
+        </div>
+        
+        <!-- 价卡类型卡片容器 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="priceCardTypesList">
+          <!-- 动态生成价卡类型卡片 -->
+        </div>
+      </div>
+  </div>
+  
+  <!-- 价卡新增弹窗 -->
+  <div id="associatePriceCardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <!-- 弹窗头部 -->
+      <div class="px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-neutral-700">关联价卡</h2>
+        <button type="button" id="closeModal" class="text-neutral-500 hover:text-neutral-700 transition-colors">
+          <i class="fa fa-times text-lg"></i>
+        </button>
+      </div>
+      
+      <!-- 弹窗内容 -->
+      <div class="p-6">
+        <!-- 价卡类型选择 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-neutral-600 mb-2">选择价卡类型 <span class="text-danger">*</span></label>
+          <select id="priceCardType" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+            <option value="">请选择价卡类型</option>
+            <option value="卸货费">卸货费</option>
+            <option value="仓储费">仓储费</option>
+            <option value="出库费">出库费</option>
+          </select>
+        </div>
+        
+        <!-- 预设价卡信息 -->
+        <div id="presetPriceCardInfo">
+          <!-- 价卡基本信息 -->
+          <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-neutral-50">
+            <h4 class="text-sm font-bold text-neutral-700 mb-4 flex items-center">
+              <i class="fa fa-card text-primary mr-1"></i>基本信息
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-neutral-600 mb-1">名称 <span class="text-danger">*</span></label>
+                <input type="text" id="priceCardName" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-600 mb-1">适用范围 <span class="text-danger">*</span></label>
+                <select id="applyScope" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+                  <option value="整柜">整柜</option>
+                  <option value="散货">散货</option>
+                  <option value="全部">全部</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-600 mb-1">生效日期 <span class="text-danger">*</span></label>
+                <input type="datetime-local" id="effectiveDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-neutral-600 mb-1">失效日期</label>
+                <input type="datetime-local" id="expireDate" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-neutral-600 mb-1">备注</label>
+                <textarea id="remark" rows="2" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 单价设置区域 -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="text-sm font-bold text-neutral-700 flex items-center">
+                <i class="fa fa-tag text-primary mr-1"></i>单价设置
+              </h4>
+            </div>
+            
+            <!-- 整柜单价设置（按柜型配置） -->
+            <div class="mb-4">
+              <label class="table-title">整柜</label>
+              <div id="containerPriceTable" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+                <!-- 动态生成整柜单价卡片 -->
+              </div>
+            </div>
+
+            <!-- 散货单价设置 -->
+            <div class="mb-4 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+              <label class="table-title">散货</label>
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>公报价</th>
+                      <th>单位</th>
+                      <th>折扣率 (%)</th>
+                      <th>增加金额</th>
+                      <th>减少金额</th>
+                      <th>客单价</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input type="number" id="bulkPrice" min="0" step="0.01" placeholder="输入散货单价" required readonly>
+                      </td>
+                      <td>
+                        <select id="bulkUnit">
+                          <option value="托">托</option>
+                          <option value="CBM">CBM</option>
+                          <option value="KG">KG</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="number" id="bulkDiscount" min="0" max="100" step="0.01" placeholder="请输入" oninput="calculateBulkPrice()">
+                      </td>
+                      <td>
+                        <input type="number" id="bulkAddAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateBulkPrice()">
+                      </td>
+                      <td>
+                        <input type="number" id="bulkReduceAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateBulkPrice()">
+                      </td>
+                      <td>
+                        <div class="price-display">
+                          <span id="bulkAdjustedPrice"></span>
+                          <span id="bulkAdjustedUnit" class="price-unit"></span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 快递单价设置 -->
+            <div class="mb-4 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+              <label class="table-title">快递</label>
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>公报价</th>
+                      <th>单位</th>
+                      <th>折扣率 (%)</th>
+                      <th>增加金额</th>
+                      <th>减少金额</th>
+                      <th>客单价</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <input type="number" id="expressPrice" min="0" step="0.01" placeholder="输入快递单价" required readonly>
+                      </td>
+                      <td>
+                        <select id="expressUnit">
+                          <option value="托">托</option>
+                          <option value="CBM">CBM</option>
+                          <option value="KG">KG</option>
+                          <option value="件">件</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="number" id="expressDiscount" min="0" max="100" step="0.01" placeholder="请输入" oninput="calculateExpressPrice()">
+                      </td>
+                      <td>
+                        <input type="number" id="expressAddAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateExpressPrice()">
+                      </td>
+                      <td>
+                        <input type="number" id="expressReduceAmount" min="0" step="0.01" placeholder="请输入" oninput="calculateExpressPrice()">
+                      </td>
+                      <td>
+                        <div class="price-display">
+                          <span id="expressAdjustedPrice"></span>
+                          <span id="expressAdjustedUnit" class="price-unit"></span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 弹窗底部 -->
+        <div class="mt-8 pt-6 border-t border-neutral-200 flex justify-end gap-3">
+          <button type="button" id="cancelModalBtn" class="px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 transition-all-300">取消</button>
+          <button id="saveAssociateBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300">保存关联</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 预设客户数据
+    const presetCustomers = [
+      { id: 1, name: "DEMO", code: "DEMO", contact: "zsw", phone: "13800138000" }
+    ];
+    
+    // 预设套餐数据
+    const presetPackages = [
+      {
+        id: 1,
+        name: "基础套餐",
+        description: "包含基础的价卡组合",
+        priceCardIds: [1, 2]
+      },
+      {
+        id: 2,
+        name: "高级套餐",
+        description: "包含高级价卡组合",
+        priceCardIds: [2, 3]
+      },
+      {
+        id: 3,
+        name: "特惠套餐",
+        description: "包含特惠价卡组合",
+        priceCardIds: [1, 3]
+      }
+    ];
+    
+    // 关联价卡列表数据
+    let associatedPriceCards = [];
+    
+    // 预设仓群数据
+    const presetWarehouseGroups = [
+      { id: 1, name: "上海仓群", description: "上海地区的所有仓库" },
+      { id: 2, name: "北京仓群", description: "北京地区的所有仓库" },
+      { id: 3, name: "广州仓群", description: "广州地区的所有仓库" }
+    ];
+
+    // 预设价卡数据
+    const presetPriceCards = {
+      "卸货费": {
+        id: 1,
+        name: "卸货费",
+        applyScope: "全部",
+        warehouseGroupId: 1, // 上海仓群
+        warehouseGroupName: "上海仓群",
+        validFrom: "2024-01-01 00:00:00",
+        validTo: "2024-12-31 23:59:59",
+        description: "这是一个预设的生效卸货费价卡",
+        status: "pending", // 未生效
+        bulkConfig: {
+          price: 100.00,
+          unit: "托"
+        },
+        expressConfig: {
+          price: 20.00,
+          unit: "箱"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 500.00, remark: "标准柜" },
+          { containerType: "40GP", price: 900.00, remark: "标准柜" }
+        ],
+        calculationLogic: "基础单价 + 燃油附加费"
+      },
+      "仓储费": {
+        id: 2,
+        name: "仓储费",
+        applyScope: "全部",
+        warehouseGroupId: 1, // 上海仓群
+        warehouseGroupName: "上海仓群",
+        validFrom: "2024-06-01 00:00:00",
+        validTo: "2024-12-31 23:59:59",
+        description: "这是一个未生效的新版卸货费价卡",
+        status: "pending", // 未生效
+        bulkConfig: {
+          price: 120.00,
+          unit: "托"
+        },
+        expressConfig: {
+          price: 25.00,
+          unit: "箱"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 550.00, remark: "标准柜" },
+          { containerType: "40GP", price: 950.00, remark: "标准柜" }
+        ],
+        calculationLogic: "基础单价 + 燃油附加费 + 旺季附加费"
+      },
+      "出库费": {
+        id: 3,
+        name: "出库费",
+        applyScope: "全部",
+        warehouseGroupId: 2, // 北京仓群
+        warehouseGroupName: "北京仓群",
+        validFrom: "2023-01-01 00:00:00",
+        validTo: "2023-12-31 23:59:59",
+        description: "这是一个已失效的旧版出库费价卡",
+        status: "pending", // 未生效
+        bulkConfig: {
+          price: 90.00,
+          unit: "托"
+        },
+        expressConfig: {
+          price: 18.00,
+          unit: "箱"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 450.00, remark: "标准柜" },
+          { containerType: "40GP", price: 850.00, remark: "标准柜" }
+        ],
+        calculationLogic: "基础单价 + 燃油附加费"
+      }
+    };
+    
+    // DOMContentLoaded事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化页面
+      initPage();
+    });
+    
+    // 显示客户信息
+    function showCustomerInfo(customerId) {
+            const customer = presetCustomers.find(w => w.id === customerId);
+      if (!customer) return;
+
+        // 更新客户信息显示
+        document.getElementById('customerName').textContent = customer.name;
+            document.getElementById('customerCode').textContent = customer.code;
+            document.getElementById('contactPerson').textContent = customer.contact;
+            document.getElementById('contactPhone').textContent = customer.phone;
+    }
+    
+    // 渲染价卡类型列表
+    function renderPriceCardTypes() {
+      const container = document.getElementById('priceCardTypesList');
+      container.innerHTML = '';
+      
+      // 获取搜索关键词和筛选条件
+      const searchInput = document.getElementById('priceCardSearch');
+      const searchKeyword = searchInput ? searchInput.value.toLowerCase() : '';
+      
+      const priceCardTypeFilter = document.getElementById('priceCardTypeFilter');
+      const typeFilter = priceCardTypeFilter ? priceCardTypeFilter.value : '';
+      
+      const priceCardStatus = document.getElementById('priceCardStatus');
+      const statusFilter = priceCardStatus ? priceCardStatus.value : '';
+      
+      const effectiveDateFilter = document.getElementById('effectiveDateFilter');
+      const effectiveDateFilterValue = effectiveDateFilter ? effectiveDateFilter.value : '';
+      
+      const expireDateFilter = document.getElementById('expireDateFilter');
+      const expireDateFilterValue = expireDateFilter ? expireDateFilter.value : '';
+      
+      // 准备价卡数据
+      const priceCards = Object.values(presetPriceCards);
+      
+      // 应用筛选条件
+      const filteredPriceCards = priceCards.filter(priceCard => {
+        // 搜索筛选
+        if (searchKeyword && !priceCard.name.toLowerCase().includes(searchKeyword)) {
+          return false;
+        }
+        
+        // 类型筛选
+        if (typeFilter && (priceCard.type || '卸货费') !== typeFilter) {
+          return false;
+        }
+        
+        // 状态筛选
+        if (statusFilter && priceCard.status !== statusFilter) {
+          return false;
+        }
+        
+        // 生效日期筛选
+        if (effectiveDateFilterValue) {
+          const cardDate = new Date(priceCard.validFrom);
+          const filterDate = new Date(effectiveDateFilterValue);
+          if (cardDate < filterDate) {
+            return false;
+          }
+        }
+        
+        // 失效日期筛选
+        if (expireDateFilterValue) {
+          const cardDate = new Date(priceCard.validTo);
+          const filterDate = new Date(expireDateFilterValue);
+          if (cardDate > filterDate) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+      
+      // 按仓群分组
+      const groupedCards = {};
+      filteredPriceCards.forEach(card => {
+        const groupId = card.warehouseGroupId || 1;
+        if (!groupedCards[groupId]) {
+          groupedCards[groupId] = [];
+        }
+        groupedCards[groupId].push(card);
+      });
+      
+      // 渲染每个仓群
+      presetWarehouseGroups.forEach(group => {
+        const cards = groupedCards[group.id] || [];
+        if (cards.length === 0) return;
+        
+        // 创建仓群标题
+        const groupTitle = document.createElement('div');
+        groupTitle.className = 'mt-8 mb-4';
+        groupTitle.innerHTML = `
+          <h2 class="text-xl font-bold text-neutral-800">${group.name}</h2>
+          <p class="text-sm text-neutral-500">${group.description}</p>
+          <div class="w-full h-0.5 bg-neutral-200 mt-2"></div>
+        `;
+        container.appendChild(groupTitle);
+        
+        // 创建价卡容器
+        const cardsContainer = document.createElement('div');
+        cardsContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+        
+        // 渲染每个价卡
+        cards.forEach(card => {
+          // 根据状态获取显示文本和样式
+          const statusMap = {
+            'draft': { text: '失效', className: 'bg-red-100 text-red-800' },
+            'pending': { text: '未生效', className: 'bg-gray-100 text-gray-800' },
+            'published': { text: '生效', className: 'bg-green-100 text-green-800' }
+          };
+          
+          const statusInfo = statusMap[card.status] || { text: '未知', className: 'bg-gray-100 text-gray-800' };
+          
+          // 创建价卡卡片
+          const cardElement = document.createElement('div');
+          cardElement.className = 'bg-white border border-neutral-100 rounded-lg shadow-sm p-4 hover:border-primary transition-all-300';
+          cardElement.dataset.priceId = card.id;
+          
+          cardElement.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="text-lg font-semibold text-neutral-700">${card.name}</h3>
+              <span class="px-2 py-1 text-xs rounded-full ${statusInfo.className}">${statusInfo.text}</span>
+            </div>
+            <div class="text-sm text-neutral-500 mb-3">
+              <p>适用范围: ${card.applyScope}</p>
+              <p>有效期: ${card.validFrom.split(' ')[0]} 至 ${card.validTo.split(' ')[0]}</p>
+            </div>
+            <div class="flex justify-end gap-2">
+              <button class="px-3 py-1 text-xs bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 view-price-card" data-price-id="${card.id}">
+                <i class="fa fa-eye mr-1"></i> 查看
+              </button>
+              <button class="px-3 py-1 text-xs bg-white border border-primary text-primary rounded-md hover:bg-primary/5 edit-price-card" data-price-id="${card.id}">
+                <i class="fa fa-pencil mr-1"></i> 编辑
+              </button>
+              <button class="px-3 py-1 text-xs bg-white border border-danger text-danger rounded-md hover:bg-danger/5 delete-price-card" data-price-id="${card.id}">
+                <i class="fa fa-trash mr-1"></i> 删除
+              </button>
+            </div>
+          `;
+          
+          // 添加事件监听
+          cardElement.querySelector('.view-price-card').addEventListener('click', () => {
+            viewPriceCard(card.id);
+          });
+          
+          cardElement.querySelector('.edit-price-card').addEventListener('click', () => {
+            editPriceCard(card.id);
+          });
+          
+          cardElement.querySelector('.delete-price-card').addEventListener('click', () => {
+            deletePriceCard(card.id);
+          });
+          
+          cardsContainer.appendChild(cardElement);
+        });
+        
+        container.appendChild(cardsContainer);
+      });
+    }
+    
+    // 查看价卡
+    function viewPriceCard(priceId) {
+      // 显示卸货费详情
+      showPriceCardDetail('卸货费');
+    }
+    
+    // 编辑价卡
+    function editPriceCard(priceIdentifier) {
+      // 显示关联价卡弹窗
+      const associatePriceCardModal = document.getElementById('associatePriceCardModal');
+      associatePriceCardModal.classList.remove('hidden');
+      
+      // 默认选择卸货费作为价卡类型
+      const priceCardTypeSelect = document.getElementById('priceCardType');
+      priceCardTypeSelect.value = '卸货费';
+      
+      // 触发价卡类型选择事件，加载相应的预设价卡信息
+      priceCardTypeSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // 删除价卡
+    function deletePriceCard(priceId) {
+      if (confirm('确定要删除这个价卡吗？')) {
+        // 从关联价卡列表中删除价卡
+        associatedPriceCards = associatedPriceCards.filter(pc => pc.id !== parseInt(priceId));
+        // 重新渲染价卡类型列表
+        renderPriceCardTypes();
+        alert('价卡已删除');
+      }
+    }
+    
+    // 绑定操作按钮事件
+    function bindActionEvents() {
+      // 详情按钮点击事件
+      document.querySelectorAll('.detail-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const priceType = this.dataset.priceType;
+          showPriceCardDetail(priceType);
+        });
+      });
+      
+      // 编辑按钮点击事件
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const priceType = this.dataset.priceType;
+          editPriceCard(priceType);
+        });
+      });
+      
+      // 只保留编辑按钮点击事件
+    }
+    
+    // 删除了发布和作废价卡函数
+    
+    // 显示价卡详情
+    function showPriceCardDetail(type) {
+      // 对于卸货费类型，默认显示生效的卸货费价卡
+      let priceCard;
+      if (type === '卸货费') {
+        // 查找生效状态的卸货费价卡
+        priceCard = Object.values(presetPriceCards).find(pc => 
+          pc.name.includes('标准卸货费价卡') || pc.name.includes('卸货费价卡')
+        );
+      } else {
+        // 其他类型直接查找
+        priceCard = presetPriceCards[type];
+      }
+      
+      if (!priceCard) return;
+      
+      // 创建详情弹窗
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <!-- 弹窗头部 -->
+            <div class="px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-neutral-700">卸货费详情</h2>
+                <button type="button" class="close-detail-modal text-neutral-500 hover:text-neutral-700 transition-colors">
+                    <i class="fa fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- 弹窗内容 -->
+            <div class="p-6">
+                <!-- 价卡基本信息 -->
+                <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-neutral-50">
+                    <h4 class="text-sm font-bold text-neutral-700 mb-4 flex items-center">
+                        <i class="fa fa-card text-primary mr-1"></i>基本信息
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">名称</label>
+                            <p class="text-sm font-semibold text-neutral-700 mt-1">${priceCard.name}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">价卡类型</label>
+                            <p class="text-sm font-semibold text-neutral-700 mt-1">${type}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">适用范围</label>
+                            <p class="text-sm font-semibold text-neutral-700 mt-1">${priceCard.applyScope}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">状态</label>
+                            <p class="text-sm font-semibold text-neutral-700 mt-1">${priceCard.status === 'published' ? '生效' : priceCard.status === 'pending' ? '未生效' : '失效'}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">生效日期</label>
+                            <p class="text-sm font-semibold text-neutral-700 mt-1">${priceCard.validFrom}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">失效日期</label>
+                            <p class="text-sm font-semibold text-neutral-700 mt-1">${priceCard.validTo}</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-neutral-600 mb-1">备注</label>
+                            <p class="text-sm text-neutral-600 mt-1">${priceCard.description}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 单价设置区域 -->
+                <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+                    <h4 class="text-sm font-bold text-neutral-700 flex items-center mb-3">
+                        <i class="fa fa-tag text-primary mr-1"></i>单价设置
+                    </h4>
+                    
+                    <!-- 整柜单价设置 -->
+                    ${priceCard.containerConfig && priceCard.containerConfig.length > 0 ? `
+                        <div id="modalContainerPriceSection" style="display: block;">
+                            <h5 class="table-title">整柜</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+                                ${priceCard.containerConfig.map(config => `
+                                    <div class="p-3 border border-neutral-100 rounded-lg bg-neutral-50">
+                                        <h5 class="text-sm font-bold text-neutral-700 mb-2">${config.containerType} (${config.remark})</h5>
+                                        <div class="grid grid-cols-2 gap-2 text-sm">
+                                            <div>
+                                                <span class="text-neutral-500">公报价：</span>
+                                                <span class="font-semibold">${config.price.toFixed(2)}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-neutral-500">折扣率：</span>
+                                                <span class="font-semibold">${config.discountRate || 0}%</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-neutral-500">增加金额：</span>
+                                                <span class="font-semibold">${(config.addAmount || 0).toFixed(2)}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-neutral-500">减少金额：</span>
+                                                <span class="font-semibold">${(config.subtractAmount || 0).toFixed(2)}</span>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <span class="text-neutral-500">客单价：</span>
+                                                <span class="font-bold text-primary">${(config.unitPrice || config.price).toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                
+                    <!-- 散货单价设置 -->
+                    ${priceCard.bulkConfig && priceCard.bulkConfig.price > 0 ? `
+                        <div id="modalBulkPriceSection" style="display: block;" class="mb-4">
+                            <h5 class="table-title">散货</h5>
+                            <div class="p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+                                <div class="table-container">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>公报价</th>
+                                                <th>单位</th>
+                                                <th>折扣率(%)</th>
+                                                <th>增加金额</th>
+                                                <th>减少金额</th>
+                                                <th>客单价</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>${priceCard.bulkConfig.price.toFixed(2)}</td>
+                                                <td>${priceCard.bulkConfig.unit}</td>
+                                                <td>${priceCard.bulkConfig.discountRate || 0}</td>
+                                                <td>${(priceCard.bulkConfig.addAmount || 0).toFixed(2)}</td>
+                                                <td>${(priceCard.bulkConfig.subtractAmount || 0).toFixed(2)}</td>
+                                                <td class="font-bold text-primary">${(priceCard.bulkConfig.unitPrice || priceCard.bulkConfig.price).toFixed(2)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                
+                    <!-- 快递单价设置 -->
+                    ${priceCard.expressConfig && priceCard.expressConfig.price > 0 ? `
+                        <div id="modalExpressPriceSection" style="display: block;" class="mb-4">
+                            <h5 class="table-title">快递</h5>
+                            <div class="p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+                                <div class="table-container">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>公报价</th>
+                                                <th>单位</th>
+                                                <th>折扣率(%)</th>
+                                                <th>增加金额</th>
+                                                <th>减少金额</th>
+                                                <th>客单价</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>${priceCard.expressConfig.price.toFixed(2)}</td>
+                                                <td>${priceCard.expressConfig.unit}</td>
+                                                <td>${priceCard.expressConfig.discountRate || 0}</td>
+                                                <td>${(priceCard.expressConfig.addAmount || 0).toFixed(2)}</td>
+                                                <td>${(priceCard.expressConfig.subtractAmount || 0).toFixed(2)}</td>
+                                                <td class="font-bold text-primary">${(priceCard.expressConfig.unitPrice || priceCard.expressConfig.price).toFixed(2)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+      `;
+      
+      // 添加弹窗到页面
+      document.body.appendChild(modal);
+      
+      // 绑定关闭事件
+      modal.querySelectorAll('.close-detail-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.body.removeChild(modal);
+        });
+      });
+      
+      // 点击弹窗外部关闭
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          document.body.removeChild(modal);
+        }
+      });
+    }
+    
+    // 绑定事件
+    function bindEvents() {
+      // 价卡类型选择事件
+      const priceCardType = document.getElementById('priceCardType');
+      if (priceCardType) {
+        priceCardType.addEventListener('change', function() {
+          const selectedType = this.value;
+          if (selectedType) {
+            showPresetPriceCard(selectedType);
+          } else {
+            const presetPriceCardInfo = document.getElementById('presetPriceCardInfo');
+            if (presetPriceCardInfo) {
+              presetPriceCardInfo.style.display = 'none';
+            }
+          }
+        });
+      }
+      
+      // 保存关联按钮点击事件
+      const saveAssociateBtn = document.getElementById('saveAssociateBtn');
+      if (saveAssociateBtn) {
+        saveAssociateBtn.addEventListener('click', saveAssociatedPriceCard);
+      }
+      
+      // 搜索框输入事件，只有当搜索框存在时才添加事件监听器
+      const priceCardSearch = document.getElementById('priceCardSearch');
+      if (priceCardSearch) {
+        priceCardSearch.addEventListener('input', renderPriceCardTypes);
+      }
+      
+      // 价卡类型筛选事件
+      const priceCardTypeFilter = document.getElementById('priceCardTypeFilter');
+      if (priceCardTypeFilter) {
+        priceCardTypeFilter.addEventListener('change', renderPriceCardTypes);
+      }
+      
+      // 价卡状态筛选事件
+      const priceCardStatus = document.getElementById('priceCardStatus');
+      if (priceCardStatus) {
+        priceCardStatus.addEventListener('change', renderPriceCardTypes);
+      }
+      
+      // 生效日期筛选事件
+      const effectiveDateFilter = document.getElementById('effectiveDateFilter');
+      if (effectiveDateFilter) {
+        effectiveDateFilter.addEventListener('change', renderPriceCardTypes);
+      }
+      
+      // 失效日期筛选事件
+      const expireDateFilter = document.getElementById('expireDateFilter');
+      if (expireDateFilter) {
+        expireDateFilter.addEventListener('change', renderPriceCardTypes);
+      }
+      
+      // 查询按钮点击事件
+      const searchBtn = document.getElementById('searchBtn');
+      if (searchBtn) {
+        searchBtn.addEventListener('click', renderPriceCardTypes);
+      }
+      
+      // 重置按钮点击事件
+      const resetBtn = document.getElementById('resetBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          // 重置所有筛选条件
+          if (priceCardSearch) priceCardSearch.value = '';
+          if (priceCardTypeFilter) priceCardTypeFilter.value = '';
+          if (priceCardStatus) priceCardStatus.value = '';
+          if (effectiveDateFilter) effectiveDateFilter.value = '';
+          if (expireDateFilter) expireDateFilter.value = '';
+          // 重新渲染价卡列表
+          renderPriceCardTypes();
+        });
+      }
+      
+      // 为有效期输入框添加时分秒自动设置
+      const effectiveDateInput = document.getElementById('effectiveDate');
+      const expireDateInput = document.getElementById('expireDate');
+      
+      if (effectiveDateInput) {
+        // 生效日期自动设置为00:00:00
+        effectiveDateInput.addEventListener('change', function() {
+          if (this.value) {
+            const datePart = this.value.split('T')[0];
+            this.value = datePart + 'T00:00:00';
+          }
+        });
+      }
+      
+      if (expireDateInput) {
+        // 失效日期自动设置为23:59:59
+        expireDateInput.addEventListener('change', function() {
+          if (this.value) {
+            const datePart = this.value.split('T')[0];
+            this.value = datePart + 'T23:59:59';
+          }
+        });
+      }
+      
+      // 按钮事件已移除
+    }
+    
+    // 套餐引用相关函数已移除
+    
+    // 初始化页面
+    function initPage() {
+      // 从URL获取客户ID
+      const urlParams = new URLSearchParams(window.location.search);
+      const customerId = parseInt(urlParams.get('customerId')) || 1; // 默认使用第一个客户
+      
+      // 显示客户信息
+      showCustomerInfo(customerId);
+      // 重置所有筛选条件
+      const priceCardTypeFilter = document.getElementById('priceCardTypeFilter');
+      const priceCardStatus = document.getElementById('priceCardStatus');
+      const effectiveDateFilter = document.getElementById('effectiveDateFilter');
+      const expireDateFilter = document.getElementById('expireDateFilter');
+      
+      if (priceCardTypeFilter) priceCardTypeFilter.value = '';
+      if (priceCardStatus) priceCardStatus.value = '';
+      if (effectiveDateFilter) effectiveDateFilter.value = '';
+      if (expireDateFilter) expireDateFilter.value = '';
+      
+      // 渲染价卡类型列表
+      renderPriceCardTypes();
+      // 绑定事件
+      bindEvents();
+    }
+    
+    // 套餐引用弹窗事件绑定已移除
+    
+    // 点击弹窗外部关闭弹窗已移除
+
+    
+    // 显示预设价卡信息
+    function showPresetPriceCard(type) {
+      // 对于卸货费类型，默认显示生效的卸货费价卡
+      let priceCard;
+      if (type === '卸货费') {
+        // 查找生效状态的卸货费价卡
+        priceCard = Object.values(presetPriceCards).find(pc => 
+          pc.name.includes('标准卸货费价卡') || pc.name.includes('卸货费价卡')
+        );
+      } else {
+        // 其他类型直接查找
+        priceCard = presetPriceCards[type];
+      }
+      
+      if (!priceCard) return;
+      
+      // 显示价卡信息区域
+      document.getElementById('presetPriceCardInfo').style.display = 'block';
+      
+      // 填充价卡基本信息
+      document.getElementById('priceCardName').value = priceCard.name;
+      document.getElementById('applyScope').value = priceCard.applyScope;
+      document.getElementById('effectiveDate').value = priceCard.validFrom.replace(' ', 'T');
+      document.getElementById('expireDate').value = priceCard.validTo.replace(' ', 'T');
+      document.getElementById('remark').value = priceCard.description;
+      
+      // 填充散货配置
+      document.getElementById('bulkPrice').value = priceCard.bulkConfig.price;
+      document.getElementById('bulkUnit').value = priceCard.bulkConfig.unit;
+      document.getElementById('bulkAdjustedPrice').textContent = priceCard.bulkConfig.price;
+      document.getElementById('bulkAdjustedUnit').textContent = priceCard.bulkConfig.unit;
+      
+      // 填充快递配置
+      document.getElementById('expressPrice').value = priceCard.expressConfig.price;
+      document.getElementById('expressUnit').value = priceCard.expressConfig.unit;
+      document.getElementById('expressAdjustedPrice').textContent = priceCard.expressConfig.price;
+      document.getElementById('expressAdjustedUnit').textContent = priceCard.expressConfig.unit;
+      
+      // 生成整柜单价卡片
+      generateContainerPriceCards(priceCard.containerConfig);
+    }
+    
+    // 生成整柜单价卡片
+    function generateContainerPriceCards(configs) {
+      const containerPriceTable = document.getElementById('containerPriceTable');
+      containerPriceTable.innerHTML = configs.map(config => `
+        <div class="p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+          <h5 class="text-md font-semibold text-neutral-700 mb-4">${config.containerType} (${config.remark})</h5>
+          
+          <div class="space-y-3">
+            <!-- 公报价 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">公报价</label>
+              <input type="number" min="0" step="0.01" value="${config.price}" required readonly class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 折扣率 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">折扣率 (%)</label>
+              <input type="number" min="0" max="100" step="0.01" placeholder="请输入" oninput="calculateContainerPrice(this)" class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 增加金额 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">增加金额</label>
+              <input type="number" min="0" step="0.01" placeholder="请输入" oninput="calculateContainerPrice(this)" class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 减少金额 -->
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium text-neutral-600">减少金额</label>
+              <input type="number" min="0" step="0.01" placeholder="请输入" oninput="calculateContainerPrice(this)" class="w-36 px-3 py-2 border border-neutral-200 rounded-md text-sm text-right">
+            </div>
+            
+            <!-- 客单价 -->
+            <div class="flex items-center justify-between pt-3 border-t border-neutral-100">
+              <label class="text-sm font-semibold text-neutral-700">客单价</label>
+              <div class="flex items-center space-x-2">
+                <span class="container-adjusted-price text-lg font-bold text-primary">${config.price.toFixed(2)}</span>
+                <span class="price-unit">元</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // 计算整柜客单价
+    function calculateContainerPrice(element) {
+      // 获取当前卡片
+      const card = element.closest('.border');
+      if (!card) return;
+      
+      const inputs = card.querySelectorAll('input[type="number"]');
+      // 确保输入框存在
+      if (inputs.length < 4) return;
+      
+      const basePrice = parseFloat(inputs[0]?.value) || 0;
+      const discount = parseFloat(inputs[1]?.value) || 0;
+      const addAmount = parseFloat(inputs[2]?.value) || 0;
+      const reduceAmount = parseFloat(inputs[3]?.value) || 0;
+      
+      // 计算客单价
+      const adjustedPrice = (basePrice * (1 - discount / 100)) + addAmount - reduceAmount;
+      const finalPrice = Math.max(adjustedPrice, 0); // 确保价格不低于0
+      
+      // 更新显示
+      const priceDisplay = card.querySelector('.container-adjusted-price');
+      if (priceDisplay) {
+        priceDisplay.textContent = finalPrice.toFixed(2);
+      }
+    }
+    
+    // 计算散货客单价
+    function calculateBulkPrice() {
+      const basePrice = parseFloat(document.getElementById('bulkPrice').value) || 0;
+      const discount = parseFloat(document.getElementById('bulkDiscount').value) || 0;
+      const addAmount = parseFloat(document.getElementById('bulkAddAmount').value) || 0;
+      const reduceAmount = parseFloat(document.getElementById('bulkReduceAmount').value) || 0;
+      const unit = document.getElementById('bulkUnit').value;
+      
+      // 计算客单价：基础价格 * (1 - 折扣率/100) + 增加金额 - 减少金额
+      const adjustedPrice = basePrice * (1 - discount / 100) + addAmount - reduceAmount;
+      
+      // 更新显示
+      document.getElementById('bulkAdjustedPrice').textContent = adjustedPrice.toFixed(2);
+      document.getElementById('bulkAdjustedUnit').textContent = unit;
+    }
+    
+    // 计算快递客单价
+    function calculateExpressPrice() {
+      const basePrice = parseFloat(document.getElementById('expressPrice').value) || 0;
+      const discount = parseFloat(document.getElementById('expressDiscount').value) || 0;
+      const addAmount = parseFloat(document.getElementById('expressAddAmount').value) || 0;
+      const reduceAmount = parseFloat(document.getElementById('expressReduceAmount').value) || 0;
+      const unit = document.getElementById('expressUnit').value;
+      
+      // 计算客单价：基础价格 * (1 - 折扣率/100) + 增加金额 - 减少金额
+      const adjustedPrice = basePrice * (1 - discount / 100) + addAmount - reduceAmount;
+      
+      // 更新显示
+      document.getElementById('expressAdjustedPrice').textContent = adjustedPrice.toFixed(2);
+      document.getElementById('expressAdjustedUnit').textContent = unit;
+    }
+    
+    // 保存关联价卡
+    function saveAssociatedPriceCard() {
+      // 显示保存成功提示
+      alert('关联价卡保存成功！');
+      
+      // 跳回客户列表页面
+      window.location.href = 'customer.html';
+    }
+    
+    // 弹窗控制逻辑已移除
+    
+    // 返回按钮点击事件
+    document.getElementById('backBtn').addEventListener('click', function() {
+      window.location.href = 'Customer.html';
+    });
+
+  </script>
+</body>
+</html>

@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>关联价卡</title>
+  <title>价卡列表</title>
   <!-- 引入必要依赖 -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   
   <!-- Tailwind 配置 -->
   <script>
@@ -37,9 +37,6 @@
   <!-- 自定义工具类 -->
   <style type="text/tailwindcss">
     @layer utilities {
-      .transition-all-300 {
-        transition: all 0.3s ease;
-      }
       .bg-primary\/10 {
         background-color: rgba(22, 93, 255, 0.1);
       }
@@ -145,24 +142,12 @@
       </div>
       
       <!-- 客户信息 -->
-      <div id="customerInfo" class="mb-6 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
-        <h2 class="text-lg font-semibold text-neutral-700 mb-4">客户信息</h2>
+      <div id="warehouseInfo" class="mb-6 p-4 border border-neutral-100 rounded-lg bg-white shadow-sm">
+        <h2 class="text-lg font-semibold text-neutral-700 mb-4">基本信息</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label class="block text-sm font-medium text-neutral-500">客户名称</label>
-            <p id="customerName" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-500">客户编码</label>
-            <p id="customerCode" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-500">联系人</label>
-            <p id="contactPerson" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-neutral-500">联系电话</label>
-            <p id="contactPhone" class="text-sm font-semibold text-neutral-700 mt-1">--</p>
+            <label class="block text-sm font-medium text-neutral-500">仓群</label>
+            <p id="warehouseName" class="text-sm font-semibold text-neutral-700 mt-1">美东仓群</p>
           </div>
         </div>
       </div>
@@ -170,15 +155,11 @@
       <!-- 价卡类型列表 -->
       <div class="mb-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold text-neutral-700">关联价卡</h2>
-          <div class="flex items-center gap-3">
-            <button id="addPriceCardBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center gap-1">
-              <i class="fa fa-plus"></i> 新增
-            </button>
-            <button id="packageReferenceBtn" class="px-5 py-2 bg-white border border-primary text-primary text-sm rounded-md hover:bg-primary/5 transition-all-300 flex items-center gap-1">
-              <i class="fa fa-copy"></i> 套餐引用
-            </button>
-          </div>
+          <h2 class="text-lg font-semibold text-neutral-700">价卡列表</h2>
+          <!-- 更新按钮 -->
+          <button id="updateBtn" class="px-4 py-2 bg-secondary text-white text-sm rounded-md hover:bg-secondary/90 transition-all-300 flex items-center justify-center gap-1">
+            <i class="fa fa-sync"></i> 更新
+          </button>
         </div>
         
         <!-- 搜索和多条件筛选 -->
@@ -228,7 +209,7 @@
             </div>
           </div>
           
-          <!-- 查询和重置按钮 -->
+          <!-- 查询、重置按钮 -->
           <div class="mt-4 flex gap-2">
             <!-- 查询按钮 -->
             <button id="searchBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center justify-center gap-1">
@@ -249,61 +230,16 @@
       </div>
   </div>
   
-  <!-- 套餐引用弹窗 -->
-  <div id="packageReferenceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-      <!-- 弹窗头部 -->
-      <div class="px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-neutral-700">选择套餐</h2>
-        <button type="button" id="closePackageModal" class="text-neutral-500 hover:text-neutral-700 transition-colors">
-          <i class="fa fa-times text-lg"></i>
-        </button>
-      </div>
-      
-      <!-- 弹窗内容 -->
-      <div class="p-6">
-        <!-- 套餐列表 -->
-        <div class="mb-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="packagesList">
-            <!-- 动态生成套餐卡片 -->
-          </div>
-        </div>
-      </div>
-      
-      <!-- 弹窗底部 -->
-      <div class="px-6 pt-4 pb-6 border-t border-neutral-200 flex justify-end gap-3">
-        <button type="button" id="cancelPackageModalBtn" class="px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 transition-all-300">取消</button>
-        <button id="confirmPackageBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300">确认引用</button>
-      </div>
+  <!-- Loading弹窗 -->
+  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl p-6 flex flex-col items-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+      <p class="text-neutral-700">更新中...请稍候</p>
     </div>
   </div>
-  
-  <!-- 价卡新增弹窗 -->
-  <div id="associatePriceCardModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-      <!-- 弹窗头部 -->
-      <div class="px-6 py-4 border-b border-neutral-200 flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-neutral-700">关联价卡</h2>
-        <button type="button" id="closeModal" class="text-neutral-500 hover:text-neutral-700 transition-colors">
-          <i class="fa fa-times text-lg"></i>
-        </button>
-      </div>
-      
-      <!-- 弹窗内容 -->
-      <div class="p-6">
-        <!-- 价卡类型选择 -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-neutral-600 mb-2">选择价卡类型 <span class="text-danger">*</span></label>
-          <select id="priceCardType" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
-            <option value="">请选择价卡类型</option>
-            <option value="卸货费">卸货费</option>
-            <option value="仓储费">仓储费</option>
-            <option value="出库费">出库费</option>
-          </select>
-        </div>
         
-        <!-- 预设价卡信息 -->
-        <div id="presetPriceCardInfo">
+        <!-- 预设价卡信息（隐藏模板） -->
+        <div id="presetPriceCardInfo" class="hidden">
           <!-- 价卡基本信息 -->
           <div class="mb-6 p-4 border border-neutral-100 rounded-lg bg-neutral-50">
             <h4 class="text-sm font-bold text-neutral-700 mb-4 flex items-center">
@@ -452,8 +388,8 @@
           </div>
         </div>
         
-        <!-- 弹窗底部 -->
-        <div class="mt-8 pt-6 border-t border-neutral-200 flex justify-end gap-3">
+        <!-- 弹窗底部（隐藏） -->
+        <div class="mt-8 pt-6 border-t border-neutral-200 flex justify-end gap-3 hidden">
           <button type="button" id="cancelModalBtn" class="px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 transition-all-300">取消</button>
           <button id="saveAssociateBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-all-300">保存关联</button>
         </div>
@@ -462,34 +398,34 @@
   </div>
   
   <script>
-    // 预设客户数据
-    const presetCustomers = [
-      { id: 1, name: "MD001", code: "MD001", contact: "zsw", phone: "13800138000" }
-    ];
-    
-    // 预设套餐数据
-    const presetPackages = [
-      {
+    // 预设方案数据（与package-management.html中的数据匹配）
+    const packages = {
+      "1": {
         id: 1,
-        name: "基础套餐",
-        description: "包含基础的价卡组合",
-        priceCardIds: [1, 2]
+        name: "美东仓群",
+        description: "包含标准服务的基础套餐",
+        priceCardCount: 3,
+        createTime: "2023-01-15 10:30:00"
       },
-      {
+      "2": {
         id: 2,
-        name: "高级套餐",
-        description: "包含高级价卡组合",
-        priceCardIds: [2, 3]
+        name: "美西仓群",
+        description: "包含高级服务的套餐",
+        priceCardCount: 5,
+        createTime: "2023-02-20 14:20:00"
       },
-      {
+      "3": {
         id: 3,
-        name: "特惠套餐",
-        description: "包含特惠价卡组合",
-        priceCardIds: [1, 3]
+        name: "美南仓群",
+        description: "包含所有高级服务和额外权益的尊享套餐",
+        priceCardCount: 8,
+        createTime: "2023-03-10 09:45:00"
       }
-    ];
+    };
     
-    // 关联价卡列表数据
+
+    
+    // 价卡列表列表数据
     let associatedPriceCards = [];
     
     // 预设价卡数据
@@ -562,23 +498,24 @@
       }
     };
     
+    // 获取URL参数
+    function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+    
     // DOMContentLoaded事件监听
     document.addEventListener('DOMContentLoaded', function() {
       // 初始化页面
       initPage();
     });
     
-    // 显示客户信息
-    function showCustomerInfo(customerId) {
-      // 找到对应的客户信息
-      const customer = presetCustomers.find(c => c.id === customerId);
-      if (!customer) return;
-      
-      // 显示客户信息
-      document.getElementById('customerName').textContent = customer.name;
-      document.getElementById('customerCode').textContent = customer.code;
-      document.getElementById('contactPerson').textContent = customer.contact;
-      document.getElementById('contactPhone').textContent = customer.phone;
+    // 显示方案信息
+    function showWarehouseInfo(packageId) {
+      const pkg = packages[packageId];
+      if (pkg) {
+        document.getElementById('warehouseName').textContent = pkg.name;
+      }
     }
     
     // 渲染价卡类型列表
@@ -599,7 +536,7 @@
       const effectiveDateFilter = document.getElementById('effectiveDateFilter').value;
       const expireDateFilter = document.getElementById('expireDateFilter').value;
       
-      // 合并预设价卡和关联价卡列表，关联价卡优先
+      // 合并预设价卡和价卡列表列表，价卡列表优先
       // 先创建一个包含所有预设价卡的映射
       const priceCardMap = new Map();
       Object.values(presetPriceCards).forEach(priceCard => {
@@ -608,7 +545,7 @@
         priceCardMap.set(priceCard.id, priceCard);
       });
       
-      // 然后用关联价卡覆盖预设价卡，这样关联价卡会优先显示
+      // 然后用价卡列表覆盖预设价卡，这样价卡列表会优先显示
       associatedPriceCards.forEach(priceCard => {
         priceCardMap.set(priceCard.id, priceCard);
       });
@@ -663,27 +600,12 @@
           'published': { text: '生效', className: 'bg-green-100 text-green-800' }
         };
         
-        // 判断是否为未生效状态，只有未生效状态显示编辑和删除按钮
-        const isPending = priceCard.status === 'pending';
-        
         // 根据状态生成操作按钮
         let actionButtons = `
           <button class="px-3 py-1 text-xs bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 transition-all-300 view-price-card" data-price-id="${priceCard.id}">
             <i class="fa fa-eye mr-1"></i> 查看
           </button>
         `;
-        
-        // 只有未生效状态才显示编辑和删除按钮
-        if (isPending) {
-          actionButtons += `
-            <button class="px-3 py-1 text-xs bg-white border border-primary text-primary rounded-md hover:bg-primary/5 transition-all-300 edit-price-card" data-price-id="${priceCard.id}">
-              <i class="fa fa-pencil mr-1"></i> 编辑
-            </button>
-            <button class="px-3 py-1 text-xs bg-white border border-danger text-danger rounded-md hover:bg-danger/5 transition-all-300 delete-price-card" data-price-id="${priceCard.id}">
-              <i class="fa fa-trash mr-1"></i> 删除
-            </button>
-          `;
-        }
         
         card.innerHTML = `
           <div class="flex justify-between items-start mb-2">
@@ -707,21 +629,6 @@
           viewPriceCard(priceId);
         });
         
-        // 只有未生效状态才添加编辑和删除事件
-        if (isPending) {
-          // 添加编辑事件
-          card.querySelector('.edit-price-card').addEventListener('click', function() {
-            const priceId = this.dataset.priceId;
-            editPriceCard(priceId);
-          });
-          
-          // 添加删除事件
-          card.querySelector('.delete-price-card').addEventListener('click', function() {
-            const priceId = this.dataset.priceId;
-            deletePriceCard(priceId);
-          });
-        }
-        
         container.appendChild(card);
       });
     }
@@ -732,24 +639,24 @@
       showPriceCardDetail('卸货费');
     }
     
-    // 编辑价卡
-    function editPriceCard(priceIdentifier) {
-      // 显示关联价卡弹窗
-      const associatePriceCardModal = document.getElementById('associatePriceCardModal');
-      associatePriceCardModal.classList.remove('hidden');
-      
-      // 默认选择卸货费作为价卡类型
-      const priceCardTypeSelect = document.getElementById('priceCardType');
-      priceCardTypeSelect.value = '卸货费';
-      
-      // 触发价卡类型选择事件，加载相应的预设价卡信息
-      priceCardTypeSelect.dispatchEvent(new Event('change'));
-    }
+    // 编辑价卡功能已移除
+    // function editPriceCard(priceIdentifier) {
+    //   // 显示价卡列表弹窗
+    //   const associatePriceCardModal = document.getElementById('associatePriceCardModal');
+    //   associatePriceCardModal.classList.remove('hidden');
+    //   
+    //   // 默认选择卸货费作为价卡类型
+    //   const priceCardTypeSelect = document.getElementById('priceCardType');
+    //   priceCardTypeSelect.value = '卸货费';
+    //   
+    //   // 触发价卡类型选择事件，加载相应的预设价卡信息
+    //   priceCardTypeSelect.dispatchEvent(new Event('change'));
+    // }
     
     // 删除价卡
     function deletePriceCard(priceId) {
       if (confirm('确定要删除这个价卡吗？')) {
-        // 从关联价卡列表中删除价卡
+        // 从价卡列表列表中删除价卡
         associatedPriceCards = associatedPriceCards.filter(pc => pc.id !== parseInt(priceId));
         // 重新渲染价卡类型列表
         renderPriceCardTypes();
@@ -982,19 +889,6 @@
     
     // 绑定事件
     function bindEvents() {
-      // 价卡类型选择事件
-      document.getElementById('priceCardType').addEventListener('change', function() {
-        const selectedType = this.value;
-        if (selectedType) {
-          showPresetPriceCard(selectedType);
-        } else {
-          document.getElementById('presetPriceCardInfo').style.display = 'none';
-        }
-      });
-      
-      // 保存关联按钮点击事件
-      document.getElementById('saveAssociateBtn').addEventListener('click', saveAssociatedPriceCard);
-      
       // 搜索框输入事件，只有当搜索框存在时才添加事件监听器
       const priceCardSearch = document.getElementById('priceCardSearch');
       if (priceCardSearch) {
@@ -1052,181 +946,95 @@
         });
       }
       
-      // 套餐引用按钮事件
-      document.getElementById('packageReferenceBtn').addEventListener('click', openPackageModal);
-    }
-    
-    // 打开套餐引用弹窗
-    function openPackageModal() {
-      // 渲染套餐列表
-      renderPackages();
-      // 显示弹窗
-      document.getElementById('packageReferenceModal').classList.remove('hidden');
-    }
-    
-    // 关闭套餐引用弹窗
-    function closePackageModal() {
-      document.getElementById('packageReferenceModal').classList.add('hidden');
-    }
-    
-    // 渲染套餐列表
-    function renderPackages() {
-      const container = document.getElementById('packagesList');
-      container.innerHTML = '';
-      
-      // 遍历所有预设套餐
-      presetPackages.forEach(pkg => {
-        // 创建套餐卡片
-        const card = document.createElement('div');
-        card.className = 'bg-white border border-neutral-100 rounded-lg shadow-sm p-4 hover:border-primary transition-all-300 cursor-pointer package-item';
-        card.dataset.packageId = pkg.id;
-        card.innerHTML = `
-          <div class="flex justify-between items-start mb-2">
-            <h3 class="text-lg font-semibold text-neutral-700">${pkg.name}</h3>
-            <input type="radio" name="selectedPackage" value="${pkg.id}" class="w-4 h-4 text-primary focus:ring-primary border-neutral-300">
-          </div>
-          <p class="text-sm text-neutral-500 mb-3">${pkg.description}</p>
-          <div class="text-xs text-neutral-500">
-            <span>包含价卡数量: ${pkg.priceCardIds.length}</span>
-          </div>
-        `;
-        
-        // 添加点击事件
-        card.addEventListener('click', function() {
-          // 选中当前套餐的单选按钮
-          this.querySelector('input[type="radio"]').checked = true;
-        });
-        
-        container.appendChild(card);
-      });
-    }
-    
-    // 确认引用套餐
-    function confirmPackageReference() {
-      // 获取选中的套餐ID
-      const selectedPackageId = document.querySelector('input[name="selectedPackage"]:checked')?.value;
-      if (!selectedPackageId) {
-        alert('请选择一个套餐');
-        return;
-      }
-      
-      // 获取选中的套餐
-      const selectedPackage = presetPackages.find(p => p.id === parseInt(selectedPackageId));
-      if (!selectedPackage) {
-        alert('未找到选中的套餐');
-        return;
-      }
-      
-      // 获取当前最大的价卡ID，用于生成新价卡的唯一ID
-      let maxId = Math.max(...Object.values(presetPriceCards).map(pc => pc.id), ...associatedPriceCards.map(pc => pc.id));
-      
-      // 引用套餐内的价卡到关联价卡列表
-      // 遍历套餐内的价卡ID，获取对应的价卡数据
-      selectedPackage.priceCardIds.forEach(priceCardId => {
-        // 查找对应的价卡数据
-        const priceCard = Object.values(presetPriceCards).find(pc => pc.id === priceCardId);
-        if (priceCard) {
-          // 检查价卡是否已经存在于关联价卡列表中
-          const existingCard = associatedPriceCards.find(pc => pc.id === priceCardId);
-          if (!existingCard) {
-            // 复制价卡，保持其原始状态不变
-            const newPriceCard = {...priceCard};
-            // 将价卡添加到关联价卡列表中
-            associatedPriceCards.push(newPriceCard);
-          }
-        }
-      });
-      
-      // 添加新的仓储费价卡
-      const newWarehousePriceCard = {
-        id: ++maxId,
-        name: "仓储费价卡",
-        type: "仓储费",
-        applyScope: "全部",
-        validFrom: "2024-01-01 00:00:00",
-        validTo: "2024-12-31 23:59:59",
-        description: "这是一个通过套餐引用自动生成的仓储费价卡",
-        status: "pending", // 未生效
-        bulkConfig: {
-          price: 50.00,
-          unit: "托"
-        },
-        expressConfig: {
-          price: 10.00,
-          unit: "箱"
-        },
-        containerConfig: [
-          { containerType: "20GP", price: 200.00, remark: "标准柜" },
-          { containerType: "40GP", price: 350.00, remark: "标准柜" }
-        ],
-        calculationLogic: "基础仓储费 + 操作费"
-      };
-      associatedPriceCards.push(newWarehousePriceCard);
-      
-      // 添加新的出库费价卡
-      const newDeliveryPriceCard = {
-        id: ++maxId,
-        name: "出库费价卡",
-        type: "出库费",
-        applyScope: "全部",
-        validFrom: "2024-01-01 00:00:00",
-        validTo: "2024-12-31 23:59:59",
-        description: "这是一个通过套餐引用自动生成的出库费价卡",
-        status: "pending", // 未生效
-        bulkConfig: {
-          price: 80.00,
-          unit: "托"
-        },
-        expressConfig: {
-          price: 15.00,
-          unit: "箱"
-        },
-        containerConfig: [
-          { containerType: "20GP", price: 300.00, remark: "标准柜" },
-          { containerType: "40GP", price: 500.00, remark: "标准柜" }
-        ],
-        calculationLogic: "基础出库费 + 操作费"
-      };
-      associatedPriceCards.push(newDeliveryPriceCard);
-      
-      // 关闭套餐弹窗
-      closePackageModal();
-      
-      // 重新渲染价卡类型列表
-      renderPriceCardTypes();
-      
-      alert(`已成功引用套餐 "${selectedPackage.name}"，包含 ${selectedPackage.priceCardIds.length} 个价卡，并自动添加了仓储费和出库费价卡`);
     }
     
     // 初始化页面
     function initPage() {
-      // 从URL获取客户ID
-      const urlParams = new URLSearchParams(window.location.search);
-      const customerId = parseInt(urlParams.get('customerId')) || 1; // 默认使用第一个客户
+      // 从URL获取方案ID
+      const packageId = getQueryParam('id');
       
-      // 显示客户信息
-      showCustomerInfo(customerId);
+      // 显示方案信息
+      showWarehouseInfo(packageId);
       // 渲染价卡类型列表
       renderPriceCardTypes();
       // 绑定事件
       bindEvents();
     }
     
-    // 套餐引用弹窗事件绑定
-    // 关闭套餐弹窗按钮点击事件
-    document.getElementById('closePackageModal').addEventListener('click', closePackageModal);
-    
-    // 取消按钮点击事件
-    document.getElementById('cancelPackageModalBtn').addEventListener('click', closePackageModal);
-    
-    // 确认引用按钮点击事件
-    document.getElementById('confirmPackageBtn').addEventListener('click', confirmPackageReference);
-    
-    // 点击弹窗外部关闭弹窗
-    document.getElementById('packageReferenceModal').addEventListener('click', function(event) {
-      if (event.target === this) {
-        closePackageModal();
-      }
+    // 更新按钮点击事件
+    document.getElementById('updateBtn').addEventListener('click', function() {
+      // 显示loading弹窗
+      const loadingModal = document.getElementById('loadingModal');
+      loadingModal.classList.remove('hidden');
+      
+      // 2秒后新增仓储费和出库费价卡
+      setTimeout(function() {
+        // 隐藏loading弹窗
+        loadingModal.classList.add('hidden');
+        
+        // 生成新的价卡ID
+        const maxId = Math.max(...Array.from(priceCardMap.values()).map(pc => pc.id), 0);
+        let newId = maxId + 1;
+        
+        // 新增仓储费价卡（未生效）
+        const storageFeeCard = {
+          id: newId++,
+          name: "标准仓储费价卡",
+          type: "仓储费",
+          applyScope: "全部",
+          validFrom: "2024-06-01 00:00:00",
+          validTo: "2024-12-31 23:59:59",
+          description: "这是一个未生效的标准仓储费价卡",
+          status: "pending", // 未生效
+          bulkConfig: {
+            price: 30.00,
+            unit: "托/天"
+          },
+          expressConfig: {
+            price: 5.00,
+            unit: "箱/天"
+          },
+          containerConfig: [
+            { containerType: "20GP", price: 150.00, remark: "标准柜/天" },
+            { containerType: "40GP", price: 250.00, remark: "标准柜/天" }
+          ],
+          calculationLogic: "基础仓储费"
+        };
+        
+        // 新增出库费价卡（未生效）
+        const outboundFeeCard = {
+          id: newId++,
+          name: "标准出库费价卡",
+          type: "出库费",
+          applyScope: "全部",
+          validFrom: "2024-06-01 00:00:00",
+          validTo: "2024-12-31 23:59:59",
+          description: "这是一个未生效的标准出库费价卡",
+          status: "pending", // 未生效
+          bulkConfig: {
+            price: 80.00,
+            unit: "托"
+          },
+          expressConfig: {
+            price: 15.00,
+            unit: "箱"
+          },
+          containerConfig: [
+            { containerType: "20GP", price: 400.00, remark: "标准柜" },
+            { containerType: "40GP", price: 700.00, remark: "标准柜" }
+          ],
+          calculationLogic: "基础出库费"
+        };
+        
+        // 将新价卡添加到价卡列表中
+        associatedPriceCards.push(storageFeeCard, outboundFeeCard);
+        
+        // 重新渲染价卡类型列表
+        renderPriceCardTypes();
+        
+        // 显示更新成功提示
+        alert('价卡列表更新成功，新增了仓储费和出库费价卡！');
+      }, 2000);
     });
 
     
@@ -1375,47 +1183,13 @@
       document.getElementById('expressAdjustedUnit').textContent = unit;
     }
     
-    // 保存关联价卡
-    function saveAssociatedPriceCard() {
-      // 显示保存成功提示
-      alert('关联价卡保存成功！');
-      
-      // 跳回客户列表页面
-      window.location.href = 'customer.html';
-    }
+
     
-    // 弹窗控制逻辑
-    const addPriceCardBtn = document.getElementById('addPriceCardBtn');
-    const associatePriceCardModal = document.getElementById('associatePriceCardModal');
-    const closeModal = document.getElementById('closeModal');
-    const cancelModalBtn = document.getElementById('cancelModalBtn');
-    
-    // 显示弹窗
-    addPriceCardBtn.addEventListener('click', function() {
-      associatePriceCardModal.classList.remove('hidden');
-    });
-    
-    // 隐藏弹窗
-    function hideModal() {
-      associatePriceCardModal.classList.add('hidden');
-    }
-    
-    // 关闭弹窗按钮点击事件
-    closeModal.addEventListener('click', hideModal);
-    
-    // 取消按钮点击事件
-    cancelModalBtn.addEventListener('click', hideModal);
-    
-    // 点击弹窗外部关闭弹窗
-    associatePriceCardModal.addEventListener('click', function(event) {
-      if (event.target === associatePriceCardModal) {
-        hideModal();
-      }
-    });
+
     
     // 返回按钮点击事件
     document.getElementById('backBtn').addEventListener('click', function() {
-      window.location.href = 'customer.html';
+      window.location.href = 'package-management.html';
     });
 
   </script>

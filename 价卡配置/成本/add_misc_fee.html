@@ -160,9 +160,17 @@
       <!-- 杂费类型卡片 -->
       <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
         <h2 class="text-base font-bold text-neutral-700 mb-4">杂费类型</h2>
-        <div class="flex items-center">
-          <select id="miscFeeType" name="miscFeeType" class="w-64 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+        <div class="flex items-center space-x-4">
+          <select id="miscFeeType" name="miscFeeType" class="w-48 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <option value="卸货费">卸货费</option>
+          </select>
+          <select id="miscFeeSubType" name="miscFeeSubType" class="w-48 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <option value="拆托费">拆托费</option>
+            <option value="分货费">分货费</option>
+            <option value="清点费">清点费</option>
             <option value="超箱费">超箱费</option>
+            <option value="超重费">超重费</option>
+            <option value="SKU超量费">SKU超量费</option>
           </select>
         </div>
       </div>
@@ -171,116 +179,79 @@
       <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6 mt-6">
         <h2 class="text-base font-bold text-neutral-700 mb-4">基本信息</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label for="miscFeeName" class="block text-sm font-medium text-neutral-600 mb-1">名称</label>
-            <input type="text" id="miscFeeName" value="超箱费" placeholder="请输入杂费名称" 
-                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-          </div>
-          <div>
-            <label for="applyScope" class="block text-sm font-medium text-neutral-600 mb-1">适用范围</label>
-            <select id="applyScope" class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-              <option value="全部">全部</option>
-              <option value="特定仓库">特定仓库</option>
-              <option value="特定客户">特定客户</option>
-            </select>
-          </div>
-          <!-- 特定仓库选择区域，默认隐藏 -->
-          <div id="warehouseSelection" class="hidden md:col-span-2">
-            <label class="block text-sm font-medium text-neutral-600 mb-1">指定仓库</label>
-            <div class="relative">
-              <!-- 下拉触发器 -->
-              <button id="warehouseDropdownTrigger" class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm text-left focus:border-primary focus:outline-none transition-all-300 flex justify-between items-center bg-white">
-                <span id="warehouseSelectedText">请选择仓库</span>
-                <i class="fa fa-chevron-down text-neutral-500 transition-transform duration-300"></i>
-              </button>
-              <!-- 下拉面板 -->
-              <div id="warehouseDropdownPanel" class="hidden absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg p-3 max-h-60 overflow-y-auto">
-                <div class="grid grid-cols-1 gap-2">
-                  <label class="flex items-center space-x-2 cursor-pointer hover:bg-neutral-50 p-1 rounded">
-                    <input type="checkbox" name="warehouse" value="warehouse1" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
-                    <span class="text-sm text-neutral-700">DE001</span>
-                  </label>
-                  <label class="flex items-center space-x-2 cursor-pointer hover:bg-neutral-50 p-1 rounded">
-                    <input type="checkbox" name="warehouse" value="warehouse2" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
-                    <span class="text-sm text-neutral-700">MD001</span>
-                  </label>
-                  <label class="flex items-center space-x-2 cursor-pointer hover:bg-neutral-50 p-1 rounded">
-                    <input type="checkbox" name="warehouse" value="warehouse3" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
-                    <span class="text-sm text-neutral-700">DEMO</span>
-                  </label>
-                </div>
-              </div>
+            <div>
+              <label for="miscFeeName" class="block text-sm font-medium text-neutral-600 mb-1">名称</label>
+              <input type="text" id="miscFeeName" value="这是一个卸货费" placeholder="请输入杂费名称" 
+                     class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
             </div>
-          </div>
-          <div>
-            <label for="validFrom" class="block text-sm font-medium text-neutral-600 mb-1">生效日期</label>
-            <input type="date" id="validFrom" 
-                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-          </div>
-          <div>
-            <label for="validTo" class="block text-sm font-medium text-neutral-600 mb-1">失效日期</label>
-            <input type="date" id="validTo" 
-                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-          </div>
+            <div>
+              <label for="applyScope" class="block text-sm font-medium text-neutral-600 mb-1">适用范围</label>
+              <select id="applyScope" class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                <option value="全部">全部</option>
+                <option value="美东仓群">美东仓群</option>
+                <option value="美西仓群">美西仓群</option>
+                <option value="美南仓群">美南仓群</option>
+              </select>
+            </div>
         </div>
         <div class="mt-4">
           <label for="description" class="block text-sm font-medium text-neutral-600 mb-1">描述</label>
-          <textarea id="description" rows="3" placeholder="请输入杂费描述" value="当货物超出集装箱装载标准时收取的费用"
+          <textarea id="description" rows="3" placeholder="请输入杂费描述" value="货物卸货服务收取的费用"
                     class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300"></textarea>
         </div>
       </div>
 
       <!-- 单价设置 -->
       <div class="space-y-6 mt-6">
-        <h2 class="text-base font-bold text-neutral-700">单箱费用设置</h2>
+        <h2 class="text-base font-bold text-neutral-700">通用阶梯式费用设置</h2>
         
-        <!-- 整柜单价卡片 -->
+        <!-- 阶梯式费用卡片 -->
         <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
-          <h3 class="text-sm font-medium text-neutral-600 mb-3">整柜</h3>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse">
               <thead>
                 <tr class="bg-neutral-50 border-b border-neutral-200">
-                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">柜型</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">起始箱数</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">结束箱数</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">单价</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-1/6">备注</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">单位</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">起始数量</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">结束数量</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">价格</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">备注</th>
                   <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-12">操作</th>
                 </tr>
               </thead>
               <tbody id="containerPriceList">
-                <!-- 整柜单价项目将通过JS动态添加 -->
+                <!-- 阶梯式费用项目将通过JS动态添加 -->
                 <tr class="border-b border-neutral-200 container-price-item">
                   <td class="px-4 py-3">
                     <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-                      <option value="20GP">20GP</option>
-                      <option value="40GP">40GP</option>
-                      <option value="40HQ">40HQ</option>
-                      <option value="45HQ">45HQ</option>
+                      <option value="箱">箱</option>
+                      <option value="托">托</option>
+                      <option value="件">件</option>
+                      <option value="kg">kg</option>
+                      <option value="m³">m³</option>
                     </select>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="1" placeholder="起始箱数" value="1"
+                      <input type="number" step="1" placeholder="起始数量" value="1"
                              class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="1" placeholder="结束箱数" value="10"
+                      <input type="number" step="1" placeholder="结束数量" value="10"
                              class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="0.01" placeholder="请输入单价" value="300"
+                      <input type="number" step="0.01" placeholder="请输入价格" value="300"
                              class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                       <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <input type="text" placeholder="可选" value="20尺标准柜超箱费（1-10箱）"
+                    <input type="text" placeholder="可选" value="阶梯式费用（1-10单位）"
                            class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                   </td>
                   <td class="px-4 py-3">
@@ -292,33 +263,34 @@
                 <tr class="border-b border-neutral-200 container-price-item">
                   <td class="px-4 py-3">
                     <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-                      <option value="20GP">20GP</option>
-                      <option value="40GP">40GP</option>
-                      <option value="40HQ">40HQ</option>
-                      <option value="45HQ">45HQ</option>
+                      <option value="箱">箱</option>
+                      <option value="托">托</option>
+                      <option value="件">件</option>
+                      <option value="kg">kg</option>
+                      <option value="m³">m³</option>
                     </select>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="1" placeholder="起始箱数" value="11"
+                      <input type="number" step="1" placeholder="起始数量" value="11"
                              class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="1" placeholder="结束箱数" value="20"
+                      <input type="number" step="1" placeholder="结束数量" value="20"
                              class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="0.01" placeholder="请输入单价" value="280"
+                      <input type="number" step="0.01" placeholder="请输入价格" value="280"
                              class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                       <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <input type="text" placeholder="可选" value="20尺标准柜超箱费（11-20箱）"
+                    <input type="text" placeholder="可选" value="阶梯式费用（11-20单位）"
                            class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                   </td>
                   <td class="px-4 py-3">
@@ -330,33 +302,34 @@
                 <tr class="border-b border-neutral-200 container-price-item">
                   <td class="px-4 py-3">
                     <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-                      <option value="20GP">20GP</option>
-                      <option value="40GP">40GP</option>
-                      <option value="40HQ">40HQ</option>
-                      <option value="45HQ">45HQ</option>
+                      <option value="箱">箱</option>
+                      <option value="托">托</option>
+                      <option value="件">件</option>
+                      <option value="kg">kg</option>
+                      <option value="m³">m³</option>
                     </select>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="1" placeholder="起始箱数" value="21"
+                      <input type="number" step="1" placeholder="起始数量" value="21"
                              class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="1" placeholder="结束箱数" value="99999"
+                      <input type="number" step="1" placeholder="结束数量" value="99999"
                              class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                     </div>
                   </td>
                   <td class="px-4 py-3">
                     <div class="relative">
-                      <input type="number" step="0.01" placeholder="请输入单价" value="250"
+                      <input type="number" step="0.01" placeholder="请输入价格" value="250"
                              class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                       <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <input type="text" placeholder="可选" value="20尺标准柜超箱费（21箱以上）"
+                    <input type="text" placeholder="可选" value="阶梯式费用（21单位以上）"
                            class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
                   </td>
                   <td class="px-4 py-3">
@@ -369,7 +342,7 @@
             </table>
           </div>
           <button type="button" id="addContainerPrice" class="mt-3 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-md text-sm hover:bg-neutral-200 transition-all-300 flex items-center">
-            <i class="fa fa-plus mr-1"></i> 添加柜型
+            <i class="fa fa-plus mr-1"></i> 添加阶梯
           </button>
         </div>
       </div>
@@ -387,22 +360,6 @@
   </div>
 
   <script>
-    // DOMContentLoaded事件监听
-    document.addEventListener('DOMContentLoaded', function() {
-      // 设置默认日期
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
-      document.getElementById('validFrom').value = formattedDate;
-      
-      // 设置默认失效日期为一年后
-      const oneYearLater = new Date(today.setFullYear(today.getFullYear() + 1));
-      const formattedOneYearLater = oneYearLater.toISOString().split('T')[0];
-      document.getElementById('validTo').value = formattedOneYearLater;
-      
-      // 绑定事件
-      bindEvents();
-    });
-
     // 绑定事件
     function bindEvents() {
       // 返回按钮点击事件
@@ -410,70 +367,102 @@
         window.location.href = '杂费维护.html';
       });
       
-      // 适用范围选择事件监听
+      // 杂费类型选择事件监听，控制子类型显示
+      const miscFeeTypeSelect = document.getElementById('miscFeeType');
+      const miscFeeSubTypeSelect = document.getElementById('miscFeeSubType');
+      
+      // 设置子类型选择框的初始显示状态
+      if (miscFeeTypeSelect.value === '卸货费') {
+        miscFeeSubTypeSelect.classList.remove('hidden');
+      } else {
+        miscFeeSubTypeSelect.classList.add('hidden');
+      }
+      
+      // 当父类型变化时控制子类型显示
+      miscFeeTypeSelect.addEventListener('change', function() {
+        if (this.value === '卸货费') {
+          miscFeeSubTypeSelect.classList.remove('hidden');
+        } else {
+          miscFeeSubTypeSelect.classList.add('hidden');
+        }
+      });
+      
+      // 适用范围选择事件监听 - 添加空值检查以避免错误
       document.getElementById('applyScope').addEventListener('change', function() {
         const warehouseSelection = document.getElementById('warehouseSelection');
-        if (this.value === '特定仓库') {
+        const warehouseDropdownPanel = document.getElementById('warehouseDropdownPanel');
+        if (this.value === '特定仓库' && warehouseSelection) {
           warehouseSelection.classList.remove('hidden');
-        } else {
+        } else if (warehouseSelection) {
           warehouseSelection.classList.add('hidden');
           // 隐藏下拉面板
-          document.getElementById('warehouseDropdownPanel').classList.add('hidden');
+          if (warehouseDropdownPanel) {
+            warehouseDropdownPanel.classList.add('hidden');
+          }
         }
       });
 
-      // 仓库下拉checkbox逻辑
+      // 仓库下拉checkbox逻辑 - 添加空值检查以避免错误
       const warehouseDropdownTrigger = document.getElementById('warehouseDropdownTrigger');
       const warehouseDropdownPanel = document.getElementById('warehouseDropdownPanel');
       const warehouseSelectedText = document.getElementById('warehouseSelectedText');
       const warehouseCheckboxes = document.querySelectorAll('input[name="warehouse"]');
       
-      // 切换下拉面板显示/隐藏
-      warehouseDropdownTrigger.addEventListener('click', function() {
-        const isHidden = warehouseDropdownPanel.classList.toggle('hidden');
-        // 旋转箭头
-        const icon = this.querySelector('i');
-        if (isHidden) {
-          icon.classList.remove('rotate-180');
-        } else {
-          icon.classList.add('rotate-180');
+      // 只有当所有仓库选择相关元素都存在时才绑定事件
+      if (warehouseDropdownTrigger && warehouseDropdownPanel && warehouseSelectedText) {
+        // 切换下拉面板显示/隐藏
+        warehouseDropdownTrigger.addEventListener('click', function() {
+          const isHidden = warehouseDropdownPanel.classList.toggle('hidden');
+          // 旋转箭头
+          const icon = this.querySelector('i');
+          if (icon) {
+            if (isHidden) {
+              icon.classList.remove('rotate-180');
+            } else {
+              icon.classList.add('rotate-180');
+            }
+          }
+        });
+        
+        // 更新选中文本
+        function updateWarehouseSelectedText() {
+          const checkedBoxes = document.querySelectorAll('input[name="warehouse"]:checked');
+          const checkedCount = checkedBoxes.length;
+          if (checkedCount === 0) {
+            warehouseSelectedText.textContent = '请选择仓库';
+          } else if (checkedCount === 1) {
+            const label = checkedBoxes[0].closest('label')?.querySelector('span')?.textContent;
+            if (label) {
+              warehouseSelectedText.textContent = label;
+            }
+          } else {
+            warehouseSelectedText.textContent = `${checkedCount}个仓库已选择`;
+          }
         }
-      });
-      
-      // 更新选中文本
-      function updateWarehouseSelectedText() {
-        const checkedBoxes = document.querySelectorAll('input[name="warehouse"]:checked');
-        const checkedCount = checkedBoxes.length;
-        if (checkedCount === 0) {
-          warehouseSelectedText.textContent = '请选择仓库';
-        } else if (checkedCount === 1) {
-          const label = checkedBoxes[0].closest('label').querySelector('span').textContent;
-          warehouseSelectedText.textContent = label;
-        } else {
-          warehouseSelectedText.textContent = `${checkedCount}个仓库已选择`;
-        }
+        
+        // 为每个checkbox添加事件监听
+        warehouseCheckboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', updateWarehouseSelectedText);
+        });
+        
+        // 点击外部关闭下拉面板
+        document.addEventListener('click', function(event) {
+          if (!warehouseDropdownTrigger.contains(event.target) && !warehouseDropdownPanel.contains(event.target)) {
+            warehouseDropdownPanel.classList.add('hidden');
+            const icon = warehouseDropdownTrigger.querySelector('i');
+            if (icon) {
+              icon.classList.remove('rotate-180');
+            }
+          }
+        });
       }
       
-      // 为每个checkbox添加事件监听
-      warehouseCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateWarehouseSelectedText);
-      });
-      
-      // 点击外部关闭下拉面板
-      document.addEventListener('click', function(event) {
-        if (!warehouseDropdownTrigger.contains(event.target) && !warehouseDropdownPanel.contains(event.target)) {
-          warehouseDropdownPanel.classList.add('hidden');
-          const icon = warehouseDropdownTrigger.querySelector('i');
-          icon.classList.remove('rotate-180');
-        }
-      });
-      
-      // 添加柜型按钮点击事件
+      // 添加阶梯按钮点击事件
       document.getElementById('addContainerPrice').addEventListener('click', function() {
         addContainerPriceItem();
       });
       
-      // 初始绑定删除柜型按钮事件
+      // 初始绑定删除阶梯按钮事件
       bindRemoveContainerPriceEvents();
       
       // 取消按钮点击事件
@@ -489,9 +478,9 @@
       });
     }
     
-    // 添加柜型单价项目
+    // 添加阶梯费用项目
     function addContainerPriceItem() {
-      // 每次都重新获取最新的containerPriceList$素
+      // 每次都重新获取最新的containerPriceList元素
       const containerPriceList = document.getElementById('containerPriceList');
       const itemCount = containerPriceList.querySelectorAll('.container-price-item').length + 1;
       
@@ -500,35 +489,28 @@
       newRow.innerHTML = `
         <td class="px-4 py-3">
           <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-            <option value="">请选择柜型</option>
-            <option value="20GP">20GP</option>
-            <option value="40GP">40GP</option>
-            <option value="40HQ">40HQ</option>
-            <option value="45HQ">45HQ</option>
-            <option value="20RF">20RF</option>
-            <option value="40RF">40RF</option>
-            <option value="40RH">40RH</option>
-            <option value="20OT">20OT</option>
-            <option value="40OT">40OT</option>
-            <option value="20FR">20FR</option>
-            <option value="40FR">40FR</option>
+            <option value="箱">箱</option>
+            <option value="托">托</option>
+            <option value="件">件</option>
+            <option value="kg">kg</option>
+            <option value="m³">m³</option>
           </select>
         </td>
         <td class="px-4 py-3">
           <div class="relative">
-            <input type="number" step="1" placeholder="起始箱数" 
+            <input type="number" step="1" placeholder="起始数量" 
                    class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
           </div>
         </td>
         <td class="px-4 py-3">
           <div class="relative">
-            <input type="number" step="1" placeholder="结束箱数" 
+            <input type="number" step="1" placeholder="结束数量" 
                    class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
           </div>
         </td>
         <td class="px-4 py-3">
           <div class="relative">
-            <input type="number" step="0.01" placeholder="请输入单价" 
+            <input type="number" step="0.01" placeholder="请输入价格" 
                    class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
             <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
           </div>
@@ -550,7 +532,7 @@
       bindRemoveContainerPriceEvents();
     }
     
-    // 绑定删除柜型按钮事件
+    // 绑定删除阶梯按钮事件
     function bindRemoveContainerPriceEvents() {
       // 先移除所有现有事件监听器（通过事件委托方式实现）
       const containerPriceList = document.getElementById('containerPriceList');
@@ -566,7 +548,7 @@
           if (itemCount > 1) {
             event.target.closest('.container-price-item').remove();
           } else {
-            alert('至少需要保留一个柜型');
+            alert('至少需要保留一个阶梯');
           }
         }
       });
@@ -580,15 +562,19 @@
       const selectedWarehouses = Array.from(selectedWarehouseCheckboxes).map(checkbox => checkbox.value);
       
       // 构建杂费数据
+      const miscFeeType = document.getElementById('miscFeeType').value;
+      const miscFeeSubType = document.getElementById('miscFeeSubType').value;
+      
       const miscFeeData = {
-        type: document.getElementById('miscFeeType').value,
+        type: miscFeeType,
+        subType: miscFeeSubType,
         name: document.getElementById('miscFeeName').value,
         applyScope: document.getElementById('applyScope').value,
         warehouses: selectedWarehouses,
-        validFrom: document.getElementById('validFrom').value + ' 00:00:00',
-        validTo: document.getElementById('validTo').value + ' 23:59:59',
+        validFrom: new Date().toISOString().split('T')[0] + ' 00:00:00',
+      validTo: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0] + ' 23:59:59',
         description: document.getElementById('description').value,
-        calculationLogic: '根据超出的集装箱规格和数量计算',
+        calculationLogic: '根据阶梯式数量计算费用',
         containerConfig: getContainerConfig(),
         status: 'pending' // 默认保存为未生效状态
       };
@@ -604,9 +590,9 @@
         return;
       }
       
-      // 验证至少有一个柜型
+      // 验证至少有一个阶梯
       if (miscFeeData.containerConfig.length === 0) {
-        alert('至少需要设置一个柜型的费用');
+        alert('至少需要设置一个阶梯的费用');
         return;
       }
       
@@ -620,7 +606,7 @@
       window.location.href = '杂费维护.html';
     }
     
-    // 获取整柜配置
+    // 获取阶梯式费用配置
     function getContainerConfig() {
       const containerConfig = [];
       const containerItems = document.querySelectorAll('.container-price-item');
@@ -628,17 +614,17 @@
       containerItems.forEach((item) => {
         const select = item.querySelector('select');
         const inputs = item.querySelectorAll('input');
-        const type = select.value;
-        const startBox = parseInt(inputs[0].value) || 0;
-        const endBox = parseInt(inputs[1].value) || 0;
+        const unit = select.value;
+        const startQuantity = parseInt(inputs[0].value) || 0;
+        const endQuantity = parseInt(inputs[1].value) || 0;
         const price = parseFloat(inputs[2].value) || 0;
         const remark = inputs[3].value;
         
-        if (type) {
+        if (unit) {
           containerConfig.push({
-            containerType: type,
-            startBox: startBox,
-            endBox: endBox,
+            unit: unit,
+            startQuantity: startQuantity,
+            endQuantity: endQuantity,
             price: price,
             remark: remark
           });
@@ -647,6 +633,11 @@
       
       return containerConfig;
     }
+
+    // 页面加载完成后绑定事件
+    document.addEventListener('DOMContentLoaded', function() {
+      bindEvents();
+    });
   </script>
 </body>
 </html>

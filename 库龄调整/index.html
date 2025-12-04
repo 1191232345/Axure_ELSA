@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>库龄调整</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome图标 -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 自定义Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#6B7280',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            light: '#F9FAFB',
+            dark: '#1F2937'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .table-shadow {
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+      .modal-shadow {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- 页面头部 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <div>
+        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark">库龄调整</h1>
+        <p class="text-secondary mt-2">批量修改批次库龄</p>
+      </div>
+      <button id="importBtn" class="mt-4 md:mt-0 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg flex items-center transition-all duration-300 shadow-md hover:shadow-lg">
+        <i class="fa fa-upload mr-2"></i>
+        导入
+      </button>
+    </div>
+
+    <!-- 导入记录列表 -->
+    <div class="bg-white rounded-xl p-4 md:p-6 table-shadow">
+      <!-- 数据表格 -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="pb-4 pl-4 font-semibold text-secondary">序号</th>
+              <th class="pb-4 px-4 font-semibold text-secondary">操作人</th>
+              <th class="pb-4 px-4 font-semibold text-secondary">操作时间</th>
+              <th class="pb-4 px-4 font-semibold text-secondary">批次数</th>
+            </tr>
+          </thead>
+          <tbody id="importRecordTable">
+            <!-- 模拟初始数据 -->
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+              <td class="py-4 pl-4 text-secondary">1</td>
+              <td class="py-4 px-4">张三</td>
+              <td class="py-4 px-4 text-secondary">2025-12-01 14:30:25</td>
+              <td class="py-4 px-4">128</td>
+            </tr>
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+              <td class="py-4 pl-4 text-secondary">2</td>
+              <td class="py-4 px-4">李四</td>
+              <td class="py-4 px-4 text-secondary">2025-12-02 09:15:40</td>
+              <td class="py-4 px-4">89</td>
+            </tr>
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-all">
+              <td class="py-4 pl-4 text-secondary">3</td>
+              <td class="py-4 px-4">王五</td>
+              <td class="py-4 px-4 text-secondary">2025-12-03 16:20:15</td>
+              <td class="py-4 px-4">56</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 分页 -->
+      <div class="flex justify-between items-center mt-6">
+        <p class="text-secondary text-sm">共 3 条记录，当前第 1 页</p>
+        <div class="flex space-x-1">
+          <button class="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-chevron-left text-xs"></i>
+          </button>
+          <button class="px-3 py-1 border border-primary bg-primary text-white rounded">1</button>
+          <button class="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入弹窗 -->
+  <div id="importModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl w-full max-w-md modal-shadow transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+      <div class="p-6">
+        <!-- 弹窗头部 -->
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-dark">导入库龄调整数据</h3>
+          <button id="closeModal" class="text-secondary hover:text-dark transition-all">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- 弹窗内容 -->
+        <div class="space-y-6">
+          <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-primary transition-all" id="fileDropArea">
+            <i class="fa fa-cloud-upload text-4xl text-gray-300 mb-3"></i>
+            <p class="text-secondary mb-4">拖拽文件到此处或点击选择文件</p>
+            <label class="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg cursor-pointer transition-all inline-block">
+              <input type="file" accept=".xlsx,.xls,.csv" class="hidden" id="fileInput">
+              <i class="fa fa-file-excel-o mr-2"></i>选择文件
+            </label>
+            <p class="text-xs text-gray-400 mt-3">支持格式：.xlsx .xls .csv（最大50MB）</p>
+          </div>
+
+          <div id="fileInfo" class="hidden">
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div class="flex items-center">
+                <i class="fa fa-file-excel-o text-success mr-3 text-xl"></i>
+                <div>
+                  <p id="fileName" class="font-medium text-dark text-sm"></p>
+                  <p id="fileSize" class="text-xs text-secondary"></p>
+                </div>
+              </div>
+              <button id="removeFile" class="text-danger hover:text-danger/80 transition-all">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <ul class="text-sm text-secondary space-y-1 list-disc pl-5">
+              <li><a href="#" class="text-primary hover:underline">下载导入模板</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 弹窗底部 -->
+        <div class="flex justify-end space-x-3 mt-8">
+          <button id="cancelImport" class="px-5 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all text-secondary">
+            取消
+          </button>
+          <button id="confirmImport" class="px-5 py-2 bg-primary hover:bg-primary/90 rounded-lg transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-upload mr-2"></i>确认导入
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM元素获取
+    const importBtn = document.getElementById('importBtn');
+    const importModal = document.getElementById('importModal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModal = document.getElementById('closeModal');
+    const cancelImport = document.getElementById('cancelImport');
+    const fileInput = document.getElementById('fileInput');
+    const fileDropArea = document.getElementById('fileDropArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFile = document.getElementById('removeFile');
+    const confirmImport = document.getElementById('confirmImport');
+    const importRecordTable = document.getElementById('importRecordTable');
+
+    // 弹窗显示/隐藏
+    function showModal() {
+      importModal.classList.remove('hidden');
+      // 动画效果
+      setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+      }, 10);
+      // 禁止页面滚动
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideModal() {
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      // 动画结束后隐藏
+      setTimeout(() => {
+        importModal.classList.add('hidden');
+        // 恢复页面滚动
+        document.body.style.overflow = '';
+        // 重置文件选择
+        resetFileInput();
+      }, 300);
+    }
+
+    // 重置文件输入
+    function resetFileInput() {
+      fileInput.value = '';
+      fileInfo.classList.add('hidden');
+      confirmImport.disabled = true;
+    }
+
+    // 文件选择处理
+    function handleFileSelect(file) {
+      if (!file) return;
+      
+      // 显示文件信息
+      fileName.textContent = file.name;
+      // 格式化文件大小
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+      fileSize.textContent = `${sizeInMB} MB`;
+      fileInfo.classList.remove('hidden');
+      
+      // 启用导入按钮
+      confirmImport.disabled = false;
+    }
+
+    // 模拟导入数据
+    function simulateImport() {
+      // 创建新记录
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      const batchCount = Math.floor(Math.random() * 200) + 1;
+      const serialNumber = importRecordTable.children.length + 1;
+      
+      // 随机状态
+      const statuses = [
+        { class: 'success', text: '导入成功' },
+        { class: 'danger', text: '部分失败' },
+        { class: 'warning', text: '导入中' }
+      ];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      
+      // 创建新行
+      const newRow = document.createElement('tr');
+      newRow.className = 'border-b border-gray-100 hover:bg-gray-50 transition-all';
+      newRow.innerHTML = `
+        <td class="py-4 pl-4 text-secondary">${serialNumber}</td>
+        <td class="py-4 px-4">当前用户</td>
+        <td class="py-4 px-4 text-secondary">${timeStr}</td>
+        <td class="py-4 px-4">${batchCount}</td>
+        <td class="py-4 px-4"><span class="bg-${randomStatus.class}/10 text-${randomStatus.class} px-2 py-1 rounded-full text-sm">${randomStatus.text}</span></td>
+        <td class="py-4 pr-4 text-right">
+          <div class="flex justify-end space-x-2">
+            <button class="text-primary hover:text-primary/80 transition-all">
+              <i class="fa fa-eye mr-1"></i>查看
+            </button>
+            <button class="text-warning hover:text-warning/80 transition-all">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+        </td>
+      `;
+      
+      // 添加到表格顶部
+      importRecordTable.insertBefore(newRow, importRecordTable.firstChild);
+      
+      // 隐藏弹窗
+      hideModal();
+      
+      // 显示成功提示（模拟）
+      alert('导入成功！');
+    }
+
+    // 事件监听
+    // 打开弹窗
+    importBtn.addEventListener('click', showModal);
+    
+    // 关闭弹窗
+    closeModal.addEventListener('click', hideModal);
+    cancelImport.addEventListener('click', hideModal);
+    
+    // 点击遮罩层关闭弹窗
+    importModal.addEventListener('click', (e) => {
+      if (e.target === importModal) hideModal();
+    });
+    
+    // 文件选择
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      handleFileSelect(file);
+    });
+    
+    // 拖拽文件
+    fileDropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileDropArea.classList.add('border-primary');
+    });
+    
+    fileDropArea.addEventListener('dragleave', () => {
+      fileDropArea.classList.remove('border-primary');
+    });
+    
+    fileDropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileDropArea.classList.remove('border-primary');
+      const file = e.dataTransfer.files[0];
+      handleFileSelect(file);
+    });
+    
+    // 移除文件
+    removeFile.addEventListener('click', resetFileInput);
+    
+    // 确认导入
+    confirmImport.addEventListener('click', simulateImport);
+    
+    // 键盘ESC关闭弹窗
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !importModal.classList.contains('hidden')) {
+        hideModal();
+      }
+    });
+  </script>
+</body>
+</html>
