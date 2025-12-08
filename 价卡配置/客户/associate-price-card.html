@@ -196,6 +196,17 @@
               </select>
             </div>
             
+            <!-- 仓群筛选 -->
+            <div class="flex flex-col">
+              <label for="warehouseGroupFilter" class="text-sm font-medium text-neutral-600 mb-1">仓群</label>
+              <select id="warehouseGroupFilter" class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
+                <option value="">全部仓群</option>
+                <option value="group1">美东</option>
+                <option value="group2">美南</option>
+                <option value="group3">美西</option>
+              </select>
+            </div>
+            
 
             
             <!-- 生效日期筛选 -->
@@ -269,14 +280,6 @@
               <div>
                 <label class="block text-sm font-medium text-neutral-600 mb-1">名称 <span class="text-danger">*</span></label>
                 <input type="text" id="priceCardName" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-600 mb-1">适用范围 <span class="text-danger">*</span></label>
-                <select id="applyScope" class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary outline-none transition-all-300">
-                  <option value="整柜">整柜</option>
-                  <option value="散货">散货</option>
-                  <option value="全部">全部</option>
-                </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-neutral-600 mb-1">生效日期 <span class="text-danger">*</span></label>
@@ -448,25 +451,17 @@
     // 关联价卡列表数据
     let associatedPriceCards = [];
     
-    // 预设仓群数据
-    const presetWarehouseGroups = [
-      { id: 1, name: "上海仓群", description: "上海地区的所有仓库" },
-      { id: 2, name: "北京仓群", description: "北京地区的所有仓库" },
-      { id: 3, name: "广州仓群", description: "广州地区的所有仓库" }
-    ];
-
     // 预设价卡数据
     const presetPriceCards = {
       "卸货费": {
         id: 1,
         name: "卸货费",
         applyScope: "全部",
-        warehouseGroupId: 1, // 上海仓群
-        warehouseGroupName: "上海仓群",
         validFrom: "2024-01-01 00:00:00",
         validTo: "2024-12-31 23:59:59",
         description: "这是一个预设的生效卸货费价卡",
         status: "pending", // 未生效
+        warehouseGroup: "group1", // 美东
         bulkConfig: {
           price: 100.00,
           unit: "托"
@@ -485,12 +480,11 @@
         id: 2,
         name: "仓储费",
         applyScope: "全部",
-        warehouseGroupId: 1, // 上海仓群
-        warehouseGroupName: "上海仓群",
         validFrom: "2024-06-01 00:00:00",
         validTo: "2024-12-31 23:59:59",
         description: "这是一个未生效的新版卸货费价卡",
         status: "pending", // 未生效
+        warehouseGroup: "group2", // 美南
         bulkConfig: {
           price: 120.00,
           unit: "托"
@@ -509,12 +503,11 @@
         id: 3,
         name: "出库费",
         applyScope: "全部",
-        warehouseGroupId: 2, // 北京仓群
-        warehouseGroupName: "北京仓群",
         validFrom: "2023-01-01 00:00:00",
         validTo: "2023-12-31 23:59:59",
         description: "这是一个已失效的旧版出库费价卡",
         status: "pending", // 未生效
+        warehouseGroup: "group3", // 美西
         bulkConfig: {
           price: 90.00,
           unit: "托"
@@ -526,6 +519,29 @@
         containerConfig: [
           { containerType: "20GP", price: 450.00, remark: "标准柜" },
           { containerType: "40GP", price: 850.00, remark: "标准柜" }
+        ],
+        calculationLogic: "基础单价 + 燃油附加费"
+      },
+      "卸货费2": {
+        id: 4,
+        name: "卸货费",
+        applyScope: "全部",
+        validFrom: "2024-01-01 00:00:00",
+        validTo: "2024-12-31 23:59:59",
+        description: "这是一个预设的生效卸货费价卡",
+        status: "pending", // 未生效
+        warehouseGroup: "group2", // 美南
+        bulkConfig: {
+          price: 110.00,
+          unit: "托"
+        },
+        expressConfig: {
+          price: 22.00,
+          unit: "箱"
+        },
+        containerConfig: [
+          { containerType: "20GP", price: 520.00, remark: "标准柜" },
+          { containerType: "40GP", price: 920.00, remark: "标准柜" }
         ],
         calculationLogic: "基础单价 + 燃油附加费"
       }
@@ -554,147 +570,137 @@
       const container = document.getElementById('priceCardTypesList');
       container.innerHTML = '';
       
-      // 获取搜索关键词和筛选条件
+      // 获取搜索关键词，处理搜索框可能被隐藏的情况
+      let searchKeyword = '';
       const searchInput = document.getElementById('priceCardSearch');
-      const searchKeyword = searchInput ? searchInput.value.toLowerCase() : '';
+      if (searchInput) {
+        searchKeyword = searchInput.value.toLowerCase();
+      }
       
+      // 获取所有筛选条件
       const priceCardTypeFilter = document.getElementById('priceCardTypeFilter');
-      const typeFilter = priceCardTypeFilter ? priceCardTypeFilter.value : '';
-      
       const priceCardStatus = document.getElementById('priceCardStatus');
-      const statusFilter = priceCardStatus ? priceCardStatus.value : '';
-      
       const effectiveDateFilter = document.getElementById('effectiveDateFilter');
-      const effectiveDateFilterValue = effectiveDateFilter ? effectiveDateFilter.value : '';
-      
       const expireDateFilter = document.getElementById('expireDateFilter');
+      const warehouseGroupFilter = document.getElementById('warehouseGroupFilter');
+      
+      const typeFilter = priceCardTypeFilter ? priceCardTypeFilter.value : '';
+      const statusFilter = priceCardStatus ? priceCardStatus.value : '';
+      const effectiveDateFilterValue = effectiveDateFilter ? effectiveDateFilter.value : '';
       const expireDateFilterValue = expireDateFilter ? expireDateFilter.value : '';
+      const warehouseGroupFilterValue = warehouseGroupFilter ? warehouseGroupFilter.value : '';
       
-      // 准备价卡数据
-      const priceCards = Object.values(presetPriceCards);
+      // 合并预设价卡和关联价卡列表，关联价卡优先
+      // 先创建一个包含所有预设价卡的映射
+      const priceCardMap = new Map();
+      Object.values(presetPriceCards).forEach(priceCard => {
+        // 添加默认type属性，避免类型筛选错误
+        priceCard.type = priceCard.type || '卸货费';
+        priceCardMap.set(priceCard.id, priceCard);
+      });
       
-      // 应用筛选条件
-      const filteredPriceCards = priceCards.filter(priceCard => {
-        // 搜索筛选
+      // 转换为数组
+      const uniquePriceCards = Array.from(priceCardMap.values());
+      
+      // 遍历所有价卡
+      uniquePriceCards.forEach(priceCard => {
+        // 应用搜索筛选
         if (searchKeyword && !priceCard.name.toLowerCase().includes(searchKeyword)) {
-          return false;
+          return;
         }
         
-        // 类型筛选
-        if (typeFilter && (priceCard.type || '卸货费') !== typeFilter) {
-          return false;
+        // 应用类型筛选
+        if (typeFilter && priceCard.type !== typeFilter) {
+          return;
         }
         
-        // 状态筛选
+        // 应用状态筛选
         if (statusFilter && priceCard.status !== statusFilter) {
-          return false;
+          return;
         }
         
-        // 生效日期筛选
+        // 应用仓群筛选
+        if (warehouseGroupFilterValue && priceCard.warehouseGroup !== warehouseGroupFilterValue) {
+          return;
+        }
+        
+        // 应用生效日期筛选
         if (effectiveDateFilterValue) {
-          const cardDate = new Date(priceCard.validFrom);
-          const filterDate = new Date(effectiveDateFilterValue);
-          if (cardDate < filterDate) {
-            return false;
+          const priceCardEffectiveDate = new Date(priceCard.validFrom);
+          const filterEffectiveDate = new Date(effectiveDateFilterValue);
+          if (priceCardEffectiveDate < filterEffectiveDate) {
+            return;
           }
-        }
-        
-        // 失效日期筛选
+        }        
+        // 应用失效日期筛选
         if (expireDateFilterValue) {
-          const cardDate = new Date(priceCard.validTo);
-          const filterDate = new Date(expireDateFilterValue);
-          if (cardDate > filterDate) {
-            return false;
+          const priceCardExpireDate = new Date(priceCard.validTo);
+          const filterExpireDate = new Date(expireDateFilterValue);
+          if (priceCardExpireDate > filterExpireDate) {
+            return;
           }
         }
         
-        return true;
-      });
-      
-      // 按仓群分组
-      const groupedCards = {};
-      filteredPriceCards.forEach(card => {
-        const groupId = card.warehouseGroupId || 1;
-        if (!groupedCards[groupId]) {
-          groupedCards[groupId] = [];
-        }
-        groupedCards[groupId].push(card);
-      });
-      
-      // 渲染每个仓群
-      presetWarehouseGroups.forEach(group => {
-        const cards = groupedCards[group.id] || [];
-        if (cards.length === 0) return;
+        // 创建价卡类型卡片
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-neutral-100 rounded-lg shadow-sm p-4 hover:border-primary transition-all-300 price-card-item';
+        card.dataset.priceId = priceCard.id;
         
-        // 创建仓群标题
-        const groupTitle = document.createElement('div');
-        groupTitle.className = 'mt-8 mb-4';
-        groupTitle.innerHTML = `
-          <h2 class="text-xl font-bold text-neutral-800">${group.name}</h2>
-          <p class="text-sm text-neutral-500">${group.description}</p>
-          <div class="w-full h-0.5 bg-neutral-200 mt-2"></div>
+        // 根据状态获取状态显示文本和样式
+        const statusConfig = {
+          'draft': { text: '失效', className: 'bg-red-100 text-red-800' },
+          'pending': { text: '未生效', className: 'bg-gray-100 text-gray-800' },
+          'published': { text: '生效', className: 'bg-green-100 text-green-800' }
+        };
+        
+        // 根据状态生成操作按钮（所有状态都显示编辑和删除按钮）
+        let actionButtons = `
+          <button class="px-3 py-1 text-xs bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 transition-all-300 view-price-card" data-price-id="${priceCard.id}">
+            <i class="fa fa-eye mr-1"></i> 查看
+          </button>
+          <button class="px-3 py-1 text-xs bg-white border border-primary text-primary rounded-md hover:bg-primary/5 transition-all-300 edit-price-card" data-price-id="${priceCard.id}">
+            <i class="fa fa-pencil mr-1"></i> 编辑
+          </button>
+          <button class="px-3 py-1 text-xs bg-white border border-danger text-danger rounded-md hover:bg-danger/5 transition-all-300 delete-price-card" data-price-id="${priceCard.id}">
+            <i class="fa fa-trash mr-1"></i> 删除
+          </button>
         `;
-        container.appendChild(groupTitle);
         
-        // 创建价卡容器
-        const cardsContainer = document.createElement('div');
-        cardsContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-lg font-semibold text-neutral-700">${priceCard.name}</h3>
+            <span class="px-2 py-1 text-xs rounded-full ${statusConfig[priceCard.status]?.className || 'bg-gray-100 text-gray-800'}">
+              ${statusConfig[priceCard.status]?.text || '未知'}
+            </span>
+          </div>
+          <div class="text-sm text-neutral-500 mb-3">
+            <p>有效期: ${priceCard.validFrom.split(' ')[0]} 至 ${priceCard.validTo.split(' ')[0]}</p>
+            <p>仓群: ${priceCard.warehouseGroup === 'group1' ? '美东' : priceCard.warehouseGroup === 'group2' ? '美南' : priceCard.warehouseGroup === 'group3' ? '美西' : '未设置'}</p>
+          </div>
+          <div class="flex justify-end gap-2">
+            ${actionButtons}
+          </div>
+        `;
         
-        // 渲染每个价卡
-        cards.forEach(card => {
-          // 根据状态获取显示文本和样式
-          const statusMap = {
-            'draft': { text: '失效', className: 'bg-red-100 text-red-800' },
-            'pending': { text: '未生效', className: 'bg-gray-100 text-gray-800' },
-            'published': { text: '生效', className: 'bg-green-100 text-green-800' }
-          };
-          
-          const statusInfo = statusMap[card.status] || { text: '未知', className: 'bg-gray-100 text-gray-800' };
-          
-          // 创建价卡卡片
-          const cardElement = document.createElement('div');
-          cardElement.className = 'bg-white border border-neutral-100 rounded-lg shadow-sm p-4 hover:border-primary transition-all-300';
-          cardElement.dataset.priceId = card.id;
-          
-          cardElement.innerHTML = `
-            <div class="flex justify-between items-start mb-2">
-              <h3 class="text-lg font-semibold text-neutral-700">${card.name}</h3>
-              <span class="px-2 py-1 text-xs rounded-full ${statusInfo.className}">${statusInfo.text}</span>
-            </div>
-            <div class="text-sm text-neutral-500 mb-3">
-              <p>适用范围: ${card.applyScope}</p>
-              <p>有效期: ${card.validFrom.split(' ')[0]} 至 ${card.validTo.split(' ')[0]}</p>
-            </div>
-            <div class="flex justify-end gap-2">
-              <button class="px-3 py-1 text-xs bg-white border border-neutral-200 rounded-md text-neutral-700 hover:bg-neutral-50 view-price-card" data-price-id="${card.id}">
-                <i class="fa fa-eye mr-1"></i> 查看
-              </button>
-              <button class="px-3 py-1 text-xs bg-white border border-primary text-primary rounded-md hover:bg-primary/5 edit-price-card" data-price-id="${card.id}">
-                <i class="fa fa-pencil mr-1"></i> 编辑
-              </button>
-              <button class="px-3 py-1 text-xs bg-white border border-danger text-danger rounded-md hover:bg-danger/5 delete-price-card" data-price-id="${card.id}">
-                <i class="fa fa-trash mr-1"></i> 删除
-              </button>
-            </div>
-          `;
-          
-          // 添加事件监听
-          cardElement.querySelector('.view-price-card').addEventListener('click', () => {
-            viewPriceCard(card.id);
-          });
-          
-          cardElement.querySelector('.edit-price-card').addEventListener('click', () => {
-            editPriceCard(card.id);
-          });
-          
-          cardElement.querySelector('.delete-price-card').addEventListener('click', () => {
-            deletePriceCard(card.id);
-          });
-          
-          cardsContainer.appendChild(cardElement);
+        // 添加查看事件
+        card.querySelector('.view-price-card').addEventListener('click', function() {
+          const priceId = this.dataset.priceId;
+          viewPriceCard(priceId);
         });
         
-        container.appendChild(cardsContainer);
+        // 添加编辑事件
+        card.querySelector('.edit-price-card').addEventListener('click', function() {
+          const priceId = this.dataset.priceId;
+          editPriceCard(priceId);
+        });
+        
+        // 添加删除事件
+        card.querySelector('.delete-price-card').addEventListener('click', function() {
+          const priceId = this.dataset.priceId;
+            deletePriceCard(priceId);
+          });
+        
+        container.appendChild(card);
       });
     }
     
@@ -798,10 +804,6 @@
                         <div>
                             <label class="block text-sm font-medium text-neutral-600 mb-1">价卡类型</label>
                             <p class="text-sm font-semibold text-neutral-700 mt-1">${type}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-neutral-600 mb-1">适用范围</label>
-                            <p class="text-sm font-semibold text-neutral-700 mt-1">${priceCard.applyScope}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-neutral-600 mb-1">状态</label>
@@ -1006,6 +1008,12 @@
         expireDateFilter.addEventListener('change', renderPriceCardTypes);
       }
       
+      // 仓群筛选事件
+      const warehouseGroupFilter = document.getElementById('warehouseGroupFilter');
+      if (warehouseGroupFilter) {
+        warehouseGroupFilter.addEventListener('change', renderPriceCardTypes);
+      }
+      
       // 查询按钮点击事件
       const searchBtn = document.getElementById('searchBtn');
       if (searchBtn) {
@@ -1022,6 +1030,7 @@
           if (priceCardStatus) priceCardStatus.value = '';
           if (effectiveDateFilter) effectiveDateFilter.value = '';
           if (expireDateFilter) expireDateFilter.value = '';
+          if (warehouseGroupFilter) warehouseGroupFilter.value = '';
           // 重新渲染价卡列表
           renderPriceCardTypes();
         });

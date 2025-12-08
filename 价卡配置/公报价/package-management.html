@@ -166,7 +166,7 @@
       <div class="p-4 border-b border-neutral-100">
         <div class="flex items-center justify-start mb-0 gap-3">
           <button id="addPackageBtn" class="px-5 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300 flex items-center gap-1">
-            <i class="fa fa-plus"></i> 更新
+            <i class="fa fa-plus"></i> 获取报价
           </button>
         </div>
       </div>
@@ -174,13 +174,12 @@
       <table class="table w-full">
         <thead>
           <tr class="bg-neutral-50">
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">ID</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">仓群</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">适用仓库</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">价卡数量</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">创建时间</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">更新时间</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">生效时间</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">失效时间</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">状态</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
           </tr>
         </thead>
@@ -214,12 +213,59 @@
           </div>
         </div>
       </div>
+    </div>
     
     <!-- Loading弹窗 -->
     <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
       <div class="bg-white rounded-lg p-6 text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
         <p class="text-lg text-neutral-700">正在更新...</p>
+      </div>
+    </div>
+
+    <!-- 获取报价弹窗 -->
+    <div id="quoteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-neutral-700">获取报价</h3>
+          <button id="closeQuoteModal" class="text-neutral-500 hover:text-neutral-700 transition-colors">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- 仓群选择 -->
+          <div>
+            <label for="warehouseGroup" class="block text-sm font-medium text-neutral-700 mb-1">选择仓群</label>
+            <select id="warehouseGroup" class="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+              <option value="">请选择仓群</option>
+              <option value="美东仓群">美东仓群</option>
+              <option value="美西仓群">美西仓群</option>
+              <option value="美南仓群">美南仓群</option>
+ 
+            </select>
+          </div>
+          
+          <!-- 有效期选择（时间段） -->
+          <div>
+            <label class="block text-sm font-medium text-neutral-700 mb-1">选择有效期</label>
+            <div class="flex gap-2">
+              <div class="flex-1">
+                <label for="validityStart" class="block text-xs text-neutral-500 mb-1">开始日期</label>
+                <input type="date" id="validityStart" class="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+              </div>
+              <div class="flex-1">
+                <label for="validityEnd" class="block text-xs text-neutral-500 mb-1">结束日期</label>
+                <input type="date" id="validityEnd" class="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-2 mt-6">
+          <button id="cancelQuoteBtn" class="px-4 py-2 border border-neutral-200 rounded-md text-sm text-neutral-700 hover:bg-neutral-50 transition-all-300">取消</button>
+          <button id="confirmQuoteBtn" class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all-300">确认获取</button>
+        </div>
       </div>
     </div>
     </main>
@@ -244,59 +290,15 @@
       localStorage.setItem('packageQuotes', JSON.stringify(packages));
     }
     
-    // 提供预设的默认方案数据
-    function getDefaultPackages() {
-      // 预设的默认方案数据
-      return [
-        {
-          id: 1,
-          name: "美东仓库公报价",
-          warehouseGroup: "美东仓群",
-          warehouseCount: 5,
-          priceCardCount: 3,
-          createTime: "2023-01-15 10:30:00",
-          updateTime: "2023-01-20 16:45:00"
-        },
-        {
-          id: 2,
-          name: "美西仓库公报价",
-          warehouseGroup: "美西仓群",
-          warehouseCount: 8,
-          priceCardCount: 5,
-          createTime: "2023-02-20 14:20:00",
-          updateTime: "2023-02-25 09:15:00"
-        },
-        {
-          id: 3,
-          name: "美南仓库公报价",
-          warehouseGroup: "美南仓群",
-          warehouseCount: 12,
-          priceCardCount: 8,
-          createTime: "2023-03-10 09:45:00",
-          updateTime: "2023-03-15 14:30:00"
-        }
-      ];
-    }
+  
     
     // 初始化页面
     function initPage() {
-      // 检查localStorage中是否有缓存的公报价数据
-      let cachedPackages = getCachedPackages();
+      // 从localStorage加载缓存的价卡数据
+      const cachedPackages = getCachedPackages();
       
-      if (cachedPackages) {
-        // 迁移旧数据，确保每个方案都有正确的属性
-        currentPackages = cachedPackages.map(pkg => {
-          return {
-            ...pkg,
-            warehouseGroup: pkg.warehouseGroup || '未知仓群',
-            warehouseCount: pkg.warehouseCount || 0,
-            updateTime: pkg.updateTime || pkg.createTime
-          };
-        });
-      } else {
-        // 如果没有缓存数据，使用默认数据
-        currentPackages = getDefaultPackages();
-      }
+      // 如果有缓存数据则使用，否则初始化为空数组
+      currentPackages = cachedPackages || [];
       
       // 显示数据部分
       const packagesList = document.getElementById('packagesList');
@@ -311,42 +313,305 @@
       bindEvents();
     }
     
-    // 更新数据
+    // 显示获取报价弹窗
     function fetchPackageQuotes() {
+      const quoteModal = document.getElementById('quoteModal');
+      quoteModal.classList.remove('hidden');
+      quoteModal.classList.add('flex');
+    }
+    
+    // 隐藏获取报价弹窗
+    function hideQuoteModal() {
+      const quoteModal = document.getElementById('quoteModal');
+      quoteModal.classList.remove('flex');
+      quoteModal.classList.add('hidden');
+      
+      // 重置表单
+      document.getElementById('warehouseGroup').value = '';
+      document.getElementById('validityStart').value = '';
+      document.getElementById('validityEnd').value = '';
+    }
+    
+    // 添加时间到日期字符串
+    function addTimeToDate(dateStr, isEndDate) {
+      if (isEndDate) {
+        return dateStr + ' 23:59:59';
+      } else {
+        return dateStr + ' 00:00:00';
+      }
+    }
+
+    // 检测时间重叠
+    function checkTimeOverlap(newStart, newEnd, existingPackages, warehouseGroup) {
+      const overlapPackages = [];
+      const newStartDate = new Date(addTimeToDate(newStart, false));
+      const newEndDate = new Date(addTimeToDate(newEnd, true));
+      
+      existingPackages.forEach(pkg => {
+        if (pkg.warehouseGroup === warehouseGroup) {
+          const pkgStartDate = new Date(addTimeToDate(pkg.validityStart, false));
+          const pkgEndDate = new Date(addTimeToDate(pkg.validityEnd, true));
+          
+          // 检查时间重叠，不允许任何交集
+          if (!(newEndDate <= pkgStartDate || newStartDate >= pkgEndDate)) {
+            overlapPackages.push({
+              id: pkg.id,
+              start: pkg.validityStart,
+              end: pkg.validityEnd
+            });
+          }
+        }
+      });
+      
+      return overlapPackages;
+    }
+    
+    // 根据选择的仓群和有效期获取报价
+    function getQuoteBySelection() {
+      // 获取用户选择
+      const warehouseGroup = document.getElementById('warehouseGroup').value;
+      const validityStart = document.getElementById('validityStart').value;
+      const validityEnd = document.getElementById('validityEnd').value;
+      
+      // 验证用户输入
+      if (!warehouseGroup) {
+        alert('请选择仓群');
+        return;
+      }
+      
+      if (!validityStart) {
+        alert('请选择开始日期');
+        return;
+      }
+      
+      if (!validityEnd) {
+        alert('请选择结束日期');
+        return;
+      }
+      
+      if (new Date(validityStart) > new Date(validityEnd)) {
+        alert('开始日期不能晚于结束日期');
+        return;
+      }
+      
+      // 检查时间重叠
+      const overlapPackages = checkTimeOverlap(validityStart, validityEnd, currentPackages, warehouseGroup);
+      
+      // 如果有重叠，显示提示弹窗
+      if (overlapPackages.length > 0) {
+        // 计算完整的重叠时间范围（所有重叠价卡的最大重叠范围）
+        let earliestOverlapStart = new Date(2099, 0, 1); // 初始化为很远的未来
+        let latestOverlapEnd = new Date(2000, 0, 1); // 初始化为很远的过去
+        
+        overlapPackages.forEach(overlapPkg => {
+          const pkgStart = new Date(overlapPkg.start);
+          const pkgEnd = new Date(overlapPkg.end);
+          
+          // 找最早的开始时间
+          if (pkgStart < earliestOverlapStart) {
+            earliestOverlapStart = pkgStart;
+          }
+          // 找最晚的结束时间
+          if (pkgEnd > latestOverlapEnd) {
+            latestOverlapEnd = pkgEnd;
+          }
+        });
+        
+        // 转换为日期字符串
+        const overlapStartStr = earliestOverlapStart.toISOString().split('T')[0];
+        const overlapEndStr = latestOverlapEnd.toISOString().split('T')[0];
+        
+        // 创建弹窗HTML
+        const modalHTML = `
+          <div id="overlapModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 class="text-lg font-semibold mb-4 text-center">时间重叠提示</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                选择的仓群和有效期与现有报价存在重叠。系统将：
+                <br>1. 完全作废当前重叠价卡
+                <br>2. 新增三个时间段的价卡
+              </p>
+              <div class="space-y-3 mb-6">
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-500">第一段：</span>
+                  <span class="text-sm font-medium">${validityStart} 到 ${overlapStartStr}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-500">第二段：</span>
+                  <span class="text-sm font-medium text-yellow-600">${overlapStartStr} 到 ${overlapEndStr}（重叠部分）</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-sm text-gray-500">第三段：</span>
+                  <span class="text-sm font-medium">${overlapEndStr} 到 ${validityEnd}</span>
+                </div>
+              </div>
+              <div class="flex justify-center gap-4">
+                <button id="cancelOverlapBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                  取消
+                </button>
+                <button id="confirmOverlapBtn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors">
+                  确认生效
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // 添加弹窗到页面
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // 绑定取消按钮事件
+        document.getElementById('cancelOverlapBtn').addEventListener('click', () => {
+          document.getElementById('overlapModal').remove();
+        });
+        
+        // 绑定确认按钮事件
+        document.getElementById('confirmOverlapBtn').addEventListener('click', () => {
+          document.getElementById('overlapModal').remove();
+          
+          // 1. 完全作废所有重叠的原价卡（从列表中移除）
+          overlapPackages.forEach(overlapPkg => {
+            currentPackages = currentPackages.filter(pkg => pkg.id !== overlapPkg.id);
+          });
+          
+          // 2. 将新价卡拆分为三个部分
+          const timeRanges = [
+            {
+              start: validityStart,
+              end: overlapStartStr
+            },
+            {
+              start: overlapStartStr,
+              end: overlapEndStr
+            },
+            {
+              start: overlapEndStr,
+              end: validityEnd
+            }
+          ];
+          
+          // 3. 为每个时间范围创建新价卡
+          // 先隐藏弹窗
+          hideQuoteModal();
+          // 显示加载弹窗
+          const loadingModal = document.getElementById('loadingModal');
+          loadingModal.classList.remove('hidden');
+          loadingModal.classList.add('flex');
+          
+          // 为每个时间范围创建新价卡
+          const batchId = Date.now(); // 使用批次ID确保唯一性
+          timeRanges.forEach((range, index) => {
+            // 允许开始时间等于结束时间的情况，或者自动调整
+            let adjustedStart = range.start;
+            let adjustedEnd = range.end;
+            const startDate = new Date(range.start);
+            const endDate = new Date(range.end);
+            
+            // 跳过无效的时间范围（开始时间 >= 结束时间）
+            if (startDate.getTime() >= endDate.getTime()) {
+              return;
+            }
+            
+            // 计算状态
+              const today = new Date();
+              const adjStartDate = new Date(addTimeToDate(adjustedStart, false));
+              const adjEndDate = new Date(addTimeToDate(adjustedEnd, true));
+              let status = '未生效'; // 默认未生效
+              
+              if (today > adjEndDate) {
+                status = '失效'; // 若当前时间超过结束时间，则状态为失效
+              } else if (adjStartDate > today) {
+                status = '未生效'; // 若生效时间大于今天，则状态为未生效
+              } else {
+                status = '生效'; // 若当前时间在生效时间和结束时间之间，则状态为生效
+              }
+            
+            // 创建新的报价数据，使用批次ID+索引确保唯一性
+            const newQuote = {
+              id: `${batchId}-${index}`, // 使用批次ID+索引确保唯一性
+              name: `${warehouseGroup}公报价-${new Date(adjustedStart).toISOString().split('T')[0]}至${new Date(adjustedEnd).toISOString().split('T')[0]}`,
+              warehouseGroup: warehouseGroup,
+              warehouseCount: Math.floor(Math.random() * 10) + 1, // 随机生成仓库数量
+              priceCardCount: Math.floor(Math.random() * 20) + 5, // 随机生成价卡数量
+              validityStart: adjustedStart,
+              validityEnd: adjustedEnd,
+              status: status,
+              createTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+              updateTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            };
+            
+            // 添加新数据到当前列表
+            currentPackages.push(newQuote);
+          });
+          
+          // 2秒后完成处理
+            setTimeout(() => {
+              // 将数据缓存到localStorage
+              cachePackages(currentPackages);
+              
+              // 渲染数据
+              renderPackages(currentPackages);
+              
+              // 隐藏loading弹窗
+              loadingModal.classList.remove('flex');
+              loadingModal.classList.add('hidden');
+            }, 2000);
+        });
+      } else {
+        // 如果没有重叠，直接执行
+        proceedWithQuote(warehouseGroup, validityStart, validityEnd);
+      }
+    }
+    
+    // 继续执行获取报价逻辑
+    function proceedWithQuote(warehouseGroup, validityStart, validityEnd) {
+      // 隐藏弹窗
+      hideQuoteModal();
+        
       // 显示loading弹窗
       const loadingModal = document.getElementById('loadingModal');
       loadingModal.classList.remove('hidden');
       loadingModal.classList.add('flex');
-      
+        
       // 2秒后获取数据并显示
       setTimeout(() => {
-        // 获取数据（这里模拟从服务器获取数据）
-        let fetchedPackages = getDefaultPackages();
-        
-        // 处理获取到的数据，确保每个方案都有正确的默认值
-        currentPackages = fetchedPackages.map(pkg => {
-          return {
-            ...pkg,
-            warehouseGroup: pkg.warehouseGroup || '未知仓群',
-            warehouseCount: pkg.warehouseCount || 0,
-            priceCardCount: pkg.priceCardCount || 0,
-            createTime: pkg.createTime || new Date().toISOString().slice(0, 19).replace('T', ' '),
-            updateTime: pkg.updateTime || new Date().toISOString().slice(0, 19).replace('T', ' ')
-          };
-        });
-        
+        // 计算状态
+        const today = new Date();
+        const startDate = new Date(addTimeToDate(validityStart, false));
+        const endDate = new Date(addTimeToDate(validityEnd, true));
+        let status = '未生效'; // 默认未生效
+          
+        if (today > endDate) {
+          status = '失效'; // 若当前时间超过结束时间，则状态为失效
+        } else if (startDate > today) {
+          status = '未生效'; // 若生效时间大于今天，则状态为未生效
+        } else {
+          status = '生效'; // 若当前时间在生效时间和结束时间之间，则状态为生效
+        }
+          
+        // 创建新的报价数据
+        const newQuote = {
+          id: Date.now(), // 使用时间戳作为唯一ID
+          name: `${warehouseGroup}公报价`,
+          warehouseGroup: warehouseGroup,
+          warehouseCount: Math.floor(Math.random() * 10) + 1, // 随机生成仓库数量
+          priceCardCount: Math.floor(Math.random() * 20) + 5, // 随机生成价卡数量
+          validityStart: validityStart,
+          validityEnd: validityEnd,
+          status: status,
+          createTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          updateTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
+        };
+          
+        // 添加新数据到当前列表
+        currentPackages.push(newQuote);
+          
         // 将数据缓存到localStorage
         cachePackages(currentPackages);
         
-        // 显示数据部分
-        const packagesList = document.getElementById('packagesList');
-        const packagesDataArea = document.getElementById('packagesDataArea');
-        packagesList.classList.remove('hidden');
-        packagesDataArea.classList.remove('hidden');
-        
         // 渲染数据
         renderPackages(currentPackages);
-        
+          
         // 隐藏loading弹窗
         loadingModal.classList.remove('flex');
         loadingModal.classList.add('hidden');
@@ -358,6 +623,7 @@
       const packagesList = document.getElementById('packagesList');
       const emptyPackagesList = document.getElementById('emptyPackagesList');
       
+      // 确保所有价卡（包括失效的）都被渲染
       if (packages.length === 0) {
         packagesList.innerHTML = '';
         emptyPackagesList.style.display = 'block';
@@ -370,24 +636,55 @@
       const endIndex = Math.min(startIndex + pageSize, packages.length);
       const paginatedPackages = packages.slice(startIndex, endIndex);
       
-      packagesList.innerHTML = paginatedPackages.map(pkg => `
-        <tr>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.id || 0}</td>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.name || '未命名方案'}</td>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.warehouseGroup || '未知仓群'}</td>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.warehouseCount || 0}</td>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.priceCardCount || 0}</td>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.createTime || '未知时间'}</td>
-          <td class="px-6 py-4 whitespace-nowrap">${pkg.updateTime || '未知时间'}</td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex gap-2">
-              <button onclick="viewPackage(${pkg.id || 0})" class="px-3 py-1.5 bg-neutral-100 text-neutral-700 text-sm rounded-md hover:bg-neutral-200 transition-all-300 flex items-center justify-center min-w-[90px]">
-                <i class="fa fa-eye mr-1"></i>查看
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
+      // 计算状态显示和样式
+      const calculateStatus = (validityStart, validityEnd) => {
+        const today = new Date();
+        const startDate = new Date(addTimeToDate(validityStart, false));
+        const endDate = new Date(addTimeToDate(validityEnd, true));
+        
+        if (today > endDate) {
+          return '失效';
+        } else if (startDate > today) {
+          return '未生效';
+        } else {
+          return '生效';
+        }
+      };
+      
+      const getStatusDisplay = (status) => {
+        switch(status) {
+          case '生效':
+            return '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">生效</span>';
+          case '未生效':
+            return '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">未生效</span>';
+          case '失效':
+            return '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">失效</span>';
+          default:
+            return '<span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">未知</span>';
+        }
+      };
+      
+      packagesList.innerHTML = paginatedPackages.map(pkg => {
+        // 每次渲染都重新计算状态
+        const currentStatus = calculateStatus(pkg.validityStart, pkg.validityEnd);
+        return `
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">${pkg.warehouseGroup || '未知仓群'}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${pkg.warehouseCount || 0}个</td>
+            <td class="px-6 py-4 whitespace-nowrap">${pkg.priceCardCount || 0}个</td>
+            <td class="px-6 py-4 whitespace-nowrap">${pkg.validityStart || '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${pkg.validityEnd || '-'}</td>
+            <td class="px-6 py-4 whitespace-nowrap">${getStatusDisplay(currentStatus)}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex gap-2">
+                <button onclick="viewPackage(${pkg.id || 0})" class="px-3 py-1.5 bg-neutral-100 text-neutral-700 text-sm rounded-md hover:bg-neutral-200 transition-all-300 flex items-center justify-center min-w-[90px]">
+                  <i class="fa fa-eye mr-1"></i>查看
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
       
       // 更新分页信息
       document.getElementById('startIndex').textContent = startIndex + 1;
@@ -449,6 +746,18 @@
         if (currentPage < Math.ceil(currentPackages.length / pageSize)) {
           currentPage++;
           renderPackages(currentPackages);
+        }
+      });
+      
+      // 弹窗相关事件
+      document.getElementById('closeQuoteModal').addEventListener('click', hideQuoteModal);
+      document.getElementById('cancelQuoteBtn').addEventListener('click', hideQuoteModal);
+      document.getElementById('confirmQuoteBtn').addEventListener('click', getQuoteBySelection);
+      
+      // 点击弹窗外部关闭弹窗
+      document.getElementById('quoteModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+          hideQuoteModal();
         }
       });
     }
@@ -570,7 +879,7 @@
     // 查看方案
     function viewPackage(packageId) {
       // 跳转到方案详情页面，并传递方案ID
-      window.location.href = `package-details.html?id=${packageId}`;
+      window.location.href = `package-price-card.html?id=${packageId}`;
     }
     
     // 页面加载完成后初始化

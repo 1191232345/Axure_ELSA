@@ -162,6 +162,15 @@
           </button>
         </div>
         
+        <!-- 费用类别Tab栏 -->
+        <div class="mb-4 border-b border-neutral-200">
+          <div class="flex space-x-8" id="feeCategoryTabs">
+            <button class="px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary fee-category-tab active" data-category="all">全部</button>
+            <button class="px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-700 fee-category-tab" data-category="basic">基础费用</button>
+            <button class="px-4 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-700 fee-category-tab" data-category="misc">附加费</button>
+          </div>
+        </div>
+        
         <!-- 搜索和多条件筛选 -->
         <div class="mb-4 bg-white p-4 border border-neutral-100 rounded-lg shadow-sm">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -188,9 +197,9 @@
               <label for="priceCardStatus" class="text-sm font-medium text-neutral-600 mb-1">状态</label>
               <select id="priceCardStatus" class="w-full px-4 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all-300">
                 <option value="">全部状态</option>
-                <option value="draft">草稿</option>
                 <option value="pending">未生效</option>
                 <option value="published">生效</option>
+                <option value="draft">失效</option>
               </select>
             </div>
             
@@ -430,14 +439,15 @@
     
     // 预设价卡数据
     const presetPriceCards = {
-      "卸货费-生效": {
+      "卸货费": {
         id: 1,
-        name: "标准卸货费价卡",
+        name: "卸货费",
         applyScope: "全部",
         validFrom: "2024-01-01 00:00:00",
         validTo: "2024-12-31 23:59:59",
         description: "这是一个预设的生效卸货费价卡",
         status: "published", // 生效
+        feeCategory: "basic", // 基础费用
         bulkConfig: {
           price: 100.00,
           unit: "托"
@@ -452,14 +462,15 @@
         ],
         calculationLogic: "基础单价 + 燃油附加费"
       },
-      "卸货费-未生效": {
+      "仓储费": {
         id: 2,
-        name: "新版卸货费价卡",
+        name: "仓储费",
         applyScope: "全部",
         validFrom: "2024-06-01 00:00:00",
         validTo: "2024-12-31 23:59:59",
-        description: "这是一个未生效的新版卸货费价卡",
-        status: "pending", // 未生效
+        description: "这是一个生效的仓储费价卡",
+        status: "published", // 生效
+        feeCategory: "basic", // 基础费用
         bulkConfig: {
           price: 120.00,
           unit: "托"
@@ -474,14 +485,15 @@
         ],
         calculationLogic: "基础单价 + 燃油附加费 + 旺季附加费"
       },
-      "卸货费-失效": {
+      "出库费": {
         id: 3,
-        name: "旧版卸货费价卡",
+        name: "出库费",
         applyScope: "全部",
         validFrom: "2023-01-01 00:00:00",
         validTo: "2023-12-31 23:59:59",
         description: "这是一个已失效的旧版卸货费价卡",
         status: "draft", // 失效
+        feeCategory: "basic", // 基础费用
         bulkConfig: {
           price: 90.00,
           unit: "托"
@@ -495,6 +507,47 @@
           { containerType: "40GP", price: 850.00, remark: "标准柜" }
         ],
         calculationLogic: "基础单价 + 燃油附加费"
+      },
+      // 附加费价卡
+      "分货费": {
+        id: 4,
+        name: "分货费",
+        applyScope: "全部",
+        validFrom: "2024-01-01 00:00:00",
+        validTo: "2024-12-31 23:59:59",
+        description: "这是一个预设的生效分货费价卡",
+        status: "published", // 生效
+        feeCategory: "misc", // 附加费
+        bulkConfig: {
+          price: 50.00,
+          unit: "托"
+        },
+        expressConfig: {
+          price: 10.00,
+          unit: "箱"
+        },
+        containerConfig: [],
+        calculationLogic: "基础操作费"
+      },
+      "清点费": {
+        id: 5,
+        name: "清点费",
+        applyScope: "全部",
+        validFrom: "2024-06-01 00:00:00",
+        validTo: "2024-12-31 23:59:59",
+        description: "这是一个未生效的清点费价卡",
+        status: "pending", // 未生效
+        feeCategory: "misc", // 附加费
+        bulkConfig: {
+          price: 0.05,
+          unit: "%"
+        },
+        expressConfig: {
+          price: 0.05,
+          unit: "%"
+        },
+        containerConfig: [],
+        calculationLogic: "货值 × 费率"
       }
     };
     
@@ -535,6 +588,10 @@
       const statusFilter = document.getElementById('priceCardStatus').value;
       const effectiveDateFilter = document.getElementById('effectiveDateFilter').value;
       const expireDateFilter = document.getElementById('expireDateFilter').value;
+      
+      // 获取当前激活的费用类别tab
+      const activeTab = document.querySelector('.fee-category-tab.active');
+      const feeCategoryFilter = activeTab ? activeTab.dataset.category : 'all';
       
       // 合并预设价卡和价卡列表列表，价卡列表优先
       // 先创建一个包含所有预设价卡的映射
@@ -588,6 +645,15 @@
           }
         }
         
+        // 应用费用类别筛选
+        if (feeCategoryFilter !== 'all') {
+          // 如果价卡没有指定费用类别，默认视为基础费用
+          const priceCardCategory = priceCard.feeCategory || 'basic';
+          if (priceCardCategory !== feeCategoryFilter) {
+            return;
+          }
+        }
+        
         // 创建价卡类型卡片
         const card = document.createElement('div');
         card.className = 'bg-white border border-neutral-100 rounded-lg shadow-sm p-4 hover:border-primary transition-all-300 price-card-item';
@@ -607,12 +673,23 @@
           </button>
         `;
         
+        // 根据费用类别获取显示文本和样式
+        const feeCategoryConfig = {
+          'basic': { text: '基础费用', className: 'bg-blue-100 text-blue-800' },
+          'misc': { text: '附加费', className: 'bg-yellow-100 text-yellow-800' }
+        };
+        
         card.innerHTML = `
           <div class="flex justify-between items-start mb-2">
             <h3 class="text-lg font-semibold text-neutral-700">${priceCard.name}</h3>
-            <span class="px-2 py-1 text-xs rounded-full ${statusConfig[priceCard.status]?.className || 'bg-gray-100 text-gray-800'}">
-              ${statusConfig[priceCard.status]?.text || '未知'}
-            </span>
+            <div class="flex gap-2">
+              <span class="px-2 py-1 text-xs rounded-full ${statusConfig[priceCard.status]?.className || 'bg-gray-100 text-gray-800'}">
+                ${statusConfig[priceCard.status]?.text || '未知'}
+              </span>
+              <span class="px-2 py-1 text-xs rounded-full ${feeCategoryConfig[priceCard.feeCategory || 'basic']?.className || 'bg-gray-100 text-gray-800'}">
+                ${feeCategoryConfig[priceCard.feeCategory || 'basic']?.text || '基础费用'}
+              </span>
+            </div>
           </div>
           <div class="text-sm text-neutral-500 mb-3">
             <p>适用范围: ${priceCard.applyScope}</p>
@@ -910,14 +987,44 @@
       // 查询按钮点击事件
       document.getElementById('searchBtn').addEventListener('click', renderPriceCardTypes);
       
+      // 费用类别tab点击事件
+      const feeCategoryTabs = document.querySelectorAll('.fee-category-tab');
+      feeCategoryTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // 移除所有tab的激活状态
+          feeCategoryTabs.forEach(t => t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary'));
+          feeCategoryTabs.forEach(t => t.classList.add('text-neutral-500'));
+          
+          // 为当前点击的tab添加激活状态
+          this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+          this.classList.remove('text-neutral-500');
+          
+          // 重新渲染价卡列表
+          renderPriceCardTypes();
+        });
+      });
+      
       // 重置按钮点击事件
       document.getElementById('resetBtn').addEventListener('click', function() {
         // 重置所有筛选条件
-        document.getElementById('priceCardSearch').value = '';
+        if (document.getElementById('priceCardSearch')) {
+          document.getElementById('priceCardSearch').value = '';
+        }
         document.getElementById('priceCardTypeFilter').value = '';
         document.getElementById('priceCardStatus').value = '';
         document.getElementById('effectiveDateFilter').value = '';
         document.getElementById('expireDateFilter').value = '';
+        
+        // 重置费用类别tab为"全部"
+        const feeCategoryTabs = document.querySelectorAll('.fee-category-tab');
+        feeCategoryTabs.forEach(tab => {
+          tab.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+          tab.classList.add('text-neutral-500');
+        });
+        const allTab = document.querySelector('.fee-category-tab[data-category="all"]');
+        allTab.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+        allTab.classList.remove('text-neutral-500');
+        
         // 重新渲染价卡列表
         renderPriceCardTypes();
       });

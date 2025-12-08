@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>客户专属价卡系统（含时分秒 & 自动拆分 & 状态统一）</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.11/antd.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 24px;
+    }
+    .title {
+      font-size: 1.3rem;
+      color: #1890ff;
+      margin-bottom: 16px;
+    }
+    .btn-primary {
+      background: #1890ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-primary:disabled {
+      background: #bfbfbf;
+      cursor: not-allowed;
+    }
+    .config-group {
+      margin-bottom: 16px;
+    }
+    .config-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #595959;
+    }
+    .tier-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .preview-card {
+      border: 1px dashed #1890ff;
+      padding: 16px;
+      background: #e6f7ff;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+    }
+    table.ant-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    table.ant-table th,
+    table.ant-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    table.ant-table th {
+      background-color: #fafafa;
+      font-weight: 600;
+    }
+    .debug-info {
+      font-size: 0.8rem;
+      color: #8c8c8c;
+      margin-top: 8px;
+      padding: 6px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+    .quote-card {
+      margin-bottom: 16px;
+      padding: 16px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      border: 1px solid #e8e8e8;
+    }
+    .quote-card.active {
+      border: 2px solid #52c41a;
+      background-color: #f6ffed;
+    }
+    /* .quote-card.split {  注释掉或删除拆分状态的样式 */
+    /*   background-color: #f9f0ff; */
+    /*   border-left: 4px solid #722ed1; */
+    /* } */
+    .quote-card.expired {
+      opacity: 0.6;
+      background-color: #f5f5f5;
+    }
+    .quote-card.pending {
+      background-color: #fffbe6;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- 脚本加载 -->
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.11/antd.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    const { Modal, message, InputNumber, DatePicker, Input } = antd;
+
+    // ====== 静态配置 ======
+    const warehouseGroups = [
+      { id: 1, name: "华东仓群", code: "EAST" },
+      { id: 2, name: "华南仓群", code: "SOUTH" }
+    ];
+
+    const costTypes = [
+      { id: 1, name: "仓储费", warehouseGroupId: 1, unit: "m³" },
+      { id: 2, name: "装卸费", warehouseGroupId: 1, unit: "次" },
+      { id: 3, name: "仓储费", warehouseGroupId: 2, unit: "m³" }
+    ];
+
+    const customers = [
+      { 
+        id: 1, 
+        name: "客户A（电商大仓）", 
+        type: "VIP",
+        defaultWarehouseGroupId: 1,
+        defaultCostTypeId: 1
+      },
+      { 
+        id: 2, 
+        name: "客户B（生鲜冷链）", 
+        type: "Standard",
+        defaultWarehouseGroupId: 2,
+        defaultCostTypeId: 3
+      }
+    ];
+
+    // 格式化日期为 YYYY-MM-DD HH:mm:ss
+    function formatDateWithTime(date) {
+      const pad = n => String(n).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    // 获取一年有效期（精确到秒）
+    function getOneYearLaterEnd(startStr) {
+      const start = new Date(startStr);
+      start.setHours(0, 0, 0, 0); // 从当天 00:00:00 开始
+
+      const end = new Date(start);
+      end.setFullYear(end.getFullYear() + 1);
+      end.setSeconds(end.getSeconds() - 1); // 结束于前一秒
+
+      return {
+        effectiveDate: formatDateWithTime(start),
+        expiryDate: formatDateWithTime(end)
+      };
+    }
+
+    // ====== 主组件 ======
+    function App() {
+      const today = new Date();
+      const [warehouseGroupId, setWarehouseGroupId] = useState(1);
+      const [costTypeId, setCostTypeId] = useState(1);
+      const [startDate, setStartDate] = useState(formatDateWithTime(today).split(' ')[0]); // 只取日期部分用于 DatePicker
+      const [costs, setCosts] = useState([]);
+      const [publicQuotes, setPublicQuotes] = useState([]);
+      const [customerQuotes, setCustomerQuotes] = useState([]);
+      const [globalDiscount, setGlobalDiscount] = useState(100);
+      const [selectedCustomerId, setSelectedCustomerId] = useState(1);
+      const [selectedPublicQuoteId, setSelectedPublicQuoteId] = useState(null);
+      const [profitMargin, setProfitMargin] = useState(0.2);
+      const [expandedQuoteId, setExpandedQuoteId] = useState(null);
+      const [quoteName, setQuoteName] = useState('');
+
+      const [customerContext, setCustomerContext] = useState({
+        warehouseGroupId: 1,
+        costTypeId: 1
+      });
+
+      const [showCostModal, setShowCostModal] = useState(false);
+      const [tempTiers, setTempTiers] = useState([
+        { start: 0, end: 100, unitCost: 8 },
+        { start: 101, end: 500, unitCost: 7 },
+        { start: 501, end: Infinity, unitCost: 6 }
+      ]);
+
+      // 客户切换同步上下文
+      useEffect(() => {
+        const customer = customers.find(c => c.id === selectedCustomerId);
+        if (customer) {
+          setCustomerContext({
+            warehouseGroupId: customer.defaultWarehouseGroupId,
+            costTypeId: customer.defaultCostTypeId
+          });
+          setWarehouseGroupId(customer.defaultWarehouseGroupId);
+          setCostTypeId(customer.defaultCostTypeId);
+          setSelectedPublicQuoteId(null);
+        }
+      }, [selectedCustomerId]);
+
+      const filteredCostTypes = costTypes.filter(ct => ct.warehouseGroupId === warehouseGroupId);
+      const { effectiveDate, expiryDate } = getOneYearLaterEnd(startDate);
+
+      const currentCost = costs.find(c =>
+        c.warehouseGroupId === customerContext.warehouseGroupId &&
+        c.costTypeId === customerContext.costTypeId &&
+        c.startDate === startDate
+      );
+
+      const selectedPublicQuote = publicQuotes.find(q => q.id === selectedPublicQuoteId);
+
+      const availablePublicQuotes = useMemo(() => {
+        return publicQuotes.filter(q =>
+          q.warehouseGroupId === customerContext.warehouseGroupId &&
+          q.costTypeId === customerContext.costTypeId
+        );
+      }, [publicQuotes, customerContext]);
+
+      const openCostModal = () => {
+        if (currentCost) {
+          setTempTiers([...currentCost.tiers]);
+        } else {
+          setTempTiers([
+            { start: 0, end: 100, unitCost: 8 },
+            { start: 101, end: 500, unitCost: 7 },
+            { start: 501, end: Infinity, unitCost: 6 }
+          ]);
+        }
+        setShowCostModal(true);
+      };
+
+      const saveCost = () => {
+        const newCost = {
+          warehouseGroupId: customerContext.warehouseGroupId,
+          costTypeId: customerContext.costTypeId,
+          startDate,
+          tiers: tempTiers
+        };
+
+        if (currentCost) {
+          setCosts(costs.map(c => c.id === currentCost.id ? { ...newCost, id: c.id } : c));
+        } else {
+          setCosts([...costs, { ...newCost, id: Date.now() }]);
+        }
+
+        setShowCostModal(false);
+        message.success('✅ 成本已保存');
+      };
+
+      const generatePublicQuote = () => {
+        if (!currentCost) {
+          message.error('请先设置成本');
+          return;
+        }
+
+        const { warehouseGroupId: ctxWg, costTypeId: ctxCt } = customerContext;
+        if (
+          currentCost.warehouseGroupId !== ctxWg ||
+          currentCost.costTypeId !== ctxCt
+        ) {
+          message.error('成本与客户上下文不匹配');
+          return;
+        }
+
+        const defaultName = quoteName.trim() || `公报价-${startDate}`;
+        const quoteTiers = currentCost.tiers.map(tier => ({
+          ...tier,
+          publicPrice: tier.unitCost * (1 + profitMargin)
+        }));
+
+        const newQuote = {
+          id: Date.now(),
+          name: defaultName,
+          warehouseGroupId: ctxWg,
+          costTypeId: ctxCt,
+          startDate,
+          effectiveDate,
+          expiryDate,
+          profitMargin,
+          tiers: quoteTiers
+        };
+
+        setPublicQuotes(prev => [...prev, newQuote]);
+        setQuoteName('');
+        setSelectedPublicQuoteId(newQuote.id);
+        message.success(`✅ 公报价「${defaultName}」已生成`);
+      };
+
+      // ✅ 核心：保存客户价卡 + 自动时间拆分（含时分秒），隐藏拆分状态
+      const handleSaveCustomerQuote = () => {
+        if (!selectedPublicQuote) {
+          message.error('请选择一个公报价');
+          return;
+        }
+
+        const inputs = document.querySelectorAll('#customerTiersContainer input[name="price"]');
+        const newQuote = {
+          id: Date.now(),
+          customerId: selectedCustomerId,
+          warehouseGroupId: selectedPublicQuote.warehouseGroupId,
+          costTypeId: selectedPublicQuote.costTypeId,
+          effectiveDate: selectedPublicQuote.effectiveDate,
+          expiryDate: selectedPublicQuote.expiryDate,
+          status: 'active', // 新保存的卡片状态为 active
+          tiers: selectedPublicQuote.tiers.map((tier, i) => ({
+            ...tier,
+            price: parseFloat(inputs[i]?.value) || tier.publicPrice
+          }))
+        };
+
+        const newStart = new Date(newQuote.effectiveDate);
+        const newEnd = new Date(newQuote.expiryDate);
+
+        // 找出同客户+同配置的所有旧价卡
+        const sameGroupQuotes = customerQuotes.filter(q =>
+          q.customerId === newQuote.customerId &&
+          q.warehouseGroupId === newQuote.warehouseGroupId &&
+          q.costTypeId === newQuote.costTypeId
+        );
+
+        let hasOverlap = false;
+        const updatedQuotes = [];
+        let idCounter = 1; // 用于生成唯一ID的小计数器
+
+        // 遍历旧价卡，进行切割
+        for (const old of sameGroupQuotes) {
+          const oldStart = new Date(old.effectiveDate);
+          const oldEnd = new Date(old.expiryDate);
+
+          // 判断是否重叠：!(oldEnd < newStart || oldStart > newEnd)
+          if (oldEnd < newStart || oldStart > newEnd) {
+            // 无重叠 → 保留原样
+            updatedQuotes.push(old);
+          } else {
+            // 有重叠 → 标记并切割
+            hasOverlap = true;
+
+            // 1. 前段：[oldStart, newStart - 1秒]
+            if (oldStart < newStart) {
+              const preEnd = new Date(newStart.getTime() - 1000); // 减1秒
+              updatedQuotes.push({
+                ...old,
+                id: Date.now() + idCounter++, // 确保唯一
+                expiryDate: formatDateWithTime(preEnd),
+                status: 'active' // 切片也设为 active
+              });
+            }
+
+            // 2. 后段：[newEnd + 1秒, oldEnd]
+            if (oldEnd > newEnd) {
+              const postStart = new Date(newEnd.getTime() + 1000); // 加1秒
+              updatedQuotes.push({
+                ...old,
+                id: Date.now() + idCounter++,
+                effectiveDate: formatDateWithTime(postStart),
+                status: 'active' // 切片也设为 active
+              });
+            }
+
+            // 旧卡中间重叠部分被丢弃（由新卡覆盖）
+          }
+        }
+
+        // 将新卡加入
+        const finalQuotes = [...updatedQuotes, newQuote];
+
+        setCustomerQuotes(finalQuotes);
+
+        if (hasOverlap) {
+          message.success('✅ 时间重叠已自动处理，价卡已保存');
+        } else {
+          message.success('✅ 客户价卡保存成功');
+        }
+      };
+
+
+      const handleExport = (quoteToExport = null) => {
+        const quote = quoteToExport || (customerQuotes.length > 0 ? customerQuotes[0] : null);
+        if (!quote) {
+          message.warning('无可导出的价卡');
+          return;
+        }
+        const csvContent = [
+          ['阶梯范围', '专属价', '有效期'],
+          ...quote.tiers.map(t => [`${t.start}-${t.end === Infinity ? '∞' : t.end}m³`, `¥${t.price.toFixed(2)}`, `${quote.effectiveDate} ~ ${quote.expiryDate}`])
+        ].map(row => row.join(',')).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `客户专属价卡_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      };
+
+      const renderCustomerTiers = () => {
+        if (!selectedPublicQuote) return <div style={{ color: '#8c8c8c' }}>请选择一个公报价</div>;
+        return selectedPublicQuote.tiers.map((tier, i) => {
+          const discountedPrice = (tier.publicPrice * (globalDiscount / 100)).toFixed(2);
+          return (
+            <div key={i} className="tier-row">
+              <span>{tier.start}-{tier.end === Infinity ? '∞' : tier.end} m³</span>
+              <input
+                type="number"
+                name="price"
+                defaultValue={discountedPrice}
+                min="0.01"
+                step="0.01"
+                style={{ padding: '8px', border: '1px solid #d9d9d9', borderRadius: '4px', width: '100%' }}
+              />
+              <span style={{ color: '#8c8c8c' }}>{tier.note || ''}</span>
+            </div>
+          );
+        });
+      };
+
+      const currentCustomer = customers.find(c => c.id === selectedCustomerId);
+      const contextWg = warehouseGroups.find(w => w.id === customerContext.warehouseGroupId)?.name || '未知';
+      const contextCt = costTypes.find(c => c.id === customerContext.costTypeId)?.name || '未知';
+
+      const canGenerate = currentCost && 
+        currentCost.warehouseGroupId === customerContext.warehouseGroupId &&
+        currentCost.costTypeId === customerContext.costTypeId;
+
+      // ========================
+      // ✅ 优化预览：含时分秒 + 状态统一（隐藏拆分）+ 修复预览不显示问题
+      // ========================
+      const renderCustomerQuotesPreview = () => {
+         // 1. 修复点：始终基于当前选中的客户 ID 来筛选价卡
+        const currentCustomerQuotes = customerQuotes.filter(q => q.customerId === selectedCustomerId);
+
+        if (currentCustomerQuotes.length === 0) {
+          return <p style={{ textAlign: 'center', color: '#8c8c8c', marginTop: '24px' }}>暂无客户价卡，请先保存</p>;
+        }
+
+        // 2. 对当前客户的所有价卡按客户-仓库-成本类型进行分组
+        const groups = {};
+        currentCustomerQuotes.forEach(quote => {
+          const key = `${quote.customerId}-${quote.warehouseGroupId}-${quote.costTypeId}`;
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(quote);
+        });
+
+        const now = new Date(); // 获取当前时间用于状态判断
+
+        return Object.values(groups).map((group, groupIndex) => {
+          // 按生效日期排序
+          const sortedGroup = [...group].sort((a, b) => 
+            new Date(a.effectiveDate) - new Date(b.effectiveDate)
+          );
+
+          let currentActiveQuote = null; // 用于标记当前生效的价卡
+          
+          // 为每个价卡计算并附加显示状态和样式类
+          const enhancedQuotes = sortedGroup.map(quote => {
+            const effective = new Date(quote.effectiveDate);
+            const expiry = new Date(quote.expiryDate);
+            
+            let displayStatus = '';
+            let statusColor = '#bfbfbf';
+            let cardClass = '';
+
+            // 不再区分 'split' 状态，统一根据时间判断
+            if (now < effective) {
+              displayStatus = '待生效';
+              statusColor = '#faad14';
+              cardClass = 'pending';
+            } else if (now > expiry) {
+              displayStatus = '已过期';
+              statusColor = '#ff4d4f';
+              cardClass = 'expired';
+            } else {
+              displayStatus = '生效中'; // 包括了新卡和拆分后的片段
+              statusColor = '#52c41a';
+              cardClass = 'active';
+              // 如果还没有找到当前生效的价卡，则当前这个就是
+              if (!currentActiveQuote) currentActiveQuote = quote; 
+            }
+
+            return { ...quote, displayStatus, statusColor, cardClass };
+          });
+
+          // 获取分组信息用于标题
+          const first = enhancedQuotes[0];
+          const customer = customers.find(c => c.id === first.customerId);
+          const wg = warehouseGroups.find(g => g.id === first.warehouseGroupId);
+          const ct = costTypes.find(t => t.id === first.costTypeId);
+
+          return (
+            <div key={groupIndex} style={{ marginBottom: '28px' }}>
+              {/* 分组标题 */}
+              <div style={{
+                padding: '12px',
+                background: '#f0f7ff',
+                borderRadius: '8px',
+                borderLeft: '4px solid #1890ff',
+                marginBottom: '12px'
+              }}>
+                <strong>{customer?.name}</strong> · {wg?.name} - {ct?.name}
+              </div>
+
+              {/* 渲染该分组下的所有价卡 */}
+              {enhancedQuotes.map((quote) => {
+                const isExpanded = expandedQuoteId === quote.id;
+                return (
+                  <div key={quote.id} className={`quote-card ${quote.cardClass}`}>
+                    {/* 价卡头部：时间范围和状态 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <span>生效期：{quote.effectiveDate} ~ {quote.expiryDate}</span>
+                        {/* 状态徽章 */}
+                        <span
+                          className="status-badge"
+                          style={{ backgroundColor: quote.statusColor + '20', color: quote.statusColor }}
+                        >
+                          {quote.displayStatus}
+                        </span>
+                        {/* 当前生效标识 */}
+                        {currentActiveQuote?.id === quote.id && (
+                          <span
+                            className="status-badge"
+                            style={{ backgroundColor: '#52c41a20', color: '#52c41a', marginLeft: '8px' }}
+                          >
+                            当前生效
+                          </span>
+                        )}
+                      </div>
+                      {/* 展开/收起按钮 */}
+                      <button
+                        onClick={() => setExpandedQuoteId(isExpanded ? null : quote.id)}
+                        style={{
+                          background: isExpanded ? '#ff7875' : '#1890ff',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '4px 12px',
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {isExpanded ? '收起详情' : '查看详情'}
+                      </button>
+                    </div>
+
+                    {/* 价卡详情（展开时显示） */}
+                    {isExpanded && (
+                      <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px dashed #d9d9d9' }}>
+                        <table className="ant-table">
+                          <thead>
+                            <tr>
+                              <th>阶梯范围</th>
+                              <th>专属价（¥）</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {quote.tiers.map((t, i) => (
+                              <tr key={i}>
+                                <td>{t.start}–{t.end === Infinity ? '∞' : t.end} m³</td>
+                                <td>{t.price.toFixed(2)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                          <button
+                            onClick={() => handleExport(quote)}
+                            className="btn-primary"
+                            style={{ padding: '4px 16px', fontSize: '0.85rem' }}
+                          >
+                            导出Excel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        });
+      };
+
+      return (
+        <div className="app">
+          {/* 公报价配置 */}
+          <div className="card">
+            <h2 className="title">✨ 创建公报价</h2>
+
+            <div className="config-group">
+              <label>📦 仓群</label>
+              <select value={warehouseGroupId} disabled>
+                {warehouseGroups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            </div>
+
+            <div className="config-group">
+              <label>📊 成本类型</label>
+              <select value={costTypeId} disabled>
+                {filteredCostTypes.map(ct => <option key={ct.id} value={ct.id}>{ct.name} ({ct.unit})</option>)}
+              </select>
+            </div>
+
+            <div className="config-group">
+              <label>📅 开始日期</label>
+              <DatePicker
+                style={{ width: '100%' }}
+                value={moment(startDate)}
+                onChange={(date, dateString) => {
+                  if (dateString) setStartDate(dateString);
+                }}
+                allowClear={false}
+              />
+              <div style={{ fontSize: '0.85rem', color: '#8c8c8c', marginTop: '4px' }}>
+                有效期：{effectiveDate} 至 {expiryDate}
+              </div>
+            </div>
+
+            <div className="config-group">
+              <label>🏷️ 公报价名称（可选）</label>
+              <Input
+                placeholder="例如：双11大促价"
+                value={quoteName}
+                onChange={(e) => setQuoteName(e.target.value)}
+              />
+            </div>
+
+            <div className="config-group">
+              <label>💰 利润率</label>
+              <InputNumber
+                style={{ width: '100%' }}
+                value={profitMargin * 100}
+                onChange={(val) => setProfitMargin((val || 0) / 100)}
+                min={0}
+                max={200}
+                formatter={value => `${value}%`}
+                parser={value => value.replace('%', '')}
+              />
+            </div>
+
+            {!currentCost ? (
+              <button onClick={openCostModal} className="btn-primary" style={{ width: '100%', marginTop: '16px' }}>
+                ⚠️ 请先设置成本
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={generatePublicQuote} 
+                  className="btn-primary" 
+                  style={{ width: '100%', marginTop: '16px' }}
+                  disabled={!canGenerate}
+                >
+                  {canGenerate ? '生成公报价' : '配置不匹配'}
+                </button>
+                <div style={{ fontSize: '0.9rem', color: '#52c41a', marginTop: '8px' }}>
+                  ✅ 成本已设置：{currentCost.tiers.length} 个阶梯
+                </div>
+              </>
+            )}
+
+            <div className="debug-info">
+              📊 全局公报价总数: {publicQuotes.length}
+            </div>
+          </div>
+
+          {/* 客户价卡 */}
+          <div className="card">
+            <h2 className="title">🎯 客户专属价卡</h2>
+            <div className="config-group">
+              <label>选择客户</label>
+              <select 
+                value={selectedCustomerId} 
+                onChange={(e) => setSelectedCustomerId(Number(e.target.value))}
+              >
+                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div className="debug-info">
+              🔍 客户上下文: {contextWg} - {contextCt}
+            </div>
+
+            <div className="config-group">
+              <label>选择公报价（基准）</label>
+              <select
+                value={selectedPublicQuoteId !== null ? String(selectedPublicQuoteId) : ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedPublicQuoteId(val === '' ? null : Number(val));
+                }}
+              >
+                <option value="">-- 共 {availablePublicQuotes.length} 条 --</option>
+                {availablePublicQuotes.length === 0 ? (
+                  <option disabled>暂无匹配公报价</option>
+                ) : (
+                  availablePublicQuotes.map((q) => (
+                    <option key={q.id} value={String(q.id)}>
+                      {q.name} · {q.startDate}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className="config-group">
+              <label>整体折扣（%）</label>
+              <input
+                type="number"
+                value={globalDiscount}
+                onChange={(e) => setGlobalDiscount(parseFloat(e.target.value) || 100)}
+                min="0"
+                max="200"
+                step="1"
+              />
+            </div>
+
+            <div style={{ marginTop: '20px' }}>
+              <h3 style={{ marginBottom: '12px' }}>专属价明细</h3>
+              <div id="customerTiersContainer">
+                {renderCustomerTiers()}
+              </div>
+            </div>
+
+            <button onClick={handleSaveCustomerQuote} className="btn-primary" style={{ width: '100%', marginTop: '20px' }}>
+              保存客户价卡
+            </button>
+          </div>
+
+          {/* 客户专属价卡预览 —— ✅ 含时分秒 + 状态统一 + 已修复显示问题 */}
+          <div className="card" style={{ gridColumn: '1 / -1' }}>
+            <div className="preview-card">
+              <h3>📦 客户专属价卡（预览）</h3>
+              {renderCustomerQuotesPreview()}
+            </div>
+          </div>
+
+          {/* 成本设置模态框 */}
+          <Modal
+            title="⚙️ 设置阶梯成本"
+            visible={showCostModal}
+            onOk={saveCost}
+            onCancel={() => setShowCostModal(false)}
+            okText="保存成本"
+            cancelText="取消"
+          >
+            <div>
+              {tempTiers.map((tier, i) => (
+                <div key={i} className="tier-row" style={{ marginBottom: '12px' }}>
+                  <span>{tier.start}–{tier.end === Infinity ? '∞' : tier.end} m³</span>
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={tier.unitCost}
+                    onChange={(val) => {
+                      const newTiers = [...tempTiers];
+                      newTiers[i].unitCost = val || 0;
+                      setTempTiers(newTiers);
+                    }}
+                    min={0}
+                    step={0.1}
+                    formatter={value => `¥ ${value}`}
+                    parser={value => value.replace('¥ ', '')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTempTiers(tempTiers.filter((_, idx) => idx !== i))}
+                    style={{ background: '#ff4d4f', color: 'white', border: 'none', borderRadius: '4px', width: '28px', height: '28px' }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  const last = tempTiers[tempTiers.length - 1];
+                  const nextStart = last.end === Infinity ? 1000 : last.end + 1;
+                  setTempTiers([...tempTiers, { start: nextStart, end: nextStart + 499, unitCost: 5 }]);
+                }}
+                style={{ marginTop: '12px', background: '#f0f0f0', border: '1px dashed #d9d9d9', padding: '6px 12px', borderRadius: '4px' }}
+              >
+                + 添加阶梯
+              </button>
+            </div>
+          </Modal>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
+
+

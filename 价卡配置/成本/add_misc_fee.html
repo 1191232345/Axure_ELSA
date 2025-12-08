@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>新增杂费</title>
+  <title>新增附加费</title>
   <!-- 引入必要依赖 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -155,22 +155,16 @@
       </div>
     </div>
 
-    <!-- 杂费内容 -->
+    <!-- 附加费内容 -->
     <div id="miscFeeContent">
-      <!-- 杂费类型卡片 -->
+      <!-- 附加费类型卡片 -->
       <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
-        <h2 class="text-base font-bold text-neutral-700 mb-4">杂费类型</h2>
+        <h2 class="text-base font-bold text-neutral-700 mb-4">附加费类型</h2>
         <div class="flex items-center space-x-4">
-          <select id="miscFeeType" name="miscFeeType" class="w-48 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-            <option value="卸货费">卸货费</option>
-          </select>
           <select id="miscFeeSubType" name="miscFeeSubType" class="w-48 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-            <option value="拆托费">拆托费</option>
-            <option value="分货费">分货费</option>
-            <option value="清点费">清点费</option>
-            <option value="超箱费">超箱费</option>
-            <option value="超重费">超重费</option>
-            <option value="SKU超量费">SKU超量费</option>
+            <option value="卸货费">卸货费</option>
+            <option value="仓储费">仓储费</option>
+            <option value="包装费">包装费</option>
           </select>
         </div>
       </div>
@@ -178,10 +172,10 @@
       <!-- 基本信息卡片 -->
       <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6 mt-6">
         <h2 class="text-base font-bold text-neutral-700 mb-4">基本信息</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label for="miscFeeName" class="block text-sm font-medium text-neutral-600 mb-1">名称</label>
-              <input type="text" id="miscFeeName" value="这是一个卸货费" placeholder="请输入杂费名称" 
+              <input type="text" id="miscFeeName" value="这是一个卸货费" placeholder="请输入附加费名称" 
                      class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
             </div>
             <div>
@@ -193,17 +187,22 @@
                 <option value="美南仓群">美南仓群</option>
               </select>
             </div>
+            <div>
+              <label for="profitMargin" class="block text-sm font-medium text-neutral-600 mb-1">利润率（%）</label>
+              <input type="number" id="profitMargin" value="15" placeholder="请输入利润率" min="0" max="100" step="0.1"
+                     class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            </div>
         </div>
         <div class="mt-4">
           <label for="description" class="block text-sm font-medium text-neutral-600 mb-1">描述</label>
-          <textarea id="description" rows="3" placeholder="请输入杂费描述" value="货物卸货服务收取的费用"
+          <textarea id="description" rows="3" placeholder="请输入附加费描述" value="货物卸货服务收取的费用"
                     class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300"></textarea>
         </div>
       </div>
 
       <!-- 单价设置 -->
       <div class="space-y-6 mt-6">
-        <h2 class="text-base font-bold text-neutral-700">通用阶梯式费用设置</h2>
+        <h2 class="text-base font-bold text-neutral-700">价格设置</h2>
         
         <!-- 阶梯式费用卡片 -->
         <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
@@ -364,28 +363,42 @@
     function bindEvents() {
       // 返回按钮点击事件
       document.getElementById('backBtn').addEventListener('click', function() {
-        window.location.href = '杂费维护.html';
+        window.location.href = 'index.html?tab=miscFee';
       });
       
-      // 杂费类型选择事件监听，控制子类型显示
-      const miscFeeTypeSelect = document.getElementById('miscFeeType');
+      // 附加费子类型选择器
       const miscFeeSubTypeSelect = document.getElementById('miscFeeSubType');
       
-      // 设置子类型选择框的初始显示状态
-      if (miscFeeTypeSelect.value === '卸货费') {
-        miscFeeSubTypeSelect.classList.remove('hidden');
+      // 确保子类型选择框始终显示
+      miscFeeSubTypeSelect.classList.remove('hidden');
+      
+      // 检查URL参数，判断是否为编辑模式或查看模式
+      const urlParams = new URLSearchParams(window.location.search);
+      const type = urlParams.get('type');
+      const mode = urlParams.get('mode');
+      const saveBtn = document.getElementById('saveBtn');
+      
+      if (mode === 'view') {
+        // 查看模式：隐藏保存按钮并禁用所有输入框
+        saveBtn.classList.add('hidden');
+        
+        // 禁用所有输入框（input、select、textarea）
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+          input.disabled = true;
+        });
       } else {
-        miscFeeSubTypeSelect.classList.add('hidden');
+        // 编辑模式：显示保存按钮
+        saveBtn.classList.remove('hidden');
       }
       
-      // 当父类型变化时控制子类型显示
-      miscFeeTypeSelect.addEventListener('change', function() {
-        if (this.value === '卸货费') {
-          miscFeeSubTypeSelect.classList.remove('hidden');
-        } else {
-          miscFeeSubTypeSelect.classList.add('hidden');
+      // 如果有附加费类型参数，自动选择该类型
+      if (type) {
+        const select = document.getElementById('miscFeeSubType');
+        if (select) {
+          select.value = type;
         }
-      });
+      }
       
       // 适用范围选择事件监听 - 添加空值检查以避免错误
       document.getElementById('applyScope').addEventListener('change', function() {
@@ -468,7 +481,7 @@
       // 取消按钮点击事件
       document.getElementById('cancelBtn').addEventListener('click', function() {
         if (confirm('确定要取消吗？未保存的内容将丢失。')) {
-          window.location.href = '杂费维护.html';
+          window.location.href = 'index.html';
         }
       });
       
@@ -554,19 +567,17 @@
       });
     }
     
-    // 保存杂费
+    // 保存附加费
     function saveMiscFee() {
       // 获取表单数据
       // 获取选中的仓库
       const selectedWarehouseCheckboxes = document.querySelectorAll('input[name="warehouse"]:checked');
       const selectedWarehouses = Array.from(selectedWarehouseCheckboxes).map(checkbox => checkbox.value);
       
-      // 构建杂费数据
-      const miscFeeType = document.getElementById('miscFeeType').value;
+      // 构建附加费数据
       const miscFeeSubType = document.getElementById('miscFeeSubType').value;
       
       const miscFeeData = {
-        type: miscFeeType,
         subType: miscFeeSubType,
         name: document.getElementById('miscFeeName').value,
         applyScope: document.getElementById('applyScope').value,
@@ -581,12 +592,12 @@
       
       // 验证必填字段
       if (!miscFeeData.type) {
-        alert('请选择杂费类型');
+        alert('请选择附加费类型');
         return;
       }
       
       if (!miscFeeData.name) {
-        alert('请输入杂费名称');
+        alert('请输入附加费名称');
         return;
       }
       
@@ -597,13 +608,13 @@
       }
       
       // 模拟保存操作
-      console.log('保存杂费数据:', miscFeeData);
+      console.log('保存附加费数据:', miscFeeData);
       
       // 显示保存成功提示
-      alert('杂费保存成功！');
+      alert('附加费保存成功！');
       
-      // 跳转到杂费维护页面
-      window.location.href = '杂费维护.html';
+      // 跳转到附加费维护页面
+      window.location.href = '附加费维护.html';
     }
     
     // 获取阶梯式费用配置

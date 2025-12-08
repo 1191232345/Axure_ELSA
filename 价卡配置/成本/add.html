@@ -162,15 +162,17 @@
         <h2 class="text-base font-bold text-neutral-700 mb-4">成本类型</h2>
         <div class="flex items-center">
           <select id="priceCardType" name="priceCardType" class="w-64 px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
-            <option value="卸货费">卸货费</option>
-          </select>
+        <option value="卸货费">卸货费</option>
+        <option value="仓储费">仓储费</option>
+        <option value="快递费">快递费</option>
+      </select>
         </div>
       </div>
       
       <!-- 基本信息卡片 -->
       <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
         <h2 class="text-base font-bold text-neutral-700 mb-4">基本信息</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label for="priceCardName" class="block text-sm font-medium text-neutral-600 mb-1">名称</label>
             <input type="text" id="priceCardName" value="这是一个成本名称" placeholder="请输入成本名称" 
@@ -184,6 +186,11 @@
               <option value="特定客户">美西仓群</option>
               <option value="特定客户">美南仓群</option>
             </select>
+          </div>
+          <div>
+            <label for="profitMargin" class="block text-sm font-medium text-neutral-600 mb-1">利润率（%）</label>
+            <input type="number" id="profitMargin" value="15" placeholder="请输入利润率" min="0" max="100" step="0.1"
+                   class="w-full px-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
           </div>
           <!-- 特定仓库选择区域，默认隐藏 -->
           <div id="warehouseSelection" class="hidden md:col-span-2">
@@ -223,10 +230,10 @@
 
       <!-- 单价设置 -->
       <div class="space-y-6">
-        <h2 class="text-base font-bold text-neutral-700">单价设置</h2>
+        <h2 class="text-base font-bold text-neutral-700">价格设置</h2>
         
-        <!-- 整柜单成本片 -->
-        <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
+        <!-- 整柜单价项目 -->
+        <div id="containerPriceSection" class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
           <h3 class="text-sm font-medium text-neutral-600 mb-3">整柜</h3>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse">
@@ -275,7 +282,7 @@
         </div>
         
         <!-- 散货单成本片 -->
-        <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
+        <div id="bulkPriceSection" class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
           <h3 class="text-sm font-medium text-neutral-600 mb-3">散货</h3>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse">
@@ -311,7 +318,7 @@
         </div>
         
         <!-- 快递单成本片 -->
-        <div class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
+        <div id="expressPriceSection" class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6">
           <h3 class="text-sm font-medium text-neutral-600 mb-3">快递</h3>
           <div class="overflow-x-auto">
             <table class="w-full border-collapse">
@@ -344,7 +351,70 @@
               </tbody>
             </table>
           </div>
+        </div>
+        
+        <!-- 仓储费阶梯式收费 -->
+        <div id="storagePriceSection" class="bg-white border border-neutral-100 rounded-lg shadow-sm p-6 hidden">
+          <h3 class="text-sm font-medium text-neutral-600 mb-3">仓储费</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-neutral-50 border-b border-neutral-200">
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">单位</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">起始数量</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">结束数量</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">价格</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">备注</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-12">操作</th>
+                </tr>
+              </thead>
+              <tbody id="storagePriceList">
+                <!-- 阶梯式费用项目将通过JS动态添加 -->
+                <tr class="border-b border-neutral-200 container-price-item">
+                  <td class="px-4 py-3">
+                    <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300" disabled>
+                      <option value="箱">箱</option>
+                      <option value="托">托</option>
+                      <option value="件">件</option>
+                      <option value="kg">kg</option>
+                      <option value="m³" selected>m³</option>
+                    </select>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="起始数量" value="1"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="1" placeholder="结束数量" value="30"
+                             class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="relative">
+                      <input type="number" step="0.01" placeholder="请输入价格" value="0"
+                             class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <input type="text" placeholder="可选" value="免仓期"
+                           class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+                  </td>
+                  <td class="px-4 py-3">
+                    <button type="button" class="remove-container-item p-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-all-300">
+                      <i class="fa fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          <button type="button" id="addStoragePrice" class="mt-3 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-md text-sm hover:bg-neutral-200 transition-all-300 flex items-center">
+            <i class="fa fa-plus mr-1"></i> 添加阶梯
+          </button>
         </div>
       </div>
     </div>
@@ -363,6 +433,33 @@
       // const formattedOneYearLater = oneYearLater.toISOString().split('T')[0];
       // document.getElementById('validTo').value = formattedOneYearLater;
       
+      // 检查URL参数，判断是否为查看模式
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode');
+      const type = urlParams.get('type');
+      
+      // 如果是查看模式，隐藏保存按钮并禁用所有输入框
+      const saveBtn = document.getElementById('saveBtn');
+      if (mode === 'view' && saveBtn) {
+        saveBtn.classList.add('hidden');
+        
+        // 禁用所有输入框（input、select、textarea）
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+          input.disabled = true;
+        });
+      }
+      
+      // 如果有成本类型参数，自动选择该类型
+      if (type) {
+        const select = document.getElementById('priceCardType');
+        if (select) {
+          select.value = type;
+          // 触发change事件以显示相应的价格设置部分
+          select.dispatchEvent(new Event('change'));
+        }
+      }
+      
       // 绑定事件
       bindEvents();
     });
@@ -377,8 +474,30 @@
       // 成本类型选择事件
       document.getElementById('priceCardType').addEventListener('change', function() {
         const priceCardContent = document.getElementById('priceCardContent');
+        const containerPriceSection = document.getElementById('containerPriceSection');
+        const bulkPriceSection = document.getElementById('bulkPriceSection');
+        const expressPriceSection = document.getElementById('expressPriceSection');
+        const storagePriceSection = document.getElementById('storagePriceSection');
+        
         if (this.value) {
           priceCardContent.classList.remove('hidden');
+          
+          // 根据不同的成本类型显示不同的价格设置部分
+          if (this.value === '卸货费') {
+            // 显示整柜、散货和快递价格设置
+            containerPriceSection.classList.remove('hidden');
+            bulkPriceSection.classList.remove('hidden');
+            expressPriceSection.classList.remove('hidden');
+            // 隐藏仓储费阶梯式收费
+            storagePriceSection.classList.add('hidden');
+          } else if (this.value === '仓储费') {
+            // 隐藏整柜、散货和快递价格设置
+            containerPriceSection.classList.add('hidden');
+            bulkPriceSection.classList.add('hidden');
+            expressPriceSection.classList.add('hidden');
+            // 显示仓储费阶梯式收费
+            storagePriceSection.classList.remove('hidden');
+          }
         } else {
           priceCardContent.classList.add('hidden');
         }
@@ -447,13 +566,21 @@
       //   savePriceCard('published');
       // });
       
-      // 添加柜型按钮点击事件
+      // 添加整柜阶梯按钮点击事件
       document.getElementById('addContainerPrice').addEventListener('click', function() {
         addContainerPriceItem();
       });
       
-      // 初始绑定删除柜型按钮事件
+      // 初始绑定整柜删除阶梯按钮事件
       bindRemoveContainerPriceEvents();
+      
+      // 添加仓储费阶梯按钮点击事件
+      document.getElementById('addStoragePrice').addEventListener('click', function() {
+        addStoragePriceItem();
+      });
+      
+      // 初始绑定仓储费删除阶梯按钮事件
+      bindRemoveStoragePriceEvents();
     }
     
     // 添加柜型单价项目
@@ -505,7 +632,7 @@
       bindRemoveContainerPriceEvents();
     }
     
-    // 绑定删除柜型按钮事件
+    // 绑定删除阶梯按钮事件
     function bindRemoveContainerPriceEvents() {
       // 先移除所有现有事件监听器（通过事件委托方式实现）
       const containerPriceList = document.getElementById('containerPriceList');
@@ -521,7 +648,83 @@
           if (itemCount > 1) {
             event.target.closest('.container-price-item').remove();
           } else {
-            alert('至少需要保留一个柜型');
+            alert('至少需要保留一个阶梯');
+          }
+        }
+      });
+    }
+    
+    // 添加仓储费阶梯费用项目
+    function addStoragePriceItem() {
+      // 每次都重新获取最新的storagePriceList元素
+      const storagePriceList = document.getElementById('storagePriceList');
+      const itemCount = storagePriceList.querySelectorAll('.container-price-item').length + 1;
+      
+      const newRow = document.createElement('tr');
+      newRow.className = 'border-b border-neutral-200 container-price-item';
+      newRow.innerHTML = `
+        <td class="px-4 py-3">
+          <select class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300" disabled>
+            <option value="箱">箱</option>
+            <option value="托">托</option>
+            <option value="件">件</option>
+            <option value="kg">kg</option>
+            <option value="m³" selected>m³</option>
+          </select>
+        </td>
+        <td class="px-4 py-3">
+          <div class="relative">
+            <input type="number" step="1" placeholder="起始数量" 
+                   class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="relative">
+            <input type="number" step="1" placeholder="结束数量" 
+                   class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="relative">
+            <input type="number" step="0.01" placeholder="请输入价格" 
+                   class="w-full pl-8 pr-4 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">$</span>
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <input type="text" placeholder="可选" 
+                 class="w-full px-3 py-2 border border-neutral-200 rounded-md text-sm focus:border-primary focus:outline-none transition-all-300">
+        </td>
+        <td class="px-4 py-3">
+          <button type="button" class="remove-container-item p-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-all-300">
+            <i class="fa fa-trash text-xs"></i>
+          </button>
+        </td>
+      `;
+      
+      storagePriceList.appendChild(newRow);
+      
+      // 绑定新添加的删除按钮事件
+      bindRemoveStoragePriceEvents();
+    }
+    
+    // 绑定仓储费删除阶梯按钮事件
+    function bindRemoveStoragePriceEvents() {
+      // 先移除所有现有事件监听器（通过事件委托方式实现）
+      const storagePriceList = document.getElementById('storagePriceList');
+      
+      // 移除所有现有事件监听器
+      const newContainer = storagePriceList.cloneNode(true);
+      storagePriceList.parentNode.replaceChild(newContainer, storagePriceList);
+      
+      // 重新绑定事件委托
+      newContainer.addEventListener('click', function(event) {
+        if (event.target.closest('.remove-container-item')) {
+          const itemCount = newContainer.querySelectorAll('.container-price-item').length;
+          if (itemCount > 1) {
+            event.target.closest('.container-price-item').remove();
+          } else {
+            alert('至少需要保留一个阶梯');
           }
         }
       });
@@ -531,33 +734,41 @@
     function savePriceCard() {
       // 获取表单数据
       // 获取选中的仓库
-    const selectedWarehouseCheckboxes = document.querySelectorAll('input[name="warehouse"]:checked');
-    const selectedWarehouses = Array.from(selectedWarehouseCheckboxes).map(checkbox => checkbox.value);
+      const selectedWarehouseCheckboxes = document.querySelectorAll('input[name="warehouse"]:checked');
+      const selectedWarehouses = Array.from(selectedWarehouseCheckboxes).map(checkbox => checkbox.value);
+      const priceCardType = document.getElementById('priceCardType').value;
     
-    // 构建成本数据
-    const priceCardData = {
-      type: document.getElementById('priceCardType').value,
-      name: document.getElementById('priceCardName').value,
-      applyScope: document.getElementById('applyScope').value,
-      warehouses: selectedWarehouses,
+      // 构建成本数据
+      const priceCardData = {
+        type: priceCardType,
+        name: document.getElementById('priceCardName').value,
+        applyScope: document.getElementById('applyScope').value,
+        warehouses: selectedWarehouses,
         // 使用默认日期值，因为页面中没有日期字段
         validFrom: new Date().toISOString().split('T')[0] + ' 00:00:00',
         validTo: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0] + ' 23:59:59',
         description: document.getElementById('description').value,
-        calculationLogic: '根据成本类型和适用范围计算',
-        containerConfig: getContainerConfig(),
-        bulkConfig: {
+        status: 'pending' // 默认保存为未生效状态
+      };
+      
+      // 根据成本类型添加不同的配置
+      if (priceCardType === '卸货费') {
+        priceCardData.calculationLogic = '根据成本类型和适用范围计算';
+        priceCardData.containerConfig = getContainerConfig();
+        priceCardData.bulkConfig = {
           price: parseFloat(document.getElementById('bulkPrice').value) || 0,
           unit: document.getElementById('bulkUnit').value,
           remark: document.getElementById('bulkRemark').value
-        },
-        expressConfig: {
+        };
+        priceCardData.expressConfig = {
           price: parseFloat(document.getElementById('expressPrice').value) || 0,
           unit: document.getElementById('expressUnit').value,
           remark: document.getElementById('expressRemark').value
-        },
-        status: 'pending' // 默认保存为未生效状态
-      };
+        };
+      } else if (priceCardType === '仓储费') {
+        priceCardData.calculationLogic = '根据阶梯式数量计算仓储费';
+        priceCardData.storageConfig = getStorageConfig();
+      }
       
       // 验证必填字段
       if (!priceCardData.type) {
@@ -588,6 +799,7 @@
       containerItems.forEach((item) => {
         const select = item.querySelector('select');
         const inputs = item.querySelectorAll('input');
+        
         const type = select.value;
         const price = parseFloat(inputs[0].value) || 0;
         const remark = inputs[1].value;
@@ -602,6 +814,33 @@
       });
       
       return containerConfig;
+    }
+    
+    // 获取仓储费阶梯式收费配置
+    function getStorageConfig() {
+      const storageConfig = [];
+      const storageItems = document.querySelectorAll('#storagePriceList .container-price-item');
+      
+      storageItems.forEach((item) => {
+        const select = item.querySelector('select');
+        const inputs = item.querySelectorAll('input');
+        
+        const unit = select.value;
+        const startQuantity = parseInt(inputs[0].value) || 0;
+        const endQuantity = parseInt(inputs[1].value) || 0;
+        const price = parseFloat(inputs[2].value) || 0;
+        const remark = inputs[3].value;
+        
+        storageConfig.push({
+          unit: unit,
+          startQuantity: startQuantity,
+          endQuantity: endQuantity,
+          price: price,
+          remark: remark
+        });
+      });
+      
+      return storageConfig;
     }
   </script>
   
