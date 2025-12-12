@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户设置</title>
+  <!-- 引入外部资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-danger {
+        @apply bg-white text-danger border border-danger px-4 py-2 rounded-lg transition-all hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-danger/50 focus:ring-offset-2;
+      }
+      .input-primary {
+        @apply w-full px-4 py-2.5 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .form-group {
+        @apply mb-4;
+      }
+      .data-table {
+        @apply min-w-full divide-y divide-border;
+      }
+      .data-table th {
+        @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+      }
+      .data-table td {
+        @apply px-6 py-4 whitespace-nowrap text-sm text-gray-600;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter text-dark">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8">
+    <!-- 返回按钮 -->
+    <button id="btn-back" class="flex items-center text-primary hover:text-primary-light mb-6">
+      <i class="fa fa-arrow-left mr-2"></i> 返回
+    </button>
+    
+    <!-- 客户基本信息 -->
+    <div class="bg-white p-6 rounded-lg shadow-card mb-8">
+      <h2 class="text-lg font-semibold mb-4">客户基本信息</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
+          <input type="text" id="customerCode" class="input-primary" value="CUST001" readonly>
+        </div>
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">客户名称</label>
+          <input type="text" id="customerName" class="input-primary" value="客户A" readonly>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 收费项列表 -->
+    <div class="bg-white p-6 rounded-lg shadow-card">
+      <!-- 标题 -->
+      <h2 class="text-lg font-semibold mb-4">收费项列表</h2>
+      
+      <!-- 检索条件 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">费用类型</label>
+          <select id="search-fee-type" class="input-primary">
+            <option value="全部">全部</option>
+            <option value="基础收费">基础收费</option>
+            <option value="增值服务">增值服务</option>
+            <option value="其他收费">其他收费</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">收费项目</label>
+          <select id="search-fee-item" class="input-primary">
+            <option value="全部">全部</option>
+            <option value="卸货费">卸货费</option>
+            <option value="搬运费">搬运费</option>
+            <option value="存储费">存储费</option>
+            <option value="包装费">包装费</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">等级名称</label>
+          <input type="text" id="search-level-name" class="input-primary" placeholder="请输入等级名称">
+        </div>
+        <div class="form-group flex items-end gap-2">
+          <button id="btn-search" class="btn-primary w-full">查询</button>
+          <button id="btn-reset" class="btn-secondary w-full">重置</button>
+        </div>
+      </div>
+      
+      <!-- 新增按钮 -->
+      <div class="flex justify-start mb-6">
+        <button id="btn-add-association" class="btn-primary">
+          <i class="fa fa-plus mr-2"></i> 新增关联
+        </button>
+      </div>
+      
+      <!-- 数据表格 -->
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead class="bg-gray-50">
+            <tr>
+              <th>状态</th>
+              <th>仓库</th>
+              <th>收费项</th>
+              <th>费用类型</th>
+              <th>等级</th>
+              <th>生效时间</th>
+              <th>失效时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="text-green-600 font-medium">生效</span></td>
+              <td>DE001</td>
+              <td>卸货费</td>
+              <td>基础收费</td>
+              <td>1</td>
+              <td>2024/12/12 00:00:00</td>
+              <td>2025/12/11 23:59:59</td>
+              <td>
+                <button class="text-danger hover:text-danger/90 transition-colors">
+                  取消关联
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="text-green-600 font-medium">生效</span></td>
+              <td>MD001</td>
+              <td>卸货费</td>
+              <td>基础收费</td>
+              <td>2</td>
+              <td>2024/12/12 00:00:00</td>
+              <td>2025/12/11 23:59:59</td>
+              <td>
+                <button class="text-danger hover:text-danger/90 transition-colors">
+                  取消关联
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="text-green-600 font-medium">生效</span></td>
+              <td>DE001</td>
+              <td>快递费</td>
+              <td>基础收费</td>
+              <td>1</td>
+              <td>2024/12/12 00:00:00</td>
+              <td>2025/12/11 23:59:59</td>
+              <td>
+                <button class="text-danger hover:text-danger/90 transition-colors">
+                  取消关联
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td><span class="text-green-600 font-medium">生效</span></td>
+              <td>MD001</td>
+              <td>快递费</td>
+              <td>基础收费</td>
+              <td>2</td>
+              <td>2024/12/12 00:00:00</td>
+              <td>2025/12/11 23:59:59</td>
+              <td>
+                <button class="text-danger hover:text-danger/90 transition-colors">
+                  取消关联
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页 -->
+      <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-gray-600">
+          总共 <span class="font-medium">85</span> 个项目
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1 rounded border border-border bg-white text-gray-600 hover:bg-gray-50">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <button class="px-3 py-1 rounded bg-primary text-white">1</button>
+          <button class="px-3 py-1 rounded border border-border bg-white text-gray-600 hover:bg-gray-50">2</button>
+          <button class="px-3 py-1 rounded border border-border bg-white text-gray-600 hover:bg-gray-50">3</button>
+          <button class="px-3 py-1 rounded border border-border bg-white text-gray-600 hover:bg-gray-50">4</button>
+          <button class="px-3 py-1 rounded border border-border bg-white text-gray-600 hover:bg-gray-50">5</button>
+          <button class="px-3 py-1 rounded border border-border bg-white text-gray-600 hover:bg-gray-50">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 确认弹窗 -->
+  <div id="confirm-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
+    <div class="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div class="text-center mb-4">
+        <h3 class="text-lg font-semibold">确认取消关联</h3>
+        <p class="text-gray-600 mt-2">确定要取消该收费项的关联吗？此操作不可恢复。</p>
+      </div>
+      
+      <div class="flex justify-center gap-3 mt-6">
+        <button id="btn-confirm-cancel" class="btn-secondary px-6">取消</button>
+        <button id="btn-confirm-delete" class="btn-danger px-6">确认</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新增关联模态框 -->
+  <div id="association-modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
+    <div class="relative bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">新增</h3>
+        <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="association-form" class="space-y-4">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">*费用类型</label>
+          <select id="fee-type" class="input-primary" required>
+            <option value="基础收费">基础收费</option>
+            <option value="增值服务">增值服务</option>
+            <option value="其他收费">其他收费</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">*仓库</label>
+          <select id="warehouse" class="input-primary" required>
+            <option value="DEMO">DEMO</option>
+            <option value="DE001">DE001</option>
+            <option value="MD001">MD001</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">*收费项</label>
+          <select id="fee-item" class="input-primary" required>
+            <option value="卸货费">卸货费</option>
+            <option value="搬运费">搬运费</option>
+            <option value="存储费">存储费</option>
+            <option value="包装费">包装费</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">*等级</label>
+          <select id="fee-level" class="input-primary" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">*生效时间</label>
+          <div class="relative">
+            <input type="date" id="effective-date" class="input-primary pr-10" required>
+            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <i class="fa fa-calendar"></i>
+            </span>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" id="btn-cancel" class="btn-secondary px-6">取消</button>
+          <button type="submit" class="btn-primary px-6">确定</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // 获取URL参数
+    function getUrlParams() {
+      try {
+        const params = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        for (const [key, value] of urlParams.entries()) {
+          params[key] = value;
+        }
+        return params;
+      } catch (error) {
+        console.error('获取URL参数时发生错误：', error);
+        return {};
+      }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取URL参数
+      const params = getUrlParams();
+      const customerCode = params.customerCode;
+      
+      // 设置客户信息
+      if (customerCode) {
+        document.getElementById('customerCode').value = customerCode;
+        // 这里可以根据客户代码加载客户详细信息
+        // 暂时使用模拟数据
+        document.getElementById('customerName').value = customerCode;
+        document.getElementById('contactPerson').value = '联系人';
+      }
+      
+      // 返回按钮事件
+      const backBtn = document.getElementById('btn-back');
+      if (backBtn) {
+        backBtn.addEventListener('click', function() {
+          window.location.href = 'index.html';
+        });
+      }
+      
+      // 新增关联模态框相关元素
+      const addAssociationBtn = document.getElementById('btn-add-association');
+      const associationModal = document.getElementById('association-modal');
+      const closeModalBtn = document.getElementById('btn-close-modal');
+      const cancelBtn = document.getElementById('btn-cancel');
+      const associationForm = document.getElementById('association-form');
+      
+      // 打开模态框
+      if (addAssociationBtn && associationModal) {
+        addAssociationBtn.addEventListener('click', function() {
+          associationModal.classList.remove('hidden');
+        });
+      }
+      
+      // 关闭模态框
+      const closeModal = function() {
+        if (associationModal) {
+          associationModal.classList.add('hidden');
+        }
+      };
+      
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+      }
+      
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+      }
+      
+      // 点击模态框外部关闭
+      if (associationModal) {
+        associationModal.addEventListener('click', function(e) {
+          if (e.target === associationModal) {
+            closeModal();
+          }
+        });
+      }
+      
+      // 表单提交处理
+      if (associationForm) {
+        associationForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // 获取表单数据
+          const feeType = document.getElementById('fee-type').value;
+          const warehouse = document.getElementById('warehouse').value;
+          const feeItem = document.getElementById('fee-item').value;
+          const feeLevel = document.getElementById('fee-level').value;
+          const effectiveDate = document.getElementById('effective-date').value;
+          
+          // 计算失效时间（生效时间加1年）
+          const effDate = new Date(effectiveDate);
+          const expDate = new Date(effDate);
+          expDate.setFullYear(expDate.getFullYear() + 1);
+          expDate.setDate(expDate.getDate() - 1);
+          expDate.setHours(23, 59, 59);
+          
+          const formattedExpDate = expDate.getFullYear() + '/' + 
+                                 (expDate.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                                 expDate.getDate().toString().padStart(2, '0') + ' ' + 
+                                 expDate.getHours().toString().padStart(2, '0') + ':' + 
+                                 expDate.getMinutes().toString().padStart(2, '0') + ':' + 
+                                 expDate.getSeconds().toString().padStart(2, '0');
+          
+          const formattedEffDate = effDate.getFullYear() + '/' + 
+                                 (effDate.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                                 effDate.getDate().toString().padStart(2, '0') + ' 00:00:00';
+          
+          // 将新数据添加到表格
+          const tableBody = document.querySelector('.data-table tbody');
+          if (tableBody) {
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+              <td><span class="text-green-600 font-medium">生效</span></td>
+              <td>${warehouse}</td>
+              <td>${feeItem}</td>
+              <td>${feeType}</td>
+              <td>${feeLevel}</td>
+              <td>${formattedEffDate}</td>
+              <td>${formattedExpDate}</td>
+              <td>
+                <button class="text-danger hover:text-danger/90 transition-colors cancel-association-btn">
+                  取消关联
+                </button>
+              </td>
+            `;
+            tableBody.appendChild(newRow);
+            
+            // 为新添加的取消关联按钮绑定事件
+            const newCancelBtn = newRow.querySelector('.cancel-association-btn');
+            newCancelBtn.addEventListener('click', function() {
+              currentRowToDelete = newRow;
+              openConfirmModal(newRow);
+            });
+          }
+          
+          // 这里可以添加数据处理逻辑
+          console.log('新增关联:', {
+            feeType: feeType,
+            warehouse: warehouse,
+            feeItem: feeItem,
+            feeLevel: feeLevel,
+            effectiveDate: effectiveDate
+          });
+          
+          // 重置表单
+          this.reset();
+          
+          // 关闭模态框
+          closeModal();
+        });
+      }
+      
+      // 确认弹窗相关元素
+      const confirmModal = document.getElementById('confirm-modal');
+      const confirmCancelBtn = document.getElementById('btn-confirm-cancel');
+      const confirmDeleteBtn = document.getElementById('btn-confirm-delete');
+      
+      // 存储当前要删除的行
+      let currentRowToDelete = null;
+      
+      // 打开确认弹窗
+      const openConfirmModal = function(row) {
+        if (confirmModal) {
+          confirmModal.classList.remove('hidden');
+          currentRowToDelete = row;
+        }
+      };
+      
+      // 关闭确认弹窗
+      const closeConfirmModal = function() {
+        if (confirmModal) {
+          confirmModal.classList.add('hidden');
+          currentRowToDelete = null;
+        }
+      };
+      
+      if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', closeConfirmModal);
+      }
+      
+      // 点击确认取消关联
+      if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+          if (currentRowToDelete) {
+            // 从DOM中移除该行
+            currentRowToDelete.remove();
+            
+            // 关闭确认弹窗
+            closeConfirmModal();
+            
+            // 这里可以添加更新数据库或其他业务逻辑
+            console.log('已取消关联');
+          }
+        });
+      }
+      
+      // 点击确认弹窗外部关闭
+      if (confirmModal) {
+        confirmModal.addEventListener('click', function(e) {
+          if (e.target === confirmModal) {
+            closeConfirmModal();
+          }
+        });
+      }
+      
+      // 为所有取消关联按钮添加点击事件
+      const cancelAssociationBtns = document.querySelectorAll('.text-danger');
+      cancelAssociationBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // 获取当前按钮所在的行
+          const row = this.closest('tr');
+          openConfirmModal(row);
+        });
+      });
+      
+      // 检索功能实现
+      const searchFeeType = document.getElementById('search-fee-type');
+      const searchFeeItem = document.getElementById('search-fee-item');
+      const searchLevelName = document.getElementById('search-level-name');
+      const btnSearch = document.getElementById('btn-search');
+      const btnReset = document.getElementById('btn-reset');
+      const tableBody = document.querySelector('.data-table tbody');
+      const tableRows = tableBody.querySelectorAll('tr');
+      
+      // 查询按钮点击事件
+      btnSearch.addEventListener('click', function() {
+        performSearch();
+      });
+      
+      // 重置按钮点击事件
+      btnReset.addEventListener('click', function() {
+        // 清空所有检索条件
+        searchFeeType.value = '全部';
+        searchFeeItem.value = '全部';
+        searchLevelName.value = '';
+        
+        // 显示所有行
+        tableRows.forEach(row => {
+          row.style.display = 'table-row';
+        });
+      });
+      
+      // 执行搜索过滤
+      function performSearch() {
+        // 获取检索条件
+        const feeTypeValue = searchFeeType.value;
+        const feeItemValue = searchFeeItem.value;
+        const levelNameValue = searchLevelName.value.trim().toLowerCase();
+        
+        tableRows.forEach(row => {
+          // 获取行中的数据
+          const feeTypeText = row.cells[1].textContent.trim();
+          const feeItemText = row.cells[0].textContent.trim();
+          const levelText = row.cells[2].textContent.trim();
+          
+          // 检查是否匹配所有条件
+          const matchFeeType = (feeTypeValue === '全部') || (feeTypeText === feeTypeValue);
+          const matchFeeItem = (feeItemValue === '全部') || (feeItemText === feeItemValue);
+          const matchLevelName = (levelNameValue === '') || (levelText.toLowerCase().includes(levelNameValue));
+          
+          // 根据匹配结果显示或隐藏行
+          if (matchFeeType && matchFeeItem && matchLevelName) {
+            row.style.display = 'table-row';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+      
+      // 添加回车键搜索功能
+      searchLevelName.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          performSearch();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

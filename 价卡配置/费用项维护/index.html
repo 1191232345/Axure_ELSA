@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>费用项维护</title>
+  <!-- 引入外部资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .input-primary {
+        @apply w-full px-4 py-2.5 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .tab-active {
+        @apply text-primary border-b-2 border-primary;
+      }
+      .tab-inactive {
+        @apply text-gray-500 border-b-2 border-transparent hover:text-gray-700;
+      }
+      .table-row-hover {
+        @apply hover:bg-gray-50 transition-colors;
+      }
+      .pagination-active {
+        @apply bg-primary text-white;
+      }
+      .pagination-inactive {
+        @apply bg-white text-gray-600 border border-border hover:bg-gray-50;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter text-dark">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8">
+    <!-- 页面标题 -->
+    <div class="flex justify-between items-center mb-8">
+    </div>
+    
+    <!-- 标签页 -->
+    <div class="mb-6 border-b border-border">
+      <ul class="flex space-x-8">
+        <li>
+          <button id="tab-all" class="tab-active px-1 py-4 font-medium text-sm transition-all">全部</button>
+        </li>
+        <li>
+          <button id="tab-basic" class="tab-inactive px-1 py-4 font-medium text-sm transition-all">基础收费</button>
+        </li>
+        <li>
+          <button id="tab-additional" class="tab-inactive px-1 py-4 font-medium text-sm transition-all">附加收费</button>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- 搜索和筛选区域 -->
+    <div class="bg-white p-4 rounded-lg shadow-card mb-6">
+      <div class="flex flex-wrap gap-4">
+        <div class="w-full md:w-auto">
+          <input type="text" id="searchInput" placeholder="搜索收费项名称" class="input-primary w-full md:w-64">
+        </div>
+        <div class="flex gap-2">
+          <button id="searchBtn" class="btn-primary">
+            <i class="fa fa-search mr-1"></i>
+            <span>搜索</span>
+          </button>
+          <button id="resetBtn" class="btn-secondary">
+            <i class="fa fa-refresh mr-1"></i>
+            <span>重置</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 新增按钮
+    <div class="flex justify-start mb-6">
+      <button id="addFeeItemBtn" class="btn-primary flex items-center gap-2">
+        <i class="fa fa-plus"></i>
+        <span>新增费用项</span>
+      </button>
+    </div> -->
+    
+    <!-- 费用项列表表格 -->
+    <div class="bg-white rounded-lg shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收费项</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收费类型</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级数</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border" id="feeList">
+            <!-- 基础收费项 -->
+            <tr class="table-row-hover fee-item" data-type="basic">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">卸货费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">基础收费</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
+                    <i class="fa fa-cog"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="table-row-hover fee-item" data-type="basic">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">仓储费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">基础收费</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
+                    <i class="fa fa-cog"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="table-row-hover fee-item" data-type="basic">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">出库费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">基础收费</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
+                    <i class="fa fa-cog"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- 附加收费项 -->
+            <tr class="table-row-hover fee-item" data-type="additional">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">超箱费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">附加收费</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
+                    <i class="fa fa-cog"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="table-row-hover fee-item" data-type="additional">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">超件费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">附加收费</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
+                    <i class="fa fa-cog"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- 分页 -->
+    <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <!-- 分页信息 -->
+      <div class="text-sm text-gray-600">
+        共 <span class="font-medium">5</span> 条记录
+      </div>
+      
+      <!-- 分页控件 -->
+      <div class="flex items-center gap-2">
+        <button id="prevPage" class="pagination-inactive px-3 py-1 rounded">
+          <i class="fa fa-chevron-left"></i>
+        </button>
+        
+        <div class="flex items-center gap-1">
+          <button class="pagination-active px-3 py-1 rounded">1</button>
+        </div>
+        
+        <button id="nextPage" class="pagination-inactive px-3 py-1 rounded">
+          <i class="fa fa-chevron-right"></i>
+        </button>
+        
+        <!-- 每页显示条数 -->
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">10条/页</span>
+          <select class="input-primary w-20 h-8 text-sm">
+            <option value="10">10条/页</option>
+            <option value="20">20条/页</option>
+            <option value="50">50条/页</option>
+            <option value="100">100条/页</option>
+          </select>
+        </div>
+        
+        <!-- 跳转到指定页 -->
+        <div class="flex items-center gap-1">
+          <span class="text-sm text-gray-600">跳至</span>
+          <input type="number" min="1" max="1" value="1" class="input-primary w-16 h-8 text-sm">
+          <span class="text-sm text-gray-600">页</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 绑定标签页事件
+      bindTabEvents();
+      
+      // 绑定搜索和重置事件
+      bindSearchEvents();
+      
+      // 绑定分页事件
+      bindPaginationEvents();
+      
+      // 绑定费用项操作事件
+      bindFeeItemEvents();
+    });
+    
+    // 绑定标签页事件
+    function bindTabEvents() {
+      const tabs = {
+        all: document.getElementById('tab-all'),
+        basic: document.getElementById('tab-basic'),
+        additional: document.getElementById('tab-additional')
+      };
+      
+      // 切换标签页
+      function switchTab(tabName) {
+        // 更新标签样式
+        Object.values(tabs).forEach(tab => {
+          tab.classList.remove('tab-active');
+          tab.classList.add('tab-inactive');
+        });
+        tabs[tabName].classList.remove('tab-inactive');
+        tabs[tabName].classList.add('tab-active');
+        
+        // 过滤费用项
+        const feeItems = document.querySelectorAll('.fee-item');
+        feeItems.forEach(item => {
+          if (tabName === 'all') {
+            item.style.display = '';
+          } else {
+            item.style.display = item.dataset.type === tabName ? '' : 'none';
+          }
+        });
+      }
+      
+      // 绑定标签点击事件
+      tabs.all.addEventListener('click', () => switchTab('all'));
+      tabs.basic.addEventListener('click', () => switchTab('basic'));
+      tabs.additional.addEventListener('click', () => switchTab('additional'));
+    }
+    
+    // 绑定搜索和重置事件
+    function bindSearchEvents() {
+      const searchInput = document.getElementById('searchInput');
+      const searchBtn = document.getElementById('searchBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      
+      // 搜索功能
+      function searchFeeItems() {
+        const keyword = searchInput.value.trim().toLowerCase();
+        const feeItems = document.querySelectorAll('.fee-item');
+        
+        feeItems.forEach(item => {
+          const feeName = item.querySelector('td:first-child .font-medium').textContent.toLowerCase();
+          const isVisible = feeName.includes(keyword);
+          item.style.display = isVisible ? '' : 'none';
+        });
+      }
+      
+      // 重置功能
+      function resetSearch() {
+        searchInput.value = '';
+        searchFeeItems();
+      }
+      
+      // 绑定事件
+      searchBtn.addEventListener('click', searchFeeItems);
+      resetBtn.addEventListener('click', resetSearch);
+      
+      // 新增按钮事件（如果存在）
+      const addFeeItemBtn = document.getElementById('addFeeItemBtn');
+      if (addFeeItemBtn) {
+        addFeeItemBtn.addEventListener('click', () => {
+          alert('新增费用项');
+          // 这里可以添加实际的新增费用项逻辑
+        });
+      }
+      
+      // 按Enter键搜索
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          searchFeeItems();
+        }
+      });
+    }
+    
+    // 绑定分页事件
+    function bindPaginationEvents() {
+      const prevPageBtn = document.getElementById('prevPage');
+      const nextPageBtn = document.getElementById('nextPage');
+      
+      // 当前只有一页，禁用分页按钮
+      prevPageBtn.disabled = true;
+      prevPageBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      nextPageBtn.disabled = true;
+      nextPageBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    
+    // 绑定费用项操作事件
+    function bindFeeItemEvents() {
+      // 获取所有设置按钮
+      const settingButtons = document.querySelectorAll('.btn-setting');
+      
+      // 为每个设置按钮绑定点击事件
+      settingButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // 获取所在行
+          const row = button.closest('tr');
+          // 获取费用项名称
+          const feeName = row.querySelector('td:first-child .font-medium').textContent;
+          // 跳转到等级信息管理页面
+          window.location.href = `fee-level.html?feeName=${encodeURIComponent(feeName)}`;
+        });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -75,6 +75,19 @@
       .checkbox-primary {
         @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/30;
       }
+      /* 卡片组件样式 */
+      .card-section {
+        @apply bg-white rounded-xl shadow-sm border border-border overflow-hidden transition-all duration-300 hover:shadow-md;
+      }
+      .card-header {
+        @apply px-4 py-3 bg-gray-50 border-b border-gray-100;
+      }
+      .card-title {
+        @apply font-semibold text-gray-800 text-lg;
+      }
+      .card-body {
+        @apply p-4 sm:p-5;
+      }
       .scroll-smooth {
         scroll-behavior: smooth;
       }
@@ -199,7 +212,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        z-portal : 50;
+        z-index: 50;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -243,6 +256,42 @@
         display: flex;
         justify-content: flex-end;
       }
+      /* 表单验证样式 */
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #1D2129;
+      }
+      
+      .input-primary {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .input-primary:focus {
+        outline: none;
+        border-color: #2a3b7d;
+        box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1);
+      }
+      
+      .input-primary.error {
+        border-color: #ef4444;
+      }
+      
+      .input-primary.error:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+      
+      .text-danger {
+        color: #ef4444;
+      }
+      
       .close-btn {
         background-color: white;
         color: #2a3b7d;
@@ -252,6 +301,7 @@
         cursor: pointer;
         transition: all 0.2s ease;
       }
+      
       .close-btn:hover {
         background-color: #f9fafb;
       }
@@ -387,9 +437,9 @@
                     <td class="px-3 py-2">2029-10-01 14:00</td>
                     <td class="px-3 py-2">
                       <div class="flex items-center gap-3">
-                        <button class="text-primary text-xs hover:underline edit-btn" data-id="1">编辑</button>
-                        <button class="text-danger text-xs hover:underline delete-btn" data-id="1">删除</button>
-                      </div>
+                          <button class="text-primary text-xs hover:underline edit-btn" data-id="1">编辑</button>
+                          <button class="text-primary text-xs hover:underline delete-btn" data-id="1">删除</button>
+                        </div>
                     </td>
                   </tr>
                 </tbody>
@@ -454,69 +504,90 @@
   </div>
   
   <!-- 子账号编辑/创建模态框 -->
-  <div id="subaccount-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-xl shadow-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto scale-fade-in">
+  <div id="subaccount-modal" class="modal-overlay hidden">
+        <div class="bg-white rounded-xl shadow-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-y-auto scale-fade-in modal-content mx-4 sm:mx-auto">
       <div class="p-6 border-b border-border flex justify-between items-center">
         <h3 id="modal-title" class="text-xl font-bold text-dark">创建子账号</h3>
         <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
           <i class="fa fa-times"></i>
         </button>
       </div>
-      <form id="subaccount-form" class="p-6 space-y-6">
+      <form id="subaccount-form" class="p-6 space-y-6 sm:p-8">
         <input type="hidden" id="account-id" value="">
         
-        <!-- 基本信息 -->
-        <div>
-          <h4 class="font-medium text-gray-700 mb-4">基本信息</h4>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="form-label" for="account-name">昵称 <span class="text-danger">*</span></label>
-              <input type="text" id="account-name" class="input-primary" placeholder="请输入昵称" required>
+        <!-- 基本信息卡片 -->
+        <div class="card-section">
+          <div class="card-header">
+            <h4 class="card-title">基本信息</h4>
+          </div>
+          <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="form-label" for="account-name">昵称 <span class="text-danger">*</span></label>
+                <input type="text" id="account-name" class="input-primary" placeholder="请输入昵称" required>
+              </div>
+              <div>
+                <label class="form-label" for="display-name">用户名<span class="text-danger">*</span></label>
+                <input type="text" id="display-name" class="input-primary" placeholder="请输入用户名" required>
+              </div>
+              <div>
+                <label class="form-label" for="email">邮箱 <span class="text-danger">*</span></label>
+                <input type="email" id="email" class="input-primary" placeholder="请输入邮箱地址" required>
+              </div>
+              <div>
+                <label class="form-label" for="phone">手机号码 <span class="text-danger">*</span></label>
+                <input type="tel" id="phone" class="input-primary" placeholder="请输入手机号码" required>
+              </div>
+              <div>
+                <label class="form-label" for="gender">性别</label>
+                <select id="gender" class="input-primary">
+                  <option value="male">男</option>
+                  <option value="female">女</option>
+                </select>
+              </div>
+              <div id="password-field-container">
+                <!-- 创建模式下显示密码输入框 -->
+                <div id="password-input-container">
+                  <label class="form-label" for="password">密码 <span class="text-danger">*</span></label>
+                  <input type="password" id="password" class="input-primary" placeholder="密码长度8-20位，包含字母和数字" required>
+                </div>
+                <!-- 编辑模式下显示重置密码选项 -->
+                <div id="reset-password-container" class="hidden">
+                  <label class="form-label">密码</label>
+                  <div class="flex items-center">
+                    <span class="text-gray-500 mr-4">••••••••</span>
+                    <button type="button" id="reset-password-btn" class="text-primary hover:text-primary/80 text-sm">重置密码</button>
+                  </div>
+                  <!-- 重置密码输入框，默认隐藏 -->
+                  <div id="new-password-container" class="hidden mt-4">
+                    <label class="form-label" for="new-password">新密码 <span class="text-danger">*</span></label>
+                    <input type="password" id="new-password" class="input-primary" placeholder="请输入新密码，长度8-20位，包含字母和数字">
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="form-label" for="display-name">用户名<span class="text-danger">*</span></label>
-              <input type="text" id="display-name" class="input-primary" placeholder="请输入用户名" required>
-            </div>
-            <div>
-              <label class="form-label" for="email">邮箱 <span class="text-danger">*</span></label>
-              <input type="email" id="email" class="input-primary" placeholder="请输入邮箱地址" required>
-            </div>
-            <div>
-              <label class="form-label" for="phone">手机号码 <span class="text-danger">*</span></label>
-              <input type="tel" id="phone" class="input-primary" placeholder="请输入手机号码" required>
-            </div>
-            <div>
-              <label class="form-label" for="gender">性别</label>
-              <select id="gender" class="input-primary">
-                <option value="male">男</option>
-                <option value="female">女</option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label" for="password">密码 <span class="text-danger">*</span></label>
-              <input type="password" id="password" class="input-primary" placeholder="密码长度8-20位，包含字母和数字" required>
-            </div>
-            <div>
           </div>
         </div>
         
-        <!-- 权限设置 -->
-        <div>
-          <h4 class="font-medium text-gray-700 mb-4">权限设置</h4>
-          <div class="space-y-3">
-            <div class="flex items-center">
-              <input type="radio" id="role-admin" name="role" value="admin" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary/30 mr-2">
-              <label for="role-admin" class="text-gray-700">所有</label>
-            </div>
-            <div class="flex items-center">
-              <input type="radio" id="role-operator" name="role" value="operator" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary/30 mr-2" checked>
-              <label for="role-operator" class="text-gray-700">指定权限</label>
-            </div>
-            
-            <!-- 操作员细粒度权限 -->
-            <div id="operator-permissions" class="pl-6 space-y-3 border-l border-gray-200">
-              <div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+        <!-- 权限设置卡片 -->
+        <div class="card-section">
+          <div class="card-header">
+            <h4 class="card-title">权限设置</h4>
+          </div>
+          <div class="card-body">
+            <div class="space-y-4">
+              <div class="flex items-center">
+                <input type="radio" id="role-admin" name="role" value="admin" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary/30 mr-2">
+                <label for="role-admin" class="text-gray-700">所有</label>
+              </div>
+              <div class="flex items-center">
+                <input type="radio" id="role-operator" name="role" value="operator" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary/30 mr-2" checked>
+                <label for="role-operator" class="text-gray-700">指定权限</label>
+              </div>
+              
+              <!-- 操作员细粒度权限 -->
+              <div id="operator-permissions" class="pl-6 space-y-4 border-l border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                   <div class="flex items-center">
                     <input type="checkbox" id="perm-inventory" name="permissions" value="inventory" class="checkbox-primary mr-2">
                     <label for="perm-inventory">库存管理</label>
@@ -539,51 +610,89 @@
           </div>
         </div>
         
-        <!-- 仓库分配 -->
-        <div>
-          <h4 class="font-medium text-gray-700 mb-4">仓库分配 <span class="text-danger">*</span></h4>
-          <div class="space-y-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
-              <div class="flex items-center">
-                <input type="checkbox" id="warehouse-1" name="warehouses" value="1" class="checkbox-primary mr-2" required>
-                <label for="warehouse-1">上海仓库</label>
+        <!-- 仓库分配卡片 -->
+        <div class="card-section">
+          <div class="card-header">
+            <h4 class="card-title">仓库分配 <span class="text-danger">*</span></h4>
+          </div>
+          <div class="card-body">
+            <!-- 下拉复选框 -->
+            <div class="relative">
+              <div class="border border-gray-300 rounded-md p-2.5 cursor-pointer hover:border-primary/50 transition-all duration-200" onclick="toggleWarehouseDropdown()" id="warehouse-selector">
+                <div class="flex justify-between items-center">
+                  <span id="selected-warehouses" class="text-gray-500">请选择仓库</span>
+                  <span id="selected-count" class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                </div>
+                <i class="fa fa-chevron-down float-right mt-1 transition-transform duration-300" id="dropdown-arrow"></i>
               </div>
-              <div class="flex items-center">
-                <input type="checkbox" id="warehouse-2" name="warehouses" value="2" class="checkbox-primary mr-2">
-                <label for="warehouse-2">北京仓库</label>
-              </div>
-              <div class="flex items-center">
-                <input type="checkbox" id="warehouse-3" name="warehouses" value="3" class="checkbox-primary mr-2">
-                <label for="warehouse-3">广州仓库</label>
-              </div>
-              <div class="flex items-center">
-                <input type="checkbox" id="warehouse-4" name="warehouses" value="4" class="checkbox-primary mr-2">
-                <label for="warehouse-4">深圳仓库</label>
-              </div>
-              <div class="flex items-center">
-                <input type="checkbox" id="warehouse-5" name="warehouses" value="5" class="checkbox-primary mr-2">
-                <label for="warehouse-5">成都仓库</label>
-              </div>
-              <div class="flex items-center">
-                <input type="checkbox" id="warehouse-6" name="warehouses" value="6" class="checkbox-primary mr-2">
-                <label for="warehouse-6">武汉仓库</label>
+              <!-- 下拉选项 -->
+              <div id="warehouse-dropdown" class="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-10 transition-all duration-300 ease-in-out opacity-0 transform scale-95 origin-top">
+                <div class="p-3">
+                  <!-- 搜索框 -->
+                  <div class="mb-4">
+                    <input type="text" id="warehouse-search" class="input-primary w-full" placeholder="搜索仓库...">
+                  </div>
+                  
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center">
+                      <input type="checkbox" id="select-all-warehouses" class="checkbox-primary mr-2">
+                      <label for="select-all-warehouses" class="text-sm">全选</label>
+                    </div>
+                    <button type="button" id="clear-selection" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                      清除选择
+                    </button>
+                  </div>
+                  
+                  <div class="space-y-2" id="warehouse-list">
+                    <div class="flex items-center warehouse-item">
+                      <input type="checkbox" id="warehouse-1" name="warehouses" value="1" class="checkbox-primary mr-2 warehouse-checkbox" required>
+                      <label for="warehouse-1" class="text-sm">上海仓库</label>
+                    </div>
+                    <div class="flex items-center warehouse-item">
+                      <input type="checkbox" id="warehouse-2" name="warehouses" value="2" class="checkbox-primary mr-2 warehouse-checkbox">
+                      <label for="warehouse-2" class="text-sm">北京仓库</label>
+                    </div>
+                    <div class="flex items-center warehouse-item">
+                      <input type="checkbox" id="warehouse-3" name="warehouses" value="3" class="checkbox-primary mr-2 warehouse-checkbox">
+                      <label for="warehouse-3" class="text-sm">广州仓库</label>
+                    </div>
+                    <div class="flex items-center warehouse-item">
+                      <input type="checkbox" id="warehouse-4" name="warehouses" value="4" class="checkbox-primary mr-2 warehouse-checkbox">
+                      <label for="warehouse-4" class="text-sm">深圳仓库</label>
+                    </div>
+                    <div class="flex items-center warehouse-item">
+                      <input type="checkbox" id="warehouse-5" name="warehouses" value="5" class="checkbox-primary mr-2 warehouse-checkbox">
+                      <label for="warehouse-5" class="text-sm">成都仓库</label>
+                    </div>
+                    <div class="flex items-center warehouse-item">
+                      <input type="checkbox" id="warehouse-6" name="warehouses" value="6" class="checkbox-primary mr-2 warehouse-checkbox">
+                      <label for="warehouse-6" class="text-sm">武汉仓库</label>
+                    </div>
+                  </div>
+                  
+                  <!-- 无结果提示 -->
+                  <div id="no-results" class="text-center text-gray-500 py-4 hidden">
+                    <i class="fa fa-search mb-2"></i>
+                    <p>未找到匹配的仓库</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         
         <!-- 操作按钮 -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-border">
-          <button type="button" id="cancel-btn" class="btn-secondary">取消</button>
-          <button type="submit" class="btn-primary">保存</button>
+        <div class="flex justify-end gap-3 pt-4 sm:pt-6 border-t border-border">
+          <button type="button" id="cancel-btn" class="btn-secondary w-full sm:w-auto">取消</button>
+          <button type="submit" class="btn-primary w-full sm:w-auto">保存</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- 删除确认模态框 -->
-  <div id="delete-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-xl shadow-lg border border-border w-full max-w-md scale-fade-in">
+  <div id="delete-modal" class="modal-overlay hidden">
+        <div class="bg-white rounded-xl shadow-lg border border-border w-full max-w-md scale-fade-in modal-content mx-4 sm:mx-auto">
       <div class="p-6 border-b border-border">
         <h3 class="text-xl font-bold text-dark">确认删除</h3>
       </div>
@@ -598,8 +707,8 @@
   </div>
 
   <!-- 成功提示模态框 -->
-  <div id="success-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-xl shadow-lg border border-border w-full max-w-md scale-fade-in">
+  <div id="success-modal" class="modal-overlay hidden">
+        <div class="bg-white rounded-xl shadow-lg border border-border w-full max-w-md scale-fade-in modal-content mx-4 sm:mx-auto">
       <div class="p-6 text-center">
         <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center text-success mx-auto mb-4">
           <i class="fa fa-check text-2xl"></i>
@@ -611,7 +720,12 @@
     </div>
   </div>
 
+  <!-- 仓库和权限授权模态框已删除 -->
+
   <script>
+    // 全局变量
+    let currentSubaccountId = null;
+    
     document.addEventListener('DOMContentLoaded', function() {
       // 设置当前日期
       const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
@@ -619,6 +733,9 @@
       if (document.getElementById('current-date')) {
         document.getElementById('current-date').textContent = currentDate;
       }
+      
+      // 立即执行的调试代码，验证 DOM 元素是否存在
+      console.log('检查 DOM 元素是否存在:');
       
       // 用户下拉菜单控制
       const userButton = document.querySelector('.group button');
@@ -753,12 +870,17 @@
         });
       }
       
+      // 模态框相关元素
+      const modalTitle = document.getElementById('modal-title');
+      
       // 点击页面其他地方关闭弹窗
       document.addEventListener('click', function(e) {
         if (contactModal && !contactModal.classList.contains('hidden') && 
             !contactUsButton.contains(e.target) && !contactModal.contains(e.target)) {
           toggleContactModal();
         }
+        
+        // 仓库和权限模态框已删除，相关关闭逻辑也已删除
       });
       
       // 浮动按钮点击事件 - 显示对应模态框
@@ -813,9 +935,32 @@
       const subaccountModal = document.getElementById('subaccount-modal');
       const deleteModal = document.getElementById('delete-modal');
       const successModal = document.getElementById('success-modal');
-      const modalTitle = document.getElementById('modal-title');
       const accountIdInput = document.getElementById('account-id');
       const successMessage = document.getElementById('success-message');
+      
+      // 密码字段相关元素
+      const passwordInputContainer = document.getElementById('password-input-container');
+      const resetPasswordContainer = document.getElementById('reset-password-container');
+      const resetPasswordBtn = document.getElementById('reset-password-btn');
+      const newPasswordContainer = document.getElementById('new-password-container');
+      const passwordInput = document.getElementById('password');
+      const newPasswordInput = document.getElementById('new-password');
+      
+      // 切换密码字段显示状态
+      function togglePasswordFieldDisplay() {
+        if (accountIdInput.value) {
+          // 编辑模式
+          passwordInputContainer.classList.add('hidden');
+          resetPasswordContainer.classList.remove('hidden');
+        } else {
+          // 创建模式
+          passwordInputContainer.classList.remove('hidden');
+          resetPasswordContainer.classList.add('hidden');
+        }
+      }
+      
+      // 仓库和权限模态框按钮
+      // 仓库和权限模态框按钮已删除
       
       // 当前正在操作的子账号ID
       let currentSubaccountId = null;
@@ -830,8 +975,12 @@
         // 选中操作员角色
         document.getElementById('role-operator').checked = true;
         toggleOperatorPermissions();
+        // 切换密码字段显示
+        togglePasswordFieldDisplay();
         // 显示模态框
         subaccountModal.classList.remove('hidden');
+        setTimeout(() => subaccountModal.classList.add('show'), 10);
+        document.body.style.overflow = 'hidden';
       });
       
       // 编辑子账号
@@ -843,6 +992,12 @@
           // 设置为编辑模式
             modalTitle.textContent = '编辑子账号';
             accountIdInput.value = id;
+            // 切换密码字段显示
+            togglePasswordFieldDisplay();
+            // 显示模态框
+            subaccountModal.classList.remove('hidden');
+            setTimeout(() => subaccountModal.classList.add('show'), 10);
+            document.body.style.overflow = 'hidden';
           
           // 填充表单数据 (示例数据)
           if (id === '1') {
@@ -875,11 +1030,17 @@
         });
       });
       
+      // 仓库和权限授权按钮相关逻辑已删除
+      
+      // 仓库和权限授权相关模态框逻辑已删除
+      
       // 删除子账号
       document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           currentSubaccountId = this.getAttribute('data-id');
           deleteModal.classList.remove('hidden');
+          setTimeout(() => deleteModal.classList.add('show'), 10);
+          document.body.style.overflow = 'hidden';
         });
       });
       
@@ -889,11 +1050,14 @@
         console.log('删除子账号:', currentSubaccountId);
         
         // 隐藏删除确认框
-        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('show');
+        setTimeout(() => deleteModal.classList.add('hidden'), 300);
+        document.body.style.overflow = '';
         
         // 显示成功提示
         successMessage.textContent = '子账号删除成功';
         successModal.classList.remove('hidden');
+        setTimeout(() => successModal.classList.add('show'), 10);
         
         // 实际应用中这里应该有AJAX调用来执行删除操作，然后刷新列表
       });
@@ -953,19 +1117,19 @@
       document.getElementById('cancel-btn').addEventListener('click', function() {
         subaccountModal.classList.add('hidden');
       });
-      
+     // 取消删除
       document.getElementById('cancel-delete').addEventListener('click', function() {
-        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('show');
+        setTimeout(() => deleteModal.classList.add('hidden'), 300);
+        document.body.style.overflow = '';
       });
       
       document.getElementById('success-confirm').addEventListener('click', function() {
-        successModal.classList.add('hidden');
+        successModal.classList.remove('show');
+        setTimeout(() => successModal.classList.add('hidden'), 300);
       });
       
       // 角色切换时控制权限选项显示
-      document.getElementById('role-admin').addEventListener('change', toggleOperatorPermissions);
-      document.getElementById('role-operator').addEventListener('change', toggleOperatorPermissions);
-      
       function toggleOperatorPermissions() {
         const operatorPermissions = document.getElementById('operator-permissions');
         const isOperator = document.getElementById('role-operator').checked;
@@ -977,18 +1141,161 @@
         }
       }
       
+      // 更新选中的仓库显示
+      function updateSelectedWarehouses() {
+        const checkboxes = document.querySelectorAll('.warehouse-checkbox:checked');
+        const selectedWarehouses = Array.from(checkboxes).map(cb => cb.nextElementSibling.textContent);
+        const displayElement = document.getElementById('selected-warehouses');
+        const countElement = document.getElementById('selected-count');
+        
+        const selectedCount = selectedWarehouses.length;
+        
+        if (selectedCount > 0) {
+          if (selectedCount <= 3) {
+            displayElement.textContent = selectedWarehouses.join(', ');
+          } else {
+            displayElement.textContent = `${selectedWarehouses.slice(0, 3).join(', ')}...`;
+          }
+          countElement.textContent = selectedCount;
+          countElement.classList.remove('hidden');
+        } else {
+          displayElement.textContent = '请选择仓库';
+          countElement.classList.add('hidden');
+        }
+        
+        // 更新全选状态
+        const allCheckboxes = document.querySelectorAll('.warehouse-checkbox');
+        const selectAllCheckbox = document.getElementById('select-all-warehouses');
+        selectAllCheckbox.checked = selectedCount === allCheckboxes.length;
+      }
+      
+      // 仓库下拉复选框功能 - 定义为全局函数以便HTML可以调用
+      function toggleWarehouseDropdown() {
+        const dropdown = document.getElementById('warehouse-dropdown');
+        const arrow = document.getElementById('dropdown-arrow');
+        
+        if (dropdown.classList.contains('hidden')) {
+          // 显示下拉框
+          dropdown.classList.remove('hidden');
+          setTimeout(() => {
+            dropdown.classList.remove('opacity-0', 'transform', 'scale-95', 'origin-top');
+          }, 10);
+          arrow.classList.add('transform', 'rotate-180');
+        } else {
+          // 隐藏下拉框
+          dropdown.classList.add('opacity-0', 'transform', 'scale-95', 'origin-top');
+          setTimeout(() => {
+            dropdown.classList.add('hidden');
+          }, 300);
+          arrow.classList.remove('transform', 'rotate-180');
+        }
+      }
+      
+      // 确保DOM完全加载后再执行JavaScript代码
+      document.addEventListener('DOMContentLoaded', function() {
+        // 角色切换时控制权限选项显示
+        document.getElementById('role-admin').addEventListener('change', toggleOperatorPermissions);
+        document.getElementById('role-operator').addEventListener('change', toggleOperatorPermissions);
+        
+        // 点击外部关闭下拉
+        document.addEventListener('click', function(e) {
+          const selector = document.getElementById('warehouse-selector');
+          const dropdown = document.getElementById('warehouse-dropdown');
+          if (!selector.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+          }
+        });
+        
+        // 仓库复选框点击事件
+        document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+          checkbox.addEventListener('click', updateSelectedWarehouses);
+        });
+        
+        // 全选/取消全选
+        document.getElementById('select-all-warehouses').addEventListener('click', function() {
+          const isChecked = this.checked;
+          document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+          });
+          updateSelectedWarehouses();
+        });
+        
+        // 仓库搜索功能
+        document.getElementById('warehouse-search').addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          const warehouseItems = document.querySelectorAll('.warehouse-item');
+          const noResults = document.getElementById('no-results');
+          let visibleCount = 0;
+          
+          warehouseItems.forEach(item => {
+            const label = item.querySelector('label').textContent.toLowerCase();
+            if (label.includes(searchTerm)) {
+              item.style.display = 'flex';
+              visibleCount++;
+            } else {
+              item.style.display = 'none';
+            }
+          });
+          
+          // 显示/隐藏无结果提示
+          noResults.classList.toggle('hidden', visibleCount > 0);
+        });
+        
+        // 清除选择功能
+        document.getElementById('clear-selection').addEventListener('click', function() {
+          document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+          });
+          document.getElementById('select-all-warehouses').checked = false;
+          updateSelectedWarehouses();
+        });
+      });
+      
+      // 初始调用一次，确保显示正确
+      updateSelectedWarehouses();
+      
       // 表单提交处理
       document.getElementById('subaccount-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
         // 表单验证
-        const accountName = document.getElementById('account-name').value;
-        const displayName = document.getElementById('display-name').value;
-        const email = document.getElementById('email').value;
-        const phone = document.getElementById('phone').value;
+        let isFormValid = true;
         
-        if (!accountName || !displayName || !email || !phone) {
-          alert('请填写所有必填字段');
+        // 验证基本信息字段
+        if (!validateField('account-name', validationRules['account-name'], errorMessages['account-name'])) {
+          isFormValid = false;
+        }
+        if (!validateField('display-name', validationRules['display-name'], errorMessages['display-name'])) {
+          isFormValid = false;
+        }
+        if (!validateField('email', validationRules['email'], errorMessages['email'])) {
+          isFormValid = false;
+        }
+        if (!validateField('phone', validationRules['phone'], errorMessages['phone'])) {
+          isFormValid = false;
+        }
+        
+        // 验证密码（创建模式）
+        if (!accountIdInput.value) {
+          if (!validateField('password', validationRules['password'], errorMessages['password'])) {
+            isFormValid = false;
+          }
+        }
+        
+        // 验证新密码（编辑模式且重置密码）
+        if (accountIdInput.value && !newPasswordContainer.classList.contains('hidden')) {
+          if (!validateField('new-password', validationRules['new-password'], errorMessages['new-password'])) {
+            isFormValid = false;
+          }
+        }
+        
+        if (!isFormValid) {
+          // 滚动到第一个错误字段
+          const firstErrorField = document.querySelector('.input-primary.error');
+          if (firstErrorField) {
+            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstErrorField.focus();
+          }
           return;
         }
         
@@ -997,6 +1304,7 @@
           .map(el => el.value);
         
         if (selectedWarehouses.length === 0) {
+          // 如果没有选择仓库，显示错误提示（可以添加一个专门的错误提示元素）
           alert('请至少选择一个仓库');
           return;
         }
@@ -1019,18 +1327,13 @@
           warehouses: selectedWarehouses
         };
         
-        // 如果是创建，还需要密码
+        // 处理密码
         if (!accountIdInput.value) {
+          // 创建模式 - 密码必填
           const password = document.getElementById('password').value;
-          const confirmPassword = document.getElementById('confirm-password').value;
           
-          if (!password || !confirmPassword) {
+          if (!password) {
             alert('请设置密码');
-            return;
-          }
-          
-          if (password !== confirmPassword) {
-            alert('两次输入的密码不一致');
             return;
           }
           
@@ -1040,18 +1343,98 @@
           }
           
           formData.password = password;
+        } else if (!newPasswordContainer.classList.contains('hidden')) {
+          // 编辑模式且重置了密码
+          const newPassword = newPasswordInput.value;
+          
+          if (!newPassword) {
+            alert('请输入新密码');
+            return;
+          }
+          
+          if (newPassword.length < 8 || newPassword.length > 20 || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/.test(newPassword)) {
+            alert('新密码长度8-20位，必须包含字母和数字');
+            return;
+          }
+          
+          formData.password = newPassword;
         }
         
         console.log('提交的数据:', formData);
         
         // 隐藏模态框
-        subaccountModal.classList.add('hidden');
+        subaccountModal.classList.remove('show');
+        setTimeout(() => subaccountModal.classList.add('hidden'), 300);
+        document.body.style.overflow = '';
         
         // 显示成功提示
         successMessage.textContent = accountIdInput.value ? '子账号更新成功' : '子账号创建成功';
         successModal.classList.remove('hidden');
+        setTimeout(() => successModal.classList.add('show'), 10);
         
         // 实际应用中这里应该有AJAX调用来保存数据，然后刷新列表
+      });
+      
+      // 重置密码按钮点击事件
+      resetPasswordBtn.addEventListener('click', function() {
+        newPasswordContainer.classList.toggle('hidden');
+        if (!newPasswordContainer.classList.contains('hidden')) {
+          newPasswordInput.focus();
+        } else {
+          newPasswordInput.value = '';
+        }
+      });
+      
+      // 表单验证函数
+      function validateField(fieldId, validationFn, errorMessage) {
+        const field = document.getElementById(fieldId);
+        const errorElement = document.getElementById(fieldId + '-error');
+        const isValid = validationFn(field.value);
+        
+        if (!isValid) {
+          field.classList.add('error');
+          errorElement.textContent = errorMessage;
+          errorElement.classList.remove('hidden');
+        } else {
+          field.classList.remove('error');
+          errorElement.classList.add('hidden');
+        }
+        
+        return isValid;
+      }
+      
+      // 验证规则
+      const validationRules = {
+        'account-name': value => value.trim().length > 0,
+        'display-name': value => value.trim().length > 0,
+        'email': value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+        'phone': value => /^1[3-9]\d{9}$/.test(value),
+        'password': value => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/.test(value),
+        'new-password': value => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/.test(value)
+      };
+      
+      // 错误消息
+      const errorMessages = {
+        'account-name': '请输入昵称',
+        'display-name': '请输入用户名',
+        'email': '请输入有效的邮箱地址',
+        'phone': '请输入有效的手机号码',
+        'password': '密码长度8-20位，必须包含字母和数字',
+        'new-password': '新密码长度8-20位，必须包含字母和数字'
+      };
+      
+      // 添加实时验证事件监听器
+      Object.keys(validationRules).forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.addEventListener('input', function() {
+            validateField(fieldId, validationRules[fieldId], errorMessages[fieldId]);
+          });
+          
+          field.addEventListener('blur', function() {
+            validateField(fieldId, validationRules[fieldId], errorMessages[fieldId]);
+          });
+        }
       });
       
       // 子账号搜索

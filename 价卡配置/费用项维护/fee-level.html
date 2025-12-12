@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>费用项等级管理</title>
+  <!-- 引入外部资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        }
+      }
+    };
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-success {
+        @apply bg-success text-white px-4 py-2 rounded-lg transition-all hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-success/50 focus:ring-offset-2;
+      }
+      .btn-warning {
+        @apply bg-warning text-white px-4 py-2 rounded-lg transition-all hover:bg-warning/90 focus:outline-none focus:ring-2 focus:ring-warning/50 focus:ring-offset-2;
+      }
+      .btn-danger {
+        @apply bg-danger text-white px-4 py-2 rounded-lg transition-all hover:bg-danger/90 focus:outline-none focus:ring-2 focus:ring-danger/50 focus:ring-offset-2;
+      }
+      .input-primary {
+        @apply w-full px-4 py-2.5 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .tab-active {
+        @apply bg-primary text-white;
+      }
+      .tab-inactive {
+        @apply bg-white text-gray-600 border border-border hover:bg-gray-50;
+      }
+      .table-row-hover {
+        @apply hover:bg-gray-50 transition-colors;
+      }
+      .pagination-active {
+        @apply bg-primary text-white;
+      }
+      .pagination-inactive {
+        @apply bg-white text-gray-600 border border-border hover:bg-gray-50;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter text-dark">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-8">
+    <!-- 页面标题 -->
+    <div class="flex justify-between items-center mb-8">
+      <button id="btn-back" class="btn-secondary flex items-center gap-2">
+        <i class="fa fa-arrow-left"></i>
+        <span>返回</span>
+      </button>
+      <div id="warehouseInfo" class="text-sm text-gray-600"></div>
+    </div>
+    
+    <!-- 基本信息区域 -->
+    <div class="bg-white p-6 rounded-lg shadow-card mb-6">
+      <h2 class="text-lg font-semibold mb-4">基本信息</h2>
+      <div class="border rounded-lg">
+        <div id="feeInfoDisplay" class="p-4 bg-gray-50">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">费用类型</label>
+              <div class="text-sm font-medium" id="feeType">基础收费</div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">收费项</label>
+              <div class="text-sm font-medium" id="feeItem">收费项</div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">费用项名称</label>
+              <div class="text-sm font-medium" id="feeName">费用项名称</div>
+            </div>
+          </div>
+        </div>
+        <!-- <div id="feeTypeTabs" class="flex">
+          <button class="tab-active px-4 py-2 rounded-l-lg">基础收费</button>
+          <button class="tab-inactive px-4 py-2">收费项</button>
+          <button class="tab-inactive px-4 py-2 rounded-r-lg" id="dynamicFeeName">卸货费</button>
+        </div> -->
+      </div>
+    </div>
+    
+    <!-- 等级信息区域 -->
+    <div class="bg-white p-6 rounded-lg shadow-card">
+      <h2 class="text-lg font-semibold mb-4">等级信息</h2>
+      
+      <!-- 检索条件区域 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">费用类型</label>
+          <select id="search-fee-type" class="input-primary">
+            <option value="">全部</option>
+            <option value="基础收费">基础收费</option>
+            <option value="增值服务">增值服务</option>
+            <option value="其他收费">其他收费</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">收费项目</label>
+          <select id="search-fee-item" class="input-primary">
+            <option value="">全部</option>
+            <option value="卸货费">卸货费</option>
+            <option value="搬运费">搬运费</option>
+            <option value="存储费">存储费</option>
+            <option value="包装费">包装费</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">等级名称</label>
+          <input type="text" id="search-level-name" placeholder="输入等级名称" class="input-primary">
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="btn-search" class="btn-primary flex items-center gap-2">
+            <i class="fa fa-search"></i>
+            <span>查询</span>
+          </button>
+          <button id="btn-reset" class="btn-secondary flex items-center gap-2">
+            <i class="fa fa-refresh"></i>
+            <span>重置</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex gap-2 mb-4">
+        <button id="btn-new" class="btn-success flex items-center gap-2">
+          <i class="fa fa-plus"></i>
+          <span>新增</span>
+        </button>
+        <button id="btn-import" class="btn-primary flex items-center gap-2">
+          <i class="fa fa-upload"></i>
+          <span>批量导入</span>
+        </button>
+      </div>
+      
+      <!-- 等级列表表格 -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">适用范围</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用用户</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建人</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新人</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新时间</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border" id="levelList">
+            <!-- 等级数据行 -->
+            <tr class="table-row-hover">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">公报价</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/01 23:59:59</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/02 00:00:00</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-detail text-primary hover:text-primary-light transition-colors" title="详情">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="btn-edit text-primary hover:text-primary-light transition-colors" title="编辑">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn-delete text-danger hover:text-danger/90 transition-colors" title="删除">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="table-row-hover">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">等级1</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">3</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/01 23:59:59</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/02 00:00:00</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-detail text-primary hover:text-primary-light transition-colors" title="详情">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="btn-edit text-primary hover:text-primary-light transition-colors" title="编辑">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn-delete text-danger hover:text-danger/90 transition-colors" title="删除">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="table-row-hover">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">等级2</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">5</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">1</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/01 23:59:59</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/02 00:00:00</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-detail text-primary hover:text-primary-light transition-colors" title="详情">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="btn-edit text-primary hover:text-primary-light transition-colors" title="编辑">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn-delete text-danger hover:text-danger/90 transition-colors" title="删除">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr class="table-row-hover">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">等级3</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">0</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">0</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/01 23:59:59</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">zsw</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2025/01/02 00:00:00</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-detail text-primary hover:text-primary-light transition-colors" title="详情">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="btn-edit text-primary hover:text-primary-light transition-colors" title="编辑">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn-delete text-danger hover:text-danger/90 transition-colors" title="删除">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页 -->
+      <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <!-- 分页信息 -->
+        <div class="text-sm text-gray-600">
+          总共 <span class="font-medium">85</span> 个项目
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="flex items-center gap-2">
+          <button id="prevPage" class="pagination-inactive px-3 py-1 rounded">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          
+          <div class="flex items-center gap-1">
+            <button class="pagination-active px-3 py-1 rounded">1</button>
+            <button class="pagination-inactive px-3 py-1 rounded">2</button>
+            <button class="pagination-inactive px-3 py-1 rounded">3</button>
+            <button class="pagination-inactive px-3 py-1 rounded">4</button>
+            <button class="pagination-inactive px-3 py-1 rounded">5</button>
+          </div>
+          
+          <button id="nextPage" class="pagination-inactive px-3 py-1 rounded">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新增等级弹窗 -->
+  <div id="newLevelModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold">新增</h3>
+        <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
+      <div class="space-y-6">
+        <!-- 基本信息 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">基本信息</h4>
+          <div class="grid grid-cols-6 gap-4 border rounded-lg p-4">
+            <!-- 第一行：费用类型、收费项 -->
+            <div class="col-span-3">
+              <label class="block text-sm font-medium text-gray-500 mb-1">费用类型</label>
+              <input type="text" id="newFeeType" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" value="基础收费" readonly>
+            </div>
+            <div class="col-span-3">
+              <label class="block text-sm font-medium text-gray-500 mb-1">收费项</label>
+              <input type="text" id="newFeeItem" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" value="卸货费" readonly>
+            </div>
+
+            <!-- 第二行：引用、等级名称、使用仓库 -->
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-500 mb-1">引用价卡</label>
+              <select id="newLevelReference" class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+                <option value="">无</option>
+                <!-- 动态加载已存在的等级 -->
+              </select>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-500 mb-1">*等级名称</label>
+              <input type="text" id="newLevelName" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入等级名称">
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-500 mb-1">使用仓库</label>
+              <div class="relative">
+                <div id="newUseWarehouseDropdown" class="w-full px-3 py-1.5 border border-gray-300 rounded-md cursor-pointer bg-white">
+                  <div id="newWarehouseSelected" class="text-left">请选择仓库</div>
+                  <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">▼</div>
+                </div>
+                <div id="newWarehouseOptions" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto hidden">
+                  <div class="p-2">
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="全部">
+                      <input type="checkbox" id="newWarehouse1" class="mr-2">
+                      <label for="newWarehouse1">全部</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库1">
+                      <input type="checkbox" id="newWarehouse1" class="mr-2">
+                      <label for="newWarehouse1">仓库1</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库2">
+                      <input type="checkbox" id="newWarehouse2" class="mr-2">
+                      <label for="newWarehouse2">仓库2</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库3">
+                      <input type="checkbox" id="newWarehouse3" class="mr-2">
+                      <label for="newWarehouse3">仓库3</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库4">
+                      <input type="checkbox" id="newWarehouse4" class="mr-2">
+                      <label for="newWarehouse4">仓库4</label>
+                    </div>
+                  </div>
+                </div>
+                <!-- 隐藏的input用于存储选中的值 -->
+                <input type="hidden" id="newUseWarehouse" value="">
+              </div>
+            </div>
+            
+            <div class="col-span-6">
+              <label class="block text-sm font-medium text-gray-500 mb-1">描述</label>
+              <textarea id="newDescription" class="w-full px-3 py-1.5 border border-gray-300 rounded-md h-16 resize-y"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 价卡设置 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">价卡设置</h4>
+          
+          <!-- 整柜 -->
+          <div class="mb-6">
+            <h5 class="text-base font-medium mb-3">整柜</h5>
+            <div class="overflow-x-auto">
+              <table class="w-full border rounded-lg">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">柜型</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">单价 ($)</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">备注</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">折扣率 (%)</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">客单价 ($)</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="newContainerRates">
+                  <tr>
+                    <td class="px-4 py-3 border-t">
+                      <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+                        <option value="20GP">20GP</option>
+                        <option value="40GP">40GP</option>
+                        <option value="40HQ">40HQ</option>
+                      </select>
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50" placeholder="请输入" readonly>
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <button class="text-danger hover:text-danger/90">删除</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button id="addNewContainerBtn" class="mt-2 btn-secondary text-sm">+ 添加柜型</button>
+          </div>
+          
+          <!-- 散货 -->
+          <div class="mb-6">
+            <h5 class="text-base font-medium mb-3">散货</h5>
+            <div class="grid grid-cols-6 gap-4 border rounded-lg p-4">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单价 (S)</label>
+                <input type="text" id="newBulkPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单位</label>
+                <input type="text" id="newBulkUnit" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="托" readonly>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">折扣率 (%)</label>
+                <input type="text" id="newBulkDiscount" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">客单价 (S)</label>
+                <input type="text" id="newBulkCustomerPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50" placeholder="请输入" readonly>
+              </div>
+              <div class="col-span-4">
+                <label class="block text-sm font-medium text-gray-500 mb-1">备注</label>
+                <input type="text" id="newBulkRemark" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 快递 -->
+          <div class="mb-6">
+            <h5 class="text-base font-medium mb-3">快递</h5>
+            <div class="grid grid-cols-6 gap-4 border rounded-lg p-4">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单价 (S)</label>
+                <input type="text" id="newExpressPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单位</label>
+                <input type="text" id="newExpressUnit" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="托" readonly>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">折扣率 (%)</label>
+                <input type="text" id="newExpressDiscount" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">客单价 (S)</label>
+                <input type="text" id="newExpressCustomerPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50" placeholder="请输入" readonly>
+              </div>
+              <div class="col-span-4">
+                <label class="block text-sm font-medium text-gray-500 mb-1">备注</label>
+                <input type="text" id="newExpressRemark" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-8">
+        <button id="cancelBtn" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">取消</button>
+        <button id="confirmBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">确定</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 费用等级编辑页面 -->
+  <div id="levelEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold">编辑等级</h3>
+        <button id="closeEditModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
+      <div class="space-y-6">
+        <!-- 基本信息 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">基本信息</h4>
+          <div class="grid grid-cols-6 gap-4 border rounded-lg p-4">
+            <!-- 第一行：费用类型、收费项 -->
+            <div class="col-span-3">
+              <label class="block text-sm font-medium text-gray-500 mb-1">费用类型</label>
+              <input type="text" id="editFeeType" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="基础收费" readonly>
+            </div>
+            <div class="col-span-3">
+              <label class="block text-sm font-medium text-gray-500 mb-1">收费项</label>
+              <input type="text" id="editFeeItem" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="卸货费" readonly>
+            </div>
+
+            <!-- 第二行：等级名称、使用仓库 -->
+            <div class="col-span-3">
+              <label class="block text-sm font-medium text-gray-500 mb-1">等级名称</label>
+              <input type="text" id="editLevelName" class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+            </div>
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-500 mb-1">使用仓库</label>
+              <div class="relative">
+                <div id="editUseWarehouseDropdown" class="w-full px-3 py-1.5 border border-gray-300 rounded-md cursor-pointer bg-white">
+                  <div id="editWarehouseSelected" class="text-left">请选择仓库</div>
+                  <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">▼</div>
+                </div>
+                <div id="editWarehouseOptions" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto hidden">
+                  <div class="p-2">
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="全部">
+                      <input type="checkbox" id="newWarehouse1" class="mr-2">
+                      <label for="newWarehouse1">全部</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库1">
+                      <input type="checkbox" id="editWarehouse1" class="mr-2">
+                      <label for="editWarehouse1">仓库1</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库2">
+                      <input type="checkbox" id="editWarehouse2" class="mr-2">
+                      <label for="editWarehouse2">仓库2</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库3">
+                      <input type="checkbox" id="editWarehouse3" class="mr-2">
+                      <label for="editWarehouse3">仓库3</label>
+                    </div>
+                    <div class="flex items-center py-1 px-2 hover:bg-gray-100 cursor-pointer" data-value="仓库4">
+                      <input type="checkbox" id="editWarehouse4" class="mr-2">
+                      <label for="editWarehouse4">仓库4</label>
+                    </div>
+                  </div>
+                </div>
+                <!-- 隐藏的input用于存储选中的值 -->
+                <input type="hidden" id="editUseWarehouse" value="">
+              </div>
+            </div>
+            
+            <div class="col-span-6">
+              <label class="block text-sm font-medium text-gray-500 mb-1">描述</label>
+              <textarea id="editDescription" class="w-full px-3 py-1.5 border border-gray-300 rounded-md h-16 resize-y"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 价卡设置 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">价卡设置</h4>
+          
+          <!-- 整柜 -->
+          <div class="mb-6">
+            <h5 class="text-base font-medium mb-3">整柜</h5>
+            <div class="overflow-x-auto">
+              <table class="w-full border rounded-lg">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">柜型</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">单价 (S)</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">备注</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">折扣率 (%)</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">客单价 (S)</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="containerRates">
+                  <tr>
+                    <td class="px-4 py-3 border-t">
+                      <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+                        <option value="20GP">20GP</option>
+                        <option value="40GP">40GP</option>
+                        <option value="40HQ">40HQ</option>
+                      </select>
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50" placeholder="请输入" readonly>
+                    </td>
+                    <td class="px-4 py-3 border-t">
+                      <button class="text-danger hover:text-danger/90">删除</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button id="addContainerBtn" class="mt-2 btn-secondary text-sm">+ 添加柜型</button>
+          </div>
+          
+          <!-- 散货 -->
+          <div class="mb-6">
+            <h5 class="text-base font-medium mb-3">散货</h5>
+            <div class="grid grid-cols-6 gap-4 border rounded-lg p-4">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单价 (S)</label>
+                <input type="text" id="editBulkPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单位</label>
+                <input type="text" id="editBulkUnit" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="托" readonly>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">折扣率 (%)</label>
+                <input type="text" id="editBulkDiscount" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">客单价 (S)</label>
+                <input type="text" id="editBulkCustomerPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50" placeholder="请输入" readonly>
+              </div>
+              <div class="col-span-4">
+                <label class="block text-sm font-medium text-gray-500 mb-1">备注</label>
+                <input type="text" id="editBulkRemark" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 快递 -->
+          <div class="mb-6">
+            <h5 class="text-base font-medium mb-3">快递</h5>
+            <div class="grid grid-cols-6 gap-4 border rounded-lg p-4">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单价 (S)</label>
+                <input type="text" id="editExpressPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">单位</label>
+                <input type="text" id="editExpressUnit" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="托" readonly>
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">折扣率 (%)</label>
+                <input type="text" id="editExpressDiscount" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-500 mb-1">客单价 (S)</label>
+                <input type="text" id="editExpressCustomerPrice" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-50" placeholder="请输入" readonly>
+              </div>
+              <div class="col-span-4">
+                <label class="block text-sm font-medium text-gray-500 mb-1">备注</label>
+                <input type="text" id="editExpressRemark" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-8">
+        <button id="editCancelBtn" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">取消</button>
+        <button id="editSaveBtn" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 绑定返回按钮事件
+      bindBackButton();
+      
+      // 绑定收费类型标签页事件
+      bindFeeTypeTabs();
+      
+      // 绑定新增和批量导入按钮事件
+      bindActionButtons();
+      
+      // 绑定等级操作事件
+      bindLevelOperations();
+      
+      // 绑定分页事件
+      bindPaginationEvents();
+      
+      // 获取并显示费用项名称
+      showFeeName();
+      
+      // 检查是否有等级信息，如果有则自动打开编辑页面
+      // 这里可以根据实际业务逻辑调整，例如从URL参数获取等级信息
+      const urlParams = new URLSearchParams(window.location.search);
+      const levelId = urlParams.get('levelId');
+      const reference = urlParams.get('reference');
+      
+      if (levelId) {
+        // 如果有等级ID，模拟编辑等级操作
+        openLevelEditModal(`等级${levelId}`);
+      }
+    });
+    
+    // 绑定返回按钮事件
+    function bindBackButton() {
+      document.getElementById('btn-back').addEventListener('click', function() {
+        window.history.back();
+      });
+    }
+    
+    // 绑定收费类型标签页事件
+    function bindFeeTypeTabs() {
+      const tabs = document.querySelectorAll('#feeTypeTabs button');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // 更新标签样式
+          tabs.forEach(t => {
+            t.classList.remove('tab-active');
+            t.classList.add('tab-inactive');
+          });
+          this.classList.remove('tab-inactive');
+          this.classList.add('tab-active');
+          
+          // 这里可以添加不同收费类型的逻辑处理
+          const tabName = this.textContent.trim();
+          console.log(`切换到${tabName}标签页`);
+        });
+      });
+    }
+    
+    // 绑定新增和批量导入按钮事件
+    function bindActionButtons() {
+      // 新增按钮 - 弹出新增弹窗
+      document.getElementById('btn-new').addEventListener('click', function() {
+        openNewLevelModal();
+      });
+      
+      // 批量导入按钮
+      document.getElementById('btn-import').addEventListener('click', function() {
+        alert('批量导入等级');
+        // 这里可以打开批量导入的模态框或文件选择对话框
+      });
+    }
+    
+    // 打开新增等级弹窗
+    function openNewLevelModal() {
+      // 加载已存在的等级到引用下拉框
+      loadExistingLevels();
+      
+      // 清空表单
+      document.getElementById('newLevelName').value = '';
+      document.getElementById('newLevelReference').value = '';
+      document.getElementById('newDescription').value = '';
+      document.getElementById('newBulkPrice').value = '';
+      document.getElementById('newBulkDiscount').value = '';
+      document.getElementById('newBulkCustomerPrice').value = '';
+      document.getElementById('newBulkRemark').value = '';
+      document.getElementById('newExpressPrice').value = '';
+      document.getElementById('newExpressDiscount').value = '';
+      document.getElementById('newExpressCustomerPrice').value = '';
+      document.getElementById('newExpressRemark').value = '';
+      
+      // 更新基本信息区域的费用项名称和费用类型
+      const urlParams = new URLSearchParams(window.location.search);
+      const feeName = urlParams.get('feeName');
+      
+      if (feeName) {
+        const decodedFeeName = decodeURIComponent(feeName);
+        document.getElementById('newFeeItem').value = decodedFeeName;
+        
+        // 根据费用项名称判断费用类型
+        const basicFees = ['卸货费', '仓储费', '出库费'];
+        const additionalFees = ['超箱费', '超件费'];
+        
+        let feeType = '基础收费';
+        if (additionalFees.includes(decodedFeeName)) {
+          feeType = '附加收费';
+        }
+        
+        document.getElementById('newFeeType').value = feeType;
+      }
+      
+      // 清空整柜表格，只保留一行
+      const newContainerRates = document.getElementById('newContainerRates');
+      while (newContainerRates.children.length > 1) {
+        newContainerRates.removeChild(newContainerRates.lastChild);
+      }
+      
+      // 显示弹窗
+      document.getElementById('newLevelModal').classList.remove('hidden');
+      
+      // 绑定弹窗事件
+      bindModalEvents();
+      
+      // 引用等级变化时更新数据
+      const referenceSelect = document.getElementById('newLevelReference');
+      
+      // 先移除旧的事件监听器，避免重复绑定
+      referenceSelect.removeEventListener('change', handleReferenceChange);
+      
+      // 添加新的事件监听器
+      referenceSelect.addEventListener('change', handleReferenceChange);
+    }
+    
+    // 处理引用等级变化
+    function handleReferenceChange() {
+      const selectedLevel = this.value;
+      if (selectedLevel) {
+        // 加载选中等级的数据到新增弹窗
+        const levelData = levelDataStore[selectedLevel];
+        if (levelData) {
+          // 填充散货数据
+          document.getElementById('newBulkPrice').value = levelData.bulkPrice;
+          document.getElementById('newBulkDiscount').value = levelData.bulkDiscount;
+          document.getElementById('newBulkRemark').value = levelData.bulkRemark;
+          // 计算并设置散货客单价
+          calculateCustomerPrice(document.getElementById('newBulkPrice'), 
+                                 document.getElementById('newBulkDiscount'), 
+                                 document.getElementById('newBulkCustomerPrice'));
+          
+          // 填充快递数据
+          document.getElementById('newExpressPrice').value = levelData.expressPrice;
+          document.getElementById('newExpressDiscount').value = levelData.expressDiscount;
+          document.getElementById('newExpressRemark').value = levelData.expressRemark;
+          // 计算并设置快递客单价
+          calculateCustomerPrice(document.getElementById('newExpressPrice'), 
+                                 document.getElementById('newExpressDiscount'), 
+                                 document.getElementById('newExpressCustomerPrice'));
+          
+          // 清空整柜表格（包括表头）
+          const newContainerRates = document.getElementById('newContainerRates');
+          while (newContainerRates.firstChild) {
+            newContainerRates.removeChild(newContainerRates.firstChild);
+          }
+          
+          // 清空容器表格
+          newContainerRates.innerHTML = '';
+          
+          // 添加数据行
+          levelData.containerRates.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td class="px-4 py-3 border-t">
+                <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+                  <option value="20GP" ${item.containerType === '20GP' ? 'selected' : ''}>20GP</option>
+                  <option value="40GP" ${item.containerType === '40GP' ? 'selected' : ''}>40GP</option>
+                  <option value="40HQ" ${item.containerType === '40HQ' ? 'selected' : ''}>40HQ</option>
+                </select>
+              </td>
+              <td class="px-4 py-3 border-t">
+                <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="${item.price}" placeholder="请输入">
+              </td>
+              <td class="px-4 py-3 border-t">
+                <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="${item.remark}" placeholder="请输入">
+              </td>
+              <td class="px-4 py-3 border-t">
+                <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="${item.discount}" placeholder="请输入">
+              </td>
+              <td class="px-4 py-3 border-t">
+                <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" value="${item.customerPrice}" placeholder="请输入" readonly>
+              </td>
+              <td class="px-4 py-3 border-t">
+                <button class="text-danger hover:text-danger/90 delete-row-btn">删除</button>
+              </td>
+            `;
+            newContainerRates.appendChild(row);
+            
+            // 为新添加的行的单价和折扣率输入框添加事件监听器
+            const priceInput = row.querySelector('td:nth-child(2) input');
+            const discountInput = row.querySelector('td:nth-child(4) input');
+            const customerPriceInput = row.querySelector('td:nth-child(5) input');
+            
+            priceInput.addEventListener('input', function() {
+              calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+            });
+            
+            discountInput.addEventListener('input', function() {
+              calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+            });
+            
+            // 为新添加的删除按钮添加事件监听器
+            const deleteBtn = row.querySelector('.delete-row-btn');
+            deleteBtn.addEventListener('click', function() {
+              row.remove();
+            });
+          });
+        }
+      } else {
+        // 清除所有填充的数据
+        document.getElementById('newBulkPrice').value = '';
+        document.getElementById('newBulkDiscount').value = '';
+        document.getElementById('newBulkCustomerPrice').value = '';
+        document.getElementById('newBulkRemark').value = '';
+        
+        document.getElementById('newExpressPrice').value = '';
+        document.getElementById('newExpressDiscount').value = '';
+        document.getElementById('newExpressCustomerPrice').value = '';
+        document.getElementById('newExpressRemark').value = '';
+        
+        // 保留表头和一条空行
+        const newContainerRates = document.getElementById('newContainerRates');
+        while (newContainerRates.children.length > 2) {
+          newContainerRates.removeChild(newContainerRates.lastChild);
+        }
+        
+        // 清空空行的输入值
+        const emptyRow = newContainerRates.children[1];
+        if (emptyRow) {
+          const inputs = emptyRow.querySelectorAll('input');
+          inputs.forEach(input => {
+            input.value = '';
+          });
+          const select = emptyRow.querySelector('select');
+          if (select) {
+            select.value = '20GP';
+          }
+        }
+      }
+    }
+    
+    // 加载已存在的等级到引用下拉框
+    function loadExistingLevels() {
+      const referenceSelect = document.getElementById('newLevelReference');
+      const levelList = document.getElementById('levelList');
+      
+      // 清空除了"无"之外的所有选项
+      referenceSelect.innerHTML = '<option value="">无</option>';
+      
+      // 获取所有已存在的等级
+      const levelRows = levelList.querySelectorAll('tr');
+      
+      levelRows.forEach(row => {
+        const levelName = row.querySelector('td:first-child .font-medium').textContent;
+        if (levelName) {
+          const option = document.createElement('option');
+          option.value = levelName;
+          option.textContent = levelName;
+          referenceSelect.appendChild(option);
+        }
+      });
+    }
+    
+    // 计算客单价函数
+    function calculateCustomerPrice(priceInput, discountInput, customerPriceInput) {
+      const price = parseFloat(priceInput.value);
+      const discount = parseFloat(discountInput.value);
+      
+      if (!isNaN(price) && !isNaN(discount)) {
+        const customerPrice = price * (discount / 100);
+        customerPriceInput.value = customerPrice.toFixed(2);
+      } else {
+        customerPriceInput.value = '';
+      }
+    }
+    
+    // 绑定弹窗事件
+    function bindModalEvents() {
+      // 关闭按钮
+      document.getElementById('closeModal').addEventListener('click', closeNewLevelModal);
+      
+      // 取消按钮
+      document.getElementById('cancelBtn').addEventListener('click', closeNewLevelModal);
+      
+      // 确定按钮
+      document.getElementById('confirmBtn').addEventListener('click', addNewLevel);
+      
+      // 添加柜型按钮事件
+      document.getElementById('addNewContainerBtn').addEventListener('click', function() {
+        const newContainerRates = document.getElementById('newContainerRates');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-4 py-3 border-t">
+            <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+              <option value="20GP">20GP</option>
+              <option value="40GP">40GP</option>
+              <option value="40HQ">40HQ</option>
+            </select>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" placeholder="请输入" readonly>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <button class="text-danger hover:text-danger/90 delete-row-btn">删除</button>
+          </td>
+        `;
+        newContainerRates.appendChild(row);
+        
+        // 为新添加的行的单价和折扣率输入框添加事件监听器
+        const priceInput = row.querySelector('td:nth-child(2) input');
+        const discountInput = row.querySelector('td:nth-child(4) input');
+        const customerPriceInput = row.querySelector('td:nth-child(5) input');
+        
+        priceInput.addEventListener('input', function() {
+          calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+        });
+        
+        discountInput.addEventListener('input', function() {
+          calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+        });
+        
+        // 为新添加的删除按钮添加事件监听器
+        const deleteBtn = row.querySelector('.delete-row-btn');
+        deleteBtn.addEventListener('click', function() {
+          row.remove();
+        });
+      });
+      
+      // 散货客单价计算
+      const newBulkPrice = document.getElementById('newBulkPrice');
+      const newBulkDiscount = document.getElementById('newBulkDiscount');
+      const newBulkCustomerPrice = document.getElementById('newBulkCustomerPrice');
+      
+      newBulkPrice.addEventListener('input', function() {
+        calculateCustomerPrice(newBulkPrice, newBulkDiscount, newBulkCustomerPrice);
+      });
+      
+      newBulkDiscount.addEventListener('input', function() {
+        calculateCustomerPrice(newBulkPrice, newBulkDiscount, newBulkCustomerPrice);
+      });
+      
+      // 快递客单价计算
+      const newExpressPrice = document.getElementById('newExpressPrice');
+      const newExpressDiscount = document.getElementById('newExpressDiscount');
+      const newExpressCustomerPrice = document.getElementById('newExpressCustomerPrice');
+      
+      newExpressPrice.addEventListener('input', function() {
+        calculateCustomerPrice(newExpressPrice, newExpressDiscount, newExpressCustomerPrice);
+      });
+      
+      newExpressDiscount.addEventListener('input', function() {
+        calculateCustomerPrice(newExpressPrice, newExpressDiscount, newExpressCustomerPrice);
+      });
+      
+      // 点击弹窗外部关闭
+      document.getElementById('newLevelModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeNewLevelModal();
+        }
+      });
+    }
+    
+    // 关闭新增等级弹窗
+    function closeNewLevelModal() {
+      document.getElementById('newLevelModal').classList.add('hidden');
+    }
+    
+    // 添加新等级
+    function addNewLevel() {
+      const levelName = document.getElementById('newLevelName').value.trim();
+      const reference = document.getElementById('newLevelReference').value;
+      const description = document.getElementById('newDescription').value;
+      
+      // 验证名称是否为空
+      if (!levelName) {
+        alert('请输入等级名称');
+        return;
+      }
+      
+      // 获取当前时间
+      const now = new Date();
+      const formattedDate = now.getFullYear() + '/' + 
+        String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+        String(now.getDate()).padStart(2, '0');
+      
+      // 创建新的等级行
+      const levelList = document.getElementById('levelList');
+      const newRow = document.createElement('tr');
+      newRow.className = 'table-row-hover';
+      
+      // 获取整柜数据
+      const containerRates = [];
+      const containerRows = document.querySelectorAll('#newContainerRates tr');
+      containerRows.forEach(row => {
+        const containerType = row.querySelector('select').value;
+        const price = row.querySelector('td:nth-child(2) input').value;
+        const remark = row.querySelector('td:nth-child(3) input').value;
+        const discount = row.querySelector('td:nth-child(4) input').value;
+        const customerPrice = row.querySelector('td:nth-child(5) input').value;
+        
+        if (containerType) {
+          containerRates.push({
+            containerType: containerType,
+            price: price,
+            remark: remark,
+            discount: discount,
+            customerPrice: customerPrice
+          });
+        }
+      });
+      
+      // 获取散货数据
+      const bulkPrice = document.getElementById('newBulkPrice').value;
+      const bulkDiscount = document.getElementById('newBulkDiscount').value;
+      const bulkRemark = document.getElementById('newBulkRemark').value;
+      const bulkCustomerPrice = document.getElementById('newBulkCustomerPrice').value;
+      
+      // 获取快递数据
+      const expressPrice = document.getElementById('newExpressPrice').value;
+      const expressDiscount = document.getElementById('newExpressDiscount').value;
+      const expressRemark = document.getElementById('newExpressRemark').value;
+      const expressCustomerPrice = document.getElementById('newExpressCustomerPrice').value;
+      
+      // 将新等级数据添加到存储
+      levelDataStore[levelName] = {
+        levelName: levelName,
+        description: description,
+        isReferenced: false,
+        containerRates: containerRates,
+        bulkPrice: bulkPrice,
+        bulkUnit: '托',
+        bulkDiscount: bulkDiscount,
+        bulkCustomerPrice: bulkCustomerPrice,
+        bulkRemark: bulkRemark,
+        expressPrice: expressPrice,
+        expressUnit: '托',
+        expressDiscount: expressDiscount,
+        expressCustomerPrice: expressCustomerPrice,
+        expressRemark: expressRemark
+      };
+      newRow.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-medium text-dark">${levelName}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-600">0</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-600">0</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-600">zsw</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-600">${formattedDate}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-600">zsw</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-600">${formattedDate}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="flex items-center gap-2">
+            <button class="btn-detail text-primary hover:text-primary-light transition-colors" title="详情">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button class="btn-edit text-primary hover:text-primary-light transition-colors" title="编辑">
+              <i class="fa fa-edit"></i>
+            </button>
+            <button class="btn-delete text-danger hover:text-danger/90 transition-colors" title="删除">
+              <i class="fa fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      `;
+      
+      // 添加新行到表格
+      levelList.appendChild(newRow);
+      
+      // 关闭弹窗
+      closeNewLevelModal();
+      
+      alert(`新增等级${levelName}成功`);
+      
+      // 为新添加的行的编辑按钮添加事件监听
+      const editButton = newRow.querySelector('.btn-edit');
+      editButton.addEventListener('click', function() {
+        openLevelEditModal(levelName);
+      });
+    }
+    
+    // 模拟等级数据存储
+    const levelDataStore = {
+      '等级1': {
+        levelName: '等级1',
+        description: '这是等级1的描述',
+        isReferenced: false,
+        // 整柜数据
+        containerRates: [
+          { containerType: '20GP', price: '1000', remark: '等级1的20GP', discount: '95', customerPrice: '950' },
+          { containerType: '40GP', price: '1500', remark: '等级1的40GP', discount: '95', customerPrice: '1425' }
+        ],
+        // 散货数据
+        bulkPrice: '500',
+        bulkUnit: '托',
+        bulkDiscount: '90',
+        bulkCustomerPrice: '450',
+        bulkRemark: '等级1的散货',
+        // 快递数据
+        expressPrice: '10',
+        expressUnit: '托',
+        expressDiscount: '85',
+        expressCustomerPrice: '8.5',
+        expressRemark: '等级1的快递'
+      },
+      '等级2': {
+        levelName: '等级2',
+        description: '这是等级2的描述',
+        isReferenced: false,
+        // 整柜数据
+        containerRates: [
+          { containerType: '20GP', price: '1200', remark: '等级2的20GP', discount: '90', customerPrice: '1080' },
+          { containerType: '40GP', price: '1800', remark: '等级2的40GP', discount: '90', customerPrice: '1620' }
+        ],
+        // 散货数据
+        bulkPrice: '600',
+        bulkUnit: '托',
+        bulkDiscount: '85',
+        bulkCustomerPrice: '510',
+        bulkRemark: '等级2的散货',
+        // 快递数据
+        expressPrice: '12',
+        expressUnit: '托',
+        expressDiscount: '80',
+        expressCustomerPrice: '9.6',
+        expressRemark: '等级2的快递'
+      },
+      '等级3': {
+        levelName: '等级3',
+        description: '这是等级3的描述',
+        isReferenced: false,
+        // 整柜数据
+        containerRates: [
+          { containerType: '20GP', price: '1500', remark: '等级3的20GP', discount: '85', customerPrice: '1275' },
+          { containerType: '40GP', price: '2200', remark: '等级3的40GP', discount: '85', customerPrice: '1870' }
+        ],
+        // 散货数据
+        bulkPrice: '700',
+        bulkUnit: '托',
+        bulkDiscount: '80',
+        bulkCustomerPrice: '560',
+        bulkRemark: '等级3的散货',
+        // 快递数据
+        expressPrice: '15',
+        expressUnit: '托',
+        expressDiscount: '75',
+        expressCustomerPrice: '11.25',
+        expressRemark: '等级3的快递'
+      }
+    };
+
+    function openLevelEditModal(levelName) {
+      // 填充等级信息
+      document.getElementById('editLevelName').value = levelName;
+      
+      // 更新基本信息区域的费用项名称
+      const urlParams = new URLSearchParams(window.location.search);
+      const feeName = urlParams.get('feeName');
+      
+      if (feeName) {
+        const decodedFeeName = decodeURIComponent(feeName);
+        document.getElementById('editFeeItem').value = decodedFeeName;
+        
+        // 根据费用项名称判断费用类型
+        const basicFees = ['卸货费', '仓储费', '出库费'];
+        const additionalFees = ['超箱费', '超件费'];
+        
+        let feeType = '基础收费';
+        if (additionalFees.includes(decodedFeeName)) {
+          feeType = '附加收费';
+        }
+        
+        // 设置费用类型
+        document.getElementById('editFeeType').value = feeType;
+      }
+      
+      // 设置页面元素的禁用状态
+      setPageEditableState();
+      
+      // 检查当前等级是否已存在数据
+      const levelData = levelDataStore[levelName];
+      if (levelData) {
+        // 回显当前等级的数据
+        loadLevelData(levelName);
+      } else {
+        // 没有引用等级且当前等级不存在数据时，初始化整柜数据表格为空
+        const containerRates = document.getElementById('containerRates');
+        // 清空现有数据（移除所有子元素）
+        containerRates.innerHTML = '';
+        
+        // 添加一个默认的空行
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-4 py-3 border-t">
+            <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+              <option value="20GP">20GP</option>
+              <option value="40GP">40GP</option>
+              <option value="40HQ">40HQ</option>
+            </select>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" placeholder="请输入" readonly>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <button class="text-danger hover:text-danger/90 delete-row-btn">删除</button>
+          </td>
+        `;
+        containerRates.appendChild(row);
+        
+        // 为新添加的行的单价和折扣率输入框添加事件监听器
+        const priceInput = row.querySelector('td:nth-child(2) input');
+        const discountInput = row.querySelector('td:nth-child(4) input');
+        const customerPriceInput = row.querySelector('td:nth-child(5) input');
+        
+        if (priceInput && discountInput && customerPriceInput) {
+          priceInput.addEventListener('input', function() {
+            calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+          });
+          
+          discountInput.addEventListener('input', function() {
+            calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+          });
+        }
+        
+        // 为新添加的删除按钮添加事件监听器
+        const deleteBtn = row.querySelector('.delete-row-btn');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', function() {
+            row.remove();
+          });
+        }
+          
+        // 清空散货数据
+        document.getElementById('editBulkPrice').value = '';
+        document.getElementById('editBulkDiscount').value = '';
+        document.getElementById('editBulkCustomerPrice').value = '';
+        document.getElementById('editBulkRemark').value = '';
+          
+        // 清空快递数据
+        document.getElementById('editExpressPrice').value = '';
+        document.getElementById('editExpressDiscount').value = '';
+        document.getElementById('editExpressCustomerPrice').value = '';
+        document.getElementById('editExpressRemark').value = '';
+          
+        // 清空描述
+        document.getElementById('editDescription').value = '';
+      }
+      
+      // 显示编辑页面
+      document.getElementById('levelEditModal').classList.remove('hidden');
+      
+      // 绑定编辑页面事件
+      bindEditModalEvents();
+    }
+    
+    // 加载等级数据
+    function loadLevelData(level) {
+      const data = levelDataStore[level];
+      if (!data) return;
+      
+      // 填充基本信息
+      document.getElementById('editLevelName').value = data.levelName;
+      document.getElementById('editDescription').value = data.description;
+      
+      // 填充使用仓库信息
+      // 清空现有选中状态
+      const warehouseCheckboxes = document.querySelectorAll('#editWarehouseOptions input[type="checkbox"]');
+      warehouseCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      // 设置选中的仓库
+      if (data.useWarehouse && Array.isArray(data.useWarehouse)) {
+        data.useWarehouse.forEach(warehouse => {
+          const checkbox = document.querySelector(`#editWarehouseOptions input[type="checkbox"][value="${warehouse}"]`);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
+        // 更新显示
+        updateWarehouseDisplay('edit');
+      }
+      
+      // 填充整柜数据
+      const containerRates = document.getElementById('containerRates');
+      // 清空现有数据（移除所有子元素）
+      containerRates.innerHTML = '';
+      
+      // 如果containerRates数组为空，添加一个默认的空行
+      if (!data.containerRates || data.containerRates.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-4 py-3 border-t">
+            <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+              <option value="20GP">20GP</option>
+              <option value="40GP">40GP</option>
+              <option value="40HQ">40HQ</option>
+            </select>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" placeholder="请输入" readonly>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <button class="text-danger hover:text-danger/90 delete-row-btn">删除</button>
+          </td>
+        `;
+        containerRates.appendChild(row);
+        
+        // 为新添加的行的单价和折扣率输入框添加事件监听器
+        const priceInput = row.querySelector('td:nth-child(2) input');
+        const discountInput = row.querySelector('td:nth-child(4) input');
+        const customerPriceInput = row.querySelector('td:nth-child(5) input');
+        
+        if (priceInput && discountInput && customerPriceInput) {
+          priceInput.addEventListener('input', function() {
+            calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+          });
+          
+          discountInput.addEventListener('input', function() {
+            calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+          });
+        }
+        
+        // 为新添加的删除按钮添加事件监听器
+        const deleteBtn = row.querySelector('.delete-row-btn');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', function() {
+            row.remove();
+          });
+        }
+      } else {
+        // 添加新数据行
+        data.containerRates.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-4 py-3 border-t">
+            <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+              <option value="20GP" ${item.containerType === '20GP' ? 'selected' : ''}>20GP</option>
+              <option value="40GP" ${item.containerType === '40GP' ? 'selected' : ''}>40GP</option>
+              <option value="40HQ" ${item.containerType === '40HQ' ? 'selected' : ''}>40HQ</option>
+            </select>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="${item.price}" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="${item.remark}" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" value="${item.discount}" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" value="${item.customerPrice}" placeholder="请输入" readonly>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <button class="text-danger hover:text-danger/90 delete-row-btn">删除</button>
+          </td>
+        `;
+        containerRates.appendChild(row);
+        
+        // 为新添加的行的单价和折扣率输入框添加事件监听器
+        const priceInput = row.querySelector('td:nth-child(2) input');
+        const discountInput = row.querySelector('td:nth-child(4) input');
+        const customerPriceInput = row.querySelector('td:nth-child(5) input');
+        
+        priceInput.addEventListener('input', function() {
+          calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+        });
+        
+        discountInput.addEventListener('input', function() {
+          calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+        });
+        
+        // 为新添加的删除按钮添加事件监听器
+        const deleteBtn = row.querySelector('.delete-row-btn');
+        deleteBtn.addEventListener('click', function() {
+          row.remove();
+        });
+      });
+    }
+    
+      // 填充散货数据
+      document.getElementById('editBulkPrice').value = data.bulkPrice;
+      document.getElementById('editBulkUnit').value = data.bulkUnit;
+      document.getElementById('editBulkDiscount').value = data.bulkDiscount;
+      document.getElementById('editBulkCustomerPrice').value = data.bulkCustomerPrice;
+      document.getElementById('editBulkRemark').value = data.bulkRemark;
+      
+      // 填充快递数据
+      document.getElementById('editExpressPrice').value = data.expressPrice;
+      document.getElementById('editExpressUnit').value = data.expressUnit;
+      document.getElementById('editExpressDiscount').value = data.expressDiscount;
+      document.getElementById('editExpressCustomerPrice').value = data.expressCustomerPrice;
+      document.getElementById('editExpressRemark').value = data.expressRemark;
+      
+      // 为散货的单价和折扣率输入框添加事件监听器
+      const bulkPriceInput = document.getElementById('editBulkPrice');
+      const bulkDiscountInput = document.getElementById('editBulkDiscount');
+      const bulkCustomerPriceInput = document.getElementById('editBulkCustomerPrice');
+      
+      bulkPriceInput.addEventListener('input', function() {
+        calculateCustomerPrice(bulkPriceInput, bulkDiscountInput, bulkCustomerPriceInput);
+      });
+      
+      bulkDiscountInput.addEventListener('input', function() {
+        calculateCustomerPrice(bulkPriceInput, bulkDiscountInput, bulkCustomerPriceInput);
+      });
+      
+      // 为快递的单价和折扣率输入框添加事件监听器
+      const expressPriceInput = document.getElementById('editExpressPrice');
+      const expressDiscountInput = document.getElementById('editExpressDiscount');
+      const expressCustomerPriceInput = document.getElementById('editExpressCustomerPrice');
+      
+      expressPriceInput.addEventListener('input', function() {
+        calculateCustomerPrice(expressPriceInput, expressDiscountInput, expressCustomerPriceInput);
+      });
+      
+      expressDiscountInput.addEventListener('input', function() {
+        calculateCustomerPrice(expressPriceInput, expressDiscountInput, expressCustomerPriceInput);
+      });
+    }
+    
+    // 设置页面可编辑状态
+    function setPageEditableState() {
+      const basicInfoInputs = [
+        'editFeeType', 'editFeeItem', 'editLevelName', 'editDescription'
+      ];
+      
+      const pricingInputs = [
+        'editBulkPrice', 'editBulkUnit', 'editBulkDiscount', 'editBulkCustomerPrice', 'editBulkRemark',
+        'editExpressPrice', 'editExpressUnit', 'editExpressDiscount', 'editExpressCustomerPrice', 'editExpressRemark'
+      ];
+      
+      // 获取整柜表格中的所有输入框
+      const containerInputs = document.querySelectorAll('#containerRates input, #containerRates select');
+      
+      // 取消禁用逻辑，所有输入框都可编辑（除了必须保持只读的字段）
+      basicInfoInputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          if (id === 'editFeeType' || id === 'editFeeItem') {
+            // 费用类型和收费项保持禁用状态并显示为灰色
+            element.disabled = true;
+            element.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
+          } else {
+            // 启用其他基础信息区域的输入框
+            element.disabled = false;
+            element.classList.remove('bg-gray-50');
+          }
+        }
+      });
+      
+      // 启用价卡设置中的所有输入框（除客户价格字段外，这些是计算得出的）
+      pricingInputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          if (id === 'editBulkCustomerPrice' || id === 'editExpressCustomerPrice') {
+            // 客户价格字段保持只读
+            element.disabled = true;
+            element.classList.add('bg-gray-50');
+          } else {
+            // 其他字段启用编辑
+            element.disabled = false;
+            element.classList.remove('bg-gray-50');
+          }
+        }
+      });
+      
+      // 启用整柜表格中的所有输入框（除客户价格字段外）
+      containerInputs.forEach(input => {
+        if (input.type !== 'button') {
+          // 检查是否为客户价格字段
+          const isCustomerPriceField = input.closest('td:nth-child(5)') !== null;
+          
+          if (isCustomerPriceField) {
+            // 客户价格字段保持只读
+            input.disabled = true;
+            input.classList.add('bg-gray-50');
+          } else {
+            // 其他字段启用编辑
+            input.disabled = false;
+            input.classList.remove('bg-gray-50');
+          }
+        }
+      });
+      
+      // 始终显示新增按钮
+      document.getElementById('btn-new').style.display = 'flex';
+    }
+    
+    // 绑定编辑页面事件
+    function bindEditModalEvents() {
+      // 关闭按钮
+      document.getElementById('closeEditModal').addEventListener('click', closeLevelEditModal);
+      
+      // 取消按钮
+      document.getElementById('editCancelBtn').addEventListener('click', closeLevelEditModal);
+      
+      // 保存按钮
+      document.getElementById('editSaveBtn').addEventListener('click', saveLevelEdit);
+      
+      // 点击弹窗外部关闭
+      document.getElementById('levelEditModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeLevelEditModal();
+        }
+      });
+      
+
+      
+      // 为添加柜型按钮添加事件监听器
+      document.getElementById('addContainerBtn').addEventListener('click', function() {
+        const containerRates = document.getElementById('containerRates');
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td class="px-4 py-3 border-t">
+            <select class="w-full px-3 py-1.5 border border-gray-300 rounded-md">
+              <option value="20GP">20GP</option>
+              <option value="40GP">40GP</option>
+              <option value="40HQ">40HQ</option>
+            </select>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md" placeholder="请输入">
+          </td>
+          <td class="px-4 py-3 border-t">
+            <input type="text" class="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100" placeholder="请输入" readonly>
+          </td>
+          <td class="px-4 py-3 border-t">
+            <button class="text-danger hover:text-danger/90 delete-row-btn">删除</button>
+          </td>
+        `;
+        
+        containerRates.appendChild(row);
+        
+        // 为新添加的行的单价和折扣率输入框添加事件监听器
+        const priceInput = row.querySelector('td:nth-child(2) input');
+        const discountInput = row.querySelector('td:nth-child(4) input');
+        const customerPriceInput = row.querySelector('td:nth-child(5) input');
+        
+        priceInput.addEventListener('input', function() {
+          calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+        });
+        
+        discountInput.addEventListener('input', function() {
+          calculateCustomerPrice(priceInput, discountInput, customerPriceInput);
+        });
+        
+        // 为新添加的删除按钮添加事件监听器
+        const deleteBtn = row.querySelector('.delete-row-btn');
+        deleteBtn.addEventListener('click', function() {
+          row.remove();
+        });
+      });
+      
+      // 为散货的单价和折扣率输入框添加事件监听器
+      const bulkPriceInput = document.getElementById('editBulkPrice');
+      const bulkDiscountInput = document.getElementById('editBulkDiscount');
+      const bulkCustomerPriceInput = document.getElementById('editBulkCustomerPrice');
+      
+      bulkPriceInput.addEventListener('input', function() {
+        calculateCustomerPrice(bulkPriceInput, bulkDiscountInput, bulkCustomerPriceInput);
+      });
+      
+      bulkDiscountInput.addEventListener('input', function() {
+        calculateCustomerPrice(bulkPriceInput, bulkDiscountInput, bulkCustomerPriceInput);
+      });
+      
+      // 为快递的单价和折扣率输入框添加事件监听器
+      const expressPriceInput = document.getElementById('editExpressPrice');
+      const expressDiscountInput = document.getElementById('editExpressDiscount');
+      const expressCustomerPriceInput = document.getElementById('editExpressCustomerPrice');
+      
+      expressPriceInput.addEventListener('input', function() {
+        calculateCustomerPrice(expressPriceInput, expressDiscountInput, expressCustomerPriceInput);
+      });
+      
+      expressDiscountInput.addEventListener('input', function() {
+        calculateCustomerPrice(expressPriceInput, expressDiscountInput, expressCustomerPriceInput);
+      });
+    }
+    
+    // 关闭等级编辑页面
+    function closeLevelEditModal() {
+      document.getElementById('levelEditModal').classList.add('hidden');
+    }
+    
+    // 保存等级编辑
+    function saveLevelEdit() {
+      // 收集编辑后的信息
+      const levelName = document.getElementById('editLevelName').value.trim();
+      const description = document.getElementById('editDescription').value;
+      
+      // 验证必填项
+      if (!levelName) {
+        alert('请输入等级名称');
+        return;
+      }
+      
+      // 这里可以添加保存逻辑，例如发送AJAX请求到服务器保存数据
+      
+      // 关闭编辑页面
+      closeLevelEditModal();
+      
+      alert('保存成功');
+    }
+    
+    // 绑定等级操作事件
+    function bindLevelOperations() {
+      const levelList = document.getElementById('levelList');
+      
+      // 详情按钮
+      levelList.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-detail')) {
+          const row = e.target.closest('tr');
+          const level = row.querySelector('td:first-child .font-medium').textContent;
+          alert(`查看等级${level}详情`);
+        }
+      });
+      
+      // 编辑按钮
+      levelList.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-edit')) {
+          const row = e.target.closest('tr');
+          const level = row.querySelector('td:first-child .font-medium').textContent;
+          
+          // 检查等级是否已关联客户和仓库
+          const levelData = levelDataStore[level];
+          if (levelData && levelData.isReferenced) {
+            alert('该等级已关联客户和仓库，不允许编辑');
+            return;
+          }
+          
+          // 打开等级编辑页面
+          openLevelEditModal(level);
+        }
+      });
+      
+      // 删除按钮
+      levelList.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-delete')) {
+          const row = e.target.closest('tr');
+          const level = row.querySelector('td:first-child .font-medium').textContent;
+          if (confirm(`确定要删除等级${level}吗？`)) {
+            // 模拟删除操作
+            row.remove();
+            alert(`删除等级${level}成功`);
+          }
+        }
+      });
+    }
+    
+    // 绑定分页事件
+    function bindPaginationEvents() {
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const pageButtons = document.querySelectorAll('#levelList + div button:not(#prevPage):not(#nextPage)');
+      
+      // 上一页
+      prevPage.addEventListener('click', function() {
+        console.log('上一页');
+        // 这里可以添加分页逻辑
+      });
+      
+      // 下一页
+      nextPage.addEventListener('click', function() {
+        console.log('下一页');
+        // 这里可以添加分页逻辑
+      });
+      
+      // 页码按钮
+      pageButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // 更新页码样式
+          pageButtons.forEach(btn => {
+            btn.classList.remove('pagination-active');
+            btn.classList.add('pagination-inactive');
+          });
+          this.classList.remove('pagination-inactive');
+          this.classList.add('pagination-active');
+          
+          const pageNum = this.textContent;
+          console.log(`跳转到第${pageNum}页`);
+          // 这里可以添加分页逻辑
+        });
+      });
+    }
+    
+    // 获取并显示费用项名称
+    function showFeeName() {
+      // 从URL参数中获取费用项名称
+      const urlParams = new URLSearchParams(window.location.search);
+      const feeName = urlParams.get('feeName');
+      
+      if (feeName) {
+        const decodedFeeName = decodeURIComponent(feeName);
+        console.log(`当前管理的费用项：${decodedFeeName}`);
+        
+        // 更新页面标题
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+          pageTitle.textContent = `${decodedFeeName} - 等级管理`;
+        }
+        
+        // 更新基本信息区域
+        const feeNameElement = document.getElementById('feeName');
+        if (feeNameElement) {
+          feeNameElement.textContent = decodedFeeName;
+        }
+        
+        // 假设卸货费、仓储费、出库费为基础收费，超箱费、超件费为附加收费
+        const basicFees = ['卸货费', '仓储费', '出库费'];
+        const additionalFees = ['超箱费', '超件费'];
+        
+        let feeType = '基础收费';
+        if (additionalFees.includes(decodedFeeName)) {
+          feeType = '附加收费';
+        }
+        
+        const feeTypeElement = document.getElementById('feeType');
+        if (feeTypeElement) {
+          feeTypeElement.textContent = feeType;
+        }
+        
+        const feeItemElement = document.getElementById('feeItem');
+        if (feeItemElement) {
+          feeItemElement.textContent = decodedFeeName;
+        }
+      }
+    }
+    
+    // 初始化仓库选择下拉框功能
+    function initWarehouseSelect() {
+      // 新增弹窗仓库选择
+      const newDropdown = document.getElementById('newUseWarehouseDropdown');
+      const newOptions = document.getElementById('newWarehouseOptions');
+      const newSelectedDisplay = document.getElementById('newSelectedWarehouses');
+      const newUseWarehouseInput = document.getElementById('newUseWarehouseInput');
+      
+      // 编辑弹窗仓库选择
+      const editDropdown = document.getElementById('editUseWarehouseDropdown');
+      const editOptions = document.getElementById('editWarehouseOptions');
+      const editSelectedDisplay = document.getElementById('editSelectedWarehouses');
+      const editUseWarehouseInput = document.getElementById('editUseWarehouseInput');
+      
+      // 处理新增弹窗仓库选择
+      if (newDropdown && newOptions && newSelectedDisplay) {
+        // 点击下拉框切换选项显示
+        newDropdown.addEventListener('click', (e) => {
+          e.stopPropagation();
+          newOptions.classList.toggle('hidden');
+        });
+        
+        // 点击选项时处理
+      const newOptionItems = newOptions.querySelectorAll('[data-value]');
+      if (newOptionItems) {
+        newOptionItems.forEach(item => {
+          if (item) {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const checkbox = item.querySelector('input[type="checkbox"]');
+              if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                updateWarehouseDisplay('new');
+              }
+            });
+          }
+        });
+      }
+      }
+      
+      // 处理编辑弹窗仓库选择
+      if (editDropdown && editOptions && editSelectedDisplay) {
+        // 点击下拉框切换选项显示
+        editDropdown.addEventListener('click', (e) => {
+          e.stopPropagation();
+          editOptions.classList.toggle('hidden');
+        });
+        
+        // 点击选项时处理
+      const editOptionItems = editOptions.querySelectorAll('[data-value]');
+      if (editOptionItems) {
+        editOptionItems.forEach(item => {
+          if (item) {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const checkbox = item.querySelector('input[type="checkbox"]');
+              if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                updateWarehouseDisplay('edit');
+              }
+            });
+          }
+        });
+      }
+      }
+      
+      // 点击页面其他区域关闭下拉框
+      document.addEventListener('click', () => {
+        if (newOptions) newOptions.classList.add('hidden');
+        if (editOptions) editOptions.classList.add('hidden');
+      });
+      
+      // 阻止点击选项时关闭下拉框
+      if (newOptions) {
+        newOptions.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+      if (editOptions) {
+        editOptions.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+    }
+    
+    // 更新仓库选择显示
+    function updateWarehouseDisplay(type) {
+      // 根据类型获取对应的元素
+      const optionItems = document.querySelectorAll(`#${type}WarehouseOptions [data-value]`);
+      const selectedDisplay = document.getElementById(`${type}SelectedWarehouses`);
+      const hiddenInput = document.getElementById(`${type}UseWarehouseInput`);
+      
+      const selectedWarehouses = [];
+      
+      // 空值检查
+      if (!optionItems || !selectedDisplay || !hiddenInput) {
+        return;
+      }
+      
+      optionItems.forEach(item => {
+        if (item) {
+          const checkbox = item.querySelector('input[type="checkbox"]');
+          if (checkbox && checkbox.checked) {
+            selectedWarehouses.push(item.dataset.value);
+          }
+        }
+      });
+      
+      // 更新显示文本
+      if (selectedWarehouses.length > 0) {
+        selectedDisplay.textContent = selectedWarehouses.join(', ');
+      } else {
+        selectedDisplay.textContent = '请选择仓库';
+      }
+      
+      // 更新隐藏输入框的值
+      hiddenInput.value = selectedWarehouses.join(',');
+    }
+    
+    // 获取URL参数
+    function getUrlParams() {
+      try {
+        const params = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        for (const [key, value] of urlParams.entries()) {
+          params[key] = value;
+        }
+        console.log('获取到的URL参数：', params);
+        return params;
+      } catch (error) {
+        console.error('获取URL参数时发生错误：', error);
+        return {};
+      }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        console.log('页面加载完成，开始初始化');
+        
+        // 初始化仓库选择功能
+        initWarehouseSelect();
+        
+        // 处理URL参数
+        const params = getUrlParams();
+        const warehouseCode = params.warehouseCode;
+        console.log('仓库代码参数：', warehouseCode);
+        
+        // 更新返回按钮链接
+        const backBtn = document.getElementById('btn-back');
+        if (backBtn) {
+          console.log('找到返回按钮，添加点击事件');
+          backBtn.addEventListener('click', function() {
+            console.log('点击返回按钮，跳转到仓库列表页面');
+            window.location.href = '../仓库列表/index.html';
+          });
+        } else {
+          console.log('未找到返回按钮');
+        }
+        
+        // 显示当前仓库信息
+        const warehouseInfo = document.getElementById('warehouseInfo');
+        if (warehouseInfo && warehouseCode) {
+          console.log('显示当前仓库信息：', warehouseCode);
+          warehouseInfo.textContent = `当前仓库：${warehouseCode}`;
+        } else {
+          console.log('未找到仓库信息显示元素或仓库代码参数');
+        }
+      } catch (error) {
+        console.error('页面初始化时发生错误：', error);
+      }
+    });
+  </script>
+</body>
+</html>
