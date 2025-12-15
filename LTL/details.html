@@ -82,9 +82,9 @@
 
   <!-- 主要内容 -->
   <main class="container mx-auto px-4 py-6 content-wrapper">
-    <div class="two-column-layout flex flex-row gap-6">
-      <!-- 左侧：当前页面数据 -->
-      <div class="w-2/3">
+    <div class="one-column-layout flex flex-col gap-6">
+      <!-- 当前页面数据 -->
+      <div class="w-full">
         <!-- 询价单基本信息卡片 -->
         <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
           <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">询价单信息</h2>
@@ -94,8 +94,8 @@
               <span class="text-sm font-medium text-neutral-800" id="detail-inquiry-id">XJ-20251013-00002</span>
             </div>
             <div class="flex flex-col">
-              <span class="text-sm text-neutral-500">类型</span>
-              <span class="text-sm font-medium text-neutral-800">FTL(小车)</span>
+              <span class="text-sm text-neutral-500">提货时间</span>
+              <span class="text-sm font-medium text-neutral-800">2025/10/14</span>
             </div>
             <div class="flex flex-col">
               <span class="text-sm text-neutral-500">客户代码</span>
@@ -116,140 +116,368 @@
           </div>
         </div>
         
-        <!-- 供应商报价列表 -->
-        <h2 class="text-base font-medium text-neutral-800 mb-3">供应商报价列表</h2>
-        
-        <!-- saia 供应商区块 -->
-        <div class="border border-neutral-200 rounded-lg overflow-hidden mb-4 shadow-sm bg-white">
-          <div class="bg-primary/5 border-b border-neutral-200 px-4 py-3 font-medium text-primary">saia</div>
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-neutral-50 text-neutral-600">
-                <th class="px-4 py-3 text-left font-medium text-neutral-700">供应商名称</th>
-                <th class="px-4 py-3 text-left font-medium text-neutral-700">报价(USD)</th>
-                <th class="px-4 py-3 text-left font-medium text-neutral-700">报价时间</th>
-                <th class="px-4 py-3 text-left font-medium text-neutral-700">失效时间</th>
-                <th class="px-4 py-3 text-left font-medium text-neutral-700">备注</th>
-                <th class="px-4 py-3 text-left font-medium text-neutral-700">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-t border-neutral-200">
-                <td class="px-4 py-3">KWS</td>
-                <td class="px-4 py-3">
-                  ¥5800 <span class="badge-pill bg-success/10 text-success ml-1">最低</span>
-                </td>
-                <td class="px-4 py-3">2025-10-14 09:30</td>
-                <td class="px-4 py-3 text-warning">2025-10-15 18:00（即将过期）</td>
-                <td class="px-4 py-3">含卸货费，需提前2小时预约</td>
-                <td class="px-4 py-3">
-                  <button class="btn-primary order-btn" data-supplier="KWS" data-amount="5800">下单</button>
-                </td>
-              </tr>
-              <tr class="border-t border-neutral-200">
-                <td class="px-4 py-3">SENMA</td>
-                <td class="px-4 py-3">¥6200</td>
-                <td class="px-4 py-3">2025-10-14 10:15</td>
-                <td class="px-4 py-3">2025-10-16 20:00（<span class="text-success">正常</span>）</td>
-                <td class="px-4 py-3">可开发票，支持月结</td>
-                <td class="px-4 py-3">
-                  <button class="btn-primary order-btn" data-supplier="SENMA" data-amount="6200">下单</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- 时间选择tab栏 -->
+        <div class="mb-6">
+          <h2 class="text-base font-medium text-neutral-800 mb-3">供应商报价列表</h2>
+          <div id="date-tabs" class="date-tabs flex gap-3 mb-4 overflow-x-auto pb-2"></div>
         </div>
         
-        <!-- arcb 供应商区块 -->
-        <div class="border border-neutral-200 rounded-lg overflow-hidden mb-4 shadow-sm bg-white">
-          <div class="bg-primary/5 border-b border-neutral-200 px-4 py-3 font-medium text-primary">arcb</div>
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-neutral-50 text-neutral-600">
-                <th class="px-4 py-3 text-left font-medium">供应商名称</th>
-                <th class="px-4 py-3 text-left font-medium">报价(USD)</th>
-                <th class="px-4 py-3 text-left font-medium">报价时间</th>
-                <th class="px-4 py-3 text-left font-medium">失效时间</th>
-                <th class="px-4 py-3 text-left font-medium">备注</th>
-                <th class="px-4 py-3 text-left font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-t border-neutral-200">
-                <td class="px-4 py-3">KWS</td>
-                <td class="px-4 py-3">¥7200</td>
-                <td class="px-4 py-3">2025-10-14 11:20</td>
-                <td class="px-4 py-3">2025-10-17 00:00（<span class="text-success">正常</span>）</td>
-                <td class="px-4 py-3">提供全程GPS跟踪</td>
-                <td class="px-4 py-3">
-                  <button class="btn-primary order-btn" data-supplier="KWS" data-amount="7200">下单</button>
-                </td>
-              </tr>
-              <tr class="border-t border-neutral-200">
-                <td class="px-4 py-3">SENMA</td>
-                <td class="px-4 py-3">
-                  ¥6800 <span class="badge-pill bg-success/10 text-success ml-1">最低</span>
-                </td>
-                <td class="px-4 py-3">2025-10-14 10:50</td>
-                <td class="px-4 py-3 text-warning">2025-10-15 09:00（即将过期）</td>
-                <td class="px-4 py-3">含2次免费装卸</td>
-                <td class="px-4 py-3">
-                  <button class="btn-primary order-btn" data-supplier="SENMA" data-amount="6800">下单</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <!-- estes 供应商区块 -->
-        <div class="border border-neutral-200 rounded-lg overflow-hidden mb-4 shadow-sm bg-white">
-          <div class="bg-primary/5 border-b border-neutral-200 px-4 py-3 font-medium text-primary">estes</div>
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-neutral-50 text-neutral-600">
-                <th class="px-4 py-3 text-left font-medium">供应商名称</th>
-                <th class="px-4 py-3 text-left font-medium">报价(USD)</th>
-                <th class="px-4 py-3 text-left font-medium">报价时间</th>
-                <th class="px-4 py-3 text-left font-medium">失效时间</th>
-                <th class="px-4 py-3 text-left font-medium">备注</th>
-                <th class="px-4 py-3 text-left font-medium">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-t border-neutral-200">
-                <td class="px-4 py-3">SENMA</td>
-                <td class="px-4 py-3">
-                  ¥4500 <span class="badge-pill bg-success/10 text-success ml-1">最低</span>
-                </td>
-                <td class="px-4 py-3">2025-10-14 07:30</td>
-                <td class="px-4 py-3">2025-10-18 12:00（<span class="text-success">正常</span>）</td>
-                <td class="px-4 py-3">仅限同城运输</td>
-                <td class="px-4 py-3">
-                  <button class="btn-primary order-btn" data-supplier="SENMA" data-amount="4500">下单</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <!-- 右侧：逻辑说明区域 -->
-      <div class="w-1/3">
-        <div class="bg-white rounded-lg shadow-sm p-6 sticky top-4">
-          <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">逻辑说明</h2>
-          <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
-            <div class="text-sm text-red-500">
-              <ol class="list-decimal list-inside space-y-3">
-                <li>下单后，询价单状态变更为'已下单'</li>
-                <li>已下单的询价单，不允许重复询价</li>
-                <li>下单后，高亮展示下单的数据</li>
-                <li>可触发‘下单’按钮，预览效果</li>
-              </ol>
+        <!-- 供应商报价列表容器 -->
+        <div id="quotation-list-container">
+          <!-- 2025-10-14 报价数据 -->
+          <div class="date-quotation" data-date="2025-10-14">
+            <!-- 日期标题 -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-blue-800">10月14日 周二</h3>
+                  <p class="text-sm text-blue-600">共 3 个车队报价</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-600">最低价格</p>
+                  <p class="text-2xl font-bold text-green-600">¥4,500</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 价格条目 -->
+            <div class="space-y-3">
+              <!-- 最低价格条目 -->
+              <div class="price-item border border-green-400 bg-green-50 shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold animate-pulse">最低价</div>
+                    <div>
+                      <div class="font-semibold text-lg text-green-700">¥4,500</div>
+                      <div class="text-sm text-gray-600">estes - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-14 07:30</div>
+                      <div class="text-xs text-gray-500 mt-1">仅限同城运输</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="4500">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 其他价格条目 -->
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥5,800</div>
+                      <div class="text-sm text-gray-600">saia - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-14 09:30</div>
+                      <div class="text-xs text-gray-500 mt-1">含卸货费，需提前2小时预约</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="5800">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥6,200</div>
+                      <div class="text-sm text-gray-600">saia - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-14 10:15</div>
+                      <div class="text-xs text-gray-500 mt-1">可开发票，支持月结</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="6200">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥6,800</div>
+                      <div class="text-sm text-gray-600">arcb - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-14 10:50</div>
+                      <div class="text-xs text-gray-500 mt-1">含2次免费装卸</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="6800">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥7,200</div>
+                      <div class="text-sm text-gray-600">arcb - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-14 11:20</div>
+                      <div class="text-xs text-gray-500 mt-1">提供全程GPS跟踪</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="7200">下单</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+          <!-- 2025-10-15 报价数据 -->
+          <div class="date-quotation" data-date="2025-10-15" style="display: none;">
+            <!-- 日期标题 -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-blue-800">10月15日 周三</h3>
+                  <p class="text-sm text-blue-600">共 5 个车队报价</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-600">最低价格</p>
+                  <p class="text-2xl font-bold text-green-600">¥5,600</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 价格条目 -->
+            <div class="space-y-3">
+              <!-- 最低价格条目 -->
+              <div class="price-item border border-green-400 bg-green-50 shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold animate-pulse">最低价</div>
+                    <div>
+                      <div class="font-semibold text-lg text-green-700">¥5,600</div>
+                      <div class="text-sm text-gray-600">saia - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-15 08:30</div>
+                      <div class="text-xs text-gray-500 mt-1">含卸货费，需提前2小时预约</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="5600">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 其他价格条目 -->
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥6,500</div>
+                      <div class="text-sm text-gray-600">arcb - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-15 09:15</div>
+                      <div class="text-xs text-gray-500 mt-1">可开发票，支持月结</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="6500">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥6,900</div>
+                      <div class="text-sm text-gray-600">estes - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-15 10:00</div>
+                      <div class="text-xs text-gray-500 mt-1">提供全程保险服务</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="6900">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥7,300</div>
+                      <div class="text-sm text-gray-600">estes - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-15 10:45</div>
+                      <div class="text-xs text-gray-500 mt-1">含3次免费装卸</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="7300">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥7,800</div>
+                      <div class="text-sm text-gray-600">arcb - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-15 11:30</div>
+                      <div class="text-xs text-gray-500 mt-1">支持夜间配送</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="7800">下单</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 2025-10-16 报价数据 -->
+          <div class="date-quotation" data-date="2025-10-16" style="display: none;">
+            <!-- 日期标题 -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-4 shadow-sm">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-blue-800">10月16日 周四</h3>
+                  <p class="text-sm text-blue-600">共 5 个车队报价</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-600">最低价格</p>
+                  <p class="text-2xl font-bold text-green-600">¥5,900</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 价格条目 -->
+            <div class="space-y-3">
+              <!-- 最低价格条目 -->
+              <div class="price-item border border-green-400 bg-green-50 shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div class="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold animate-pulse">最低价</div>
+                    <div>
+                      <div class="font-semibold text-lg text-green-700">¥5,900</div>
+                      <div class="text-sm text-gray-600">saia - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-16 10:30</div>
+                      <div class="text-xs text-gray-500 mt-1">含卸货费，需提前2小时预约</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="5900">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 其他价格条目 -->
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥6,300</div>
+                      <div class="text-sm text-gray-600">saia - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-16 11:15</div>
+                      <div class="text-xs text-gray-500 mt-1">可开发票，支持月结</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="6300">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥7,100</div>
+                      <div class="text-sm text-gray-600">arcb - KWS</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-16 12:30</div>
+                      <div class="text-xs text-gray-500 mt-1">提供上门取货服务</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="KWS" data-amount="7100">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥7,500</div>
+                      <div class="text-sm text-gray-600">estes - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-16 14:15</div>
+                      <div class="text-xs text-gray-500 mt-1">含1次免费仓储服务</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="7500">下单</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="price-item border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md rounded-lg p-4 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div>
+                      <div class="font-semibold text-lg text-gray-800">¥7,900</div>
+                      <div class="text-sm text-gray-600">arcb - SENMA</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-6">
+                    <div class="text-center">
+                      <div class="text-xs text-gray-500">报价时间/备注</div>
+                      <div class="text-sm font-medium">2025-10-16 15:45</div>
+                      <div class="text-xs text-gray-500 mt-1">支持24小时客服</div>
+                    </div>
+                    <button class="btn-primary order-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-sm hover:shadow-lg transform hover:scale-105" data-supplier="SENMA" data-amount="7900">下单</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   </main>
 
   <!-- 固定底部导航 -->
@@ -261,6 +489,74 @@
 
   <!-- JavaScript 交互逻辑 -->
   <script>
+    // 时间tab栏功能
+    function initDateTabs() {
+      const dateTabs = document.getElementById('date-tabs');
+      const quotationList = document.getElementById('quotation-list-container');
+      
+      if (!dateTabs || !quotationList) {
+        console.error('dateTabs or quotationList not found');
+        return;
+      }
+      
+      // 生成固定的日期范围（2025-10-14至2025-10-16）
+      const dates = ['2025-10-14', '2025-10-15', '2025-10-16'];
+      
+      // 生成日期标签
+      dateTabs.innerHTML = '';
+      
+      dates.forEach((date, index) => {
+        const dateObj = new Date(date);
+        const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][dateObj.getDay()];
+        
+        const dateTab = document.createElement('button');
+        dateTab.className = `date-tab px-4 py-2 rounded-lg border transition-all duration-200 ${index === 0 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-sm'}`;
+        dateTab.setAttribute('data-date', date);
+        dateTab.innerHTML = `
+          <div class="text-sm font-medium">${dateObj.getMonth() + 1}月${dateObj.getDate()}日</div>
+          <div class="text-xs ${index === 0 ? 'text-blue-100' : 'text-gray-500'}">${weekDay}</div>
+        `;
+        
+        dateTab.onclick = () => selectDate(date, dateTab);
+        dateTabs.appendChild(dateTab);
+      });
+      
+      // 默认显示第一天的报价
+      const firstTab = dateTabs.querySelector('.date-tab');
+      if (firstTab) {
+        selectDate(dates[0], firstTab);
+      }
+      
+      // 确保至少有一个报价显示
+      setTimeout(() => {
+        const firstQuotation = document.querySelector('.date-quotation');
+        if (firstQuotation) {
+          firstQuotation.style.display = 'block';
+        }
+      }, 100);
+    }
+    
+    function selectDate(date, selectedTab) {
+      // 更新标签样式
+      document.querySelectorAll('.date-tab').forEach(tab => {
+        tab.className = 'date-tab px-4 py-2 rounded-lg border transition-all duration-200 bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-sm';
+        tab.querySelectorAll('div')[1].className = 'text-xs text-gray-500';
+      });
+      
+      selectedTab.className = 'date-tab px-4 py-2 rounded-lg border transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-lg transform scale-105';
+      selectedTab.querySelectorAll('div')[1].className = 'text-xs text-blue-100';
+      
+      // 显示选中日期的报价，隐藏其他日期的报价
+      const quotations = document.querySelectorAll('.date-quotation');
+      quotations.forEach(quotation => {
+        if (quotation.dataset.date === date) {
+          quotation.style.display = 'block';
+        } else {
+          quotation.style.display = 'none';
+        }
+      });
+    }
+    
     // 获取URL参数
     function getURLParams() {
       const params = {};
@@ -285,119 +581,74 @@
     });
 
     // 检查询价单状态并更新UI
-      function checkInquiryStatus() {
-        const inquiryId = document.getElementById('detail-inquiry-id').textContent;
-        const orderButtons = document.querySelectorAll('.order-btn');
-        const statusElement = document.getElementById('inquiry-status');
+    function checkInquiryStatus() {
+      const inquiryId = document.getElementById('detail-inquiry-id').textContent;
+      const orderButtons = document.querySelectorAll('.order-btn');
+      const statusElement = document.getElementById('inquiry-status');
+      
+      // 从localStorage获取已下单的询价单信息
+      const orderedData = JSON.parse(localStorage.getItem('orderedInquiries') || '{}');
+      const orderInfo = orderedData[inquiryId];
+      
+      if (orderInfo) {
+        // 更新状态显示
+        statusElement.textContent = '已下单';
+        statusElement.classList.remove('bg-primary/10', 'text-primary');
+        statusElement.classList.add('bg-success/10', 'text-success');
         
-        // 从localStorage获取已下单的询价单信息
-        const orderedData = JSON.parse(localStorage.getItem('orderedInquiries') || '{}');
-        const orderInfo = orderedData[inquiryId];
-        
-        if (orderInfo) {
-          // 更新状态显示
+        // 隐藏所有下单按钮
+        if (orderButtons && orderButtons.length > 0) {
+          orderButtons.forEach(button => {
+            button.style.display = 'none';
+          });
+        }
+      }
+    }
+    
+    // 处理下单按钮
+    const orderButtons = document.querySelectorAll('.order-btn');
+    if (orderButtons && orderButtons.length > 0) {
+      orderButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const supplier = this.dataset.supplier;
+          const amount = this.dataset.amount;
+          const inquiryId = document.getElementById('detail-inquiry-id').textContent;
+          
+          // 获取已下单的询价单信息
+          let orderedData = JSON.parse(localStorage.getItem('orderedInquiries') || '{}');
+          
+          // 检查是否已经下过单
+          if (orderedData[inquiryId]) {
+            alert('此询价单已经下过单，不允许重复下单');
+            return;
+          }
+          
+          // 保存询价单ID和选择的供应商信息
+          orderedData[inquiryId] = {
+            supplier: supplier,
+            amount: amount,
+            orderedAt: new Date().toISOString()
+          };
+          
+          localStorage.setItem('orderedInquiries', JSON.stringify(orderedData));
+          
+          // 显示成功消息
+          alert(`已选择 ${supplier} 供应商下单，报价金额：¥${amount}，询价单号：${inquiryId}`);
+          
+          // 立即更新UI：隐藏按钮并更新状态
+          const statusElement = document.getElementById('inquiry-status');
           statusElement.textContent = '已下单';
           statusElement.classList.remove('bg-primary/10', 'text-primary');
           statusElement.classList.add('bg-success/10', 'text-success');
           
           // 隐藏所有下单按钮
-          if (orderButtons && orderButtons.length > 0) {
-            orderButtons.forEach(button => {
-              button.style.display = 'none';
-            });
-          }
-          
-          // 标识出选中下单的数据 - 只选择表格数据行
-          const tbodyRows = document.querySelectorAll('tbody tr');
-          tbodyRows.forEach(row => {
-            const supplierCell = row.querySelector('td:first-child');
-            const priceCell = row.querySelector('td:nth-child(2)');
-            
-            if (supplierCell && priceCell) {
-              const supplier = supplierCell.textContent.trim();
-              const price = priceCell.textContent.trim().split(' ')[0];
-              
-              if (supplier === orderInfo.supplier && price === `¥${orderInfo.amount}`) {
-                row.classList.add('selected-order');
-                // 添加选中标识
-                const actionCell = row.querySelector('td:last-child');
-                if (actionCell) {
-                  actionCell.innerHTML = '<span class="badge-pill bg-success/10 text-success">已选此报价下单</span>';
-                }
-              }
-            }
-          });
-        }
-      }
-      
-      // 处理下单按钮
-      const orderButtons = document.querySelectorAll('.order-btn');
-      if (orderButtons && orderButtons.length > 0) {
-        orderButtons.forEach(button => {
-          button.addEventListener('click', function() {
-            const supplier = this.dataset.supplier;
-            const amount = this.dataset.amount;
-            const inquiryId = document.getElementById('detail-inquiry-id').textContent;
-            
-            // 获取已下单的询价单信息
-            let orderedData = JSON.parse(localStorage.getItem('orderedInquiries') || '{}');
-            
-            // 检查是否已经下过单
-            if (orderedData[inquiryId]) {
-              alert('此询价单已经下过单，不允许重复下单');
-              return;
-            }
-            
-            // 保存询价单ID和选择的供应商信息
-            orderedData[inquiryId] = {
-              supplier: supplier,
-              amount: amount,
-              orderedAt: new Date().toISOString()
-            };
-            
-            localStorage.setItem('orderedInquiries', JSON.stringify(orderedData));
-            
-            // 显示成功消息
-            alert(`已选择 ${supplier} 供应商下单，报价金额：¥${amount}，询价单号：${inquiryId}`);
-            
-            // 立即更新UI：隐藏按钮并更新状态
-            const statusElement = document.getElementById('inquiry-status');
-            statusElement.textContent = '已下单';
-            statusElement.classList.remove('bg-primary/10', 'text-primary');
-            statusElement.classList.add('bg-success/10', 'text-success');
-            
-            // 隐藏所有下单按钮
-            const allOrderButtons = document.querySelectorAll('.order-btn');
-            allOrderButtons.forEach(btn => {
-              btn.style.display = 'none';
-            });
-            
-            // 高亮显示已下单的数据行
-            const tbodyRows = document.querySelectorAll('tbody tr');
-            tbodyRows.forEach(row => {
-              const supplierCell = row.querySelector('td:first-child');
-              const priceCell = row.querySelector('td:nth-child(2)');
-              
-              if (supplierCell && priceCell) {
-                const rowSupplier = supplierCell.textContent.trim();
-                const rowPrice = priceCell.textContent.trim().split(' ')[0];
-                
-                if (rowSupplier === supplier && rowPrice === `¥${amount}`) {
-                  row.classList.add('selected-order');
-                  // 添加选中标识
-                  const actionCell = row.querySelector('td:last-child');
-                  if (actionCell) {
-                    actionCell.innerHTML = '<span class="badge-pill bg-success/10 text-success">已选此报价下单</span>';
-                  }
-                }
-              }
-            });
-            
-            // 通知index页面状态已更新（通过localStorage事件）
-            localStorage.setItem('inquiryStatusUpdated', Date.now());
+          const allOrderButtons = document.querySelectorAll('.order-btn');
+          allOrderButtons.forEach(btn => {
+            btn.style.display = 'none';
           });
         });
-      }
+      });
+    }
 
     // 初始化页面数据
     function initPage() {
@@ -416,7 +667,10 @@
     }
 
     // 页面加载完成后初始化
-    document.addEventListener('DOMContentLoaded', initPage);
+    document.addEventListener('DOMContentLoaded', function() {
+      initPage();
+      initDateTabs();
+    });
   </script>
 </body>
 </html>
