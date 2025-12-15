@@ -50,7 +50,13 @@
   <!-- 页面容器 -->
   <div class="container mx-auto px-4 py-8 max-w-7xl">
     <!-- 页面头部 -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div class="flex flex-col md:flex-row justify-start items-start md:items-center mb-8 space-y-4 md:space-y-0 md:space-x-4">
+      <div class="flex items-center">
+        <label class="mr-2 text-sm text-gray-700">仓库</label>
+        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+          <option value="DE001">DE001</option>
+        </select>
+      </div>
       <button id="importBtn" class="mt-4 md:mt-0 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg flex items-center transition-all duration-300 shadow-md hover:shadow-lg">
         <i class="fa fa-upload mr-2"></i>
         导入
