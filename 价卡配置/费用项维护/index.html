@@ -56,12 +56,6 @@
       .input-primary {
         @apply w-full px-4 py-2.5 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
       }
-      .tab-active {
-        @apply text-primary border-b-2 border-primary;
-      }
-      .tab-inactive {
-        @apply text-gray-500 border-b-2 border-transparent hover:text-gray-700;
-      }
       .table-row-hover {
         @apply hover:bg-gray-50 transition-colors;
       }
@@ -81,26 +75,11 @@
     <div class="flex justify-between items-center mb-8">
     </div>
     
-    <!-- 标签页 -->
-    <div class="mb-6 border-b border-border">
-      <ul class="flex space-x-8">
-        <li>
-          <button id="tab-all" class="tab-active px-1 py-4 font-medium text-sm transition-all">全部</button>
-        </li>
-        <li>
-          <button id="tab-basic" class="tab-inactive px-1 py-4 font-medium text-sm transition-all">基础收费</button>
-        </li>
-        <li>
-          <button id="tab-additional" class="tab-inactive px-1 py-4 font-medium text-sm transition-all">附加收费</button>
-        </li>
-      </ul>
-    </div>
-    
     <!-- 搜索和筛选区域 -->
     <div class="bg-white p-4 rounded-lg shadow-card mb-6">
       <div class="flex flex-wrap gap-4">
         <div class="w-full md:w-auto">
-          <input type="text" id="searchInput" placeholder="搜索收费项名称" class="input-primary w-full md:w-64">
+          <input type="text" id="searchInput" placeholder="搜索业务类型" class="input-primary w-full md:w-64">
         </div>
         <div class="flex gap-2">
           <button id="searchBtn" class="btn-primary">
@@ -129,41 +108,27 @@
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收费项</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收费类型</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级数</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务类型</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">基础费用价卡数量</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">附加费用价卡数量</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新时间</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border" id="feeList">
-            <!-- 基础收费项 -->
-            <tr class="table-row-hover fee-item" data-type="basic">
+            <!-- 入库业务 -->
+            <tr class="table-row-hover fee-item">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-dark">卸货费</div>
+                <div class="text-sm font-medium text-dark">入库</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">基础收费</span>
+                <div class="text-sm text-gray-600">12</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">5</div>
+                <div class="text-sm text-gray-600">8</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
-                    <i class="fa fa-cog"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr class="table-row-hover fee-item" data-type="basic">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-dark">仓储费</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">基础收费</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">5</div>
+                <div class="text-sm text-gray-600">2024-01-15 14:30</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
@@ -173,34 +138,19 @@
                 </div>
               </td>
             </tr>
-            <tr class="table-row-hover fee-item" data-type="basic">
+            <!-- 出库业务 -->
+            <tr class="table-row-hover fee-item">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-dark">出库费</div>
+                <div class="text-sm font-medium text-dark">出库</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">基础收费</span>
+                <div class="text-sm text-gray-600">15</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">5</div>
+                <div class="text-sm text-gray-600">10</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
-                    <i class="fa fa-cog"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <!-- 附加收费项 -->
-            <tr class="table-row-hover fee-item" data-type="additional">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-dark">超箱费</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">附加收费</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">5</div>
+                <div class="text-sm text-gray-600">2024-01-15 10:20</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
@@ -210,15 +160,41 @@
                 </div>
               </td>
             </tr>
-            <tr class="table-row-hover fee-item" data-type="additional">
+            <!-- 卡车转仓业务 -->
+            <tr class="table-row-hover fee-item">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-dark">超件费</div>
+                <div class="text-sm font-medium text-dark">卡车转仓</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">附加收费</span>
+                <div class="text-sm text-gray-600">20</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-600">5</div>
+                <div class="text-sm text-gray-600">12</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2024-01-14 16:45</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="btn-setting text-primary hover:text-primary-light transition-colors" title="设置">
+                    <i class="fa fa-cog"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- 退货业务 -->
+            <tr class="table-row-hover fee-item">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">退货</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">18</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">9</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600">2024-01-13 09:15</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
@@ -237,7 +213,7 @@
     <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
       <!-- 分页信息 -->
       <div class="text-sm text-gray-600">
-        共 <span class="font-medium">5</span> 条记录
+        共 <span class="font-medium">4</span> 条记录
       </div>
       
       <!-- 分页控件 -->
@@ -279,9 +255,6 @@
   <script>
     // 页面加载完成后执行
     document.addEventListener('DOMContentLoaded', function() {
-      // 绑定标签页事件
-      bindTabEvents();
-      
       // 绑定搜索和重置事件
       bindSearchEvents();
       
@@ -291,41 +264,6 @@
       // 绑定费用项操作事件
       bindFeeItemEvents();
     });
-    
-    // 绑定标签页事件
-    function bindTabEvents() {
-      const tabs = {
-        all: document.getElementById('tab-all'),
-        basic: document.getElementById('tab-basic'),
-        additional: document.getElementById('tab-additional')
-      };
-      
-      // 切换标签页
-      function switchTab(tabName) {
-        // 更新标签样式
-        Object.values(tabs).forEach(tab => {
-          tab.classList.remove('tab-active');
-          tab.classList.add('tab-inactive');
-        });
-        tabs[tabName].classList.remove('tab-inactive');
-        tabs[tabName].classList.add('tab-active');
-        
-        // 过滤费用项
-        const feeItems = document.querySelectorAll('.fee-item');
-        feeItems.forEach(item => {
-          if (tabName === 'all') {
-            item.style.display = '';
-          } else {
-            item.style.display = item.dataset.type === tabName ? '' : 'none';
-          }
-        });
-      }
-      
-      // 绑定标签点击事件
-      tabs.all.addEventListener('click', () => switchTab('all'));
-      tabs.basic.addEventListener('click', () => switchTab('basic'));
-      tabs.additional.addEventListener('click', () => switchTab('additional'));
-    }
     
     // 绑定搜索和重置事件
     function bindSearchEvents() {

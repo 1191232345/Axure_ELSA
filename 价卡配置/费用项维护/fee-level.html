@@ -102,16 +102,16 @@
         <div id="feeInfoDisplay" class="p-4 bg-gray-50">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">费用类型</label>
-              <div class="text-sm font-medium" id="feeType">基础收费</div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">业务类型</label>
+              <div class="text-sm font-medium" id="feeType">入库</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">收费项</label>
-              <div class="text-sm font-medium" id="feeItem">收费项</div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">基础费用数</label>
+              <div class="text-sm font-medium" id="basicFeeCount">10</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-500 mb-1">费用项名称</label>
-              <div class="text-sm font-medium" id="feeName">费用项名称</div>
+              <label class="block text-sm font-medium text-gray-500 mb-1">附加费用数</label>
+              <div class="text-sm font-medium" id="feeName">5</div>
             </div>
           </div>
         </div>
@@ -180,7 +180,10 @@
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">费用类型</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收费项</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级名称</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">适用范围</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">使用用户</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建人</th>
@@ -193,6 +196,15 @@
           <tbody class="divide-y divide-border" id="levelList">
             <!-- 等级数据行 -->
             <tr class="table-row-hover">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">1</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">基础费用</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">卸货费</div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-dark">公报价</div>
               </td>
@@ -230,6 +242,15 @@
             </tr>
             <tr class="table-row-hover">
               <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">2</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">附加费用</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">超重费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-dark">等级1</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -266,6 +287,15 @@
             </tr>
             <tr class="table-row-hover">
               <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">3</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">附加费用</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">超箱费</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-dark">等级2</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -301,6 +331,15 @@
               </td>
             </tr>
             <tr class="table-row-hover">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">4</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">附加费用</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-dark">超件费</div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-dark">等级3</div>
               </td>
