@@ -347,11 +347,18 @@
       
       // 设置客户信息
       if (customerCode) {
-        document.getElementById('customerCode').value = customerCode;
+        const customerCodeEl = document.getElementById('customerCode');
+        const customerNameEl = document.getElementById('customerName');
+        
+        if (customerCodeEl) {
+          customerCodeEl.value = customerCode;
+        }
+        
         // 这里可以根据客户代码加载客户详细信息
         // 暂时使用模拟数据
-        document.getElementById('customerName').value = customerCode;
-        document.getElementById('contactPerson').value = '联系人';
+        if (customerNameEl) {
+          customerNameEl.value = customerCode;
+        }
       }
       
       // 返回按钮事件
