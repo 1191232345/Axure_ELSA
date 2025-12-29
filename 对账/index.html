@@ -1,1823 +1,1860 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>收入明细</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
-        }
-        
-        body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        /* 标签页样式 */
-        .tab {
-            background-color: #007bff;
-            color: #fff;
-            padding: 8px 20px;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
-            display: inline-block;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 2px 4px rgba(0,123,255,0.1);
-        }
-        
-        /* 导航标签栏 */
-        .nav-tabs {
-            background-color: #fff;
-            padding: 12px 20px;
-            border-bottom: 1px solid #e1e5e9;
-            overflow-x: auto;
-            white-space: nowrap;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        
-        .nav-tabs span {
-            padding: 10px 16px;
-            cursor: pointer;
-            display: inline-block;
-            font-size: 14px;
-            color: #6c757d;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            margin-right: 8px;
-        }
-        
-        .nav-tabs span:hover {
-            background-color: #f8f9fa;
-            color: #495057;
-        }
-        
-        .nav-tabs span.active {
-            background-color: #e7f3ff;
-            border-bottom: 2px solid #007bff;
-            color: #007bff;
-            font-weight: 500;
-        }
-        
-        /* 筛选栏 */
-        .filter-bar {
-            background-color: #fff;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            font-size: 14px;
-            border-bottom: 1px solid #e1e5e9;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        
-        .filter-bar select,
-        .filter-bar input {
-            padding: 8px 12px;
-            border: 1px solid #d1d9e0;
-            border-radius: 4px;
-            min-width: 140px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        
-        .filter-bar select:focus,
-        .filter-bar input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
-        }
-        
-        .filter-bar button {
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        
-        /* 搜索和重置按钮样式 */
-        .btn-reset, .btn-search {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            outline: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .btn-reset {
-            background-color: #ffffff;
-            color: #6c757d;
-            border: 1px solid #dee2e6;
-        }
-        
-        .btn-reset:hover {
-            background-color: #f8f9fa;
-            color: #495057;
-            border-color: #007bff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .btn-reset:active {
-            transform: translateY(0);
-        }
-        
-        .btn-search {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-        
-        .btn-search:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,123,255,0.3);
-        }
-        
-        .btn-search:active {
-            transform: translateY(0);
-        }
-        
-        /* 数据弹窗搜索按钮组样式 */
-        .search-buttons {
-            display: flex;
-            gap: 16px;
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid #e1e5e9;
-        }
-        
-        /* 仓库下拉勾选框样式 */
-        .warehouse-dropdown-group {
-            min-width: 200px;
-        }
-        
-        .dropdown-checkbox-container {
-            position: relative;
-            margin-top: 4px;
-        }
-        
-        .dropdown-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 10px;
-            border: 1px solid #d1d9e0;
-            border-radius: 4px;
-            background-color: #ffffff;
-            cursor: pointer;
-            font-size: 14px;
-            color: #495057;
-            transition: all 0.3s ease;
-            user-select: none;
-        }
-        
-        .dropdown-header:hover {
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
-        }
-        
-        .dropdown-arrow {
-            font-size: 12px;
-            transition: transform 0.2s ease;
-        }
-        
-        .dropdown-checkbox-container.active .dropdown-arrow {
-            transform: rotate(180deg);
-        }
-        
-        .dropdown-options {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background-color: #ffffff;
-            border: 1px solid #d1d9e0;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            margin-top: 2px;
-        }
-        
-        .dropdown-checkbox-container.active .dropdown-options {
-            display: block;
-        }
-        
-        .dropdown-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 13px;
-            color: #495057;
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-        
-        .dropdown-option:hover {
-            background-color: #f8fafc;
-            color: #007bff;
-        }
-        
-        .dropdown-option input[type="checkbox"] {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border: 1px solid #d1d9e0;
-            border-radius: 3px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .dropdown-option input[type="checkbox"]:checked {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        
-        .dropdown-option input[type="checkbox"]:checked::after {
-            content: "✓";
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        
-        .dropdown-option input[type="checkbox"]:hover {
-            border-color: #007bff;
-        }
-        
-        .btn-expand {
-            background-color: #fff;
-            border: 1px solid #d1d9e0;
-            color: #495057;
-        }
-        
-        .btn-expand:hover {
-            background-color: #f8f9fa;
-            border-color: #007bff;
-            transform: translateY(-1px);
-        }
-        
-        /* 操作按钮栏 */
-        .action-bar {
-            background-color: #fff;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 14px;
-            border-bottom: 1px solid #e1e5e9;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        
-        .action-bar button {
-            padding: 9px 16px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            margin-right: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        
-        .btn-batch-confirm {
-            background-color: #007bff;
-            color: #fff;
-        }
-        
-        .btn-batch-confirm:hover {
-            background-color: #0056b3;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,123,255,0.25);
-        }
-        
-        .btn-batch-delete {
-            background-color: #dc3545;
-            color: #fff;
-        }
-        
-        .btn-batch-delete:hover {
-            background-color: #c82333;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(220,53,69,0.25);
-        }
-        
-        .btn-import, .btn-export {
-            background-color: #fd7e14;
-            color: #fff;
-        }
-        
-        .btn-import:hover, .btn-export:hover {
-            background-color: #e06a00;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(253,126,20,0.25);
-        }
-        
-        .action-bar button:last-child {
-            background-color: #28a745;
-            color: #fff;
-        }
-        
-        .action-bar button:last-child:hover {
-            background-color: #218838;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(40,167,69,0.25);
-        }
-        
-        .total-amount {
-            font-weight: 600;
-            color: #212529;
-            font-size: 15px;
-            background-color: #f8f9fa;
-            padding: 8px 15px;
-            border-radius: 4px;
-            border: 1px solid #e9ecef;
-        }
-        
-        /* 表格容器 */
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            background-color: #fff;
-            margin: 20px;
-            border-radius: 6px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            border: 1px solid #e1e5e9;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        
-        th, td {
-            border: 1px solid #e1e5e9;
-            padding: 10px 12px;
-            text-align: left;
-            color: #495057;
-        }
-        
-        th {
-            background-color: #f8fafc;
-            font-weight: 600;
-            color: #212529;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.05);
-        }
-        
-        tbody tr {
-            transition: all 0.2s ease;
-        }
-        
-        tbody tr:hover {
-            background-color: #f8fafc;
-        }
-        
-        tbody tr:nth-child(even) {
-            background-color: #fefefe;
-        }
-        
-        tbody tr:nth-child(odd) {
-            background-color: #fcfcfc;
-        }
-        
-        .product-detail a {
-            color: #007bff;
-            text-decoration: none;
-            transition: color 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .product-detail a:hover {
-            color: #0056b3;
-            text-decoration: underline;
-        }
-        
-        .operation span {
-            margin-right: 12px;
-            cursor: pointer;
-            color: #6c757d;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            display: inline-block;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .operation span:hover {
-            transform: scale(1.1);
-        }
-        
-        .operation span:first-child:hover {
-            color: #28a745;
-        }
-        
-        .operation span:nth-child(2):hover {
-            color: #007bff;
-        }
-        
-        .operation span:last-child:hover {
-            color: #dc3545;
-        }
-        
-        /* 复选框样式 */
-        input[type="checkbox"] {
-            cursor: pointer;
-            width: 16px;
-            height: 16px;
-            accent-color: #007bff;
-            transition: all 0.3s ease;
-        }
-        
-        input[type="checkbox"]:hover {
-            transform: scale(1.1);
-        }
-        
-        /* 弹窗样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(2px);
-            transition: all 0.3s ease;
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            background-color: #fff;
-            margin: 3% auto;
-            border: none;
-            width: 90%;
-            max-width: 1200px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-        }
-        
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            padding: 16px 20px;
-            background: #ffffff;
-            color: #212529;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e1e5e9;
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        .close {
-            color: #6c757d;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
-            background-color: transparent;
-        }
-        
-        .close:hover,
-        .close:focus {
-            color: #495057;
-            background-color: #f8fafc;
-            transform: none;
-        }
-        
-        .modal-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .modal-footer {
-            padding: 16px 20px;
-            background-color: #ffffff;
-            border-top: 1px solid #e1e5e9;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #e1e5e9;
-        }
-        
-        /* 检索条件区域样式 */
-        .search-section {
-            margin-bottom: 20px;
-        }
-        
-        .search-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .search-header h4 {
-            margin: 0;
-            font-size: 15px;
-            color: #212529;
-            font-weight: 600;
-        }
-        
-        .btn-toggle {
-            background: none;
-            border: 1px solid #d1d9e0;
-            border-radius: 4px;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-toggle:hover {
-            background-color: #f8fafc;
-            border-color: #007bff;
-        }
-        
-        .search-form {
-            background-color: #ffffff;
-            padding: 0;
-            border-radius: 6px;
-            border: none;
-        }
-        
-        .form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 16px;
-            align-items: flex-end;
-        }
-        
-        .form-row:last-child {
-            margin-bottom: 0;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            min-width: 150px;
-            flex: 1;
-            max-width: 300px;
-        }
-        
-        .form-group label {
-            margin-bottom: 4px;
-            font-size: 13px;
-            color: #6c757d;
-            font-weight: 500;
-        }
-        
-        .form-group select,
-        .form-group input {
-            padding: 8px 10px;
-            border: 1px solid #d1d9e0;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            outline: none;
-            background-color: #ffffff;
-        }
-        
-        .form-group select:focus,
-        .form-group input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
-        }
-        
-        /* 调整搜索按钮样式，使其与表单组在同一行 */
-        .visible-conditions .search-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 0;
-            padding-top: 0;
-            border-top: none;
-            flex-shrink: 0;
-        }
-        
-        /* 隐藏条件的搜索按钮保持原样式 */
-        .hidden-conditions .search-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-            padding-top: 12px;
-            border-top: 1px solid #e1e5e9;
-        }
-        
-        .hidden-conditions {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px dashed #e9ecef;
-        }
-        
-        .hidden-conditions.expanded {
-            display: flex;
-        }
-        
-        /* 数据列表区域样式 */
-        .data-section {
-            margin-top: 20px;
-        }
-        
-        .data-section h4 {
-            margin-bottom: 12px;
-            font-size: 15px;
-            color: #212529;
-            font-weight: 600;
-        }
-        
-        .data-table-container {
-            overflow-x: auto;
-            border: 1px solid #e1e5e9;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            box-shadow: none;
-        }
-        
-        #modalDataTable {
-            min-width: 800px;
-            border-collapse: collapse;
-            width: 100%;
-        }
-        
-        #modalDataTable th,
-        #modalDataTable td {
-            padding: 10px 12px;
-            font-size: 13px;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        #modalDataTable th {
-            background-color: #f8fafc;
-            font-weight: 600;
-            color: #495057;
-            border-top: 1px solid #e1e5e9;
-        }
-        
-        #modalDataTable tr:hover {
-            background-color: #f8fafc;
-        }
-        
-        #modalDataTable tbody tr:hover {
-            background-color: #f8fafc;
-        }
-        
-        /* 分页样式 */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .page-btn {
-            padding: 8px 16px;
-            border: 1px solid #d1d9e0;
-            background-color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        
-        .page-btn:hover {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-            transform: translateY(-1px);
-        }
-        
-        .page-btn:disabled {
-            background-color: #e9ecef;
-            color: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .page-info {
-            font-size: 14px;
-            color: #495057;
-            font-weight: 500;
-        }
-        
-        /* 按钮样式 */
-        .btn-cancel {
-            padding: 10px 20px;
-            border: 1px solid #d1d9e0;
-            background-color: #fff;
-            color: #495057;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        
-        .btn-cancel:hover {
-            background-color: #f8f9fa;
-            border-color: #007bff;
-            transform: translateY(-1px);
-        }
-        
-        .btn-save {
-            padding: 10px 20px;
-            border: none;
-            background-color: #28a745;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-        
-        .btn-save:hover {
-            background-color: #218838;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(40,167,69,0.25);
-        }
-        
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
-        /* 动画效果 */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        tbody tr {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        /* Tab内容区域样式 */
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .btn-get-data {
-            background-color: #28a745;
-            color: #fff;
-        }
-        
-        .btn-get-data:hover {
-            background-color: #218838;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(40,167,69,0.25);
-        }
-        
-        .btn-get-detail {
-            background-color: #17a2b8;
-            color: #fff;
-        }
-        
-        .btn-get-detail:hover {
-            background-color: #138496;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(23,162,184,0.25);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>对账明细获取</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            dark: '#1F2937',
+            light: '#F3F4F6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义样式 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .table-row-hover:hover {
+        background-color: #F9FAFB;
+      }
+    }
+  </style>
 </head>
-<body>
-    <!-- 标签页 -->
-    <div class="tab">收入明细 ×</div>
-
-    <!-- 导航标签栏 -->
-    <div class="nav-tabs">
-        <span class="tab-item active" data-tab="yc-outbound">出库+快递(YC)</span>
-        <span class="tab-item" data-tab="default">出库+快递(TMS)</span>
-        <span class="tab-item" data-tab="default">操作费</span>
-        <span class="tab-item" data-tab="default">卸货费</span>
-        <span class="tab-item" data-tab="default">仓储费</span>
-        <span class="tab-item" data-tab="default">退货运费</span>
-        <span class="tab-item" data-tab="default">退货处理费</span>
-        <span class="tab-item" data-tab="default">销毁费</span>
-        <span class="tab-item" data-tab="default">快递费</span>
-        <span class="tab-item" data-tab="default">转仓费</span>
-        <span class="tab-item" data-tab="default">快递补收(YC)</span>
-        <span class="tab-item" data-tab="default">快递补收(TMS)</span>
-        <span class="tab-item" data-tab="default">MTW运输费</span>
-        <span class="tab-item" data-tab="default">快递赔付</span>
-        <span class="tab-item" data-tab="default">合并订单费</span>
-        <span class="tab-item" data-tab="default">未上网返退</span>
-        <span class="tab-item" data-tab="default">库内赔付(错发)</span>
-        <span class="tab-item" data-tab="default">库内赔付(丢件)</span>
-        <span class="tab-item" data-tab="default">库内赔付(其他)</span>
-        <span class="tab-item" data-tab="default">其他</span>
-        <span class="tab-item" data-tab="recharge">充值</span>
-        <span class="tab-item" data-tab="fee-adjust">费用调整</span>
-    </div>
-
-    <!-- 出库+快递(YC)内容区域 -->
-    <div class="tab-content active" id="tab-yc-outbound">
-    <!-- 筛选栏 -->
-    <div class="filter-bar">
-        <label>客户代码</label>
-        <select>
-            <option>请选择客户代码</option>
-        </select>
-        <label>客服</label>
-        <select>
-            <option>请选择客服</option>
-        </select>
-        <label>仓库</label>
-        <select>
-            <option>请选择仓库</option>
-        </select>
-        <label>状态</label>
-        <select>
-            <option>请选择状态</option>
-        </select>
-        <button class="btn-reset">重置</button>
-        <button class="btn-search">搜索</button>
-        <button class="btn-expand">展开 ▾</button>
-    </div>
-
-    <!-- 操作按钮栏 -->
-    <div class="action-bar">
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <main class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <!-- 页面标题和操作栏 -->
+    <!-- <div class="bg-white rounded-xl p-6 card-shadow mb-6">
         <div>
-            <button class="btn-batch-confirm">批量确认</button>
-            <button class="btn-batch-delete">批量删除</button>
-            <button class="btn-import">导入</button>
-            <button class="btn-export">导出</button>
-                <button class="btn-get-detail" id="btnGetDetail">获取明细</button>
+          <h1 class="text-2xl font-bold text-dark mb-2">对账明细获取</h1>
+          <p class="text-gray-500">费用明细查询与管理</p>
         </div>
-        <div class="total-amount">总金额: 3886.654</div>
+    </div> -->
+
+    <!-- 汇总数据卡片 -->
+    <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">总记录数</span>
+          <i class="fa fa-list text-primary text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="totalRecords">0</div>
+        <div class="text-xs text-gray-500">已选: <span id="selectedRecords">0</span> 条</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">总金额</span>
+          <i class="fa fa-dollar text-success text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1 text-success" id="totalAmount">$0.00</div>
+        <div class="text-xs text-gray-500">已选金额: <span id="selectedAmount">$0.00</span></div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">客户数量</span>
+          <i class="fa fa-users text-secondary text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="customerCount">0</div>
+        <div class="text-xs text-gray-500">不同客户</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">仓库数量</span>
+          <i class="fa fa-warehouse text-warning text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="warehouseCount">0</div>
+        <div class="text-xs text-gray-500">不同仓库</div>
+      </div>
+    </div> -->
+
+    <!-- 筛选区域 -->
+    <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-700">检索条件</h3>
+        </div>
+      
+      <!-- 基础筛选条件（动态渲染） -->
+      <div id="basicFilters" class="flex flex-wrap gap-4 items-center mb-3">
+        <!-- 条件将通过JavaScript动态渲染 -->
+        </div>
+      
+      <!-- 高级筛选条件 -->
+      <div class="border-t border-gray-200 pt-3">
+        <div class="flex items-center justify-between mb-3">
+          <button id="btnOpenAdvancedModal" class="flex items-center gap-2 text-sm text-gray-600 hover:text-primary transition-colors">
+            <i class="fa fa-filter"></i>
+            <span>高级筛选</span>
+          </button>
+        </div>
+        <!-- 已选条件标签展示区域 -->
+        <div id="selectedAdvancedFilters" class="flex flex-wrap gap-2 mb-3">
+          <!-- 已选条件将通过JavaScript动态渲染 -->
+        </div>
+      </div>
+      
+      <!-- 操作按钮 -->
+      <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+        <button id="btnFilter" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          <i class="fa fa-search mr-2"></i>筛选
+        </button>
+        <button id="btnResetFilter" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          <i class="fa fa-refresh mr-2"></i>重置
+        </button>
+      </div>
+    </div>
+    
+    <!-- 高级筛选弹窗 -->
+    <div id="advancedFilterModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+      <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-dark">高级筛选</h3>
+          <button id="closeAdvancedFilterModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fa fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="space-y-4">
+            <!-- 1. 输入检索 -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="fa fa-keyboard-o text-primary"></i>
+                <h5 class="text-sm font-semibold text-gray-700">输入检索</h5>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">账单号</label>
+                  <input type="text" id="modalFilterBillNo" placeholder="请输入账单号" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">订单号</label>
+                  <input type="text" id="modalFilterOrderNo" placeholder="请输入订单号" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">备注</label>
+                  <input type="text" id="modalFilterRemark" placeholder="请输入备注关键词" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+              </div>
+            </div>
+            
+            <!-- 2. 日期检索 -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="fa fa-calendar text-primary"></i>
+                <h5 class="text-sm font-semibold text-gray-700">日期检索</h5>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">账单月</label>
+                  <input type="month" id="modalFilterBillMonth" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">航期</label>
+                  <input type="month" id="modalFilterVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">创建时间（开始）</label>
+                  <input type="date" id="modalFilterCreateStartDate" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">创建时间（结束）</label>
+                  <input type="date" id="modalFilterCreateEndDate" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                </div>
+              </div>
+            </div>
+            
+            <!-- 3. 下拉检索 -->
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="fa fa-list text-primary"></i>
+                <h5 class="text-sm font-semibold text-gray-700">下拉检索</h5>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">创建人</label>
+                  <select id="modalFilterCreator" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                    <option value="">全部</option>
+                    <option value="系统">系统</option>
+                    <option value="管理员">管理员</option>
+                    <option value="操作员">操作员</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-2">操作人</label>
+                  <select id="modalFilterOperator" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                    <option value="">全部</option>
+                    <option value="系统">系统</option>
+                    <option value="管理员">管理员</option>
+                    <option value="操作员">操作员</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+          <button id="advancedFilterCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            取消
+          </button>
+          <button id="advancedFilterReset" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            重置
+          </button>
+          <button id="advancedFilterSubmit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <i class="fa fa-check mr-2"></i>确定
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 数据表格 -->
-    <div class="table-container">
-        <table id="mainTable">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="mainTableCheckAll"></th>
-                    <th>状态</th>
-                    <th>账单月</th>
-                    <th>航期</th>
-                    <th>创建时间</th>
-                    <th>仓库</th>
-                    <th>客户代码</th>
-                    <th>客服</th>
-                    <th>参考号</th>
-                    <th>订单号</th>
-                    <th>快递单号</th>
-                    <th>运输方式</th>
-                    <th>下单时间</th>
-                    <th>出货时间</th>
-                    <th>出库费合</th>
-                    <th>快递费合</th>
-                    <th>合计</th>
-                    <th>币种</th>
-                    <th>产品详情</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="mainTableBody">
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>草稿</td>
-                    <td>2025-11</td>
-                    <td>2025-11</td>
-                    <td>2025-12-01 13:34:12</td>
-                    <td>CA008</td>
-                    <td>ZJJS</td>
-                    <td>钟荷花</td>
-                    <td>8876065...</td>
-                    <td>ZJJS-20...</td>
-                    <td>3949886...</td>
-                    <td>FEDEX...</td>
-                    <td>2025-11...</td>
-                    <td>2025-11...</td>
-                    <td>2</td>
-                    <td>42.108</td>
-                    <td>44.108</td>
-                    <td>USD</td>
-                    <td class="product-detail"><a href="#">查看</a></td>
-                    <td class="operation">
-                        <span>确定</span>
-                        <span>编辑</span>
-                        <span>删除</span>
-                    </td>
-                </tr>
-            </tbody>
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <div class="flex items-center gap-3 mb-4">
+        <button id="btnGetFee" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+          <i class="fa fa-download"></i>
+          <span>费用获取</span>
+        </button>
+        <button id="btnBatchSubmit" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+          <i class="fa fa-check-square mr-2"></i>
+          <span>批量提交</span>
+        </button>
+        <button id="btnExport" class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-success/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+          <i class="fa fa-download mr-2"></i>
+          <span>导出账单</span>
+        </button>
+        <button id="btnExport" class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-success/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+          <i class="fa fa-download mr-2"></i>
+          <span>导出明细</span>
+        </button>
+      </div>
+      <div class="overflow-x-auto">
+        <table id="reconciliationTable" class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">
+                <input type="checkbox" id="tableCheckAll" class="rounded border-gray-300">
+              </th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单号</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单月</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">航期</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">客户代码</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">销售</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">客服</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">次客服</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单类型</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-700">账单金额</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单状态</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">创建人</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">更新时间</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">操作人</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单备注</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
+            </tr>
+          </thead>
+          <tbody id="reconciliationTableBody">
+            <!-- 数据将通过JavaScript动态渲染 -->
+          </tbody>
         </table>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <div id="paginationInfo" class="text-sm text-gray-500">显示 0-0 条，共 0 条</div>
+        <div class="flex gap-2 items-center">
+          <button id="prevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-left text-xs"></i>
+          </button>
+          <div id="pageButtons" class="flex gap-2">
+            <!-- 页码按钮将通过JavaScript动态生成 -->
+          </div>
+          <button id="nextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
     </div>
-    </div>
+  </main>
 
-    <!-- 默认内容区域 -->
-    <div class="tab-content" id="tab-default">
-    <!-- 筛选栏 -->
-    <div class="filter-bar">
-                                <label>客户代码</label>
-        <select>
-                                    <option>请选择客户代码</option>
-                                </select>
-        <label>客服</label>
-        <select>
-            <option>请选择客服</option>
-        </select>
-                                <label>仓库</label>
-        <select>
-            <option>请选择仓库</option>
-        </select>
-        <label>状态</label>
-        <select>
-            <option>请选择状态</option>
-        </select>
-        <button class="btn-reset">重置</button>
-        <button class="btn-search">搜索</button>
-        <button class="btn-expand">展开 ▾</button>
-                                    </div>
+  <!-- 费用获取弹窗 -->
+  <div id="feeModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-dark">费用获取</h3>
+        <button id="closeFeeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
 
-    <!-- 操作按钮栏 -->
-    <div class="action-bar">
-        <div>
-            <button class="btn-batch-confirm">批量确认</button>
-            <button class="btn-batch-delete">批量删除</button>
-            <button class="btn-import">导入</button>
-            <button class="btn-export">导出</button>
-                                    </div>
-        <div class="total-amount">总金额: 3886.654</div>
-                                </div>
-
-    <!-- 数据表格 -->
-    <div class="table-container">
-        <table id="mainTable">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="mainTableCheckAll"></th>
-                    <th>状态</th>
-                    <th>账单月</th>
-                    <th>航期</th>
-                    <th>创建时间</th>
-                    <th>仓库</th>
-                    <th>客户代码</th>
-                    <th>客服</th>
-                    <th>参考号</th>
-                    <th>订单号</th>
-                    <th>快递单号</th>
-                    <th>运输方式</th>
-                    <th>下单时间</th>
-                    <th>出货时间</th>
-                    <th>出库费合</th>
-                    <th>快递费合</th>
-                    <th>合计</th>
-                    <th>币种</th>
-                    <th>产品详情</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody id="mainTableBody">
-                <tr>
-                    <td><input type="checkbox"></td>
-                    <td>草稿</td>
-                    <td>2025-11</td>
-                    <td>2025-11</td>
-                    <td>2025-12-01 13:34:12</td>
-                    <td>CA008</td>
-                    <td>ZJJS</td>
-                    <td>钟荷花</td>
-                    <td>8876065...</td>
-                    <td>ZJJS-20...</td>
-                    <td>3949886...</td>
-                    <td>FEDEX...</td>
-                    <td>2025-11...</td>
-                    <td>2025-11...</td>
-                    <td>2</td>
-                    <td>42.108</td>
-                    <td>44.108</td>
-                    <td>USD</td>
-                    <td class="product-detail"><a href="#">查看</a></td>
-                    <td class="operation">
-                        <span>确定</span>
-                        <span>编辑</span>
-                        <span>删除</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-                            </div>
-                                </div>
-
-    <!-- 充值内容区域 -->
-    <div class="tab-content" id="tab-recharge">
-        <!-- 操作按钮栏 -->
-        <div class="action-bar">
+      <!-- 弹窗内容 -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <!-- 1. 基础信息区域 -->
+        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-1 h-6 bg-primary rounded"></div>
+            <h4 class="text-lg font-semibold text-dark">基础信息</h4>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <button class="btn-batch-confirm">批量确认</button>
-                <button class="btn-export">导出</button>
-                            </div>
-            <div class="total-amount" id="rechargeTotalAmount">总金额: 0.00</div>
-                            </div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">账单月<span class="text-red-500">*</span></label>
+              <input type="month" id="modalBillMonth" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">航期<span class="text-red-500">*</span></label>
+              <input type="month" id="modalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">账单类型 <span class="text-red-500">*</span></label>
+              <select id="modalBillType" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" required>
+                <option value="">请选择账单类型</option>
+                <option value="出库+快递(YC)">出库+快递(YC)</option>
+                <option value="仓储费">仓储费</option>
+                <option value="库内赔付(错发)">库内赔付(错发)</option>
+                <option value="库内赔付(丢件)">库内赔付(丢件)</option>
+                <option value="库内赔付(其他)">库内赔付(其他)</option>
+                <option value="其他">其他</option>
+                <option value="充值">充值</option>
+                <option value="费用调整">费用调整</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-        <!-- 数据表格 -->
-        <div class="table-container">
-            <table id="rechargeTable">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="rechargeTableCheckAll"></th>
-                        <th>状态</th>
-                        <th>创建时间</th>
-                        <th>客户代码</th>
-                        <th>费用类型</th>
-                        <th>付款日期</th>
-                        <th>充值金额</th>
-                        <th>币种</th>
-                        <th>备注</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="rechargeTableBody">
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td>草稿</td>
-                        <td>2025-01-15 10:30:25</td>
-                        <td>ZJJS</td>
-                        <td>出库处理费</td>
-                        <td>5000.00</td>
-                        <td>USD</td>
-                        <td>2025-01-15</td>
-                        <td>客户充值</td>
-                        <td class="operation">
-                            <span>确认</span>
-                        </td>
-                    </tr>
-                </tbody>
+        <!-- 2. 检索条件区域 -->
+        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-1 h-6 bg-primary rounded"></div>
+            <h4 class="text-lg font-semibold text-dark">检索条件</h4>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">客户代码</label>
+              <select id="modalCustomerCode" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <option value="" selected>全部</option>
+                <option value="ZJJS">ZJJS</option>
+                <option value="ZJHW">ZJHW</option>
+                <option value="ZJWL">ZJWL</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">仓库</label>
+              <div class="relative">
+                <div id="modalWarehouseDropdown" class="w-full border border-gray-200 rounded-lg px-4 py-2 cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleWarehouseDropdown()">
+                  <span id="modalWarehouseText" class="text-gray-700">请选择仓库</span>
+                  <i class="fa fa-chevron-down text-gray-400"></i>
+                </div>
+                <div id="modalWarehouseOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  <label class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="modalWarehouse" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                    <span>CA008</span>
+                  </label>
+                  <label class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="modalWarehouse" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                    <span>CA009</span>
+                  </label>
+                  <label class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="modalWarehouse" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                    <span>CA010</span>
+                  </label>
+                  <label class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="modalWarehouse" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                    <span>CA011</span>
+                  </label>
+                  <label class="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" name="modalWarehouse" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                    <span>CA012</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">创建时间</label>
+              <div class="flex items-center gap-2">
+                <input type="date" id="modalCreateStartDate" class="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <span class="text-gray-400">至</span>
+                <input type="date" id="modalCreateEndDate" class="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">出库时间</label>
+              <div class="flex items-center gap-2">
+                <input type="date" id="modalOutboundStartDate" class="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <span class="text-gray-400">至</span>
+                <input type="date" id="modalOutboundEndDate" class="flex-1 border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <button id="modalReset" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors bg-white">
+              <i class="fa fa-refresh mr-2"></i>重置
+            </button>
+            <button id="modalSearch" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              <i class="fa fa-search mr-2"></i>搜索
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. 费用列表区域 -->
+        <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-1 h-6 bg-primary rounded"></div>
+            <h4 class="text-lg font-semibold text-dark">费用列表</h4>
+            <span class="text-sm text-gray-500 ml-2">已选 <span id="modalSelectedCount">0</span> 条</span>
+          </div>
+          <div class="overflow-x-auto border border-gray-200 rounded-lg bg-white">
+            <table id="modalDataTable" class="w-full">
+              <thead class="bg-gray-50" id="modalDataTableHead">
+                <tr>
+                  <th class="text-left py-3 px-4 font-semibold text-gray-700">
+                    <input type="checkbox" id="modalCheckAll" class="rounded border-gray-300">
+                  </th>
+                  <!-- 表头将通过JavaScript根据账单类型动态生成 -->
+                </tr>
+              </thead>
+              <tbody id="modalDataTableBody">
+                <!-- 数据将通过搜索加载 -->
+              </tbody>
             </table>
-                        </div>
-                                </div>
-
-    <!-- 费用调整内容区域 -->
-    <div class="tab-content" id="tab-fee-adjust">
-        <!-- 操作按钮栏 -->
-        <div class="action-bar">
-            <div>
-                <button class="btn-batch-confirm">批量确认</button>
-                <button class="btn-export">导出</button>
-                            </div>
-            <div class="total-amount" id="feeAdjustTotalAmount">总金额: 0.00</div>
-                </div>
-
-        <!-- 数据表格 -->
-        <div class="table-container">
-            <table id="feeAdjustTable">
-                            <thead>
-                                <tr>
-                        <th><input type="checkbox" id="feeAdjustTableCheckAll"></th>
-                        <th>状态</th>
-                                    <th>订单号</th>
-                        <th>创建时间</th>
-                        <th>仓库</th>
-                        <th>客户代码</th>
-                        <th>费用类型</th>
-                        <th>调整金额</th>
-                        <th>币种</th>
-                        <th>备注</th>
-                        <th>操作</th>
-                                </tr>
-                            </thead>
-                <tbody id="feeAdjustTableBody">
-                                <tr>
-                                    <td><input type="checkbox"></td>
-                        <td>草稿</td>
-                        <td>OT2025-12-08PROFHDN3</td>
-                        <td>2025-01-15 08:20:15</td>
-                        <td>CA008</td>
-                        <td>ZJJS</td>
-                        <td>其他费用</td>
-                        <td>-150.00</td>
-                                    <td>USD</td>
-                        <td>运费计算错误调整</td>
-                        <td class="operation">
-                            <span>确认</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+          </div>
         </div>
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <button id="modalCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          关闭
+        </button>
+        <button id="modalSubmit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          <i class="fa fa-check mr-2"></i>确认添加
+        </button>
+      </div>
     </div>
+  </div>
 
-    <!-- 获取明细弹窗 -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>获取明细</h3>
-                <span class="close-detail">&times;</span>
-            </div>
-            <div class="modal-body">
-                <!-- 基础信息维护区域 -->
-                <div class="search-section" style="margin-bottom: 20px;">
-                    <div class="search-header">
-                        <h4>基础信息维护</h4>
-                    </div>
-                    <div class="search-form">
-                        <div class="form-row visible-conditions">
-                            <div class="form-group">
-                                <label>账单月</label>
-                                <input type="month" id="detailBillMonth" style="width: 100%;">
-                            </div>
-                            <div class="form-group">
-                                <label>航期</label>
-                                <input type="month" id="detailVoyagePeriod" style="width: 100%;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 检索条件区域 -->
-                <div class="search-section">
-                    <div class="search-header">
-                        <h4>检索条件</h4>
-                    </div>
-                    <div class="search-form">
-                        <div class="form-row visible-conditions">
-                            <div class="form-group">
-                                <label>客户代码</label>
-                                <select id="detailCustomerCode">
-                                    <option>请选择客户代码</option>
-                                    <option>ZJJS</option>
-                                    <option>ZJHW</option>
-                                    <option>ZJWL</option>
-                                </select>
-                            </div>
-                            <div class="form-group warehouse-dropdown-group">
-                                <label>仓库</label>
-                                <div class="dropdown-checkbox-container" id="detailWarehouseContainer">
-                                    <div class="dropdown-header" onclick="toggleDetailWarehouseDropdown()">
-                                        <span class="dropdown-text" id="detailWarehouseText">请选择仓库</span>
-                                        <span class="dropdown-arrow">▼</span>
-                                    </div>
-                                    <div class="dropdown-options" id="detailWarehouseOptions">
-                                        <label class="dropdown-option">
-                                            <input type="checkbox" name="detailWarehouse" value="CA008" onchange="updateDetailWarehouseText()">
-                                            <span>CA008</span>
-                                        </label>
-                                        <label class="dropdown-option">
-                                            <input type="checkbox" name="detailWarehouse" value="CA009" onchange="updateDetailWarehouseText()">
-                                            <span>CA009</span>
-                                        </label>
-                                        <label class="dropdown-option">
-                                            <input type="checkbox" name="detailWarehouse" value="CA010" onchange="updateDetailWarehouseText()">
-                                            <span>CA010</span>
-                                        </label>
-                                        <label class="dropdown-option">
-                                            <input type="checkbox" name="detailWarehouse" value="CA011" onchange="updateDetailWarehouseText()">
-                                            <span>CA011</span>
-                                        </label>
-                                        <label class="dropdown-option">
-                                            <input type="checkbox" name="detailWarehouse" value="CA012" onchange="updateDetailWarehouseText()">
-                                            <span>CA012</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>创建时间</label>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <input type="date" id="detailCreateStartDate" placeholder="开始日期" style="flex: 1;">
-                                    <span style="color: #6c757d; font-weight: 500;">至</span>
-                                    <input type="date" id="detailCreateEndDate" placeholder="结束日期" style="flex: 1;">
-                                </div>
-                            </div>
-                            <div class="search-buttons">
-                                <button class="btn-reset" id="detailReset">重置</button>
-                                <button class="btn-search" id="detailSearch">搜索</button>
-                            </div>
-                        </div>
-                        <div class="form-row visible-conditions" style="margin-top: 16px;">
-                            <div class="form-group">
-                                <label>出库时间</label>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <input type="date" id="detailOutboundStartDate" placeholder="开始日期" style="flex: 1;">
-                                    <span style="color: #6c757d; font-weight: 500;">至</span>
-                                    <input type="date" id="detailOutboundEndDate" placeholder="结束日期" style="flex: 1;">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 数据列表区域 -->
-                <div class="data-section">
-                    <h4>数据列表</h4>
-                    <div class="data-table-container">
-                        <table id="detailDataTable">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" id="detailCheckAll"></th>
-                                    <th>客户代码</th>
-                                    <th>仓库</th>
-                                    <th>订单号</th>
-                                    <th>参考号</th>
-                                    <th>快递单号</th>
-                                    <th>运输方式</th>
-                                    <th>出库费</th>
-                                    <th>快递费</th>
-                                    <th>合计</th>
-                                    <th>币种</th>
-                                </tr>
-                            </thead>
-                            <tbody id="detailDataTableBody">
-                                <!-- 数据将通过搜索加载 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" id="detailCancel">关闭</button>
-                <button class="btn-save" id="detailSave">确认添加</button>
-            </div>
+  <!-- 详情查看弹窗 -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-dark">费用明细详情</h3>
+        <button id="closeDetailModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div id="detailContent" class="space-y-4">
+          <!-- 详情内容将通过JavaScript动态渲染 -->
         </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <button id="detailClose" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          关闭
+        </button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Tab切换功能
-        const tabItems = document.querySelectorAll('.tab-item');
-        const tabContents = document.querySelectorAll('.tab-content');
+  <script>
+    // 模拟数据
+    let reconciliationData = [];
+    let modalData = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let selectedItems = new Set();
+    let modalSelectedItems = new Set();
+    
+    // 检索条件配置定义
+    const filterConfigDefinitions = {
+      basic: [
+        {
+          id: 'customerCode',
+          label: '客户代码',
+          type: 'select',
+          options: [
+            { value: '', text: '全部客户' },
+            { value: 'ZJJS', text: 'ZJJS' },
+            { value: 'ZJHW', text: 'ZJHW' },
+            { value: 'ZJWL', text: 'ZJWL' }
+          ],
+          defaultVisible: true
+        },
+        {
+          id: 'billStatus',
+          label: '账单状态',
+          type: 'select',
+          options: [
+            { value: '', text: '全部状态' },
+            { value: '待审核', text: '待审核' },
+            { value: '已审核', text: '已审核' },
+            { value: '已驳回', text: '已驳回' },
+            { value: '已完成', text: '已完成' },
+            { value: '已作废', text: '已作废' },
+            { value: '已出账', text: '已出账' }
+          ],
+          defaultVisible: true
+        },
+        {
+          id: 'billType',
+          label: '类型',
+          type: 'select',
+          options: [
+            { value: '', text: '全部类型' },
+            { value: '出库+快递(YC)', text: '出库+快递(YC)' },
+            { value: '仓储费', text: '仓储费' },
+            { value: '库内赔付(错发)', text: '库内赔付(错发)' },
+            { value: '库内赔付(丢件)', text: '库内赔付(丢件)' },
+            { value: '库内赔付(其他)', text: '库内赔付(其他)' },
+            { value: '其他', text: '其他' },
+            { value: '充值', text: '充值' },
+            { value: '费用调整', text: '费用调整' }
+          ],
+          defaultVisible: true
+        }
+      ],
+      advanced: [
+        {
+          id: 'billMonth',
+          label: '账单月',
+          type: 'month',
+          category: '时间信息',
+          categoryIcon: 'fa-calendar',
+          defaultVisible: true
+        },
+        {
+          id: 'voyagePeriod',
+          label: '航期',
+          type: 'month',
+          category: '时间信息',
+          categoryIcon: 'fa-calendar',
+          defaultVisible: true
+        }
+      ]
+    };
+    
+    // 渲染基础筛选条件
+    function renderBasicFilters() {
+      const container = document.getElementById('basicFilters');
+      container.innerHTML = '';
+      
+      const visibleFilters = filterConfigDefinitions.basic.filter(f => f.defaultVisible);
+      
+      visibleFilters.forEach(filter => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2';
         
-        tabItems.forEach(item => {
-            item.addEventListener('click', function() {
-                const tabType = this.getAttribute('data-tab');
-                
-                // 更新tab激活状态
-                tabItems.forEach(tab => tab.classList.remove('active'));
-                this.classList.add('active');
-                
-                // 更新内容区域显示
-                tabContents.forEach(content => content.classList.remove('active'));
-                const targetContent = document.getElementById(`tab-${tabType}`);
-                if (targetContent) {
-                    targetContent.classList.add('active');
-                }
-            });
+        if (filter.type === 'select') {
+          div.innerHTML = `
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">${filter.label}:</label>
+            <select id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[120px]">
+              ${filter.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+            </select>
+          `;
+        }
+        
+        container.appendChild(div);
+      });
+    }
+    
+    // 渲染高级筛选条件（已废弃，高级筛选改为弹窗形式）
+    function renderAdvancedFilters() {
+      // 此函数已不再使用，高级筛选改为弹窗形式
+      return;
+      
+      // 按分类分组
+      const categories = {};
+      visibleFilters.forEach(filter => {
+        const category = filter.category || '其他';
+        if (!categories[category]) {
+          categories[category] = {
+            icon: filter.categoryIcon || 'fa-list',
+            filters: []
+          };
+        }
+        categories[category].filters.push(filter);
+      });
+      
+      Object.keys(categories).forEach(category => {
+        const categoryData = categories[category];
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'bg-gray-50 rounded-lg p-4';
+        
+        let categoryHTML = `
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa ${categoryData.icon} text-primary"></i>
+            <h5 class="text-sm font-semibold text-gray-700">${category}</h5>
+          </div>
+        `;
+        
+        if (categoryData.filters.length === 1) {
+          const filter = categoryData.filters[0];
+          if (filter.type === 'select') {
+            categoryHTML += `
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-medium text-gray-600 whitespace-nowrap">${filter.label}:</label>
+                <select id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white min-w-[180px] max-w-[250px]">
+                  ${filter.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
+                </select>
+              </div>
+            `;
+          } else if (filter.type === 'month') {
+            categoryHTML += `
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-medium text-gray-600 whitespace-nowrap">${filter.label}:</label>
+                <input type="month" id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white w-[180px]">
+              </div>
+            `;
+          }
+        } else {
+          categoryHTML += '<div class="flex flex-wrap gap-4">';
+          categoryData.filters.forEach(filter => {
+            if (filter.type === 'month') {
+              categoryHTML += `
+                <div class="flex items-center gap-2">
+                  <label class="text-sm font-medium text-gray-600 whitespace-nowrap">${filter.label}:</label>
+                  <input type="month" id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white w-[180px]">
+                </div>
+              `;
+            }
+          });
+          categoryHTML += '</div>';
+        }
+        
+        categoryDiv.innerHTML = categoryHTML;
+        container.appendChild(categoryDiv);
+      });
+    }
+    
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 打开费用获取弹窗
+      document.getElementById('btnGetFee').addEventListener('click', function() {
+        document.getElementById('feeModal').classList.remove('hidden');
+        document.getElementById('feeModal').classList.add('flex');
+        // 初始化客户代码和仓库为全部
+        document.getElementById('modalCustomerCode').value = '';
+        initWarehouseAll();
+        // 如果已选择账单类型，更新表头
+        const billType = document.getElementById('modalBillType').value;
+        if (billType) {
+          updateModalTableHeader();
+        }
+      });
+
+      // 关闭费用获取弹窗
+      document.getElementById('closeFeeModal').addEventListener('click', closeFeeModal);
+      document.getElementById('modalCancel').addEventListener('click', closeFeeModal);
+      
+      // 点击弹窗外部关闭
+      document.getElementById('feeModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeFeeModal();
+        }
+      });
+
+      // 关闭详情弹窗
+      document.getElementById('closeDetailModal').addEventListener('click', closeDetailModal);
+      document.getElementById('detailClose').addEventListener('click', closeDetailModal);
+      
+      document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeDetailModal();
+        }
+      });
+
+      // 弹窗搜索
+      document.getElementById('modalSearch').addEventListener('click', searchModalData);
+      document.getElementById('modalReset').addEventListener('click', resetModalForm);
+      
+      // 账单类型变化时更新表头
+      document.getElementById('modalBillType').addEventListener('change', function() {
+        updateModalTableHeader();
+        // 清空数据列表
+        document.getElementById('modalDataTableBody').innerHTML = '';
+        modalData = [];
+        modalSelectedItems.clear();
+        updateModalSelectedCount();
+      });
+
+      // 弹窗提交
+      document.getElementById('modalSubmit').addEventListener('click', submitModalData);
+
+      // 主表格全选
+      document.getElementById('tableCheckAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('#reconciliationTableBody input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          cb.checked = this.checked;
+          if (this.checked) {
+            selectedItems.add(cb.dataset.id);
+          } else {
+            selectedItems.delete(cb.dataset.id);
+          }
+        });
+        updateSummary();
+      });
+
+      // 弹窗表格全选
+      document.getElementById('modalCheckAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('#modalDataTableBody input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          cb.checked = this.checked;
+          if (this.checked) {
+            modalSelectedItems.add(cb.dataset.id);
+          } else {
+            modalSelectedItems.delete(cb.dataset.id);
+          }
+        });
+        updateModalSelectedCount();
+      });
+
+      // 筛选功能
+      document.getElementById('btnFilter').addEventListener('click', filterData);
+      document.getElementById('btnResetFilter').addEventListener('click', resetFilter);
+      
+      // 高级筛选弹窗
+      document.getElementById('btnOpenAdvancedModal').addEventListener('click', openAdvancedFilterModal);
+      document.getElementById('closeAdvancedFilterModal').addEventListener('click', closeAdvancedFilterModal);
+      document.getElementById('advancedFilterCancel').addEventListener('click', closeAdvancedFilterModal);
+      document.getElementById('advancedFilterReset').addEventListener('click', resetAdvancedFilterModal);
+      document.getElementById('advancedFilterSubmit').addEventListener('click', submitAdvancedFilter);
+      document.getElementById('advancedFilterModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeAdvancedFilterModal();
+        }
+      });
+      
+      // 初始化检索条件
+      renderBasicFilters();
+
+      // 批量选择
+      document.getElementById('btnBatchSelect').addEventListener('click', function() {
+        const checkAll = document.getElementById('tableCheckAll');
+        checkAll.checked = !checkAll.checked;
+        checkAll.dispatchEvent(new Event('change'));
+      });
+
+      // 导出功能
+      document.getElementById('btnExport').addEventListener('click', exportData);
+      
+      // 批量提交功能
+      document.getElementById('btnBatchSubmit').addEventListener('click', batchSubmitBills);
+
+      // 初始化
+      renderTable();
+      updateSummary();
+    });
+
+    // 关闭费用获取弹窗
+    function closeFeeModal() {
+      document.getElementById('feeModal').classList.add('hidden');
+      document.getElementById('feeModal').classList.remove('flex');
+      resetModalForm();
+    }
+
+    // 关闭详情弹窗
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+      document.getElementById('detailModal').classList.remove('flex');
+    }
+
+    // 切换仓库下拉框
+    function toggleWarehouseDropdown() {
+      const options = document.getElementById('modalWarehouseOptions');
+      options.classList.toggle('hidden');
+    }
+
+    // 更新仓库文本
+    function updateWarehouseText() {
+      const checkboxes = document.querySelectorAll('input[name="modalWarehouse"]:checked');
+      const allCheckboxes = document.querySelectorAll('input[name="modalWarehouse"]');
+      const text = document.getElementById('modalWarehouseText');
+      if (checkboxes.length === 0) {
+        text.textContent = '请选择仓库';
+      } else if (checkboxes.length === allCheckboxes.length) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === 1) {
+        text.textContent = checkboxes[0].value;
+      } else {
+        text.textContent = `已选择 ${checkboxes.length} 个仓库`;
+      }
+    }
+    
+    // 初始化仓库为全部选中
+    function initWarehouseAll() {
+      document.querySelectorAll('input[name="modalWarehouse"]').forEach(cb => {
+        cb.checked = true;
+      });
+      updateWarehouseText();
+    }
+
+    // 重置弹窗表单
+    function resetModalForm() {
+      document.getElementById('modalBillMonth').value = '';
+      document.getElementById('modalVoyagePeriod').value = '';
+      document.getElementById('modalBillType').value = '';
+      document.getElementById('modalCustomerCode').value = '';
+      initWarehouseAll();
+      document.getElementById('modalCreateStartDate').value = '';
+      document.getElementById('modalCreateEndDate').value = '';
+      document.getElementById('modalOutboundStartDate').value = '';
+      document.getElementById('modalOutboundEndDate').value = '';
+      document.getElementById('modalDataTableBody').innerHTML = '';
+      modalSelectedItems.clear();
+      updateModalSelectedCount();
+    }
+
+    // 获取账单类型对应的字段配置
+    function getBillTypeFields(billType) {
+      const fieldConfigs = {
+        '出库+快递(YC)': {
+          headers: ['客户代码', '仓库', '订单号', '参考号', '快递单号', '运输方式', '出库费', '快递费', '合计', '币种'],
+          fields: ['customerCode', 'warehouse', 'orderNo', 'refNo', 'trackingNo', 'shippingMethod', 'outboundFee', 'expressFee', 'total', 'currency']
+        },
+        '仓储费': {
+          headers: ['客户代码', '仓库', 'SKU', '数量', '单价', '金额', '币种', '备注'],
+          fields: ['customerCode', 'warehouse', 'sku', 'quantity', 'unitPrice', 'amount', 'currency', 'remark']
+        },
+        '库内赔付(错发)': {
+          headers: ['客户代码', '仓库', '订单号', '赔付金额', '币种', '赔付原因', '备注'],
+          fields: ['customerCode', 'warehouse', 'orderNo', 'compensationAmount', 'currency', 'reason', 'remark']
+        },
+        '库内赔付(丢件)': {
+          headers: ['客户代码', '仓库', '订单号', '赔付金额', '币种', '赔付原因', '备注'],
+          fields: ['customerCode', 'warehouse', 'orderNo', 'compensationAmount', 'currency', 'reason', 'remark']
+        },
+        '库内赔付(其他)': {
+          headers: ['客户代码', '仓库', '订单号', '赔付金额', '币种', '赔付原因', '备注'],
+          fields: ['customerCode', 'warehouse', 'orderNo', 'compensationAmount', 'currency', 'reason', 'remark']
+        },
+        '其他': {
+          headers: ['客户代码', '仓库', '费用项目', '金额', '币种', '备注'],
+          fields: ['customerCode', 'warehouse', 'feeItem', 'amount', 'currency', 'remark']
+        },
+        '充值': {
+          headers: ['客户代码', '充值金额', '币种', '充值时间', '充值方式', '备注'],
+          fields: ['customerCode', 'rechargeAmount', 'currency', 'rechargeTime', 'rechargeMethod', 'remark']
+        },
+        '费用调整': {
+          headers: ['客户代码', '仓库', '调整类型', '调整金额', '币种', '调整原因', '备注'],
+          fields: ['customerCode', 'warehouse', 'adjustType', 'adjustAmount', 'currency', 'adjustReason', 'remark']
+        }
+      };
+      
+      // 默认返回出库+快递的字段配置
+      return fieldConfigs[billType] || fieldConfigs['出库+快递(YC)'];
+    }
+    
+    // 更新数据列表表头
+    function updateModalTableHeader() {
+      const billType = document.getElementById('modalBillType').value;
+      const fieldConfig = getBillTypeFields(billType);
+      const thead = document.getElementById('modalDataTableHead');
+      const tr = thead.querySelector('tr');
+      
+      // 保留复选框列
+      let headerHTML = `
+        <th class="text-left py-3 px-4 font-semibold text-gray-700">
+          <input type="checkbox" id="modalCheckAll" class="rounded border-gray-300">
+        </th>
+      `;
+      
+      // 根据字段配置生成表头
+      fieldConfig.headers.forEach((header, index) => {
+        const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
+          ? 'text-right' 
+          : 'text-left';
+        headerHTML += `<th class="${alignClass} py-3 px-4 font-semibold text-gray-700">${header}</th>`;
+      });
+      
+      tr.innerHTML = headerHTML;
+      
+      // 重新绑定全选事件
+      document.getElementById('modalCheckAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('#modalDataTableBody input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          cb.checked = this.checked;
+          if (this.checked) {
+            modalSelectedItems.add(cb.dataset.id);
+          } else {
+            modalSelectedItems.delete(cb.dataset.id);
+          }
+        });
+        updateModalSelectedCount();
+      });
+    }
+
+    // 搜索弹窗数据
+    function searchModalData() {
+      const billType = document.getElementById('modalBillType').value;
+      if (!billType) {
+        alert('请先选择账单类型');
+        return;
+      }
+      
+      // 根据账单类型生成不同的模拟数据
+      let mockData = [];
+      const fieldConfig = getBillTypeFields(billType);
+      
+      if (billType === '出库+快递(YC)') {
+        mockData = [
+        { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', orderNo: 'ORD-20250115-001', refNo: 'REF-001', trackingNo: 'TRK-001', shippingMethod: '标准快递', outboundFee: 15.50, expressFee: 8.20, total: 23.70, currency: 'USD' },
+        { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-20250115-002', refNo: 'REF-002', trackingNo: 'TRK-002', shippingMethod: '快速快递', outboundFee: 18.00, expressFee: 12.50, total: 30.50, currency: 'USD' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-20250115-003', refNo: 'REF-003', trackingNo: 'TRK-003', shippingMethod: '标准快递', outboundFee: 12.30, expressFee: 7.80, total: 20.10, currency: 'USD' }
+        ];
+      } else if (billType === '仓储费') {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', sku: 'SKU001', quantity: 100, unitPrice: 0.5, amount: 50.00, currency: 'USD', remark: '仓储费用' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', sku: 'SKU002', quantity: 200, unitPrice: 0.3, amount: 60.00, currency: 'USD', remark: '仓储费用' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', sku: 'SKU003', quantity: 150, unitPrice: 0.4, amount: 60.00, currency: 'USD', remark: '仓储费用' }
+        ];
+      } else if (billType.includes('库内赔付')) {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', orderNo: 'ORD-001', compensationAmount: 50.00, currency: 'USD', reason: billType, remark: '赔付说明' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-002', compensationAmount: 30.00, currency: 'USD', reason: billType, remark: '赔付说明' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-003', compensationAmount: 40.00, currency: 'USD', reason: billType, remark: '赔付说明' }
+        ];
+      } else if (billType === '其他') {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', feeItem: '其他费用', amount: 25.00, currency: 'USD', remark: '其他费用说明' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', feeItem: '其他费用', amount: 35.00, currency: 'USD', remark: '其他费用说明' }
+        ];
+      } else if (billType === '充值') {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', rechargeAmount: 1000.00, currency: 'USD', rechargeTime: '2025-01-15', rechargeMethod: '银行转账', remark: '充值说明' },
+          { id: 'm2', customerCode: 'ZJHW', rechargeAmount: 2000.00, currency: 'USD', rechargeTime: '2025-01-15', rechargeMethod: '在线支付', remark: '充值说明' }
+        ];
+      } else if (billType === '费用调整') {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', adjustType: '入款', adjustAmount: 50.00, currency: 'USD', adjustReason: '费用调整', remark: '调整说明' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', adjustType: '扣款', adjustAmount: 30.00, currency: 'USD', adjustReason: '费用调整', remark: '调整说明' }
+        ];
+      }
+      
+      modalData = mockData;
+      updateModalTableHeader();
+      renderModalTable();
+    }
+
+    // 渲染弹窗表格
+    function renderModalTable() {
+      const tbody = document.getElementById('modalDataTableBody');
+      tbody.innerHTML = '';
+      
+      const billType = document.getElementById('modalBillType').value;
+      const fieldConfig = getBillTypeFields(billType);
+      const colCount = fieldConfig.fields.length + 1; // +1 for checkbox column
+      
+      if (modalData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${colCount}" class="py-8 text-center text-gray-500">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              暂无数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      modalData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'table-row-hover border-b border-gray-100';
+        
+        let rowHTML = `
+          <td class="py-3 px-4">
+            <input type="checkbox" data-id="${item.id}" class="rounded border-gray-300 modal-item-checkbox">
+          </td>
+        `;
+        
+        // 根据字段配置动态生成表格行
+        fieldConfig.fields.forEach(field => {
+          let value = item[field] || '-';
+          let alignClass = 'text-left';
+          let displayValue = value;
+          
+          // 处理数值字段
+          if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
+            alignClass = 'text-right';
+            if (typeof value === 'number') {
+              // 费用调整的调整金额不显示$和+号
+              if (field === 'adjustAmount') {
+                displayValue = value.toFixed(2);
+              } else {
+                displayValue = `$${value.toFixed(2)}`;
+              }
+            }
+          }
+          
+          rowHTML += `<td class="py-3 px-4 ${alignClass}">${displayValue}</td>`;
         });
         
-        const mainTableBody = document.getElementById('mainTableBody');
-        const mainTableCheckAll = document.getElementById('mainTableCheckAll');
-        
-        // 获取明细弹窗逻辑
-        const detailModal = document.getElementById('detailModal');
-        const btnGetDetail = document.getElementById('btnGetDetail');
-        const detailClose = document.querySelector('.close-detail');
-        const detailCancel = document.getElementById('detailCancel');
-        const detailSave = document.getElementById('detailSave');
-        const detailSearch = document.getElementById('detailSearch');
-        const detailReset = document.getElementById('detailReset');
-        const detailCheckAll = document.getElementById('detailCheckAll');
-        const detailDataTableBody = document.getElementById('detailDataTableBody');
-        
-        // 打开获取明细弹窗
-        if (btnGetDetail) {
-            btnGetDetail.onclick = function() {
-                detailModal.style.display = 'block';
-                setTimeout(() => detailModal.classList.add('show'), 10);
-            };
-        }
+        tr.innerHTML = rowHTML;
+        tbody.appendChild(tr);
+      });
 
-        // 关闭弹窗函数
-        function closeDetailModal() {
-            detailModal.classList.remove('show');
-            setTimeout(() => detailModal.style.display = 'none', 300);
-        }
-
-        // 关闭弹窗
-        if (detailClose) {
-            detailClose.onclick = function() {
-                closeDetailModal();
-            };
-        }
-        
-        if (detailCancel) {
-            detailCancel.onclick = function() {
-                closeDetailModal();
-            };
-        }
-
-        // 点击弹窗外部关闭弹窗
-        window.onclick = function(event) {
-            if (event.target == detailModal) {
-                closeDetailModal();
-            }
-        }
-        
-        // 仓库下拉勾选框功能
-        function toggleDetailWarehouseDropdown() {
-            const dropdownContainer = document.getElementById('detailWarehouseContainer');
-            dropdownContainer.classList.toggle('active');
-        }
-        
-        function updateDetailWarehouseText() {
-            const dropdownText = document.getElementById('detailWarehouseText');
-            const selectedCheckboxes = document.querySelectorAll('#detailWarehouseOptions input[type="checkbox"]:checked');
-            const selectedValues = Array.from(selectedCheckboxes).map(checkbox => checkbox.value);
-            
-            if (selectedValues.length === 0) {
-                dropdownText.textContent = '请选择仓库';
-            } else if (selectedValues.length === 1) {
-                dropdownText.textContent = selectedValues[0];
-            } else {
-                dropdownText.textContent = `${selectedValues.length}个仓库`;
-            }
-        }
-        
-        // 点击外部关闭下拉菜单
-        document.addEventListener('click', function(event) {
-            const dropdownContainer = document.getElementById('detailWarehouseContainer');
-            if (dropdownContainer && !dropdownContainer.contains(event.target)) {
-                dropdownContainer.classList.remove('active');
-            }
+      // 绑定复选框事件
+      document.querySelectorAll('.modal-item-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+          if (this.checked) {
+            modalSelectedItems.add(this.dataset.id);
+          } else {
+            modalSelectedItems.delete(this.dataset.id);
+          }
+          updateModalSelectedCount();
+          updateModalCheckAll();
         });
-        
-        // 重置检索条件
-        if (detailReset) {
-            detailReset.onclick = function() {
-                document.getElementById('detailBillMonth').value = '';
-                document.getElementById('detailVoyagePeriod').value = '';
-                document.getElementById('detailCustomerCode').value = '请选择客户代码';
-                document.getElementById('detailCreateStartDate').value = '';
-                document.getElementById('detailCreateEndDate').value = '';
-                document.getElementById('detailOutboundStartDate').value = '';
-                document.getElementById('detailOutboundEndDate').value = '';
-                document.querySelectorAll('input[name="detailWarehouse"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                updateDetailWarehouseText();
-                detailDataTableBody.innerHTML = '';
-            };
-        }
-        
-        // 搜索功能 - 模拟数据回显
-        if (detailSearch) {
-            detailSearch.onclick = function() {
-                const customerCode = document.getElementById('detailCustomerCode').value;
-                const createStartDate = document.getElementById('detailCreateStartDate').value;
-                const createEndDate = document.getElementById('detailCreateEndDate').value;
-                const outboundStartDate = document.getElementById('detailOutboundStartDate').value;
-                const outboundEndDate = document.getElementById('detailOutboundEndDate').value;
-                const selectedWarehouses = Array.from(document.querySelectorAll('input[name="detailWarehouse"]:checked')).map(checkbox => checkbox.value);
-                
-                // 清空现有数据
-                detailDataTableBody.innerHTML = '';
-                
-                // 模拟数据（实际项目中这里会发送AJAX请求）
-                const mockData = [
-                    {
-                        customerCode: 'ZJJS',
-                        warehouse: 'CA008',
-                        orderNo: 'ZJJS-20250115-001',
-                        refNo: 'REF-20250115-001',
-                        trackingNo: 'TRK-20250115-001',
-                        shippingMethod: 'FEDEX',
-                        outboundFee: 5.00,
-                        expressFee: 25.50,
-                        total: 30.50,
-                        currency: 'USD'
-                    },
-                    {
-                        customerCode: 'ZJHW',
-                        warehouse: 'CA009',
-                        orderNo: 'ZJHW-20250116-002',
-                        refNo: 'REF-20250116-002',
-                        trackingNo: 'TRK-20250116-002',
-                        shippingMethod: 'DHL',
-                        outboundFee: 3.00,
-                        expressFee: 18.00,
-                        total: 21.00,
-                        currency: 'USD'
-                    },
-                    {
-                        customerCode: 'ZJWL',
-                        warehouse: 'CA010',
-                        orderNo: 'ZJWL-20250117-003',
-                        refNo: 'REF-20250117-003',
-                        trackingNo: 'TRK-20250117-003',
-                        shippingMethod: 'UPS',
-                        outboundFee: 4.50,
-                        expressFee: 22.80,
-                        total: 27.30,
-                        currency: 'USD'
-                    },
-                    {
-                        customerCode: 'ZJJS',
-                        warehouse: 'CA008',
-                        orderNo: 'ZJJS-20250118-004',
-                        refNo: 'REF-20250118-004',
-                        trackingNo: 'TRK-20250118-004',
-                        shippingMethod: 'FEDEX',
-                        outboundFee: 6.00,
-                        expressFee: 30.00,
-                        total: 36.00,
-                        currency: 'USD'
-                    }
-                ];
-                
-                // 根据条件过滤数据（模拟）
-                let filteredData = mockData;
-                if (customerCode !== '请选择客户代码') {
-                    filteredData = filteredData.filter(item => item.customerCode === customerCode);
-                }
-                if (selectedWarehouses.length > 0) {
-                    filteredData = filteredData.filter(item => selectedWarehouses.includes(item.warehouse));
-                }
-                // 注意：实际项目中，创建时间和出库时间的过滤会在后端完成
-                // 这里只是模拟，实际需要根据日期范围过滤数据
-                
-                // 渲染数据到表格
-                filteredData.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><input type="checkbox" class="detail-data-check"></td>
-                        <td>${item.customerCode}</td>
-                        <td>${item.warehouse}</td>
-                        <td>${item.orderNo}</td>
-                        <td>${item.refNo}</td>
-                        <td>${item.trackingNo}</td>
-                        <td>${item.shippingMethod}</td>
-                        <td>${item.outboundFee}</td>
-                        <td>${item.expressFee}</td>
-                        <td>${item.total}</td>
-                        <td>${item.currency}</td>
-                    `;
-                    detailDataTableBody.appendChild(row);
-                });
-                
-                if (filteredData.length === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = '<td colspan="11" style="text-align: center; padding: 20px; color: #6c757d;">暂无数据</td>';
-                    detailDataTableBody.appendChild(row);
-                }
-            };
-        }
-        
-        // 弹窗内全选/取消全选
-        if (detailCheckAll) {
-            detailCheckAll.onchange = function() {
-                const isChecked = this.checked;
-                detailDataTableBody.querySelectorAll('.detail-data-check').forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-            };
-        }
-        
-        // 单个复选框变化时更新全选状态
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('detail-data-check')) {
-                const allCheckboxes = detailDataTableBody.querySelectorAll('.detail-data-check');
-                const checkedCheckboxes = detailDataTableBody.querySelectorAll('.detail-data-check:checked');
-                if (detailCheckAll) {
-                    detailCheckAll.checked = allCheckboxes.length === checkedCheckboxes.length && allCheckboxes.length > 0;
-                }
-            }
-        });
-        
-        // 保存选中的数据到主表
-        if (detailSave) {
-            detailSave.onclick = function() {
-                const checkedRows = detailDataTableBody.querySelectorAll('.detail-data-check:checked');
-                
-                // 如果没有勾选任何数据，则添加所有数据
-                const rowsToAdd = checkedRows.length > 0 
-                    ? Array.from(checkedRows).map(checkbox => checkbox.closest('tr'))
-                    : Array.from(detailDataTableBody.querySelectorAll('tr')).filter(row => !row.querySelector('td[colspan]'));
-                
-                if (rowsToAdd.length === 0) {
-                    alert('没有数据可添加');
-                    return;
-                }
-                
-                // 获取基础信息维护区域的值
-                const billMonth = document.getElementById('detailBillMonth').value;
-                const voyagePeriod = document.getElementById('detailVoyagePeriod').value;
-                
-                // 验证必填项
-                if (!billMonth) {
-                    alert('请填写账单月');
-                    return;
-                }
-                if (!voyagePeriod) {
-                    alert('请填写航期');
-                    return;
-                }
-                
-                // 格式化账单月和航期（从YYYY-MM格式转换为YYYY-MM格式显示）
-                const billMonthDisplay = billMonth || '';
-                const voyagePeriodDisplay = voyagePeriod || '';
-                
-                // 获取当前日期时间
-                const now = new Date();
-                const currentDateTime = now.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-');
-                
-                // 遍历选中的行，添加到主表
-                rowsToAdd.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length < 11) return; // 跳过"暂无数据"行
-                    
-                    // 创建主表行
-                    const newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td><input type="checkbox"></td>
-                        <td>草稿</td>
-                        <td>${billMonthDisplay}</td>
-                        <td>${voyagePeriodDisplay}</td>
-                        <td>${currentDateTime}</td>
-                        <td>${cells[2].textContent.trim()}</td>
-                        <td>${cells[1].textContent.trim()}</td>
-                        <td>-</td>
-                        <td>${cells[4].textContent.trim()}</td>
-                        <td>${cells[3].textContent.trim()}</td>
-                        <td>${cells[5].textContent.trim()}</td>
-                        <td>${cells[6].textContent.trim()}</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>${cells[7].textContent.trim()}</td>
-                        <td>${cells[8].textContent.trim()}</td>
-                        <td>${cells[9].textContent.trim()}</td>
-                        <td>${cells[10].textContent.trim()}</td>
-                        <td class="product-detail"><a href="#">查看</a></td>
-                        <td class="operation">
-                            <span>确定</span>
-                    <span>编辑</span>
-                    <span>删除</span>
-                        </td>
-                    `;
-                
-                // 添加到主表
-                mainTableBody.appendChild(newRow);
-            });
+      });
+    }
 
-            // 关闭弹窗
-                closeDetailModal();
-                alert(`成功添加 ${rowsToAdd.length} 条数据到主表`);
-            };
-        }
+    // 更新弹窗选中数量
+    function updateModalSelectedCount() {
+      document.getElementById('modalSelectedCount').textContent = modalSelectedItems.size;
+    }
 
-        // 主表全选/取消全选
-        if (mainTableCheckAll) {
-        mainTableCheckAll.onchange = function() {
-            const isChecked = this.checked;
-            mainTableBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            };
-        }
-        
-        // 充值表格全选/取消全选
-        const rechargeTableCheckAll = document.getElementById('rechargeTableCheckAll');
-        if (rechargeTableCheckAll) {
-            rechargeTableCheckAll.onchange = function() {
-            const isChecked = this.checked;
-                const rechargeTableBody = document.getElementById('rechargeTableBody');
-                rechargeTableBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            };
-        }
-        
-        // 费用调整表格全选/取消全选
-        const feeAdjustTableCheckAll = document.getElementById('feeAdjustTableCheckAll');
-        if (feeAdjustTableCheckAll) {
-            feeAdjustTableCheckAll.onchange = function() {
-            const isChecked = this.checked;
-                const feeAdjustTableBody = document.getElementById('feeAdjustTableBody');
-                feeAdjustTableBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = isChecked;
-            });
-            };
-        }
+    // 更新弹窗全选状态
+    function updateModalCheckAll() {
+      const checkAll = document.getElementById('modalCheckAll');
+      const checkboxes = document.querySelectorAll('.modal-item-checkbox');
+      checkAll.checked = checkboxes.length > 0 && checkboxes.length === modalSelectedItems.size;
+    }
 
-        // 计算总金额函数
-        function calculateTotalAmount(tableBody, amountColumnIndex, totalElementId) {
-            const rows = tableBody.querySelectorAll('tr');
-            let total = 0;
-            
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length > amountColumnIndex) {
-                    const amountText = cells[amountColumnIndex].textContent.trim();
-                    // 处理负数金额（如 -150.00）
-                    const amount = parseFloat(amountText) || 0;
-                    total += amount;
-                }
-            });
-            
-            const totalElement = document.getElementById(totalElementId);
-            if (totalElement) {
-                totalElement.textContent = `总金额: ${total.toFixed(2)}`;
-            }
-        }
-        
-        // 初始化时计算总金额
-        function initTotalAmounts() {
-            // 计算充值表格总金额（充值金额在第5列，索引为5）
-            const rechargeTableBody = document.getElementById('rechargeTableBody');
-            if (rechargeTableBody) {
-                calculateTotalAmount(rechargeTableBody, 5, 'rechargeTotalAmount');
-            }
-            
-            // 计算费用调整表格总金额（调整金额在第5列，索引为5）
-            const feeAdjustTableBody = document.getElementById('feeAdjustTableBody');
-            if (feeAdjustTableBody) {
-                calculateTotalAmount(feeAdjustTableBody, 5, 'feeAdjustTotalAmount');
-            }
-        }
-        
-        // 页面加载完成后计算总金额
-        document.addEventListener('DOMContentLoaded', function() {
-            initTotalAmounts();
-        });
-        
-        // 如果DOM已经加载，立即计算
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initTotalAmounts);
-            } else {
-            initTotalAmounts();
-        }
+    // 根据客户代码获取客户信息（销售、客服、次客服）
+    function getCustomerInfo(customerCode) {
+      // 客户信息映射表，可以根据实际需求修改
+      const customerMap = {
+        'ZJJS': { sales: '张三', customerService: '李四', subCustomerService: '王五' },
+        'ZJHW': { sales: '赵六', customerService: '钱七', subCustomerService: '孙八' },
+        'ZJWL': { sales: '周九', customerService: '吴十', subCustomerService: '郑一' }
+      };
+      
+      // 如果找到映射，返回对应信息，否则返回默认值
+      if (customerMap[customerCode]) {
+        return customerMap[customerCode];
+      }
+      
+      // 默认值
+      return {
+        sales: '-',
+        customerService: '-',
+        subCustomerService: '-'
+      };
+    }
 
-        // 批量删除逻辑（仅支持默认表格）
-        const batchDeleteBtns = document.querySelectorAll('.btn-batch-delete');
+    // 提交弹窗数据
+    function submitModalData() {
+      // 如果没有勾选任何项，默认提交全部数据；如果勾选了，只提交勾选的项
+      let selectedData;
+      if (modalSelectedItems.size === 0) {
+        // 未勾选任何项，提交全部数据
+        if (modalData.length === 0) {
+          alert('没有可提交的数据，请先搜索数据');
+        return;
+        }
+        selectedData = modalData;
+      } else {
+        // 只提交勾选的项
+        selectedData = modalData.filter(item => modalSelectedItems.has(item.id));
+      }
+      
+      // 将费用明细数据转换为账单数据（按客户代码和账单月份分组汇总）
+      const billMap = new Map();
+      
+      // 获取账单类型
+      const billType = document.getElementById('modalBillType').value;
+      if (!billType) {
+        alert('请选择账单类型');
+        return;
+      }
+      
+      selectedData.forEach(item => {
+        const billMonth = document.getElementById('modalBillMonth').value || new Date().toISOString().slice(0, 7);
+        const key = `${item.customerCode}_${billMonth}_${billType}`;
         
-        batchDeleteBtns.forEach(btn => {
-            btn.onclick = function() {
-                // 获取当前激活的tab内容
-                const activeTab = document.querySelector('.tab-content.active');
-                
-                // 充值和费用调整tab不支持批量删除
-                if (activeTab.id === 'tab-recharge' || activeTab.id === 'tab-fee-adjust') {
-                    return;
-                }
-                
-                const tableBody = mainTableBody;
-                const checkAll = mainTableCheckAll;
-                
-                const tableRows = tableBody.querySelectorAll('tr');
-                const checkedCheckboxes = tableBody.querySelectorAll('input[type="checkbox"]:checked');
-                
-                if (tableRows.length === 0) {
-                alert('没有数据可删除');
-                return;
-            }
-            
-            let confirmMessage;
-            let rowsToDelete;
-            
-            if (checkedCheckboxes.length > 0) {
-                // 有勾选数据，只删除勾选的
-                confirmMessage = `确定要删除选中的 ${checkedCheckboxes.length} 条数据吗？`;
-                rowsToDelete = Array.from(checkedCheckboxes).map(checkbox => checkbox.closest('tr'));
-            } else {
-                // 没有勾选数据，删除所有
-                confirmMessage = '确定要删除所有数据吗？';
-                    rowsToDelete = Array.from(tableRows);
-            }
-            
-            if (confirm(confirmMessage)) {
-                // 删除选中的行
-                rowsToDelete.forEach(row => {
-                    row.remove();
-                });
-                
-                // 重置全选状态
-                    if (checkAll) {
-                        checkAll.checked = false;
-                    }
-                
-                alert(`成功删除 ${rowsToDelete.length} 条数据`);
-            }
+        if (!billMap.has(key)) {
+          const billNo = `BILL-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+          const voyagePeriod = document.getElementById('modalVoyagePeriod').value || '';
+          
+          // 根据客户代码自动填充销售、客服、次客服信息
+          const customerInfo = getCustomerInfo(item.customerCode);
+          
+          billMap.set(key, {
+            id: billNo,
+            billNo: billNo,
+            billMonth: billMonth,
+            voyagePeriod: voyagePeriod,
+            customerCode: item.customerCode,
+            sales: customerInfo.sales,
+            customerService: customerInfo.customerService,
+            subCustomerService: customerInfo.subCustomerService,
+            billType: billType,
+            billAmount: 0,
+            billStatus: '已出账',
+            creator: '系统',
+            updateTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
+            operator: '系统',
+            billRemark: '',
+            details: []
+          });
+        }
+        
+        const bill = billMap.get(key);
+        // 根据账单类型获取金额字段
+        let amount = 0;
+        if (item.total !== undefined) {
+          amount = item.total;
+        } else if (item.amount !== undefined) {
+          amount = item.amount;
+        } else if (item.compensationAmount !== undefined) {
+          amount = item.compensationAmount;
+        } else if (item.rechargeAmount !== undefined) {
+          amount = item.rechargeAmount;
+        } else if (item.adjustAmount !== undefined) {
+          amount = Math.abs(item.adjustAmount);
+        }
+        bill.billAmount += amount;
+        
+        // 为明细添加状态字段，默认为"已出账"
+        const detailWithStatus = {
+          ...item,
+          detailStatus: '已出账'
         };
+        bill.details.push(detailWithStatus);
+      });
+      
+      // 将汇总后的账单数据添加到列表
+      const newBills = Array.from(billMap.values());
+      reconciliationData = [...reconciliationData, ...newBills];
+      
+      alert(`成功添加 ${newBills.length} 条账单数据，共包含 ${selectedData.length} 条明细`);
+      closeFeeModal();
+      renderTable();
+      updateSummary();
+    }
+
+    // 渲染主表格
+    function renderTable() {
+      const tbody = document.getElementById('reconciliationTableBody');
+      tbody.innerHTML = '';
+      
+      if (reconciliationData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="16" class="py-8 text-center text-gray-500">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              暂无数据，请点击"费用获取"按钮获取数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = reconciliationData.slice(startIndex, endIndex);
+
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'table-row-hover border-b border-gray-100';
+        
+        // 获取状态标签样式
+        const statusClass = getStatusClass(item.billStatus || '待审核');
+        const statusText = item.billStatus || '待审核';
+        
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <input type="checkbox" data-id="${item.id || item.billNo}" class="rounded border-gray-300 item-checkbox" ${selectedItems.has(item.id || item.billNo) ? 'checked' : ''}>
+          </td>
+          <td class="py-3 px-4 font-medium text-primary">${item.billNo || '-'}</td>
+          <td class="py-3 px-4">${item.billMonth || '-'}</td>
+          <td class="py-3 px-4">${item.voyagePeriod || '-'}</td>
+          <td class="py-3 px-4">${item.customerCode || '-'}</td>
+          <td class="py-3 px-4">${item.sales || '-'}</td>
+          <td class="py-3 px-4">${item.customerService || '-'}</td>
+          <td class="py-3 px-4">${item.subCustomerService || '-'}</td>
+          <td class="py-3 px-4">${item.billType || '-'}</td>
+          <td class="py-3 px-4 text-right font-semibold text-success">$${(item.billAmount || 0).toFixed(2)}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
+          </td>
+          <td class="py-3 px-4">${item.creator || '-'}</td>
+          <td class="py-3 px-4 text-sm text-gray-500">${item.updateTime || '-'}</td>
+          <td class="py-3 px-4">${item.operator || '-'}</td>
+          <td class="py-3 px-4 text-sm text-gray-600 max-w-xs truncate" title="${item.billRemark || ''}">${item.billRemark || '-'}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="viewDetail('${item.id || item.billNo}')" class="px-3 py-1 text-primary hover:bg-primary/10 rounded transition-colors">
+                <i class="fa fa-eye mr-1"></i>详情
+            </button>
+              ${item.billStatus === '已作废' || item.billStatus === '已完成' ? '' : `
+              <button onclick="voidBill('${item.id || item.billNo}')" class="px-3 py-1 text-danger hover:bg-danger/10 rounded transition-colors">
+                <i class="fa fa-ban mr-1"></i>作废
+              </button>
+              `}
+              ${item.billStatus === '已完成' || item.billStatus === '已作废' ? '' : `
+              <button onclick="submitBill('${item.id || item.billNo}')" class="px-3 py-1 text-success hover:bg-success/10 rounded transition-colors">
+                <i class="fa fa-check mr-1"></i>提交
+              </button>
+              `}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 绑定复选框事件
+      document.querySelectorAll('.item-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+          const itemId = this.dataset.id;
+          if (this.checked) {
+            selectedItems.add(itemId);
+          } else {
+            selectedItems.delete(itemId);
+          }
+          updateSummary();
+          updateCheckAll();
+        });
+      });
+
+      updatePagination();
+    }
+    
+    // 获取状态标签样式
+    function getStatusClass(status) {
+      const statusMap = {
+        '待审核': 'bg-warning/20 text-warning',
+        '已审核': 'bg-success/20 text-success',
+        '已驳回': 'bg-danger/20 text-danger',
+        '已完成': 'bg-primary/20 text-primary',
+        '已作废': 'bg-gray-300 text-gray-700',
+        '已出账': 'bg-blue-100 text-blue-700',
+        '未出账': 'bg-orange-100 text-orange-700'
+      };
+      return statusMap[status] || 'bg-gray-100 text-gray-600';
+    }
+    
+    // 作废账单
+    function voidBill(id) {
+      const item = reconciliationData.find(d => (d.id === id || d.billNo === id));
+      if (!item) {
+        alert('账单不存在');
+        return;
+      }
+      
+      if (item.billStatus === '已作废') {
+        alert('该账单已经作废');
+        return;
+      }
+      
+      if (item.billStatus === '已完成') {
+        alert('已完成的账单不允许作废');
+        return;
+      }
+      
+      if (!confirm(`确定要作废账单 ${item.billNo} 吗？作废后将无法恢复。`)) {
+        return;
+      }
+      
+      // 更新账单状态为已作废
+      item.billStatus = '已作废';
+      item.operator = '系统'; // 可以改为当前用户
+      item.updateTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      
+      // 更新明细状态为未出账
+      if (item.details && item.details.length > 0) {
+        item.details.forEach(detail => {
+          detail.detailStatus = '未出账';
+        });
+      }
+      
+      // 重新渲染表格
+      renderTable();
+      
+      alert('账单已作废');
+    }
+    
+    // 提交账单（单条）
+    function submitBill(id) {
+      const item = reconciliationData.find(d => (d.id === id || d.billNo === id));
+      if (!item) {
+        alert('账单不存在');
+        return;
+      }
+      
+      if (item.billStatus === '已完成') {
+        alert('该账单已经完成');
+        return;
+      }
+      
+      if (item.billStatus === '已作废') {
+        alert('已作废的账单不能提交');
+        return;
+      }
+      
+      if (!confirm(`确定要提交账单 ${item.billNo} 吗？提交后状态将变为已完成。`)) {
+        return;
+      }
+      
+      // 更新账单状态为已完成
+      item.billStatus = '已完成';
+      item.operator = '系统';
+      item.updateTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      
+      // 更新明细状态为已完成
+      if (item.details && item.details.length > 0) {
+        item.details.forEach(detail => {
+          detail.detailStatus = '已完成';
+        });
+      }
+      
+      // 重新渲染表格
+      renderTable();
+      
+      alert('账单提交成功');
+    }
+    
+    // 批量提交账单
+    function batchSubmitBills() {
+      if (selectedItems.size === 0) {
+        alert('请至少选择一条账单');
+        return;
+      }
+      
+      const selectedBills = reconciliationData.filter(item => 
+        selectedItems.has(item.id || item.billNo)
+      );
+      
+      // 检查是否有已作废的账单
+      const voidedBills = selectedBills.filter(item => item.billStatus === '已作废');
+      if (voidedBills.length > 0) {
+        alert('选中的账单中包含已作废的账单，无法提交');
+        return;
+      }
+      
+      // 检查是否都已完成
+      const completedBills = selectedBills.filter(item => item.billStatus === '已完成');
+      if (completedBills.length === selectedBills.length) {
+        alert('选中的账单已经全部完成');
+        return;
+      }
+      
+      if (!confirm(`确定要批量提交 ${selectedBills.length} 条账单吗？提交后状态将变为已完成。`)) {
+        return;
+      }
+      
+      // 批量更新状态
+      selectedBills.forEach(item => {
+        if (item.billStatus !== '已完成' && item.billStatus !== '已作废') {
+          item.billStatus = '已完成';
+          item.operator = '系统';
+          item.updateTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+          
+          // 更新明细状态为已完成
+          if (item.details && item.details.length > 0) {
+            item.details.forEach(detail => {
+              detail.detailStatus = '已完成';
+            });
+          }
+        }
+      });
+      
+      // 清空选择
+      selectedItems.clear();
+      
+      // 重新渲染表格
+      renderTable();
+      updateSummary();
+      
+      alert(`成功提交 ${selectedBills.length} 条账单`);
+    }
+
+    // 更新汇总数据
+    function updateSummary() {
+      const totalRecords = reconciliationData.length;
+      const selectedRecords = selectedItems.size;
+      const totalAmount = reconciliationData.reduce((sum, item) => sum + (item.billAmount || 0), 0);
+      const selectedAmount = reconciliationData
+        .filter(item => selectedItems.has(item.id || item.billNo))
+        .reduce((sum, item) => sum + (item.billAmount || 0), 0);
+      
+      const customers = new Set(reconciliationData.map(item => item.customerCode).filter(Boolean));
+      
+      // 计算明细总数（所有账单的明细数量）
+      const totalDetails = reconciliationData.reduce((sum, item) => sum + (item.details ? item.details.length : 0), 0);
+
+      document.getElementById('totalRecords').textContent = totalRecords;
+      document.getElementById('selectedRecords').textContent = selectedRecords;
+      document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
+      document.getElementById('selectedAmount').textContent = `$${selectedAmount.toFixed(2)}`;
+      document.getElementById('customerCount').textContent = customers.size;
+      document.getElementById('warehouseCount').textContent = totalDetails; // 显示明细总数
+    }
+
+    // 更新全选状态
+    function updateCheckAll() {
+      const checkAll = document.getElementById('tableCheckAll');
+      const checkboxes = document.querySelectorAll('.item-checkbox');
+      checkAll.checked = checkboxes.length > 0 && checkboxes.length === selectedItems.size;
+    }
+
+    // 更新分页
+    function updatePagination() {
+      const totalPages = Math.ceil(reconciliationData.length / itemsPerPage);
+      const startItem = reconciliationData.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, reconciliationData.length);
+      
+      document.getElementById('paginationInfo').textContent = `显示 ${startItem}-${endItem} 条，共 ${reconciliationData.length} 条`;
+
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage >= totalPages;
+
+      const pageButtons = document.getElementById('pageButtons');
+      pageButtons.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.className = `w-8 h-8 flex items-center justify-center rounded border transition-all ${
+          i === currentPage ? 'bg-primary text-white border-primary' : 'border-gray-200 hover:border-primary hover:text-primary'
+        }`;
+        btn.textContent = i;
+        btn.addEventListener('click', () => {
+          currentPage = i;
+          renderTable();
+        });
+        pageButtons.appendChild(btn);
+      }
+    }
+
+    // 筛选数据
+    function filterData() {
+      // 这里可以根据筛选条件过滤数据
+      renderTable();
+    }
+
+    // 重置筛选
+    function resetFilter() {
+      // 动态获取所有筛选输入框并重置
+      const basicContainer = document.getElementById('basicFilters');
+      basicContainer.querySelectorAll('select, input').forEach(el => {
+        if (el.type === 'date' || el.type === 'month') {
+          el.value = '';
+        } else {
+          el.value = '';
+        }
+      });
+      
+      const advancedContainer = document.getElementById('advancedFilters');
+      if (advancedContainer) {
+        advancedContainer.querySelectorAll('select, input').forEach(el => {
+          if (el.type === 'date' || el.type === 'month') {
+            el.value = '';
+          } else {
+            el.value = '';
+          }
+        });
+      }
+      
+      renderTable();
+    }
+    
+    // 高级筛选相关变量
+    let selectedAdvancedFilters = [];
+    
+    // 打开高级筛选弹窗
+    function openAdvancedFilterModal() {
+      // 恢复已选的条件
+      restoreAdvancedFilterModal();
+      document.getElementById('advancedFilterModal').classList.remove('hidden');
+      document.getElementById('advancedFilterModal').classList.add('flex');
+    }
+    
+    // 关闭高级筛选弹窗
+    function closeAdvancedFilterModal() {
+      document.getElementById('advancedFilterModal').classList.add('hidden');
+      document.getElementById('advancedFilterModal').classList.remove('flex');
+    }
+    
+    // 重置高级筛选弹窗
+    function resetAdvancedFilterModal() {
+      // 重置输入检索
+      document.getElementById('modalFilterBillNo').value = '';
+      document.getElementById('modalFilterOrderNo').value = '';
+      document.getElementById('modalFilterRemark').value = '';
+      
+      // 重置日期检索
+      document.getElementById('modalFilterBillMonth').value = '';
+      document.getElementById('modalFilterVoyagePeriod').value = '';
+      document.getElementById('modalFilterCreateStartDate').value = '';
+      document.getElementById('modalFilterCreateEndDate').value = '';
+      
+      // 重置下拉检索
+      document.getElementById('modalFilterCreator').value = '';
+      document.getElementById('modalFilterOperator').value = '';
+    }
+    
+    // 恢复高级筛选弹窗状态
+    function restoreAdvancedFilterModal() {
+      resetAdvancedFilterModal();
+      
+      // 恢复已选的条件
+      selectedAdvancedFilters.forEach(filter => {
+        const input = document.getElementById(`modalFilter${filter.filter}`);
+        if (input) {
+          input.value = filter.value;
+        }
+      });
+    }
+    
+    // 提交高级筛选
+    function submitAdvancedFilter() {
+      selectedAdvancedFilters = [];
+      
+      // 1. 收集输入检索
+      const billNo = document.getElementById('modalFilterBillNo').value.trim();
+      if (billNo) {
+        selectedAdvancedFilters.push({
+          type: 'text',
+          filter: 'BillNo',
+          value: billNo,
+          label: `账单号: ${billNo}`
+        });
+      }
+      
+      const orderNo = document.getElementById('modalFilterOrderNo').value.trim();
+      if (orderNo) {
+        selectedAdvancedFilters.push({
+          type: 'text',
+          filter: 'OrderNo',
+          value: orderNo,
+          label: `订单号: ${orderNo}`
+        });
+      }
+      
+      const remark = document.getElementById('modalFilterRemark').value.trim();
+      if (remark) {
+        selectedAdvancedFilters.push({
+          type: 'text',
+          filter: 'Remark',
+          value: remark,
+          label: `备注: ${remark}`
+        });
+      }
+      
+      // 2. 收集日期检索
+      const billMonth = document.getElementById('modalFilterBillMonth').value;
+      if (billMonth) {
+        selectedAdvancedFilters.push({
+          type: 'month',
+          filter: 'BillMonth',
+          value: billMonth,
+          label: `账单月: ${billMonth}`
+        });
+      }
+      
+      const voyagePeriod = document.getElementById('modalFilterVoyagePeriod').value;
+      if (voyagePeriod) {
+        selectedAdvancedFilters.push({
+          type: 'month',
+          filter: 'VoyagePeriod',
+          value: voyagePeriod,
+          label: `航期: ${voyagePeriod}`
+        });
+      }
+      
+      const createStartDate = document.getElementById('modalFilterCreateStartDate').value;
+      if (createStartDate) {
+        selectedAdvancedFilters.push({
+          type: 'date',
+          filter: 'CreateStartDate',
+          value: createStartDate,
+          label: `创建时间开始: ${createStartDate}`
+        });
+      }
+      
+      const createEndDate = document.getElementById('modalFilterCreateEndDate').value;
+      if (createEndDate) {
+        selectedAdvancedFilters.push({
+          type: 'date',
+          filter: 'CreateEndDate',
+          value: createEndDate,
+          label: `创建时间结束: ${createEndDate}`
+        });
+      }
+      
+      // 3. 收集下拉检索
+      const creator = document.getElementById('modalFilterCreator').value;
+      if (creator) {
+        selectedAdvancedFilters.push({
+          type: 'select',
+          filter: 'Creator',
+          value: creator,
+          label: `创建人: ${creator}`
+        });
+      }
+      
+      const operator = document.getElementById('modalFilterOperator').value;
+      if (operator) {
+        selectedAdvancedFilters.push({
+          type: 'select',
+          filter: 'Operator',
+          value: operator,
+          label: `操作人: ${operator}`
+        });
+      }
+      
+      // 渲染已选条件
+      renderSelectedAdvancedFilters();
+      
+      // 关闭弹窗
+      closeAdvancedFilterModal();
+    }
+    
+    // 渲染已选的高级筛选条件
+    function renderSelectedAdvancedFilters() {
+      const container = document.getElementById('selectedAdvancedFilters');
+      container.innerHTML = '';
+      
+      if (selectedAdvancedFilters.length === 0) {
+        return;
+      }
+      
+      selectedAdvancedFilters.forEach((filter, index) => {
+        const badge = document.createElement('div');
+        badge.className = 'inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full text-sm';
+        badge.innerHTML = `
+          <span class="text-primary">${filter.label}</span>
+          <button onclick="removeAdvancedFilter(${index})" class="text-primary hover:text-primary/80 transition-colors">
+            <i class="fa fa-times"></i>
+          </button>
+        `;
+        container.appendChild(badge);
+      });
+    }
+    
+    // 删除高级筛选条件
+    function removeAdvancedFilter(index) {
+      selectedAdvancedFilters.splice(index, 1);
+      renderSelectedAdvancedFilters();
+    }
+    
+    // 暴露全局函数
+    window.removeAdvancedFilter = removeAdvancedFilter;
+
+    // 查看详情
+    function viewDetail(id) {
+      const item = reconciliationData.find(d => (d.id === id || d.billNo === id));
+      if (!item) return;
+
+      const detailContent = document.getElementById('detailContent');
+      
+      // 账单基本信息
+      let html = `
+        <div class="mb-6">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-1 h-6 bg-primary rounded"></div>
+            <h4 class="text-lg font-semibold text-dark">账单信息</h4>
+          </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">账单号</div>
+              <div class="font-semibold text-primary">${item.billNo || '-'}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">账单月</div>
+              <div class="font-semibold">${item.billMonth || '-'}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">航期</div>
+              <div class="font-semibold">${item.voyagePeriod || '-'}</div>
+            </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-sm text-gray-500 mb-1">客户代码</div>
+              <div class="font-semibold">${item.customerCode || '-'}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">销售</div>
+              <div class="font-semibold">${item.sales || '-'}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">客服</div>
+              <div class="font-semibold">${item.customerService || '-'}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">次客服</div>
+              <div class="font-semibold">${item.subCustomerService || '-'}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">账单类型</div>
+              <div class="font-semibold">${item.billType || '-'}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">账单状态</div>
+              <div class="font-semibold">
+                <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(item.billStatus || '待审核')}">${item.billStatus || '待审核'}</span>
+              </div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">账单金额</div>
+              <div class="font-semibold text-success text-xl">$${(item.billAmount || 0).toFixed(2)}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">创建人</div>
+              <div class="font-semibold">${item.creator || '-'}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">更新时间</div>
+              <div class="font-semibold text-sm">${item.updateTime || '-'}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm text-gray-500 mb-1">操作人</div>
+              <div class="font-semibold">${item.operator || '-'}</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4 col-span-2">
+              <div class="text-sm text-gray-500 mb-1">账单备注</div>
+              <div class="font-semibold">${item.billRemark || '-'}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // 费用明细列表
+      if (item.details && item.details.length > 0) {
+        // 根据账单类型获取字段配置
+        const billType = item.billType || '出库+快递(YC)';
+        const fieldConfig = getBillTypeFields(billType);
+        
+        html += `
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-6 bg-primary rounded"></div>
+              <h4 class="text-lg font-semibold text-dark">费用明细</h4>
+              <span class="text-sm text-gray-500 ml-2">共 ${item.details.length} 条</span>
+            </div>
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+        `;
+        
+        // 根据字段配置动态生成表头
+        fieldConfig.headers.forEach(header => {
+          const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
+            ? 'text-right' 
+            : 'text-left';
+          html += `<th class="${alignClass} py-3 px-4 font-semibold text-gray-700">${header}</th>`;
         });
         
-        // 单个删除逻辑
-        mainTableBody.onclick = function(e) {
-            if (e.target.textContent === '🗑️') {
-                const row = e.target.closest('tr');
-                if (confirm('确定要删除这条数据吗？')) {
-                    row.remove();
-                    
-                    // 重置全选状态
-                    mainTableCheckAll.checked = false;
-                    
-                    alert('数据已删除');
+        html += `
+                  </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        // 根据字段配置动态生成数据行
+        item.details.forEach(detail => {
+          html += `<tr class="border-b border-gray-100 table-row-hover">`;
+          
+          fieldConfig.fields.forEach(field => {
+            let value = detail[field] || '-';
+            let alignClass = 'text-left';
+            let displayValue = value;
+            
+            // 处理数值字段
+            if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
+              alignClass = 'text-right';
+              if (typeof value === 'number') {
+                // 费用调整的调整金额不显示$和+号
+                if (field === 'adjustAmount') {
+                  displayValue = value.toFixed(2);
+                } else {
+                  displayValue = `$${value.toFixed(2)}`;
                 }
+              }
             }
-        };
+            
+            html += `<td class="py-3 px-4 ${alignClass}">${displayValue}</td>`;
+          });
+          
+          html += `</tr>`;
+        });
         
-        // 模拟分页功能
-        let currentPage = 1;
-        const totalPages = 2;
-        
-        document.getElementById('prevPage').onclick = function() {
-            if (currentPage > 1) {
-                currentPage--;
-                document.getElementById('currentPage').textContent = currentPage;
-                // 实际项目中这里会加载上一页数据
-            }
-        };
-        
-        document.getElementById('nextPage').onclick = function() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                document.getElementById('currentPage').textContent = currentPage;
-                // 实际项目中这里会加载下一页数据
-            }
-        };
-    </script>
+        html += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="text-center py-8 text-gray-500">
+            <i class="fa fa-inbox text-4xl mb-2 block"></i>
+            暂无明细数据
+          </div>
+        `;
+      }
+      
+      detailContent.innerHTML = html;
+
+      document.getElementById('detailModal').classList.remove('hidden');
+      document.getElementById('detailModal').classList.add('flex');
+    }
+
+    // 导出数据
+    function exportData() {
+      const dataToExport = selectedItems.size > 0 
+        ? reconciliationData.filter(item => selectedItems.has(item.id))
+        : reconciliationData;
+      
+      if (dataToExport.length === 0) {
+        alert('没有可导出的数据');
+        return;
+      }
+
+      // 这里可以实现实际的导出功能
+      alert(`准备导出 ${dataToExport.length} 条数据`);
+    }
+
+    // 暴露全局函数
+    window.toggleWarehouseDropdown = toggleWarehouseDropdown;
+    window.updateWarehouseText = updateWarehouseText;
+    window.viewDetail = viewDetail;
+    window.voidBill = voidBill;
+    window.submitBill = submitBill;
+  </script>
 </body>
 </html>
+
+
