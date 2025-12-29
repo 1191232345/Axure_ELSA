@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>入库详情 - 物流管理系统</title>
+  <!-- 引入Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 自定义配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1890ff',
+            success: '#52c41a',
+            warning: '#faad14',
+            danger: '#ff4d4f',
+            neutral: {
+              100: '#f5f5f5',
+              200: '#e5e5e5',
+              300: '#d9d9d9',
+              500: '#8c8c8c',
+              600: '#666666',
+              700: '#595959',
+              800: '#434343',
+            }
+          },
+          boxShadow: {
+            'table-shadow': '0 2px 8px rgba(0, 0, 0, 0.08)',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .badge-pill {
+        @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
+      }
+      .btn-primary {
+        @apply px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors;
+      }
+      .btn-default {
+        @apply px-4 py-2 border border-neutral-300 rounded-md text-sm font-medium text-neutral-700 hover:bg-neutral-100 transition-colors;
+      }
+      .tab-active {
+        @apply text-primary border-b-2 border-primary;
+      }
+      .tab-inactive {
+        @apply text-neutral-600 hover:text-primary transition-colors;
+      }
+    }
+  </style>
+  
+  <style>
+    /* 水印样式 */
+    body::before {
+      content: '曾少文';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 120px;
+      color: rgba(0, 0, 0, 0.05);
+      z-index: -1;
+      pointer-events: none;
+      font-weight: bold;
+    }
+    
+    /* 时间轴样式 */
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e5e5e5;
+    }
+    
+    .timeline-item {
+      position: relative;
+      padding-bottom: 24px;
+    }
+    
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -22px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid #1890ff;
+      z-index: 1;
+    }
+    
+    /* 响应式布局 */
+    @media (max-width: 1024px) {
+      .timeline {
+        padding-left: 30px;
+      }
+    }
+    
+    .timeline-item.completed::before {
+      background: #1890ff;
+    }
+    
+    .timeline-item.processing::before {
+      background: #1890ff;
+      box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.2);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(24, 144, 255, 0.1);
+      }
+    }
+    
+    .timeline-item.waiting::before {
+      background: #fff;
+      border-color: #d9d9d9;
+    }
+    
+    /* 表格样式 */
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    
+    th {
+      background-color: #fafafa;
+      font-weight: 600;
+      color: #262626;
+      white-space: nowrap;
+    }
+    
+    tr:hover {
+      background-color: #fafafa;
+    }
+    
+    .row-warning {
+      background-color: #fff1f0;
+    }
+    
+    .row-warning:hover {
+      background-color: #ffe7e5;
+    }
+    
+    .total-row {
+      background-color: #fafafa;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <!-- 页面头部 -->
+  <header class="bg-white shadow-sm sticky top-0 z-20">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2">
+          <button id="back-button" class="text-neutral-500 hover:text-primary">
+            <i class="fa fa-arrow-left text-lg"></i>
+          </button>
+          <h1 class="text-lg font-semibold text-neutral-800">入库详情</h1>
+        </div>
+        <button class="btn-primary">
+          <i class="fa fa-download mr-2"></i>导出
+        </button>
+      </div>
+      
+      <!-- 标签导航 -->
+      <nav class="flex space-x-6 border-b border-neutral-200">
+        <button class="tab-item tab-active px-2 py-3 text-sm font-medium" data-tab="basic">
+          基本信息
+        </button>
+        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="delivery">
+          配送信息
+        </button>
+        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="pallet">
+          打托信息
+        </button>
+        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="empty">
+          提空信息
+        </button>
+        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="outbound">
+          出库信息
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 主要内容 -->
+  <main class="container mx-auto px-4 py-6">
+    <div class="flex flex-col lg:flex-row gap-6">
+      <!-- 左侧内容区 -->
+      <div class="flex-1 min-w-0">
+        <!-- 基本信息标签页 -->
+        <div id="tab-basic" class="tab-content">
+          <!-- 基本信息卡片 -->
+          <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">基本信息</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">客户代码</span>
+                <span class="text-sm font-medium text-neutral-800">GJJJ</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">业务类型</span>
+                <span class="text-sm font-medium text-neutral-800">储存</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">参考号</span>
+                <span class="text-sm font-medium text-neutral-800">RVGJJJ-251210-0001</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">预计到港日期</span>
+                <span class="text-sm font-medium text-neutral-800">2025-12-10 08:00:00</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">联系人</span>
+                <span class="text-sm font-medium text-neutral-800">KUKA</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">仓群</span>
+                <span class="text-sm font-medium text-neutral-800">美东仓群02</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">柜号</span>
+                <span class="text-sm font-medium text-neutral-800">KJDB-2512-011</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">提单号</span>
+                <span class="text-sm font-medium text-neutral-800">-</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">邮箱</span>
+                <span class="text-sm font-medium text-neutral-800">gujing@kukahome.com</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">仓库</span>
+                <span class="text-sm font-medium text-neutral-800">MD001</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">柜型</span>
+                <span class="text-sm font-medium text-neutral-800">53HQ1</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">船公司</span>
+                <span class="text-sm font-medium text-neutral-800">-</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">手机号码</span>
+                <span class="text-sm font-medium text-neutral-800">17671196647</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">入库类型</span>
+                <span class="badge-pill bg-primary/10 text-primary">整柜</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">目的港</span>
+                <span class="text-sm font-medium text-neutral-800"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-500 mb-1">交货方式</span>
+                <span class="text-sm font-medium text-neutral-800"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 存储产品列表 -->
+          <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-base font-medium text-neutral-800">存储产品列表</h2>
+              <button class="btn-primary">
+                <i class="fa fa-download mr-2"></i>导出
+              </button>
+            </div>
+            
+            <!-- 汇总信息 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-neutral-100 rounded-lg">
+              <div>
+                <div class="text-xs text-neutral-500">总箱数</div>
+                <div class="text-lg font-semibold text-neutral-800">315</div>
+              </div>
+              <div>
+                <div class="text-xs text-neutral-500">总件数</div>
+                <div class="text-lg font-semibold text-neutral-800">315</div>
+              </div>
+              <div>
+                <div class="text-xs text-neutral-500">SKU数</div>
+                <div class="text-lg font-semibold text-neutral-800">3</div>
+              </div>
+              <div>
+                <div class="text-xs text-neutral-500">产品总值</div>
+                <div class="text-lg font-semibold text-neutral-800">$18106.61</div>
+              </div>
+            </div>
+
+            <!-- 产品表格 -->
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>产品名称</th>
+                    <th>产品尺寸</th>
+                    <th>总重量</th>
+                    <th>预报箱数</th>
+                    <th>预报箱率</th>
+                    <th>预报件数</th>
+                    <th>预报总体积(cm³)</th>
+                    <th>打托件数</th>
+                    <th>上架数量</th>
+                    <th>实际总体积(cm³)</th>
+                    <th>不良品数量</th>
+                    <th>预估托数</th>
+                    <th>实际托数</th>
+                    <th>是否一箱多件</th>
+                    <th>是否混箱</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="row-warning">
+                    <td>DC7Y007-KZZ23116-9</td>
+                    <td>餐椅 Dining Chair</td>
+                    <td>68CM x 65CM x 48CM</td>
+                    <td>3125.5 KG</td>
+                    <td>133</td>
+                    <td>1</td>
+                    <td>133</td>
+                    <td>28217280</td>
+                    <td>121</td>
+                    <td>121</td>
+                    <td>25671360</td>
+                    <td>
+                      <span class="text-danger flex items-center">
+                        <i class="fa fa-exclamation-circle mr-1"></i>-12
+                      </span>
+                    </td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>否</td>
+                    <td>否</td>
+                  </tr>
+                  <tr>
+                    <td>DC7Y007-G0402190</td>
+                    <td>餐椅 Dining Chair</td>
+                    <td>68CM x 65CM x 48CM</td>
+                    <td>4206.5 KG</td>
+                    <td>179</td>
+                    <td>1</td>
+                    <td>179</td>
+                    <td>37976640</td>
+                    <td>179</td>
+                    <td>179</td>
+                    <td>37976640</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>否</td>
+                    <td>否</td>
+                  </tr>
+                  <tr>
+                    <td>DC7Y007-KZZ23116-1</td>
+                    <td>餐椅 Dining Chair</td>
+                    <td>68CM x 65CM x 48CM</td>
+                    <td>70.5 KG</td>
+                    <td>3</td>
+                    <td>1</td>
+                    <td>3</td>
+                    <td>636480</td>
+                    <td>3</td>
+                    <td>3</td>
+                    <td>636480</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>否</td>
+                    <td>否</td>
+                  </tr>
+                  <tr class="total-row">
+                    <td colspan="3">合计</td>
+                    <td>7402.5 KG</td>
+                    <td>315</td>
+                    <td>-</td>
+                    <td>315</td>
+                    <td>66830400</td>
+                    <td>303</td>
+                    <td>303</td>
+                    <td>64284480</td>
+                    <td>
+                      <span class="text-danger flex items-center">
+                        <i class="fa fa-exclamation-circle mr-1"></i>-12
+                      </span>
+                    </td>
+                    <td>3</td>
+                    <td>3</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 备注 -->
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">备注</h2>
+            <div class="text-sm text-neutral-800">
+              RVGJJJ-251210-0001KJDB-2512-011
+            </div>
+          </div>
+        </div>
+
+        <!-- 配送信息标签页 -->
+        <div id="tab-delivery" class="tab-content hidden">
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">配送信息</h2>
+            <div class="text-sm text-neutral-500 text-center py-8">暂无配送信息</div>
+          </div>
+        </div>
+
+        <!-- 打托信息标签页 -->
+        <div id="tab-pallet" class="tab-content hidden">
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">打托信息</h2>
+            <div class="text-sm text-neutral-500 text-center py-8">暂无打托信息</div>
+          </div>
+        </div>
+
+        <!-- 提空信息标签页 -->
+        <div id="tab-empty" class="tab-content hidden">
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">提空信息</h2>
+            <div class="text-sm text-neutral-500 text-center py-8">暂无提空信息</div>
+          </div>
+        </div>
+
+        <!-- 出库信息标签页 -->
+        <div id="tab-outbound" class="tab-content hidden">
+          <div class="bg-white rounded-lg p-6 shadow-sm">
+            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">出库信息</h2>
+            <div class="text-sm text-neutral-500 text-center py-8">暂无出库信息</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧时间轴区域 -->
+      <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
+        <div class="bg-white rounded-lg p-6 shadow-sm lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+          <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">操作时间轴</h2>
+          <div class="timeline">
+            <div class="timeline-item completed">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-neutral-800">订单创建</div>
+                  <div class="text-xs text-neutral-500 mt-1">2025-12-10 08:00:00</div>
+                  <div class="text-xs text-neutral-600 mt-1">系统自动创建入库订单</div>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-item completed">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-neutral-800">车队预约</div>
+                  <div class="text-xs text-neutral-500 mt-1">2025-12-10 09:15:00</div>
+                  <div class="text-xs text-neutral-600 mt-1">已预约车队，预计12月12日到达</div>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-item completed">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-neutral-800">仓库审核</div>
+                  <div class="text-xs text-neutral-500 mt-1">2025-12-10 10:30:00</div>
+                  <div class="text-xs text-neutral-600 mt-1">仓库管理员已审核通过</div>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-item processing">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-neutral-800">货物到港</div>
+                  <div class="text-xs text-neutral-500 mt-1">进行中</div>
+                  <div class="text-xs text-neutral-600 mt-1">等待货物到达港口</div>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-item waiting">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-neutral-500">货物入库</div>
+                  <div class="text-xs text-neutral-400 mt-1">待处理</div>
+                  <div class="text-xs text-neutral-400 mt-1">等待货物到达后进行入库操作</div>
+                </div>
+              </div>
+            </div>
+            <div class="timeline-item waiting">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-neutral-500">上架完成</div>
+                  <div class="text-xs text-neutral-400 mt-1">待处理</div>
+                  <div class="text-xs text-neutral-400 mt-1">等待货物上架完成</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // 标签页切换功能
+    function initTabs() {
+      const tabButtons = document.querySelectorAll('.tab-item');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const targetTab = button.dataset.tab;
+
+          // 更新按钮样式
+          tabButtons.forEach(btn => {
+            btn.classList.remove('tab-active');
+            btn.classList.add('tab-inactive');
+          });
+          button.classList.remove('tab-inactive');
+          button.classList.add('tab-active');
+
+          // 显示对应的内容
+          tabContents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
+        });
+      });
+    }
+
+    // 返回按钮
+    document.getElementById('back-button').addEventListener('click', function() {
+      window.history.back();
+    });
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      initTabs();
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,3702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海外仓看板 - 客户运营决策层</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            dark: '#1F2937',
+            light: '#F3F4F6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义样式 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .tab-button {
+        @apply px-6 py-3 text-sm font-medium transition-all duration-300 relative;
+      }
+      .tab-button.active {
+        @apply text-primary;
+      }
+      .tab-button.active::after {
+        content: '';
+        @apply absolute bottom-0 left-0 w-full h-1 bg-primary;
+      }
+      .tab-button:not(.active) {
+        @apply text-gray-600 hover:text-primary;
+      }
+      .indicator-card {
+        @apply bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all relative;
+      }
+      .alert-badge {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+      }
+      .tab-content {
+        display: block;
+      }
+      .tab-content.hidden {
+        display: none;
+      }
+      .indicator-card-tooltip {
+        @apply absolute z-50 hidden bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal;
+        min-width: 280px;
+        max-width: 350px;
+        bottom: calc(100% + 12px);
+        left: 50%;
+        transform: translateX(-50%);
+        pointer-events: none;
+        line-height: 1.6;
+      }
+      .indicator-card-tooltip::after {
+        content: '';
+        @apply absolute top-full left-1/2 transform -translate-x-1/2;
+        border: 8px solid transparent;
+        border-top-color: #111827;
+      }
+      .indicator-card:hover .indicator-card-tooltip {
+        @apply block;
+      }
+      .tooltip-title {
+        @apply font-semibold mb-2 text-white text-sm text-left;
+      }
+      .tooltip-content {
+        @apply text-gray-300 leading-relaxed text-left;
+      }
+      .tooltip-section {
+        @apply mb-2 text-left;
+      }
+      .tooltip-section:last-child {
+        @apply mb-0;
+      }
+      .tooltip-steps {
+        @apply mt-2 space-y-1 text-left;
+      }
+      .tooltip-steps li {
+        @apply text-gray-300 text-xs leading-relaxed text-left;
+      }
+      .tooltip-steps li::marker {
+        @apply text-gray-400;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <main class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <!-- 页面标题 -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-dark mb-2">我的货物，我的业务</h1>
+      <p class="text-gray-500">客户运营决策层 - 海外仓看板</p>
+    </div>
+
+    <!-- 模块切换Tab -->
+    <div class="bg-white rounded-xl card-shadow mb-6">
+      <div class="flex border-b border-gray-200 overflow-x-auto">
+        <button class="tab-button active" data-tab="inventory">
+          <i class="fa fa-cubes mr-2"></i>库存健康仪表盘
+        </button>
+        <button class="tab-button" data-tab="fulfillment">
+          <i class="fa fa-check-circle mr-2"></i>订单履行表现
+        </button>
+        <button class="tab-button" data-tab="cost">
+          <i class="fa fa-dollar mr-2"></i>成本费用明细
+        </button>
+        <button class="tab-button" data-tab="replenishment">
+          <i class="fa fa-lightbulb-o mr-2"></i>智能补货建议
+        </button>
+      </div>
+    </div>
+
+    <!-- 模块1: 库存健康仪表盘 -->
+    <div id="tab-inventory" class="tab-content">
+      <!-- 筛选区域 -->
+      <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+        <div class="flex flex-wrap gap-4 items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">仓库:</label>
+            <select class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部仓库</option>
+              <option value="US-WH1">美国仓1</option>
+              <option value="US-WH2">美国仓2</option>
+              <option value="DE-WH1">德国仓1</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">时间范围:</label>
+            <select class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="30">近30天</option>
+              <option value="60">近60天</option>
+              <option value="90">近90天</option>
+            </select>
+          </div>
+          <button class="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <i class="fa fa-download mr-2"></i>导出滞销SKU清单
+          </button>
+        </div>
+      </div>
+
+      <!-- 关键指标卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">可用库存</span>
+            <i class="fa fa-cubes text-primary text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">156,842</div>
+          <div class="text-xs text-gray-500">单位: 件</div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">库存周转天数(DOS)</span>
+            <i class="fa fa-calendar text-warning text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">42</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500">目标值: 30天</span>
+            <span class="alert-badge bg-warning/10 text-warning">预警</span>
+          </div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">滞销SKU数量</span>
+            <i class="fa fa-exclamation-triangle text-danger text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">128</div>
+          <div class="text-xs text-gray-500">占比: 12.5%</div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">库龄>90天库存</span>
+            <i class="fa fa-clock-o text-danger text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">24,536</div>
+          <div class="text-xs text-danger">需关注</div>
+        </div>
+      </div>
+
+      <!-- 图表区域 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 库存水位分布 -->
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-lg">库存水位分布（按仓库）</h3>
+            <div class="flex gap-2">
+              <button class="chart-toggle-btn text-sm px-3 py-1 rounded bg-primary/10 text-primary" data-chart="pie">饼图</button>
+              <button class="chart-toggle-btn text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100" data-chart="heatmap">热力图</button>
+            </div>
+          </div>
+          <div class="h-64">
+            <canvas id="inventoryDistributionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- 库龄分布 -->
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-lg">库龄分布</h3>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+          <div class="h-64">
+            <canvas id="inventoryAgeChart"></canvas>
+          </div>
+          <!-- 库龄预警统计信息 -->
+          <div id="ageWarningStats" class="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center">
+              <div class="text-sm text-gray-500 mb-1">库龄>90天库存</div>
+              <div class="text-lg font-bold text-warning" id="ageOver90Qty">0</div>
+              <div class="text-xs text-gray-400" id="ageOver90Percent">0%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm text-gray-500 mb-1">库龄>180天库存</div>
+              <div class="text-lg font-bold text-danger" id="ageOver180Qty">0</div>
+              <div class="text-xs text-gray-400" id="ageOver180Percent">0%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm text-gray-500 mb-1">健康库存占比</div>
+              <div class="text-lg font-bold text-success" id="healthyStockPercent">0%</div>
+              <div class="text-xs text-gray-400">库龄≤90天</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 可售天数预测 -->
+      <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+        <h3 class="font-semibold text-lg mb-4">可售天数预测</h3>
+        <div class="h-64">
+          <canvas id="daysAvailableChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 滞销SKU明细表格 -->
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg">滞销SKU明细清单</h3>
+          <div class="relative">
+            <input id="skuSearchInput" type="text" placeholder="搜索SKU或仓库..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 w-64">
+            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="slowMovingSKUTable" class="w-full">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">SKU</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">仓库</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">库存数量</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">成本金额</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">库存天数</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">DOS</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 数据将通过JavaScript动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between mt-4">
+          <div id="paginationInfo" class="text-sm text-gray-500">显示 1-3 条，共 128 条</div>
+          <div class="flex gap-2 items-center">
+            <button id="prevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+              <i class="fa fa-chevron-left text-xs"></i>
+            </button>
+            <div id="pageButtons" class="flex gap-2">
+              <!-- 页码按钮将通过JavaScript动态生成 -->
+            </div>
+            <button id="nextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+              <i class="fa fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模块2: 订单履行表现 -->
+    <div id="tab-fulfillment" class="tab-content hidden">
+      <!-- 筛选区域 -->
+      <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+        <div class="flex flex-wrap gap-4 items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">时间范围:</label>
+            <input id="fulfillmentStartDate" type="date" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-01">
+            <span class="text-gray-400">-</span>
+            <input id="fulfillmentEndDate" type="date" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-30">
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">仓库:</label>
+            <select id="fulfillmentWarehouseSelect" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部仓库</option>
+              <option value="US-WH1">美国仓1</option>
+              <option value="US-WH2">美国仓2</option>
+              <option value="DE-WH1">德国仓1</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">渠道:</label>
+            <select id="fulfillmentChannelSelect" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部渠道</option>
+              <option value="Amazon">Amazon</option>
+              <option value="eBay">eBay</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 关键指标卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">订单满足率</span>
+            <i class="fa fa-check-circle text-success text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">96.8%</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-success">
+              <i class="fa fa-arrow-up mr-1"></i>较上月 +1.2%
+            </span>
+            <span class="text-xs text-gray-500">SLA: 95%</span>
+          </div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">出库准时率</span>
+            <i class="fa fa-clock-o text-primary text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">94.5%</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500">承诺时间</span>
+            <span class="text-xs text-success">SLA: 92% ✓</span>
+          </div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">平均出库时效(OTD)</span>
+            <i class="fa fa-truck text-warning text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">1.8天</div>
+          <div class="text-xs text-gray-500">目标: 2.0天</div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">配送妥投率</span>
+            <i class="fa fa-shipping-fast text-secondary text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1">98.2%</div>
+          <div class="text-xs text-gray-500">平均时效: 3.5天</div>
+        </div>
+      </div>
+
+      <!-- 趋势图表 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <h3 class="font-semibold text-lg mb-4">订单满足率趋势 vs SLA</h3>
+          <div class="h-64">
+            <canvas id="fulfillmentRateChart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <h3 class="font-semibold text-lg mb-4">出库准时率趋势 vs SLA</h3>
+          <div class="h-64">
+            <canvas id="onTimeRateChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 未满足订单根因分析 -->
+      <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+        <h3 class="font-semibold text-lg mb-4">未满足订单根因分析</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="h-64">
+            <canvas id="unfulfilledReasonChart"></canvas>
+          </div>
+          <div>
+            <div class="space-y-4" id="unfulfilledReasonStats">
+              <!-- 统计信息将通过JavaScript动态更新 -->
+                </div>
+              </div>
+        </div>
+      </div>
+
+      <!-- 履行对比表格 -->
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg">渠道/仓库维度履行对比</h3>
+          <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+            <i class="fa fa-download mr-1"></i>导出
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="fulfillmentComparisonTable" class="w-full">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">仓库</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">渠道</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">订单满足率</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">出库准时率</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">平均OTD</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">订单量</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 数据将通过JavaScript动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模块3: 成本费用明细 -->
+    <div id="tab-cost" class="tab-content hidden">
+      <!-- 筛选区域 -->
+      <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+        <div class="flex flex-wrap gap-4 items-center">
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">时间范围:</label>
+            <input id="costStartDate" type="date" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-01">
+            <span class="text-gray-400">-</span>
+            <input id="costEndDate" type="date" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-30">
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">仓库:</label>
+            <select id="costWarehouseSelect" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部仓库</option>
+              <option value="US-WH1">美国仓1</option>
+              <option value="US-WH2">美国仓2</option>
+              <option value="DE-WH1">德国仓1</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">费用类型:</label>
+            <select id="costTypeSelect" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部类型</option>
+              <option value="firstLeg">头程均摊成本</option>
+              <option value="storage">仓储租金与操作费</option>
+              <option value="penalty">滞纳金/附加费</option>
+              <option value="logistics">单均/单件物流成本</option>
+              <option value="other">其他费用</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">账单月:</label>
+            <input id="costBillMonth" type="month" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11">
+          </div>
+          <button class="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <i class="fa fa-download mr-2"></i>导出明细
+          </button>
+        </div>
+      </div>
+
+      <!-- 关键指标卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">总成本</span>
+            <i class="fa fa-dollar text-primary text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="totalCost">$125,680</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-success" id="totalCostChange">
+              <i class="fa fa-arrow-down mr-1"></i>较上月 -2.5%
+            </span>
+          </div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">总费用</span>
+            <i class="fa fa-money text-secondary text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="totalExpense">$98,450</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-warning" id="totalExpenseChange">
+              <i class="fa fa-arrow-up mr-1"></i>较上月 +3.2%
+            </span>
+          </div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">成本费用比</span>
+            <i class="fa fa-percent text-warning text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="costExpenseRatio">78.3%</div>
+          <div class="text-xs text-gray-500">目标: 75%</div>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">平均单件成本</span>
+            <i class="fa fa-calculator text-success text-xl"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="avgUnitCost">$0.80</div>
+          <div class="text-xs text-gray-500" id="avgUnitCostChange">较上月 -$0.05</div>
+        </div>
+      </div>
+
+      <!-- 账单概览 -->
+      <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg">账单概览</h3>
+          <button id="generateBillBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
+            <i class="fa fa-file-text-o mr-2"></i>生成账单
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-sm text-gray-500 mb-1">账单月份</div>
+            <div class="text-lg font-semibold" id="billMonthDisplay">2024-11</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-sm text-gray-500 mb-1">费用项数量</div>
+            <div class="text-lg font-semibold" id="billItemCount">156</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-sm text-gray-500 mb-1">账单总额</div>
+            <div class="text-lg font-semibold text-primary" id="billTotalAmount">$224,130</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图表区域 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 成本费用趋势（含环比分析） -->
+      <div class="bg-white rounded-xl p-6 card-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-lg">成本费用趋势（环比分析）</h3>
+            <div class="flex gap-2">
+              <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100" onclick="toggleCostTrendView()">
+                <i class="fa fa-exchange mr-1"></i>切换视图
+              </button>
+              <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+                <i class="fa fa-download mr-1"></i>导出
+              </button>
+            </div>
+          </div>
+          <div class="h-64">
+            <canvas id="costTrendChart"></canvas>
+          </div>
+          <div id="costTrendAnalysis" class="mt-4 pt-4 border-t border-gray-200 text-sm text-gray-600">
+            <!-- 环比分析说明将通过JavaScript动态生成 -->
+          </div>
+        </div>
+
+        <!-- 成本结构变化 -->
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-lg">成本结构变化</h3>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+          <div class="h-64">
+            <canvas id="costStructureChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 费用类型分布和仓库成本对比 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 费用类型分布 -->
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-lg">费用类型分布</h3>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+          <div class="h-64">
+            <canvas id="costDistributionChart"></canvas>
+          </div>
+        </div>
+
+        <!-- 仓库成本对比 -->
+        <div class="bg-white rounded-xl p-6 card-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-lg">仓库成本对比</h3>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+          <div class="h-64">
+            <canvas id="warehouseCostChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 成本模拟计算 -->
+      <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg">备货策略成本模拟</h3>
+          <button id="openSimulationBtn" class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors text-sm">
+            <i class="fa fa-calculator mr-2"></i>开始模拟
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
+            <div class="text-sm text-gray-600 mb-1">当前策略</div>
+            <div class="text-lg font-semibold text-blue-600" id="currentStrategyCost">$125,680</div>
+            <div class="text-xs text-gray-500 mt-1">月均成本</div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-400">
+            <div class="text-sm text-gray-600 mb-1">策略A（保守备货）</div>
+            <div class="text-lg font-semibold text-green-600" id="strategyACost">$118,450</div>
+            <div class="text-xs text-success mt-1">节省: $7,230 (-5.8%)</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-400">
+            <div class="text-sm text-gray-600 mb-1">策略B（激进备货）</div>
+            <div class="text-lg font-semibold text-orange-600" id="strategyBCost">$135,890</div>
+            <div class="text-xs text-warning mt-1">增加: $10,210 (+8.1%)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 成本费用明细表格（可下钻至SKU/订单级） -->
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg">成本费用明细清单</h3>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <input id="costSearchInput" type="text" placeholder="搜索订单号、SKU或仓库..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 w-64">
+              <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <select id="costDetailLevel" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="summary">汇总视图</option>
+              <option value="order">订单级</option>
+              <option value="sku">SKU级</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="costDetailTable" class="w-full">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">日期</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">订单号/SKU</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">仓库</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">费用类型</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">数量</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">单价</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">成本金额</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">费用金额</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">币种</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 数据将通过JavaScript动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between mt-4">
+          <div id="costPaginationInfo" class="text-sm text-gray-500">显示 1-10 条，共 156 条</div>
+          <div class="flex gap-2 items-center">
+            <button id="costPrevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+              <i class="fa fa-chevron-left text-xs"></i>
+            </button>
+            <div id="costPageButtons" class="flex gap-2">
+              <!-- 页码按钮将通过JavaScript动态生成 -->
+            </div>
+            <button id="costNextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+              <i class="fa fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+          </div>
+          </div>
+
+    <!-- 模块4: 智能补货建议 -->
+    <div id="tab-replenishment" class="tab-content hidden">
+      <!-- 筛选和参数调整区域 -->
+      <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+        <div class="flex flex-wrap gap-4 items-center mb-4">
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">仓库:</label>
+            <select id="replenishmentWarehouseSelect" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部仓库</option>
+              <option value="US-WH1">美国仓1</option>
+              <option value="US-WH2">美国仓2</option>
+              <option value="DE-WH1">德国仓1</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700">预测周数:</label>
+            <select id="forecastWeeks" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="4">4周</option>
+              <option value="8" selected>8周</option>
+              <option value="12">12周</option>
+              <option value="16">16周</option>
+            </select>
+          </div>
+          <button id="openParamsBtn" class="ml-auto px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors">
+            <i class="fa fa-cog mr-2"></i>参数设置
+          </button>
+        </div>
+        
+        <!-- 参数调整界面 -->
+        <div id="paramsPanel" class="hidden border-t border-gray-200 pt-4 mt-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">安全库存系数</label>
+              <div class="flex items-center gap-2">
+                <input type="range" id="safetyStockCoeff" min="0.5" max="3" step="0.1" value="1.5" class="flex-1">
+                <span id="safetyStockValue" class="text-sm font-semibold text-primary w-12">1.5</span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">建议范围: 0.5-3.0</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">补货提前期(天)</label>
+              <div class="flex items-center gap-2">
+                <input type="range" id="leadTime" min="7" max="30" step="1" value="14" class="flex-1">
+                <span id="leadTimeValue" class="text-sm font-semibold text-primary w-12">14</span>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">建议范围: 7-30天</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">最小补货量</label>
+              <input type="number" id="minReplenishmentQty" min="1" value="100" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30">
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 mt-4">
+            <button id="resetParamsBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+              重置
+            </button>
+            <button id="applyParamsBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              应用
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 关键指标卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="indicator-card relative">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">需补货SKU数</span>
+            <div class="flex items-center gap-2">
+              <i class="fa fa-exclamation-triangle text-warning text-xl"></i>
+              <button class="relative group">
+                <span class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                  <i class="fa fa-calculator text-xs"></i>
+                  <span>计算步骤</span>
+                </span>
+                <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full right-0 mb-2 pointer-events-none text-left">
+                  <div class="tooltip-title text-left">计算逻辑</div>
+                  <div class="tooltip-content text-left">
+                    <div class="tooltip-section text-left">
+                      系统遍历所有SKU数据，筛选出建议补货量大于0的SKU，统计这些SKU的总数量。
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>计算步骤：</strong>
+                      <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                        <li class="text-left">遍历所有SKU数据</li>
+                        <li class="text-left">检查每个SKU的建议补货量</li>
+                        <li class="text-left">筛选出建议补货量大于0的SKU</li>
+                        <li class="text-left">统计符合条件的SKU总数</li>
+                      </ol>
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>公式：</strong>count(建议补货量 > 0)
+                    </div>
+                  </div>
+                  <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="replenishmentSKUCount">28</div>
+          <div class="text-xs text-gray-500">高风险: 12个</div>
+        </div>
+        <div class="indicator-card relative">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">建议补货总量</span>
+            <div class="flex items-center gap-2">
+              <i class="fa fa-cubes text-primary text-xl"></i>
+              <button class="relative group">
+                <span class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                  <i class="fa fa-calculator text-xs"></i>
+                  <span>计算步骤</span>
+                </span>
+                <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full right-0 mb-2 pointer-events-none text-left">
+                  <div class="tooltip-title text-left">计算逻辑</div>
+                  <div class="tooltip-content text-left">
+                    <div class="tooltip-section text-left">
+                      系统将所有需要补货的SKU的建议补货量进行累加求和，得到总的补货需求量。
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>计算步骤：</strong>
+                      <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                        <li class="text-left">遍历所有SKU数据</li>
+                        <li class="text-left">获取每个SKU的建议补货量</li>
+                        <li class="text-left">将所有SKU的建议补货量进行累加求和</li>
+                        <li class="text-left">得到所有SKU的补货总量</li>
+                      </ol>
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>公式：</strong>Σ(建议补货量)
+                    </div>
+                  </div>
+                  <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="totalReplenishmentQty">45,680</div>
+          <div class="text-xs text-gray-500">单位: 件</div>
+        </div>
+        <div class="indicator-card relative">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">预计断货风险</span>
+            <div class="flex items-center gap-2">
+              <i class="fa fa-shield text-danger text-xl"></i>
+              <button class="relative group">
+                <span class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                  <i class="fa fa-calculator text-xs"></i>
+                  <span>计算步骤</span>
+                </span>
+                <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full right-0 mb-2 pointer-events-none text-left">
+                  <div class="tooltip-title text-left">计算逻辑</div>
+                  <div class="tooltip-content text-left">
+                    <div class="tooltip-section text-left">
+                      系统计算所有SKU的断货风险百分比，然后求取这些风险值的算术平均值。
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>计算步骤：</strong>
+                      <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                        <li class="text-left">收集所有SKU的风险百分比</li>
+                        <li class="text-left">计算所有风险百分比数值的总和</li>
+                        <li class="text-left">将总和除以SKU总数</li>
+                        <li class="text-left">得到平均风险值</li>
+                      </ol>
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>公式：</strong>平均风险 = Σ(风险百分比) / SKU总数
+                    </div>
+                  </div>
+                  <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="outOfStockRisk">8.5%</div>
+          <div class="text-xs text-gray-500">较上月 -2.3%</div>
+        </div>
+        <div class="indicator-card relative">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">平均补货周期</span>
+            <div class="flex items-center gap-2">
+              <i class="fa fa-clock-o text-secondary text-xl"></i>
+              <button class="relative group">
+                <span class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                  <i class="fa fa-calculator text-xs"></i>
+                  <span>计算步骤</span>
+                </span>
+                <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full right-0 mb-2 pointer-events-none text-left">
+                  <div class="tooltip-title text-left">计算逻辑</div>
+                  <div class="tooltip-content text-left">
+                    <div class="tooltip-section text-left">
+                      该指标直接读取参数设置中的"补货提前期"数值，表示从下单采购到货物实际到达仓库所需的天数。
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>计算步骤：</strong>
+                      <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                        <li class="text-left">访问系统参数配置</li>
+                        <li class="text-left">读取补货提前期参数值</li>
+                        <li class="text-left">返回参数值作为平均补货周期</li>
+                        <li class="text-left">参数可在设置中调整，建议范围：7-30天</li>
+                      </ol>
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>公式：</strong>系统参数中的补货提前期
+                    </div>
+                  </div>
+                  <div class="absolute top-full right-4 border-8 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="avgReplenishmentCycle">14天</div>
+          <div class="text-xs text-gray-500">目标: 12天</div>
+        </div>
+      </div>
+
+      <!-- 库存消耗曲线可视化 -->
+      <div class="bg-white rounded-xl p-6 card-shadow mb-6 relative">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2 relative">
+            <h3 class="font-semibold text-lg">库存消耗预测曲线</h3>
+            <div class="relative group">
+              <button class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                <i class="fa fa-calculator text-xs"></i>
+                <span>计算步骤</span>
+              </button>
+              <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none text-left">
+                <div class="tooltip-title text-left">计算逻辑</div>
+                <div class="tooltip-content text-left">
+                  <div class="tooltip-section text-left">
+                    系统根据当前库存、在途库存和未来N周的累计需求预测，计算剩余库存曲线，并预测断货时间和建议补货量。
+                  </div>
+                  <div class="tooltip-section text-left">
+                    <strong>计算步骤：</strong>
+                    <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                      <li class="text-left">获取当前库存和在途库存</li>
+                      <li class="text-left">计算总库存 = 当前库存 + 在途库存</li>
+                      <li class="text-left">获取未来N周的累计需求预测</li>
+                      <li class="text-left">计算每周剩余库存 = max(0, 总库存 - 累计需求)</li>
+                      <li class="text-left">查找剩余库存 <= 0 的第一周作为断货周</li>
+                      <li class="text-left">计算建议补货量 = 最后一周累计需求 - 总库存 + 最后一周安全库存</li>
+                    </ol>
+                  </div>
+                  <div class="tooltip-section text-left">
+                    <strong>公式：</strong><br>
+                    总库存 = 当前库存 + 在途库存<br>
+                    剩余库存[i] = max(0, 总库存 - 累计需求[i])<br>
+                    建议补货量 = 最后一周累计需求 - 总库存 + 最后一周安全库存
+                  </div>
+                </div>
+                <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <select id="selectedSKU" class="border border-gray-200 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="SKU-001234">SKU-001234</option>
+              <option value="SKU-002345">SKU-002345</option>
+              <option value="SKU-003456">SKU-003456</option>
+            </select>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="inventoryConsumptionChart"></canvas>
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <div class="text-gray-500 mb-1">当前库存</div>
+            <div class="text-lg font-semibold text-primary" id="currentInventory">12,500</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">在途库存</div>
+            <div class="text-lg font-semibold text-secondary" id="inTransitInventory">3,200</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">建议补货量</div>
+            <div class="text-lg font-semibold text-warning" id="suggestedReplenishment">8,500</div>
+          </div>
+          <div>
+            <div class="text-gray-500 mb-1">预计断货时间</div>
+            <div class="text-lg font-semibold text-danger" id="estimatedOutOfStockDate">第6周</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 需求预测和补货建议 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- 未来N周需求预测 -->
+      <div class="bg-white rounded-xl p-6 card-shadow relative">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2 relative">
+              <h3 class="font-semibold text-lg">未来N周需求预测</h3>
+              <div class="relative group">
+                <button class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                  <i class="fa fa-calculator text-xs"></i>
+                  <span>计算步骤</span>
+                </button>
+                <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none text-left">
+                  <div class="tooltip-title text-left">计算逻辑</div>
+                  <div class="tooltip-content text-left">
+                    <div class="tooltip-section text-left">
+                      系统基于历史销售数据，结合季节性调整因子和促销活动影响，计算未来N周的需求预测。
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>计算步骤：</strong>
+                      <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                        <li class="text-left">获取历史销售数据，计算基础需求</li>
+                        <li class="text-left">应用季节性调整因子到基础需求</li>
+                        <li class="text-left">叠加促销活动影响</li>
+                        <li class="text-left">计算最终预测需求 = 基础需求 × 季节性调整 + 促销影响</li>
+                        <li class="text-left">对每周的预测需求进行平滑处理，减少波动</li>
+                        <li class="text-left">输出未来N周的预测需求数据</li>
+                      </ol>
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>公式：</strong><br>
+                      最终预测需求[i] = 基础需求[i] × 季节性调整[i] + 促销影响[i]<br>
+                      其中：基础需求基于历史平均销量，季节性调整为季节性系数，促销影响为促销增量
+                    </div>
+                  </div>
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+                </div>
+              </div>
+            </div>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+          <div class="h-64">
+            <canvas id="demandForecastChart"></canvas>
+          </div>
+        </div>
+
+        <!-- 断货风险预警 -->
+        <div class="bg-white rounded-xl p-6 card-shadow relative">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2 relative">
+              <h3 class="font-semibold text-lg">断货风险预警</h3>
+              <div class="relative group">
+                <button class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                  <i class="fa fa-calculator text-xs"></i>
+                  <span>计算步骤</span>
+                </button>
+                <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none text-left">
+                  <div class="tooltip-title text-left">计算逻辑</div>
+                  <div class="tooltip-content text-left">
+                    <div class="tooltip-section text-left">
+                      系统根据每个SKU的当前库存、在途库存和未来N周的预测需求，计算断货风险百分比，并按风险等级进行排序展示。
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>计算步骤：</strong>
+                      <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                        <li class="text-left">获取每个SKU的当前库存和在途库存</li>
+                        <li class="text-left">获取未来N周的预测需求总量</li>
+                        <li class="text-left">计算总可用库存 = 当前库存 + 在途库存</li>
+                        <li class="text-left">计算库存缺口 = 预测需求 - 总可用库存</li>
+                        <li class="text-left">计算风险百分比 = (库存缺口 / 预测需求) × 100%</li>
+                        <li class="text-left">如果风险百分比 < 0，则设为0（表示无风险）</li>
+                        <li class="text-left">按风险百分比从高到低排序，展示前N个高风险SKU</li>
+                      </ol>
+                    </div>
+                    <div class="tooltip-section text-left">
+                      <strong>公式：</strong><br>
+                      总可用库存 = 当前库存 + 在途库存<br>
+                      库存缺口 = 预测需求 - 总可用库存<br>
+                      风险百分比 = max(0, (库存缺口 / 预测需求) × 100%)
+                    </div>
+                  </div>
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+                </div>
+              </div>
+            </div>
+            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+              <i class="fa fa-download mr-1"></i>导出
+            </button>
+          </div>
+          <div class="h-64">
+            <canvas id="outOfStockRiskChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKU级别补货建议报表 -->
+      <div class="bg-white rounded-xl p-6 card-shadow relative">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2 relative">
+            <h3 class="font-semibold text-lg">SKU级别补货建议报表</h3>
+            <div class="relative group">
+              <button class="text-xs px-2.5 py-1.5 rounded-md text-gray-600 hover:text-primary hover:bg-primary/5 border border-gray-300 hover:border-primary/30 transition-all duration-200 flex items-center gap-1">
+                <i class="fa fa-calculator text-xs"></i>
+                <span>计算步骤</span>
+              </button>
+              <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[280px] max-w-[350px] bottom-full left-1/2 transform -translate-x-1/2 mb-2 pointer-events-none text-left">
+                <div class="tooltip-title text-left">计算逻辑</div>
+                <div class="tooltip-content text-left">
+                  <div class="tooltip-section text-left">
+                    系统为每个SKU计算补货建议，综合考虑当前库存、在途库存、预测需求和安全库存，生成详细的补货建议报表。
+                  </div>
+                  <div class="tooltip-section text-left">
+                    <strong>计算步骤：</strong>
+                    <ol class="tooltip-steps list-decimal list-inside ml-2 text-left">
+                      <li class="text-left">获取每个SKU的当前库存、在途库存和未来N周预测需求</li>
+                      <li class="text-left">计算总可用库存 = 当前库存 + 在途库存</li>
+                      <li class="text-left">计算安全库存 = 预测需求 × 安全库存系数</li>
+                      <li class="text-left">计算建议补货量 = max(0, 预测需求 - 总可用库存 + 安全库存)</li>
+                      <li class="text-left">如果建议补货量小于最小补货量，则设为0（无需补货）</li>
+                      <li class="text-left">计算风险百分比 = (预测需求 - 总可用库存) / 预测需求 × 100%</li>
+                      <li class="text-left">根据风险百分比划分风险等级：高风险(>60%)、中风险(30-60%)、低风险(<30%)</li>
+                      <li class="text-left">根据补货提前期计算建议补货时点</li>
+                    </ol>
+                  </div>
+                  <div class="tooltip-section text-left">
+                    <strong>公式：</strong><br>
+                    总可用库存 = 当前库存 + 在途库存<br>
+                    安全库存 = 预测需求 × 安全库存系数<br>
+                    建议补货量 = max(0, 预测需求 - 总可用库存 + 安全库存)<br>
+                    风险百分比 = max(0, (预测需求 - 总可用库存) / 预测需求 × 100%)
+                  </div>
+                </div>
+                <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <input id="replenishmentSearchInput" type="text" placeholder="搜索SKU..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 w-64">
+              <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <select id="riskLevelFilter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="all">全部风险等级</option>
+              <option value="high">高风险</option>
+              <option value="medium">中风险</option>
+              <option value="low">低风险</option>
+            </select>
+            <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
+              <i class="fa fa-download mr-2"></i>导出报表
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table id="replenishmentTable" class="w-full">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">SKU</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">仓库</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">当前库存</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">在途库存</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">预测需求(8周)</th>
+                <th class="text-right py-3 px-4 font-semibold text-gray-700">建议补货量</th>
+                <th class="text-left py-3 px-4 font-semibold text-gray-700">建议补货时点</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">风险等级</th>
+                <th class="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 数据将通过JavaScript动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between mt-4">
+          <div id="replenishmentPaginationInfo" class="text-sm text-gray-500">显示 1-10 条，共 28 条</div>
+          <div class="flex gap-2 items-center">
+            <button id="replenishmentPrevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+              <i class="fa fa-chevron-left text-xs"></i>
+            </button>
+            <div id="replenishmentPageButtons" class="flex gap-2">
+              <!-- 页码按钮将通过JavaScript动态生成 -->
+            </div>
+            <button id="replenishmentNextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+              <i class="fa fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+        </div>
+      </div>
+  </main>
+
+  <script>
+    // 库存水位分布图表数据
+    const inventoryData = {
+      warehouses: ['美国仓1', '美国仓2', '德国仓1', '英国仓1', '日本仓1'],
+      quantities: [45680, 38920, 32150, 24560, 18532],
+      colors: ['#165DFF', '#36CFC9', '#52C41A', '#FAAD14', '#FF4D4F']
+    };
+
+    let inventoryDistributionChart = null;
+    let currentChartType = 'pie'; // 默认饼图
+    let inventoryAgeChart = null; // 库龄分布图表
+
+    // 库龄分布图表数据
+    const inventoryAgeData = {
+      ageRanges: ['0-30天', '31-60天', '61-90天', '91-180天', '180天以上'],
+      quantities: [45680, 38920, 24560, 32150, 18532],
+      colors: ['#52C41A', '#36CFC9', '#FAAD14', '#FF9800', '#FF4D4F'], // 绿色到红色，表示风险递增
+      thresholds: {
+        normal: 60,    // 正常库龄阈值
+        warning: 90,  // 预警库龄阈值
+        danger: 180   // 高风险库龄阈值
+      }
+    };
+
+    // 初始化库龄分布图表
+    function initInventoryAgeChart() {
+      const ctx = document.getElementById('inventoryAgeChart');
+      if (!ctx) return;
+
+      // 销毁旧图表
+      if (inventoryAgeChart) {
+        inventoryAgeChart.destroy();
+      }
+
+      const total = inventoryAgeData.quantities.reduce((sum, qty) => sum + qty, 0);
+
+      // 创建堆叠柱状图，显示不同库龄段的库存分布
+      inventoryAgeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: inventoryAgeData.ageRanges,
+          datasets: [{
+            label: '库存数量',
+            data: inventoryAgeData.quantities,
+            backgroundColor: inventoryAgeData.colors,
+            borderRadius: 6,
+            borderSkipped: false,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed.y || 0;
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  const ageRange = context.label;
+                  
+                  // 根据库龄段添加预警提示
+                  let warning = '';
+                  if (ageRange === '91-180天' || ageRange === '180天以上') {
+                    warning = ' ⚠️ 需关注';
+                  }
+                  
+                  return `${ageRange}: ${value.toLocaleString()}件 (${percentage}%)${warning}`;
+                },
+                afterLabel: function(context) {
+                  const ageRange = context.label;
+                  const value = context.parsed.y || 0;
+                  
+                  // 显示预警信息
+                  if (ageRange === '91-180天') {
+                    return '库龄超过90天，建议关注';
+                  } else if (ageRange === '180天以上') {
+                    return '库龄超过180天，高风险库存';
+                  }
+                  return '';
+                }
+              },
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 12
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                },
+                font: {
+                  size: 11
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: '库存数量（件）',
+                font: {
+                  size: 12,
+                  weight: 'normal'
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 11
+                }
+              }
+            }
+          },
+          // 添加动画效果
+          animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
+          },
+          // 交互配置
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+
+      // 更新库龄预警统计信息
+      updateAgeWarningStats();
+    }
+
+    // 更新库龄预警统计信息
+    function updateAgeWarningStats() {
+      const total = inventoryAgeData.quantities.reduce((sum, qty) => sum + qty, 0);
+      
+      // 计算库龄>90天的库存（91-180天 + 180天以上）
+      const over90Index = inventoryAgeData.ageRanges.indexOf('91-180天');
+      const over180Index = inventoryAgeData.ageRanges.indexOf('180天以上');
+      const over90Qty = inventoryAgeData.quantities[over90Index] + inventoryAgeData.quantities[over180Index];
+      const over90Percent = total > 0 ? ((over90Qty / total) * 100).toFixed(1) : 0;
+      
+      // 计算库龄>180天的库存
+      const over180Qty = inventoryAgeData.quantities[over180Index];
+      const over180Percent = total > 0 ? ((over180Qty / total) * 100).toFixed(1) : 0;
+      
+      // 计算健康库存占比（0-90天）
+      const healthyQty = inventoryAgeData.quantities[0] + inventoryAgeData.quantities[1] + inventoryAgeData.quantities[2];
+      const healthyPercent = total > 0 ? ((healthyQty / total) * 100).toFixed(1) : 0;
+      
+      // 更新DOM元素
+      const ageOver90QtyEl = document.getElementById('ageOver90Qty');
+      const ageOver90PercentEl = document.getElementById('ageOver90Percent');
+      const ageOver180QtyEl = document.getElementById('ageOver180Qty');
+      const ageOver180PercentEl = document.getElementById('ageOver180Percent');
+      const healthyStockPercentEl = document.getElementById('healthyStockPercent');
+      
+      if (ageOver90QtyEl) ageOver90QtyEl.textContent = over90Qty.toLocaleString();
+      if (ageOver90PercentEl) ageOver90PercentEl.textContent = `${over90Percent}%`;
+      if (ageOver180QtyEl) ageOver180QtyEl.textContent = over180Qty.toLocaleString();
+      if (ageOver180PercentEl) ageOver180PercentEl.textContent = `${over180Percent}%`;
+      if (healthyStockPercentEl) healthyStockPercentEl.textContent = `${healthyPercent}%`;
+    }
+
+    // 添加库龄预警标注（在图表上显示预警线）
+    function addAgeWarningAnnotations() {
+      // 注意：Chart.js的annotation插件需要单独引入
+      // 这里我们通过自定义绘制来实现预警提示
+      // 实际项目中可以使用chartjs-plugin-annotation插件
+    }
+
+    // 可售天数预测图表
+    let daysAvailableChart = null;
+    const daysAvailableData = {
+      skus: ['SKU-001', 'SKU-002', 'SKU-003', 'SKU-004', 'SKU-005', 'SKU-006', 'SKU-007', 'SKU-008'],
+      currentInventory: [1200, 850, 650, 980, 720, 1100, 560, 890],
+      predictedDays: [45, 32, 28, 38, 35, 42, 25, 40],
+      targetDays: 30 // 目标可售天数
+    };
+
+    // 初始化可售天数预测图表
+    function initDaysAvailableChart() {
+      const ctx = document.getElementById('daysAvailableChart');
+      if (!ctx) return;
+
+      // 销毁旧图表
+      if (daysAvailableChart) {
+        daysAvailableChart.destroy();
+      }
+
+      // 创建组合图表：柱状图显示当前库存，折线图显示预测天数
+      daysAvailableChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: daysAvailableData.skus,
+          datasets: [
+            {
+              label: '当前库存',
+              data: daysAvailableData.currentInventory,
+              backgroundColor: 'rgba(22, 93, 255, 0.6)',
+              borderRadius: 4,
+              yAxisID: 'y'
+            },
+            {
+              label: '预测可售天数',
+              data: daysAvailableData.predictedDays,
+              type: 'line',
+              borderColor: '#52C41A',
+              backgroundColor: 'rgba(82, 196, 26, 0.1)',
+              borderWidth: 2,
+              fill: false,
+              tension: 0.3,
+              pointRadius: 5,
+              pointBackgroundColor: '#52C41A',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              yAxisID: 'y1'
+            },
+            {
+              label: '目标天数',
+              data: new Array(daysAvailableData.skus.length).fill(daysAvailableData.targetDays),
+              type: 'line',
+              borderColor: '#FAAD14',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  if (label === '当前库存') {
+                    return `${label}: ${value.toLocaleString()}件`;
+                  } else if (label === '预测可售天数' || label === '目标天数') {
+                    return `${label}: ${value}天`;
+                  }
+                  return `${label}: ${value}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '库存数量（件）',
+                font: {
+                  size: 12
+                }
+              },
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '可售天数（天）',
+                font: {
+                  size: 12
+                }
+              },
+              grid: {
+                drawOnChartArea: false
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 滞销SKU数据
+    const slowMovingSKUData = [
+      { sku: 'SKU-001234', warehouse: '美国仓1', quantity: 1234, cost: 12340, ageDays: 156, dos: 125, status: '高风险' },
+      { sku: 'SKU-002345', warehouse: '美国仓2', quantity: 856, cost: 8560, ageDays: 98, dos: 92, status: '预警' },
+      { sku: 'SKU-003456', warehouse: '德国仓1', quantity: 567, cost: 5670, ageDays: 112, dos: 105, status: '高风险' },
+      { sku: 'SKU-004567', warehouse: '美国仓1', quantity: 2340, cost: 23400, ageDays: 145, dos: 138, status: '高风险' },
+      { sku: 'SKU-005678', warehouse: '英国仓1', quantity: 678, cost: 6780, ageDays: 87, dos: 85, status: '预警' },
+      { sku: 'SKU-006789', warehouse: '美国仓2', quantity: 945, cost: 9450, ageDays: 134, dos: 128, status: '高风险' },
+      { sku: 'SKU-007890', warehouse: '德国仓1', quantity: 432, cost: 4320, ageDays: 76, dos: 72, status: '正常' },
+      { sku: 'SKU-008901', warehouse: '日本仓1', quantity: 1234, cost: 12340, ageDays: 165, dos: 158, status: '高风险' },
+      { sku: 'SKU-009012', warehouse: '美国仓1', quantity: 789, cost: 7890, ageDays: 95, dos: 90, status: '预警' },
+      { sku: 'SKU-010123', warehouse: '英国仓1', quantity: 567, cost: 5670, ageDays: 123, dos: 118, status: '高风险' }
+    ];
+
+    const dosTarget = 30; // DOS目标值
+    let currentPage = 1;
+    const itemsPerPage = 3;
+    let filteredSKUData = [...slowMovingSKUData];
+
+    // 渲染滞销SKU表格
+    function renderSlowMovingSKUTable(data, page = 1) {
+      const tbody = document.querySelector('#slowMovingSKUTable tbody');
+      if (!tbody) return;
+
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = data.slice(startIndex, endIndex);
+
+      tbody.innerHTML = '';
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        
+        // 判断是否需要高亮（DOS > 目标值1.5倍 或 库龄 > 90天）
+        const isHighRisk = item.dos > dosTarget * 1.5 || item.ageDays > 90;
+        if (isHighRisk) {
+          tr.classList.add('bg-red-50');
+        }
+
+        let statusBadge = '';
+        if (item.status === '高风险') {
+          statusBadge = '<span class="alert-badge bg-danger/10 text-danger">高风险</span>';
+        } else if (item.status === '预警') {
+          statusBadge = '<span class="alert-badge bg-warning/10 text-warning">预警</span>';
+        } else {
+          statusBadge = '<span class="alert-badge bg-success/10 text-success">正常</span>';
+        }
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">${item.sku}</td>
+          <td class="py-3 px-4">${item.warehouse}</td>
+          <td class="py-3 px-4 text-right">${item.quantity.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right">$${item.cost.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right ${item.ageDays > 90 ? 'text-danger font-semibold' : ''}">${item.ageDays}天</td>
+          <td class="py-3 px-4 text-right ${item.dos > dosTarget * 1.5 ? 'text-danger font-semibold' : ''}">${item.dos}天</td>
+          <td class="py-3 px-4 text-center">${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 更新分页信息
+      updatePaginationInfo(data.length, page);
+    }
+
+    // 更新分页信息
+    function updatePaginationInfo(total, page) {
+      const paginationInfo = document.getElementById('paginationInfo');
+      const startItem = (page - 1) * itemsPerPage + 1;
+      const endItem = Math.min(page * itemsPerPage, total);
+      
+      if (paginationInfo) {
+        paginationInfo.textContent = `显示 ${startItem}-${endItem} 条，共 ${total} 条`;
+      }
+
+      // 更新分页按钮
+      const totalPages = Math.ceil(total / itemsPerPage);
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+      
+      if (prevBtn) {
+        prevBtn.disabled = page === 1;
+        prevBtn.classList.toggle('opacity-50', page === 1);
+        prevBtn.classList.toggle('cursor-not-allowed', page === 1);
+      }
+      
+      if (nextBtn) {
+        nextBtn.disabled = page >= totalPages;
+        nextBtn.classList.toggle('opacity-50', page >= totalPages);
+        nextBtn.classList.toggle('cursor-not-allowed', page >= totalPages);
+      }
+
+      // 更新页码按钮
+      updatePageButtons(totalPages, page);
+    }
+
+    // 更新页码按钮
+    function updatePageButtons(totalPages, page) {
+      const pageButtonsContainer = document.getElementById('pageButtons');
+      if (!pageButtonsContainer) return;
+
+      pageButtonsContainer.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement('button');
+        button.className = `w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all ${
+          i === page ? 'bg-primary text-white border-primary' : ''
+        }`;
+        button.textContent = i;
+        button.addEventListener('click', () => {
+          currentPage = i;
+          renderSlowMovingSKUTable(filteredSKUData, currentPage);
+        });
+        pageButtonsContainer.appendChild(button);
+      }
+    }
+
+      // 搜索SKU
+      function searchSKU(keyword) {
+        if (!keyword.trim()) {
+          filteredSKUData = [...slowMovingSKUData];
+        } else {
+          filteredSKUData = slowMovingSKUData.filter(item => 
+            item.sku.toLowerCase().includes(keyword.toLowerCase()) ||
+            item.warehouse.toLowerCase().includes(keyword.toLowerCase())
+          );
+        }
+        currentPage = 1;
+        renderSlowMovingSKUTable(filteredSKUData, currentPage);
+      }
+
+    // ========== 订单履行表现模块 ==========
+    let fulfillmentRateChart = null;
+    let onTimeRateChart = null;
+    let unfulfilledReasonChart = null;
+
+    // 订单履行表现数据
+    const fulfillmentData = {
+      // 订单满足率趋势数据（近30天）
+      fulfillmentRate: {
+        dates: ['11-01', '11-05', '11-10', '11-15', '11-20', '11-25', '11-30'],
+        rates: [95.2, 96.1, 96.8, 97.1, 96.5, 96.8, 96.8],
+        sla: 95 // SLA目标值
+      },
+      // 出库准时率趋势数据
+      onTimeRate: {
+        dates: ['11-01', '11-05', '11-10', '11-15', '11-20', '11-25', '11-30'],
+        rates: [92.5, 93.2, 94.1, 94.5, 94.3, 94.5, 94.5],
+        sla: 92 // SLA目标值
+      },
+      // 未满足订单根因数据
+      unfulfilledReasons: {
+        labels: ['缺货导致', '操作延迟', '其他原因'],
+        values: [68, 42, 10],
+        colors: ['#FF4D4F', '#FAAD14', '#9CA3AF']
+      },
+      // 渠道/仓库维度履行对比数据
+      fulfillmentComparison: [
+        { warehouse: '美国仓1', channel: 'Amazon', fulfillmentRate: 97.5, onTimeRate: 95.2, avgOTD: 1.6, orderCount: 1234 },
+        { warehouse: '美国仓1', channel: 'eBay', fulfillmentRate: 96.8, onTimeRate: 94.1, avgOTD: 1.8, orderCount: 856 },
+        { warehouse: '美国仓2', channel: 'Amazon', fulfillmentRate: 94.2, onTimeRate: 93.5, avgOTD: 2.1, orderCount: 987 },
+        { warehouse: '美国仓2', channel: 'eBay', fulfillmentRate: 95.5, onTimeRate: 93.8, avgOTD: 2.0, orderCount: 654 },
+        { warehouse: '德国仓1', channel: 'Amazon', fulfillmentRate: 96.2, onTimeRate: 94.8, avgOTD: 1.9, orderCount: 789 },
+        { warehouse: '德国仓1', channel: 'eBay', fulfillmentRate: 95.8, onTimeRate: 94.2, avgOTD: 2.0, orderCount: 567 }
+      ]
+    };
+
+    // 初始化订单满足率趋势图表
+    function initFulfillmentRateChart() {
+      const ctx = document.getElementById('fulfillmentRateChart');
+      if (!ctx) return;
+
+      if (fulfillmentRateChart) {
+        fulfillmentRateChart.destroy();
+      }
+
+      fulfillmentRateChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: fulfillmentData.fulfillmentRate.dates,
+          datasets: [
+            {
+              label: '订单满足率',
+              data: fulfillmentData.fulfillmentRate.rates,
+              borderColor: '#165DFF',
+              backgroundColor: 'rgba(22, 93, 255, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#165DFF',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
+            },
+            {
+              label: 'SLA目标',
+              data: new Array(fulfillmentData.fulfillmentRate.dates.length).fill(fulfillmentData.fulfillmentRate.sla),
+              borderColor: '#FAAD14',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: ${value.toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 90,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: '满足率 (%)',
+                font: {
+                  size: 12
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化出库准时率趋势图表
+    function initOnTimeRateChart() {
+      const ctx = document.getElementById('onTimeRateChart');
+      if (!ctx) return;
+
+      if (onTimeRateChart) {
+        onTimeRateChart.destroy();
+      }
+
+      onTimeRateChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: fulfillmentData.onTimeRate.dates,
+          datasets: [
+            {
+              label: '出库准时率',
+              data: fulfillmentData.onTimeRate.rates,
+              borderColor: '#52C41A',
+              backgroundColor: 'rgba(82, 196, 26, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#52C41A',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
+            },
+            {
+              label: 'SLA目标',
+              data: new Array(fulfillmentData.onTimeRate.dates.length).fill(fulfillmentData.onTimeRate.sla),
+              borderColor: '#FAAD14',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: ${value.toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 88,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: '准时率 (%)',
+                font: {
+                  size: 12
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化未满足订单根因分析图表
+    function initUnfulfilledReasonChart() {
+      const ctx = document.getElementById('unfulfilledReasonChart');
+      if (!ctx) return;
+
+      if (unfulfilledReasonChart) {
+        unfulfilledReasonChart.destroy();
+      }
+
+      const total = fulfillmentData.unfulfilledReasons.values.reduce((sum, val) => sum + val, 0);
+
+      unfulfilledReasonChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: fulfillmentData.unfulfilledReasons.labels,
+          datasets: [{
+            data: fulfillmentData.unfulfilledReasons.values,
+            backgroundColor: fulfillmentData.unfulfilledReasons.colors,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ${value}个订单 (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '60%'
+        }
+      });
+
+      // 更新统计信息显示
+      updateUnfulfilledReasonStats();
+    }
+
+    // 更新未满足订单根因统计信息
+    function updateUnfulfilledReasonStats() {
+      const statsContainer = document.getElementById('unfulfilledReasonStats');
+      if (!statsContainer) return;
+
+      const total = fulfillmentData.unfulfilledReasons.values.reduce((sum, val) => sum + val, 0);
+      const reasons = fulfillmentData.unfulfilledReasons.labels;
+      const values = fulfillmentData.unfulfilledReasons.values;
+      const colors = ['text-danger', 'text-warning', 'text-gray-500'];
+
+      statsContainer.innerHTML = '';
+      reasons.forEach((reason, index) => {
+        const percentage = total > 0 ? ((values[index] / total) * 100).toFixed(1) : 0;
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+        div.innerHTML = `
+          <div>
+            <div class="font-medium">${reason}</div>
+            <div class="text-sm text-gray-500">${values[index]}个订单</div>
+          </div>
+          <div class="text-2xl font-bold ${colors[index]}">${percentage}%</div>
+        `;
+        statsContainer.appendChild(div);
+      });
+    }
+
+    // 渲染渠道/仓库维度履行对比表格
+    function renderFulfillmentComparisonTable(data) {
+      const tbody = document.querySelector('#fulfillmentComparisonTable tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      data.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+
+        // 根据满足率设置颜色
+        const fulfillmentColor = item.fulfillmentRate >= 95 ? 'text-success' : 
+                                  item.fulfillmentRate >= 90 ? 'text-warning' : 'text-danger';
+        const onTimeColor = item.onTimeRate >= 92 ? 'text-success' : 
+                            item.onTimeRate >= 88 ? 'text-warning' : 'text-danger';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">${item.warehouse}</td>
+          <td class="py-3 px-4">${item.channel}</td>
+          <td class="py-3 px-4 text-right ${fulfillmentColor} font-medium">${item.fulfillmentRate.toFixed(1)}%</td>
+          <td class="py-3 px-4 text-right ${onTimeColor} font-medium">${item.onTimeRate.toFixed(1)}%</td>
+          <td class="py-3 px-4 text-right">${item.avgOTD.toFixed(1)}天</td>
+          <td class="py-3 px-4 text-right">${item.orderCount.toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 筛选履行对比数据
+    function filterFulfillmentComparison(warehouse, channel) {
+      let filtered = [...fulfillmentData.fulfillmentComparison];
+      
+      if (warehouse !== 'all') {
+        const warehouseMap = {
+          'US-WH1': '美国仓1',
+          'US-WH2': '美国仓2',
+          'DE-WH1': '德国仓1'
+        };
+        filtered = filtered.filter(item => item.warehouse === warehouseMap[warehouse]);
+      }
+      
+      if (channel !== 'all') {
+        filtered = filtered.filter(item => item.channel === channel);
+      }
+      
+      return filtered;
+    }
+
+    // 初始化订单履行表现模块所有图表
+    function initFulfillmentCharts() {
+      initFulfillmentRateChart();
+      initOnTimeRateChart();
+      initUnfulfilledReasonChart();
+      
+      // 获取筛选条件
+      const warehouseSelect = document.getElementById('fulfillmentWarehouseSelect');
+      const channelSelect = document.getElementById('fulfillmentChannelSelect');
+      const warehouse = warehouseSelect ? warehouseSelect.value : 'all';
+      const channel = channelSelect ? channelSelect.value : 'all';
+      
+      const filteredData = filterFulfillmentComparison(warehouse, channel);
+      renderFulfillmentComparisonTable(filteredData);
+    }
+
+    // ========== 成本费用明细模块 ==========
+    let costTrendChart = null;
+    let costStructureChart = null;
+    let costDistributionChart = null;
+    let warehouseCostChart = null;
+
+    // 成本费用数据
+    const costData = {
+      // 成本趋势数据（近6个月，含环比）
+      trend: {
+        months: ['2024-06', '2024-07', '2024-08', '2024-09', '2024-10', '2024-11'],
+        cost: [128500, 132000, 129800, 131200, 128900, 125680],
+        expense: [95000, 98000, 96500, 97200, 95400, 98450],
+        costChange: [0, 2.7, -1.7, 1.1, -1.8, -2.5], // 环比变化百分比
+        expenseChange: [0, 3.2, -1.5, 0.7, -1.9, 3.2]
+      },
+      // 成本结构数据（按费用类型）
+      structure: {
+        types: ['头程均摊成本', '仓储租金与操作费', '滞纳金/附加费', '单均/单件物流成本', '其他费用'],
+        current: [45680, 38920, 2450, 32150, 5480],
+        previous: [46800, 39500, 2200, 31500, 5200],
+        colors: ['#165DFF', '#36CFC9', '#FAAD14', '#52C41A', '#9CA3AF']
+      },
+      // 费用类型分布
+      distribution: {
+        labels: ['头程均摊成本', '仓储租金与操作费', '滞纳金/附加费', '单均/单件物流成本', '其他费用'],
+        values: [45680, 38920, 2450, 32150, 5480],
+        colors: ['#165DFF', '#36CFC9', '#FAAD14', '#52C41A', '#9CA3AF']
+      },
+      // 仓库成本对比
+      warehouse: {
+        warehouses: ['美国仓1', '美国仓2', '德国仓1', '英国仓1'],
+        costs: [45680, 38920, 32150, 8930],
+        expenses: [35200, 31200, 25800, 6250]
+      },
+      // 明细数据
+      details: [
+        { id: 1, date: '2024-11-15', orderNo: 'ORD-20241115-001', sku: 'SKU-001234', warehouse: '美国仓1', type: '头程均摊成本', quantity: 1000, unitPrice: 0.45, costAmount: 450, expenseAmount: 0, currency: 'USD', level: 'order' },
+        { id: 2, date: '2024-11-15', orderNo: 'ORD-20241115-001', sku: 'SKU-001234', warehouse: '美国仓1', type: '仓储租金与操作费', quantity: 1000, unitPrice: 0.12, costAmount: 120, expenseAmount: 0, currency: 'USD', level: 'sku' },
+        { id: 3, date: '2024-11-14', orderNo: 'ORD-20241114-002', sku: 'SKU-002345', warehouse: '美国仓2', type: '单均/单件物流成本', quantity: 500, unitPrice: 0.35, costAmount: 175, expenseAmount: 0, currency: 'USD', level: 'order' },
+        { id: 4, date: '2024-11-14', orderNo: 'ORD-20241114-002', sku: 'SKU-002345', warehouse: '美国仓2', type: '滞纳金/附加费', quantity: 500, unitPrice: 0.05, costAmount: 25, expenseAmount: 0, currency: 'USD', level: 'sku' },
+        { id: 5, date: '2024-11-13', orderNo: 'ORD-20241113-003', sku: 'SKU-003456', warehouse: '德国仓1', type: '头程均摊成本', quantity: 800, unitPrice: 0.42, costAmount: 336, expenseAmount: 0, currency: 'USD', level: 'order' },
+        { id: 6, date: '2024-11-13', orderNo: 'ORD-20241113-003', sku: 'SKU-003456', warehouse: '德国仓1', type: '仓储租金与操作费', quantity: 800, unitPrice: 0.15, costAmount: 120, expenseAmount: 0, currency: 'USD', level: 'sku' },
+        { id: 7, date: '2024-11-12', orderNo: 'ORD-20241112-004', sku: 'SKU-004567', warehouse: '美国仓1', type: '单均/单件物流成本', quantity: 1200, unitPrice: 0.38, costAmount: 456, expenseAmount: 0, currency: 'USD', level: 'order' },
+        { id: 8, date: '2024-11-12', orderNo: 'ORD-20241112-004', sku: 'SKU-004567', warehouse: '美国仓1', type: '其他费用', quantity: 1200, unitPrice: 0.02, costAmount: 24, expenseAmount: 0, currency: 'USD', level: 'sku' },
+        { id: 9, date: '2024-11-11', orderNo: 'ORD-20241111-005', sku: 'SKU-005678', warehouse: '美国仓2', type: '头程均摊成本', quantity: 600, unitPrice: 0.44, costAmount: 264, expenseAmount: 0, currency: 'USD', level: 'order' },
+        { id: 10, date: '2024-11-11', orderNo: 'ORD-20241111-005', sku: 'SKU-005678', warehouse: '美国仓2', type: '仓储租金与操作费', quantity: 600, unitPrice: 0.13, costAmount: 78, expenseAmount: 0, currency: 'USD', level: 'sku' }
+      ]
+    };
+
+    let costCurrentPage = 1;
+    const costItemsPerPage = 10;
+    let filteredCostData = [...costData.details];
+    let costDetailLevel = 'summary'; // summary, order, sku
+
+    // 初始化成本趋势图表（含环比分析）
+    function initCostTrendChart() {
+      const ctx = document.getElementById('costTrendChart');
+      if (!ctx) return;
+
+      if (costTrendChart) {
+        costTrendChart.destroy();
+      }
+
+      costTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: costData.trend.months,
+          datasets: [
+            {
+              label: '成本',
+              data: costData.trend.cost,
+              borderColor: '#165DFF',
+              backgroundColor: 'rgba(22, 93, 255, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#165DFF',
+              yAxisID: 'y'
+            },
+            {
+              label: '费用',
+              data: costData.trend.expense,
+              borderColor: '#36CFC9',
+              backgroundColor: 'rgba(54, 207, 201, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#36CFC9',
+              yAxisID: 'y'
+            },
+            {
+              label: '成本环比变化',
+              data: costData.trend.costChange,
+              type: 'bar',
+              backgroundColor: 'rgba(250, 173, 20, 0.3)',
+              borderColor: '#FAAD14',
+              borderWidth: 1,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  if (label.includes('环比')) {
+                    return `${label}: ${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+                  }
+                  return `${label}: $${value.toLocaleString()}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              beginAtZero: false,
+              title: {
+                display: true,
+                text: '金额 ($)',
+                font: { size: 12 }
+              },
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '环比变化 (%)',
+                font: { size: 12 }
+              },
+              grid: {
+                drawOnChartArea: false
+              },
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+
+      // 更新环比分析说明
+      updateCostTrendAnalysis();
+    }
+
+    // 更新成本趋势环比分析说明
+    function updateCostTrendAnalysis() {
+      const analysisEl = document.getElementById('costTrendAnalysis');
+      if (!analysisEl) return;
+
+      const lastMonth = costData.trend.months.length - 1;
+      const costChange = costData.trend.costChange[lastMonth];
+      const expenseChange = costData.trend.expenseChange[lastMonth];
+
+      let analysis = '<div class="font-semibold mb-2">环比分析：</div>';
+      analysis += `<div class="mb-1">成本：${costChange > 0 ? '上升' : '下降'} ${Math.abs(costChange)}%，主要因${costChange > 0 ? '仓储租金上涨' : '优化库存结构'}；</div>`;
+      analysis += `<div>费用：${expenseChange > 0 ? '上升' : '下降'} ${Math.abs(expenseChange)}%，主要因${expenseChange > 0 ? '物流成本增加' : '操作效率提升'}。</div>`;
+
+      analysisEl.innerHTML = analysis;
+    }
+
+    // 初始化成本结构变化图表
+    function initCostStructureChart() {
+      const ctx = document.getElementById('costStructureChart');
+      if (!ctx) return;
+
+      if (costStructureChart) {
+        costStructureChart.destroy();
+      }
+
+      costStructureChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: costData.structure.types,
+          datasets: [
+            {
+              label: '本月',
+              data: costData.structure.current,
+              backgroundColor: costData.structure.colors,
+              borderRadius: 6,
+              borderSkipped: false
+            },
+            {
+              label: '上月',
+              data: costData.structure.previous,
+              backgroundColor: costData.structure.colors.map(c => c + '80'),
+              borderRadius: 6,
+              borderSkipped: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: $${value.toLocaleString()}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化费用类型分布图表
+    function initCostDistributionChart() {
+      const ctx = document.getElementById('costDistributionChart');
+      if (!ctx) return;
+
+      if (costDistributionChart) {
+        costDistributionChart.destroy();
+      }
+
+      const total = costData.distribution.values.reduce((sum, val) => sum + val, 0);
+
+      costDistributionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: costData.distribution.labels,
+          datasets: [{
+            data: costData.distribution.values,
+            backgroundColor: costData.distribution.colors,
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'right',
+              labels: {
+                padding: 15,
+                usePointStyle: true,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '60%'
+        }
+      });
+    }
+
+    // 初始化仓库成本对比图表
+    function initWarehouseCostChart() {
+      const ctx = document.getElementById('warehouseCostChart');
+      if (!ctx) return;
+
+      if (warehouseCostChart) {
+        warehouseCostChart.destroy();
+      }
+
+      warehouseCostChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: costData.warehouse.warehouses,
+          datasets: [
+            {
+              label: '成本',
+              data: costData.warehouse.costs,
+              backgroundColor: '#165DFF',
+              borderRadius: 6
+            },
+            {
+              label: '费用',
+              data: costData.warehouse.expenses,
+              backgroundColor: '#36CFC9',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: $${value.toLocaleString()}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 渲染成本费用明细表格
+    function renderCostDetailTable(data, page = 1) {
+      const tbody = document.querySelector('#costDetailTable tbody');
+      if (!tbody) return;
+
+      const startIndex = (page - 1) * costItemsPerPage;
+      const endIndex = startIndex + costItemsPerPage;
+      const pageData = data.slice(startIndex, endIndex);
+
+      tbody.innerHTML = '';
+      
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="py-8 text-center text-gray-500">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              暂无数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        
+        // 根据视图级别显示不同的标识
+        const identifier = costDetailLevel === 'sku' ? item.sku : 
+                          costDetailLevel === 'order' ? item.orderNo : 
+                          `${item.orderNo} / ${item.sku}`;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-sm">${item.date}</td>
+          <td class="py-3 px-4 text-sm">
+            ${identifier}
+            ${costDetailLevel === 'summary' ? '<button class="ml-2 text-primary hover:underline text-xs" onclick="drillDown(\'' + item.orderNo + '\', \'' + item.sku + '\')">下钻</button>' : ''}
+          </td>
+          <td class="py-3 px-4 text-sm">${item.warehouse}</td>
+          <td class="py-3 px-4 text-sm">${item.type}</td>
+          <td class="py-3 px-4 text-sm text-right">${item.quantity.toLocaleString()}</td>
+          <td class="py-3 px-4 text-sm text-right">$${item.unitPrice.toFixed(2)}</td>
+          <td class="py-3 px-4 text-sm text-right font-medium">$${item.costAmount.toFixed(2)}</td>
+          <td class="py-3 px-4 text-sm text-right">$${item.expenseAmount.toFixed(2)}</td>
+          <td class="py-3 px-4 text-sm">${item.currency}</td>
+          <td class="py-3 px-4 text-center">
+            <button class="text-primary hover:text-primary/80 text-sm" onclick="viewCostDetail(${item.id})" title="查看详情">
+              <i class="fa fa-eye"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 更新分页信息
+      updateCostPaginationInfo(data.length, page);
+    }
+
+    // 更新成本分页信息
+    function updateCostPaginationInfo(total, page) {
+      const paginationInfo = document.getElementById('costPaginationInfo');
+      const startItem = (page - 1) * costItemsPerPage + 1;
+      const endItem = Math.min(page * costItemsPerPage, total);
+      
+      if (paginationInfo) {
+        paginationInfo.textContent = `显示 ${startItem}-${endItem} 条，共 ${total} 条`;
+      }
+
+      const totalPages = Math.ceil(total / costItemsPerPage);
+      const prevBtn = document.getElementById('costPrevPageBtn');
+      const nextBtn = document.getElementById('costNextPageBtn');
+      
+      if (prevBtn) {
+        prevBtn.disabled = page === 1;
+        prevBtn.classList.toggle('opacity-50', page === 1);
+        prevBtn.classList.toggle('cursor-not-allowed', page === 1);
+      }
+      
+      if (nextBtn) {
+        nextBtn.disabled = page >= totalPages;
+        nextBtn.classList.toggle('opacity-50', page >= totalPages);
+        nextBtn.classList.toggle('cursor-not-allowed', page >= totalPages);
+      }
+
+      updateCostPageButtons(totalPages, page);
+    }
+
+    // 更新成本页码按钮
+    function updateCostPageButtons(totalPages, page) {
+      const pageButtonsContainer = document.getElementById('costPageButtons');
+      if (!pageButtonsContainer) return;
+
+      pageButtonsContainer.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement('button');
+        button.className = `w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all ${
+          i === page ? 'bg-primary text-white border-primary' : ''
+        }`;
+        button.textContent = i;
+        button.addEventListener('click', () => {
+          costCurrentPage = i;
+          renderCostDetailTable(filteredCostData, costCurrentPage);
+        });
+        pageButtonsContainer.appendChild(button);
+      }
+    }
+
+    // 搜索成本费用
+    function searchCost(keyword) {
+      if (!keyword.trim()) {
+        filteredCostData = [...costData.details];
+      } else {
+        filteredCostData = costData.details.filter(item => 
+          item.orderNo.toLowerCase().includes(keyword.toLowerCase()) ||
+          item.sku.toLowerCase().includes(keyword.toLowerCase()) ||
+          item.warehouse.toLowerCase().includes(keyword.toLowerCase())
+        );
+      }
+      costCurrentPage = 1;
+      renderCostDetailTable(filteredCostData, costCurrentPage);
+    }
+
+    // 下钻功能
+    function drillDown(orderNo, sku) {
+      // 切换到SKU级视图并过滤数据
+      const detailLevelSelect = document.getElementById('costDetailLevel');
+      if (detailLevelSelect) {
+        detailLevelSelect.value = 'sku';
+        costDetailLevel = 'sku';
+      }
+      
+      filteredCostData = costData.details.filter(item => 
+        item.orderNo === orderNo && item.sku === sku
+      );
+      costCurrentPage = 1;
+      renderCostDetailTable(filteredCostData, costCurrentPage);
+    }
+
+    // 查看成本详情
+    function viewCostDetail(id) {
+      const item = costData.details.find(d => d.id === id);
+      if (!item) return;
+      
+      alert(`成本费用详情\n\n订单号: ${item.orderNo}\nSKU: ${item.sku}\n仓库: ${item.warehouse}\n费用类型: ${item.type}\n数量: ${item.quantity}\n单价: $${item.unitPrice}\n成本金额: $${item.costAmount}\n费用金额: $${item.expenseAmount}`);
+    }
+
+    // 切换成本趋势视图
+    function toggleCostTrendView() {
+      // 可以切换显示/隐藏环比数据
+      if (costTrendChart) {
+        const showBar = costTrendChart.data.datasets.length > 2;
+        if (showBar) {
+          costTrendChart.data.datasets = costTrendChart.data.datasets.slice(0, 2);
+        } else {
+          costTrendChart.data.datasets.push({
+            label: '成本环比变化',
+            data: costData.trend.costChange,
+            type: 'bar',
+            backgroundColor: 'rgba(250, 173, 20, 0.3)',
+            borderColor: '#FAAD14',
+            borderWidth: 1,
+            yAxisID: 'y1'
+          });
+        }
+        costTrendChart.update();
+      }
+    }
+
+    // 生成账单
+    function generateBill() {
+      const billMonth = document.getElementById('costBillMonth')?.value || '2024-11';
+      const totalCost = costData.trend.cost[costData.trend.cost.length - 1];
+      const totalExpense = costData.trend.expense[costData.trend.expense.length - 1];
+      
+      document.getElementById('billMonthDisplay').textContent = billMonth;
+      document.getElementById('billItemCount').textContent = costData.details.length;
+      document.getElementById('billTotalAmount').textContent = `$${(totalCost + totalExpense).toLocaleString()}`;
+      
+      alert(`账单已生成！\n\n账单月份: ${billMonth}\n费用项数量: ${costData.details.length}\n账单总额: $${(totalCost + totalExpense).toLocaleString()}`);
+    }
+
+    // 暴露全局函数
+    window.drillDown = drillDown;
+    window.viewCostDetail = viewCostDetail;
+    window.toggleCostTrendView = toggleCostTrendView;
+
+    // 初始化成本费用明细模块所有图表
+    function initCostCharts() {
+      initCostTrendChart();
+      initCostStructureChart();
+      initCostDistributionChart();
+      initWarehouseCostChart();
+      
+      // 更新指标卡片
+      const totalCost = costData.trend.cost[costData.trend.cost.length - 1];
+      const totalExpense = costData.trend.expense[costData.trend.expense.length - 1];
+      const costChange = costData.trend.costChange[costData.trend.costChange.length - 1];
+      const expenseChange = costData.trend.expenseChange[costData.trend.expenseChange.length - 1];
+      
+      document.getElementById('totalCost').textContent = `$${totalCost.toLocaleString()}`;
+      document.getElementById('totalExpense').textContent = `$${totalExpense.toLocaleString()}`;
+      document.getElementById('costExpenseRatio').textContent = ((totalCost / totalExpense) * 100).toFixed(1) + '%';
+      
+      const totalItems = costData.details.reduce((sum, item) => sum + item.quantity, 0);
+      const avgUnitCost = totalCost / totalItems;
+      document.getElementById('avgUnitCost').textContent = `$${avgUnitCost.toFixed(2)}`;
+      
+      // 更新变化指标
+      const costChangeEl = document.getElementById('totalCostChange');
+      if (costChangeEl) {
+        costChangeEl.innerHTML = `<i class="fa fa-arrow-${costChange > 0 ? 'up' : 'down'} mr-1"></i>较上月 ${costChange > 0 ? '+' : ''}${costChange.toFixed(1)}%`;
+        costChangeEl.className = `text-xs ${costChange > 0 ? 'text-warning' : 'text-success'}`;
+      }
+      
+      const expenseChangeEl = document.getElementById('totalExpenseChange');
+      if (expenseChangeEl) {
+        expenseChangeEl.innerHTML = `<i class="fa fa-arrow-${expenseChange > 0 ? 'up' : 'down'} mr-1"></i>较上月 ${expenseChange > 0 ? '+' : ''}${expenseChange.toFixed(1)}%`;
+        expenseChangeEl.className = `text-xs ${expenseChange > 0 ? 'text-warning' : 'text-success'}`;
+      }
+      
+      // 渲染明细表格
+      renderCostDetailTable(filteredCostData, costCurrentPage);
+    }
+
+    // ========== 智能补货建议模块 ==========
+    let inventoryConsumptionChart = null;
+    let demandForecastChart = null;
+    let outOfStockRiskChart = null;
+
+    // 补货建议数据
+    const replenishmentData = {
+      // 参数设置
+      params: {
+        safetyStockCoeff: 1.5,
+        leadTime: 14,
+        minReplenishmentQty: 100
+      },
+      // 库存消耗预测数据（8周）
+      consumption: {
+        weeks: ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周', '第7周', '第8周'],
+        currentInventory: 12500,
+        inTransitInventory: 3200,
+        predictedDemand: [1800, 1950, 2100, 2250, 2400, 2550, 2700, 2850],
+        cumulativeDemand: [1800, 3750, 5850, 8100, 10500, 13050, 15750, 18600],
+        safetyStock: [2700, 2925, 3150, 3375, 3600, 3825, 4050, 4275]
+      },
+      // 需求预测数据
+      demandForecast: {
+        weeks: ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周', '第7周', '第8周'],
+        baseDemand: [1800, 1950, 2100, 2250, 2400, 2550, 2700, 2850],
+        seasonalAdjustment: [1.0, 1.05, 1.1, 1.15, 1.2, 1.15, 1.1, 1.05],
+        promotionImpact: [0, 0, 0, 500, 0, 0, 0, 0], // 第4周有促销
+        finalDemand: [1800, 2048, 2310, 3088, 2880, 2933, 2970, 2993]
+      },
+      // 断货风险数据
+      outOfStockRisk: {
+        skus: ['SKU-001234', 'SKU-002345', 'SKU-003456', 'SKU-004567', 'SKU-005678'],
+        riskLevels: [85, 65, 45, 25, 15], // 风险百分比
+        colors: ['#FF4D4F', '#FAAD14', '#52C41A', '#36CFC9', '#165DFF']
+      },
+      // SKU级别补货建议
+      skuReplenishment: [
+        { sku: 'SKU-001234', warehouse: '美国仓1', currentStock: 12500, inTransit: 3200, forecastDemand: 18600, suggestedQty: 8500, suggestedTime: '2024-12-01', riskLevel: 'high', riskPercent: 85 },
+        { sku: 'SKU-002345', warehouse: '美国仓2', currentStock: 8900, inTransit: 2100, forecastDemand: 15200, suggestedQty: 6200, suggestedTime: '2024-12-05', riskLevel: 'high', riskPercent: 75 },
+        { sku: 'SKU-003456', warehouse: '德国仓1', currentStock: 15600, inTransit: 4500, forecastDemand: 16800, suggestedQty: 3200, suggestedTime: '2024-12-10', riskLevel: 'medium', riskPercent: 45 },
+        { sku: 'SKU-004567', warehouse: '美国仓1', currentStock: 22100, inTransit: 3800, forecastDemand: 19500, suggestedQty: 0, suggestedTime: '-', riskLevel: 'low', riskPercent: 15 },
+        { sku: 'SKU-005678', warehouse: '美国仓2', currentStock: 18900, inTransit: 2900, forecastDemand: 14200, suggestedQty: 0, suggestedTime: '-', riskLevel: 'low', riskPercent: 10 },
+        { sku: 'SKU-006789', warehouse: '德国仓1', currentStock: 11200, inTransit: 1800, forecastDemand: 17400, suggestedQty: 7200, suggestedTime: '2024-12-03', riskLevel: 'high', riskPercent: 80 },
+        { sku: 'SKU-007890', warehouse: '美国仓1', currentStock: 16800, inTransit: 4200, forecastDemand: 16100, suggestedQty: 2100, suggestedTime: '2024-12-08', riskLevel: 'medium', riskPercent: 35 },
+        { sku: 'SKU-008901', warehouse: '美国仓2', currentStock: 9800, inTransit: 2500, forecastDemand: 15800, suggestedQty: 6800, suggestedTime: '2024-12-02', riskLevel: 'high', riskPercent: 70 },
+        { sku: 'SKU-009012', warehouse: '德国仓1', currentStock: 13400, inTransit: 3100, forecastDemand: 14900, suggestedQty: 3400, suggestedTime: '2024-12-07', riskLevel: 'medium', riskPercent: 40 },
+        { sku: 'SKU-010123', warehouse: '美国仓1', currentStock: 20100, inTransit: 3600, forecastDemand: 18300, suggestedQty: 0, suggestedTime: '-', riskLevel: 'low', riskPercent: 12 }
+      ]
+    };
+
+    let replenishmentCurrentPage = 1;
+    const replenishmentItemsPerPage = 10;
+    let filteredReplenishmentData = [...replenishmentData.skuReplenishment];
+    let selectedSKU = 'SKU-001234';
+
+    // 初始化库存消耗预测曲线图表
+    function initInventoryConsumptionChart() {
+      const ctx = document.getElementById('inventoryConsumptionChart');
+      if (!ctx) return;
+
+      if (inventoryConsumptionChart) {
+        inventoryConsumptionChart.destroy();
+      }
+
+      const selectedData = replenishmentData.consumption;
+      const totalInventory = selectedData.currentInventory + selectedData.inTransitInventory;
+      const remainingInventory = selectedData.weeks.map((_, index) => {
+        const consumed = selectedData.cumulativeDemand[index];
+        return Math.max(0, totalInventory - consumed);
+      });
+
+      // 计算断货周
+      const outOfStockWeek = remainingInventory.findIndex(inv => inv <= 0);
+      const suggestedReplenishment = selectedData.cumulativeDemand[selectedData.weeks.length - 1] - totalInventory + selectedData.safetyStock[selectedData.weeks.length - 1];
+
+      inventoryConsumptionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: selectedData.weeks,
+          datasets: [
+            {
+              label: '当前库存+在途库存',
+              data: new Array(selectedData.weeks.length).fill(totalInventory),
+              borderColor: '#165DFF',
+              backgroundColor: 'rgba(22, 93, 255, 0.1)',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0
+            },
+            {
+              label: '预测需求曲线',
+              data: selectedData.cumulativeDemand,
+              borderColor: '#36CFC9',
+              backgroundColor: 'rgba(54, 207, 201, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#36CFC9'
+            },
+            {
+              label: '剩余库存预测',
+              data: remainingInventory,
+              borderColor: '#FAAD14',
+              backgroundColor: 'rgba(250, 173, 20, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#FAAD14'
+            },
+            {
+              label: '安全库存线',
+              data: selectedData.safetyStock,
+              borderColor: '#FF4D4F',
+              backgroundColor: 'rgba(255, 77, 79, 0.1)',
+              borderWidth: 2,
+              borderDash: [10, 5],
+              fill: false,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: ${value.toLocaleString()}件`;
+                }
+              }
+            },
+            annotation: {
+              annotations: outOfStockWeek >= 0 ? [{
+                type: 'line',
+                xMin: outOfStockWeek,
+                xMax: outOfStockWeek,
+                borderColor: '#FF4D4F',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                label: {
+                  content: '预计断货',
+                  enabled: true,
+                  position: 'end'
+                }
+              }] : []
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: '库存数量（件）',
+                font: { size: 12 }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+
+      // 更新统计信息
+      document.getElementById('currentInventory').textContent = selectedData.currentInventory.toLocaleString();
+      document.getElementById('inTransitInventory').textContent = selectedData.inTransitInventory.toLocaleString();
+      document.getElementById('suggestedReplenishment').textContent = Math.max(0, Math.round(suggestedReplenishment)).toLocaleString();
+      document.getElementById('estimatedOutOfStockDate').textContent = outOfStockWeek >= 0 ? selectedData.weeks[outOfStockWeek] : '无风险';
+    }
+
+    // 初始化需求预测图表
+    function initDemandForecastChart() {
+      const ctx = document.getElementById('demandForecastChart');
+      if (!ctx) return;
+
+      if (demandForecastChart) {
+        demandForecastChart.destroy();
+      }
+
+      demandForecastChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: replenishmentData.demandForecast.weeks,
+          datasets: [
+            {
+              label: '基础需求',
+              data: replenishmentData.demandForecast.baseDemand,
+              backgroundColor: 'rgba(22, 93, 255, 0.6)',
+              borderRadius: 4
+            },
+            {
+              label: '季节性调整',
+              data: replenishmentData.demandForecast.baseDemand.map((base, i) => 
+                base * replenishmentData.demandForecast.seasonalAdjustment[i] - base
+              ),
+              backgroundColor: 'rgba(54, 207, 201, 0.6)',
+              borderRadius: 4
+            },
+            {
+              label: '促销影响',
+              data: replenishmentData.demandForecast.promotionImpact,
+              backgroundColor: 'rgba(250, 173, 20, 0.6)',
+              borderRadius: 4
+            },
+            {
+              label: '最终预测需求',
+              data: replenishmentData.demandForecast.finalDemand,
+              type: 'line',
+              borderColor: '#FF4D4F',
+              backgroundColor: 'rgba(255, 77, 79, 0.1)',
+              borderWidth: 2,
+              tension: 0.3,
+              fill: false,
+              pointRadius: 5,
+              pointBackgroundColor: '#FF4D4F'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 11 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: ${value.toLocaleString()}件`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              stacked: false,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: '需求数量（件）',
+                font: { size: 12 }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化断货风险预警图表
+    function initOutOfStockRiskChart() {
+      const ctx = document.getElementById('outOfStockRiskChart');
+      if (!ctx) return;
+
+      if (outOfStockRiskChart) {
+        outOfStockRiskChart.destroy();
+      }
+
+      outOfStockRiskChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: replenishmentData.outOfStockRisk.skus,
+          datasets: [{
+            label: '断货风险',
+            data: replenishmentData.outOfStockRisk.riskLevels,
+            backgroundColor: replenishmentData.outOfStockRisk.colors,
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed.x || 0;
+                  return `风险等级: ${value}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              },
+              title: {
+                display: true,
+                text: '风险百分比 (%)',
+                font: { size: 12 }
+              }
+            },
+            y: {
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 渲染补货建议表格
+    function renderReplenishmentTable(data, page = 1) {
+      const tbody = document.querySelector('#replenishmentTable tbody');
+      if (!tbody) return;
+
+      const startIndex = (page - 1) * replenishmentItemsPerPage;
+      const endIndex = startIndex + replenishmentItemsPerPage;
+      const pageData = data.slice(startIndex, endIndex);
+
+      tbody.innerHTML = '';
+      
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="py-8 text-center text-gray-500">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              暂无数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        
+        let riskBadge = '';
+        if (item.riskLevel === 'high') {
+          riskBadge = '<span class="alert-badge bg-danger/10 text-danger">高风险</span>';
+        } else if (item.riskLevel === 'medium') {
+          riskBadge = '<span class="alert-badge bg-warning/10 text-warning">中风险</span>';
+        } else {
+          riskBadge = '<span class="alert-badge bg-success/10 text-success">低风险</span>';
+        }
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-sm font-medium">${item.sku}</td>
+          <td class="py-3 px-4 text-sm">${item.warehouse}</td>
+          <td class="py-3 px-4 text-sm text-right">${item.currentStock.toLocaleString()}</td>
+          <td class="py-3 px-4 text-sm text-right">${item.inTransit.toLocaleString()}</td>
+          <td class="py-3 px-4 text-sm text-right">${item.forecastDemand.toLocaleString()}</td>
+          <td class="py-3 px-4 text-sm text-right font-semibold ${item.suggestedQty > 0 ? 'text-warning' : 'text-gray-400'}">${item.suggestedQty > 0 ? item.suggestedQty.toLocaleString() : '-'}</td>
+          <td class="py-3 px-4 text-sm">${item.suggestedTime}</td>
+          <td class="py-3 px-4 text-center">${riskBadge}</td>
+          <td class="py-3 px-4 text-center">
+            <button class="text-primary hover:text-primary/80 text-sm" onclick="viewReplenishmentDetail('${item.sku}')" title="查看详情">
+              <i class="fa fa-eye"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateReplenishmentPaginationInfo(data.length, page);
+    }
+
+    // 更新补货分页信息
+    function updateReplenishmentPaginationInfo(total, page) {
+      const paginationInfo = document.getElementById('replenishmentPaginationInfo');
+      const startItem = (page - 1) * replenishmentItemsPerPage + 1;
+      const endItem = Math.min(page * replenishmentItemsPerPage, total);
+      
+      if (paginationInfo) {
+        paginationInfo.textContent = `显示 ${startItem}-${endItem} 条，共 ${total} 条`;
+      }
+
+      const totalPages = Math.ceil(total / replenishmentItemsPerPage);
+      const prevBtn = document.getElementById('replenishmentPrevPageBtn');
+      const nextBtn = document.getElementById('replenishmentNextPageBtn');
+      
+      if (prevBtn) {
+        prevBtn.disabled = page === 1;
+        prevBtn.classList.toggle('opacity-50', page === 1);
+        prevBtn.classList.toggle('cursor-not-allowed', page === 1);
+      }
+      
+      if (nextBtn) {
+        nextBtn.disabled = page >= totalPages;
+        nextBtn.classList.toggle('opacity-50', page >= totalPages);
+        nextBtn.classList.toggle('cursor-not-allowed', page >= totalPages);
+      }
+
+      updateReplenishmentPageButtons(totalPages, page);
+    }
+
+    // 更新补货页码按钮
+    function updateReplenishmentPageButtons(totalPages, page) {
+      const pageButtonsContainer = document.getElementById('replenishmentPageButtons');
+      if (!pageButtonsContainer) return;
+
+      pageButtonsContainer.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement('button');
+        button.className = `w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all ${
+          i === page ? 'bg-primary text-white border-primary' : ''
+        }`;
+        button.textContent = i;
+        button.addEventListener('click', () => {
+          replenishmentCurrentPage = i;
+          renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+        });
+        pageButtonsContainer.appendChild(button);
+      }
+    }
+
+    // 搜索补货建议
+    function searchReplenishment(keyword) {
+      if (!keyword.trim()) {
+        filteredReplenishmentData = [...replenishmentData.skuReplenishment];
+      } else {
+        filteredReplenishmentData = replenishmentData.skuReplenishment.filter(item => 
+          item.sku.toLowerCase().includes(keyword.toLowerCase()) ||
+          item.warehouse.toLowerCase().includes(keyword.toLowerCase())
+        );
+      }
+      replenishmentCurrentPage = 1;
+      renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+    }
+
+    // 查看补货详情
+    function viewReplenishmentDetail(sku) {
+      const item = replenishmentData.skuReplenishment.find(d => d.sku === sku);
+      if (!item) return;
+      
+      alert(`补货建议详情\n\nSKU: ${item.sku}\n仓库: ${item.warehouse}\n当前库存: ${item.currentStock.toLocaleString()}件\n在途库存: ${item.inTransit.toLocaleString()}件\n预测需求(8周): ${item.forecastDemand.toLocaleString()}件\n建议补货量: ${item.suggestedQty > 0 ? item.suggestedQty.toLocaleString() + '件' : '无需补货'}\n建议补货时点: ${item.suggestedTime}\n风险等级: ${item.riskLevel === 'high' ? '高风险' : item.riskLevel === 'medium' ? '中风险' : '低风险'} (${item.riskPercent}%)`);
+    }
+
+    // 初始化智能补货建议模块所有图表
+    function initReplenishmentCharts() {
+      initInventoryConsumptionChart();
+      initDemandForecastChart();
+      initOutOfStockRiskChart();
+      
+      // 更新指标卡片
+      const highRiskCount = replenishmentData.skuReplenishment.filter(item => item.riskLevel === 'high').length;
+      const totalSuggestedQty = replenishmentData.skuReplenishment.reduce((sum, item) => sum + item.suggestedQty, 0);
+      const avgRisk = replenishmentData.skuReplenishment.reduce((sum, item) => sum + item.riskPercent, 0) / replenishmentData.skuReplenishment.length;
+      
+      document.getElementById('replenishmentSKUCount').textContent = replenishmentData.skuReplenishment.filter(item => item.suggestedQty > 0).length;
+      document.getElementById('totalReplenishmentQty').textContent = totalSuggestedQty.toLocaleString();
+      document.getElementById('outOfStockRisk').textContent = avgRisk.toFixed(1) + '%';
+      document.getElementById('avgReplenishmentCycle').textContent = replenishmentData.params.leadTime + '天';
+      
+      // 渲染表格
+      renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+    }
+
+    // 暴露全局函数
+    window.viewReplenishmentDetail = viewReplenishmentDetail;
+
+    // 初始化库存水位分布图表
+    function initInventoryDistributionChart(type = 'pie') {
+      const ctx = document.getElementById('inventoryDistributionChart');
+      if (!ctx) return;
+
+      // 销毁旧图表
+      if (inventoryDistributionChart) {
+        inventoryDistributionChart.destroy();
+      }
+
+      const total = inventoryData.quantities.reduce((sum, qty) => sum + qty, 0);
+
+      if (type === 'pie') {
+        // 饼图配置
+        inventoryDistributionChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: inventoryData.warehouses,
+            datasets: [{
+              data: inventoryData.quantities,
+              backgroundColor: inventoryData.colors,
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  padding: 15,
+                  usePointStyle: true,
+                  pointStyle: 'circle',
+                  font: {
+                    size: 12
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.parsed || 0;
+                    const percentage = ((value / total) * 100).toFixed(1);
+                    return `${label}: ${value.toLocaleString()}件 (${percentage}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } else if (type === 'heatmap') {
+        // 热力图配置（使用柱状图模拟热力图效果）
+        const maxValue = Math.max(...inventoryData.quantities);
+        const heatmapColors = inventoryData.quantities.map(qty => {
+          const intensity = qty / maxValue;
+          if (intensity > 0.8) return '#FF4D4F'; // 红色 - 高库存
+          if (intensity > 0.6) return '#FAAD14'; // 橙色 - 中高库存
+          if (intensity > 0.4) return '#52C41A'; // 绿色 - 中等库存
+          if (intensity > 0.2) return '#36CFC9'; // 青色 - 中低库存
+          return '#165DFF'; // 蓝色 - 低库存
+        });
+
+        inventoryDistributionChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: inventoryData.warehouses,
+            datasets: [{
+              label: '库存数量',
+              data: inventoryData.quantities,
+              backgroundColor: heatmapColors,
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const value = context.parsed.y || 0;
+                    const percentage = ((value / total) * 100).toFixed(1);
+                    return `库存: ${value.toLocaleString()}件 (${percentage}%)`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return value.toLocaleString();
+                  }
+                },
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+          }
+        });
+      }
+
+      currentChartType = type;
+    }
+
+    // 图表切换按钮事件
+    document.addEventListener('DOMContentLoaded', function() {
+      const chartToggleButtons = document.querySelectorAll('.chart-toggle-btn');
+      
+      chartToggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const chartType = this.getAttribute('data-chart');
+          
+          // 更新按钮样式
+          chartToggleButtons.forEach(btn => {
+            if (btn === this) {
+              btn.classList.remove('text-gray-500', 'hover:bg-gray-100');
+              btn.classList.add('bg-primary/10', 'text-primary');
+            } else {
+              btn.classList.remove('bg-primary/10', 'text-primary');
+              btn.classList.add('text-gray-500', 'hover:bg-gray-100');
+            }
+          });
+
+          // 切换图表类型
+          initInventoryDistributionChart(chartType);
+        });
+      });
+
+      // 初始化饼图
+      initInventoryDistributionChart('pie');
+
+      // 初始化库龄分布图表
+      initInventoryAgeChart();
+
+      // 初始化可售天数预测图表
+      initDaysAvailableChart();
+
+      // 初始化滞销SKU表格
+      renderSlowMovingSKUTable(filteredSKUData, currentPage);
+
+      // 初始化订单履行表现模块（如果当前显示的是该模块）
+      const activeTab = document.querySelector('.tab-button.active');
+      if (activeTab && activeTab.getAttribute('data-tab') === 'fulfillment') {
+        initFulfillmentCharts();
+      }
+
+      // SKU搜索功能
+      const skuSearchInput = document.getElementById('skuSearchInput');
+      if (skuSearchInput) {
+        let searchTimeout;
+        skuSearchInput.addEventListener('input', function() {
+          clearTimeout(searchTimeout);
+          searchTimeout = setTimeout(() => {
+            searchSKU(this.value);
+          }, 300); // 防抖处理
+        });
+      }
+
+      // 分页按钮事件
+      const prevPageBtn = document.getElementById('prevPageBtn');
+      const nextPageBtn = document.getElementById('nextPageBtn');
+      
+      if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', function() {
+          if (currentPage > 1) {
+            currentPage--;
+            renderSlowMovingSKUTable(filteredSKUData, currentPage);
+          }
+        });
+      }
+      
+      if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', function() {
+          const totalPages = Math.ceil(filteredSKUData.length / itemsPerPage);
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderSlowMovingSKUTable(filteredSKUData, currentPage);
+          }
+        });
+      }
+
+      // Tab切换功能
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetTab = this.getAttribute('data-tab');
+
+          // 更新按钮状态
+          tabButtons.forEach(btn => {
+            btn.classList.remove('active');
+          });
+          this.classList.add('active');
+
+          // 更新内容显示
+          tabContents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
+
+          // 如果切换到库存模块，重新初始化图表
+          if (targetTab === 'inventory') {
+            setTimeout(() => {
+              initInventoryDistributionChart(currentChartType);
+              initInventoryAgeChart();
+              initDaysAvailableChart();
+            }, 100);
+          }
+
+          // 如果切换到订单履行表现模块，重新初始化图表
+          if (targetTab === 'fulfillment') {
+            setTimeout(() => {
+              initFulfillmentCharts();
+            }, 100);
+          }
+
+          // 如果切换到成本费用明细模块，重新初始化图表
+          if (targetTab === 'cost') {
+            setTimeout(() => {
+              initCostCharts();
+            }, 100);
+          }
+
+          // 如果切换到智能补货建议模块，重新初始化图表
+          if (targetTab === 'replenishment') {
+            setTimeout(() => {
+              initReplenishmentCharts();
+            }, 100);
+          }
+        });
+      });
+
+      // 仓库筛选器变化时更新图表
+      const warehouseSelect = document.querySelector('#tab-inventory select');
+      if (warehouseSelect) {
+        warehouseSelect.addEventListener('change', function() {
+          // 这里可以根据选择的仓库过滤数据
+          // 暂时保持原样，实际项目中应该从API获取数据
+          initInventoryDistributionChart(currentChartType);
+          initInventoryAgeChart();
+        });
+      }
+
+      // 订单履行表现模块筛选器事件
+      const fulfillmentWarehouseSelect = document.getElementById('fulfillmentWarehouseSelect');
+      const fulfillmentChannelSelect = document.getElementById('fulfillmentChannelSelect');
+      const fulfillmentStartDate = document.getElementById('fulfillmentStartDate');
+      const fulfillmentEndDate = document.getElementById('fulfillmentEndDate');
+
+      function updateFulfillmentData() {
+        const warehouse = fulfillmentWarehouseSelect ? fulfillmentWarehouseSelect.value : 'all';
+        const channel = fulfillmentChannelSelect ? fulfillmentChannelSelect.value : 'all';
+        const filteredData = filterFulfillmentComparison(warehouse, channel);
+        renderFulfillmentComparisonTable(filteredData);
+        // 注意：实际项目中，时间范围变化时应该重新获取趋势数据并更新图表
+      }
+
+      if (fulfillmentWarehouseSelect) {
+        fulfillmentWarehouseSelect.addEventListener('change', updateFulfillmentData);
+      }
+      if (fulfillmentChannelSelect) {
+        fulfillmentChannelSelect.addEventListener('change', updateFulfillmentData);
+      }
+      if (fulfillmentStartDate) {
+        fulfillmentStartDate.addEventListener('change', updateFulfillmentData);
+      }
+      if (fulfillmentEndDate) {
+        fulfillmentEndDate.addEventListener('change', updateFulfillmentData);
+      }
+
+      // 成本费用明细模块事件
+      const costSearchInput = document.getElementById('costSearchInput');
+      if (costSearchInput) {
+        let costSearchTimeout;
+        costSearchInput.addEventListener('input', function() {
+          clearTimeout(costSearchTimeout);
+          costSearchTimeout = setTimeout(() => {
+            searchCost(this.value);
+          }, 300);
+        });
+      }
+
+      const costDetailLevelSelect = document.getElementById('costDetailLevel');
+      if (costDetailLevelSelect) {
+        costDetailLevelSelect.addEventListener('change', function() {
+          costDetailLevel = this.value;
+          renderCostDetailTable(filteredCostData, 1);
+        });
+      }
+
+      const costPrevPageBtn = document.getElementById('costPrevPageBtn');
+      const costNextPageBtn = document.getElementById('costNextPageBtn');
+      
+      if (costPrevPageBtn) {
+        costPrevPageBtn.addEventListener('click', function() {
+          if (costCurrentPage > 1) {
+            costCurrentPage--;
+            renderCostDetailTable(filteredCostData, costCurrentPage);
+          }
+        });
+      }
+      
+      if (costNextPageBtn) {
+        costNextPageBtn.addEventListener('click', function() {
+          const totalPages = Math.ceil(filteredCostData.length / costItemsPerPage);
+          if (costCurrentPage < totalPages) {
+            costCurrentPage++;
+            renderCostDetailTable(filteredCostData, costCurrentPage);
+          }
+        });
+      }
+
+      const generateBillBtn = document.getElementById('generateBillBtn');
+      if (generateBillBtn) {
+        generateBillBtn.addEventListener('click', generateBill);
+      }
+
+      const openSimulationBtn = document.getElementById('openSimulationBtn');
+      if (openSimulationBtn) {
+        openSimulationBtn.addEventListener('click', function() {
+          // 模拟计算不同备货策略的成本
+          const currentCost = costData.trend.cost[costData.trend.cost.length - 1];
+          const strategyACost = currentCost * 0.942; // 保守策略节省5.8%
+          const strategyBCost = currentCost * 1.081; // 激进策略增加8.1%
+          
+          document.getElementById('currentStrategyCost').textContent = `$${currentCost.toLocaleString()}`;
+          document.getElementById('strategyACost').textContent = `$${Math.round(strategyACost).toLocaleString()}`;
+          document.getElementById('strategyBCost').textContent = `$${Math.round(strategyBCost).toLocaleString()}`;
+          
+          alert('成本模拟计算完成！\n\n策略A（保守备货）：节省 $' + Math.round(currentCost - strategyACost).toLocaleString() + '\n策略B（激进备货）：增加 $' + Math.round(strategyBCost - currentCost).toLocaleString());
+        });
+      }
+
+      // 成本费用筛选器变化事件
+      const costWarehouseSelect = document.getElementById('costWarehouseSelect');
+      const costTypeSelect = document.getElementById('costTypeSelect');
+      const costStartDate = document.getElementById('costStartDate');
+      const costEndDate = document.getElementById('costEndDate');
+
+      function updateCostData() {
+        const warehouse = costWarehouseSelect ? costWarehouseSelect.value : 'all';
+        const type = costTypeSelect ? costTypeSelect.value : 'all';
+        const startDate = costStartDate ? costStartDate.value : '';
+        const endDate = costEndDate ? costEndDate.value : '';
+
+        let filtered = [...costData.details];
+
+        if (warehouse !== 'all') {
+          const warehouseMap = {
+            'US-WH1': '美国仓1',
+            'US-WH2': '美国仓2',
+            'DE-WH1': '德国仓1'
+          };
+          filtered = filtered.filter(item => item.warehouse === warehouseMap[warehouse]);
+        }
+
+        if (type !== 'all') {
+          const typeMap = {
+            'firstLeg': '头程均摊成本',
+            'storage': '仓储租金与操作费',
+            'penalty': '滞纳金/附加费',
+            'logistics': '单均/单件物流成本',
+            'other': '其他费用'
+          };
+          filtered = filtered.filter(item => item.type === typeMap[type]);
+        }
+
+        if (startDate && endDate) {
+          filtered = filtered.filter(item => item.date >= startDate && item.date <= endDate);
+        }
+
+        filteredCostData = filtered;
+        costCurrentPage = 1;
+        renderCostDetailTable(filteredCostData, costCurrentPage);
+      }
+
+      if (costWarehouseSelect) {
+        costWarehouseSelect.addEventListener('change', updateCostData);
+      }
+      if (costTypeSelect) {
+        costTypeSelect.addEventListener('change', updateCostData);
+      }
+      if (costStartDate) {
+        costStartDate.addEventListener('change', updateCostData);
+      }
+      if (costEndDate) {
+        costEndDate.addEventListener('change', updateCostData);
+      }
+
+      // 智能补货建议模块事件
+      const replenishmentSearchInput = document.getElementById('replenishmentSearchInput');
+      if (replenishmentSearchInput) {
+        let replenishmentSearchTimeout;
+        replenishmentSearchInput.addEventListener('input', function() {
+          clearTimeout(replenishmentSearchTimeout);
+          replenishmentSearchTimeout = setTimeout(() => {
+            searchReplenishment(this.value);
+          }, 300);
+        });
+      }
+
+      const riskLevelFilter = document.getElementById('riskLevelFilter');
+      if (riskLevelFilter) {
+        riskLevelFilter.addEventListener('change', function() {
+          const riskLevel = this.value;
+          if (riskLevel === 'all') {
+            filteredReplenishmentData = [...replenishmentData.skuReplenishment];
+          } else {
+            filteredReplenishmentData = replenishmentData.skuReplenishment.filter(item => item.riskLevel === riskLevel);
+          }
+          replenishmentCurrentPage = 1;
+          renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+        });
+      }
+
+      const replenishmentPrevPageBtn = document.getElementById('replenishmentPrevPageBtn');
+      const replenishmentNextPageBtn = document.getElementById('replenishmentNextPageBtn');
+      
+      if (replenishmentPrevPageBtn) {
+        replenishmentPrevPageBtn.addEventListener('click', function() {
+          if (replenishmentCurrentPage > 1) {
+            replenishmentCurrentPage--;
+            renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+          }
+        });
+      }
+      
+      if (replenishmentNextPageBtn) {
+        replenishmentNextPageBtn.addEventListener('click', function() {
+          const totalPages = Math.ceil(filteredReplenishmentData.length / replenishmentItemsPerPage);
+          if (replenishmentCurrentPage < totalPages) {
+            replenishmentCurrentPage++;
+            renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+          }
+        });
+      }
+
+      // 参数设置面板
+      const openParamsBtn = document.getElementById('openParamsBtn');
+      const paramsPanel = document.getElementById('paramsPanel');
+      if (openParamsBtn && paramsPanel) {
+        openParamsBtn.addEventListener('click', function() {
+          paramsPanel.classList.toggle('hidden');
+        });
+      }
+
+      // 参数滑块事件
+      const safetyStockCoeff = document.getElementById('safetyStockCoeff');
+      const safetyStockValue = document.getElementById('safetyStockValue');
+      if (safetyStockCoeff && safetyStockValue) {
+        safetyStockCoeff.addEventListener('input', function() {
+          safetyStockValue.textContent = this.value;
+        });
+      }
+
+      const leadTime = document.getElementById('leadTime');
+      const leadTimeValue = document.getElementById('leadTimeValue');
+      if (leadTime && leadTimeValue) {
+        leadTime.addEventListener('input', function() {
+          leadTimeValue.textContent = this.value;
+        });
+      }
+
+      // 应用参数
+      const applyParamsBtn = document.getElementById('applyParamsBtn');
+      if (applyParamsBtn) {
+        applyParamsBtn.addEventListener('click', function() {
+          const safetyStockCoeffValue = parseFloat(document.getElementById('safetyStockCoeff').value);
+          const leadTimeValue = parseInt(document.getElementById('leadTime').value);
+          const minReplenishmentQtyValue = parseInt(document.getElementById('minReplenishmentQty').value);
+
+          replenishmentData.params.safetyStockCoeff = safetyStockCoeffValue;
+          replenishmentData.params.leadTime = leadTimeValue;
+          replenishmentData.params.minReplenishmentQty = minReplenishmentQtyValue;
+
+          // 重新计算补货建议
+          replenishmentData.skuReplenishment.forEach(item => {
+            const totalStock = item.currentStock + item.inTransit;
+            const requiredStock = item.forecastDemand + (item.forecastDemand / 8 * replenishmentData.params.safetyStockCoeff);
+            item.suggestedQty = Math.max(0, Math.ceil(requiredStock - totalStock));
+            if (item.suggestedQty < minReplenishmentQtyValue) {
+              item.suggestedQty = 0;
+            }
+          });
+
+          // 重新初始化图表和表格
+          initReplenishmentCharts();
+          alert('参数已应用，补货建议已更新！');
+        });
+      }
+
+      // 重置参数
+      const resetParamsBtn = document.getElementById('resetParamsBtn');
+      if (resetParamsBtn) {
+        resetParamsBtn.addEventListener('click', function() {
+          document.getElementById('safetyStockCoeff').value = 1.5;
+          document.getElementById('safetyStockValue').textContent = '1.5';
+          document.getElementById('leadTime').value = 14;
+          document.getElementById('leadTimeValue').textContent = '14';
+          document.getElementById('minReplenishmentQty').value = 100;
+        });
+      }
+
+      // SKU选择变化时更新库存消耗图表
+      const selectedSKUSelect = document.getElementById('selectedSKU');
+      if (selectedSKUSelect) {
+        selectedSKUSelect.addEventListener('change', function() {
+          selectedSKU = this.value;
+          // 可以根据选择的SKU更新数据
+          initInventoryConsumptionChart();
+        });
+      }
+
+      // 预测周数变化
+      const forecastWeeks = document.getElementById('forecastWeeks');
+      if (forecastWeeks) {
+        forecastWeeks.addEventListener('change', function() {
+          const weeks = parseInt(this.value);
+          // 可以根据周数更新预测数据
+          initDemandForecastChart();
+          initInventoryConsumptionChart();
+        });
+      }
+
+      // 仓库筛选
+      const replenishmentWarehouseSelect = document.getElementById('replenishmentWarehouseSelect');
+      if (replenishmentWarehouseSelect) {
+        replenishmentWarehouseSelect.addEventListener('change', function() {
+          const warehouse = this.value;
+          if (warehouse === 'all') {
+            filteredReplenishmentData = [...replenishmentData.skuReplenishment];
+          } else {
+            const warehouseMap = {
+              'US-WH1': '美国仓1',
+              'US-WH2': '美国仓2',
+              'DE-WH1': '德国仓1'
+            };
+            filteredReplenishmentData = replenishmentData.skuReplenishment.filter(item => 
+              item.warehouse === warehouseMap[warehouse]
+            );
+          }
+          replenishmentCurrentPage = 1;
+          renderReplenishmentTable(filteredReplenishmentData, replenishmentCurrentPage);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
