@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仓库集装箱管理看板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      transition: all 0.2s ease;
+    }
+    
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    
+    .card-shadow:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
+    }
+    
+    .progress-bar {
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .table-row {
+      transition: background-color 0.2s ease;
+    }
+    
+    .table-row:hover {
+      background-color: #f8fafc;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .stat-card-blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+    
+    .stat-card-green {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .stat-card-orange {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .filter-select {
+      transition: all 0.2s ease;
+    }
+    
+    .filter-select:hover {
+      border-color: #3b82f6;
+    }
+    
+    .filter-select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      border-top-color: #3b82f6;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .badge-success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .badge-warning {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .badge-danger {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    @media (max-width: 1024px) {
+      .responsive-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class="min-h-screen p-4 md:p-6">
+    <!-- 页面标题和操作栏 -->
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 fade-in">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+          <i class="fas fa-warehouse text-blue-600"></i>
+          排柜计划看板
+        </h1>
+        <p class="text-sm text-gray-500">实时监控仓库集装箱到港、到仓及上架情况</p>
+      </div>
+      <button id="refreshBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 shadow-md">
+        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+        <span>刷新数据</span>
+      </button>
+    </div>
+
+    <!-- 筛选器区域 -->
+    <div class="bg-white rounded-xl p-4 md:p-6 card-shadow mb-6 fade-in">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+          <i class="fas fa-calendar-week text-blue-600"></i>
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">周计划:</label>
+          <select id="filterWeeklyPlan" class="filter-select border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px] flex-1 cursor-pointer">
+            <option value="all">所有</option>
+            <option value="12.08-12.14">12.08-12.14</option>
+            <option value="12.15-12.21">12.15-12.21</option>
+            <option value="12.22-12.28">12.22-12.28</option>
+            <option value="12.29-01.04">12.29-01.04</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+          <i class="fas fa-warehouse text-blue-600"></i>
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">仓库代码:</label>
+          <select id="filterWarehouse" class="filter-select border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px] flex-1 cursor-pointer">
+            <option value="all">所有</option>
+            <option value="CA008">CA008</option>
+            <option value="CA005">CA005</option>
+            <option value="NJ006">NJ006</option>
+            <option value="GA006">GA006</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+          <i class="fas fa-box text-blue-600"></i>
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">类型:</label>
+          <select id="filterType" class="filter-select border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px] flex-1 cursor-pointer">
+            <option value="all">所有</option>
+            <option value="整柜">整柜</option>
+            <option value="散货">散货</option>
+          </select>
+        </div>
+        <button id="resetFilters" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 whitespace-nowrap">
+          <i class="fas fa-redo mr-2"></i>重置
+        </button>
+      </div>
+    </div>
+
+    <!-- 统计卡片区域 -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 fade-in">
+      <div class="stat-card-blue rounded-xl p-4 card-shadow text-white h-full flex flex-col">
+        <div class="flex items-center justify-between flex-1">
+          <div>
+            <p class="text-sm opacity-90 mb-1">预报柜量</p>
+            <p class="text-2xl font-bold" id="statTotal">448</p>
+          </div>
+          <i class="fas fa-boxes text-3xl opacity-20"></i>
+        </div>
+      </div>
+      <div class="stat-card rounded-xl p-4 card-shadow text-white h-full flex flex-col">
+        <div class="flex items-center justify-between flex-1">
+          <div>
+            <p class="text-sm opacity-90 mb-1">已到仓柜量</p>
+            <p class="text-2xl font-bold" id="statArrived">152</p>
+          </div>
+          <i class="fas fa-truck text-3xl opacity-20"></i>
+        </div>
+      </div>
+      <div class="stat-card-green rounded-xl p-4 card-shadow text-white h-full flex flex-col">
+        <div class="flex items-center justify-between flex-1">
+          <div>
+            <p class="text-sm opacity-90 mb-1">已提空柜量</p>
+            <p class="text-2xl font-bold" id="statEmpty">78</p>
+          </div>
+          <i class="fas fa-check-circle text-3xl opacity-20"></i>
+        </div>
+      </div>
+      <div class="stat-card-orange rounded-xl p-4 card-shadow text-white h-full flex flex-col">
+        <div class="flex items-center justify-between flex-1">
+          <div>
+            <p class="text-sm opacity-90 mb-1">上架完成率</p>
+            <p class="text-2xl font-bold" id="statRate">17.4%</p>
+          </div>
+          <i class="fas fa-chart-line text-3xl opacity-20"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <!-- 表格区域：独占一行 -->
+    <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-table text-blue-600"></i>
+          周计划统计
+        </h2>
+        <div class="text-xs text-gray-500">
+          <i class="fas fa-info-circle mr-1"></i>
+          最后更新: <span id="lastUpdate">刚刚</span>
+        </div>
+      </div>
+      <div class="overflow-x-auto scrollbar-hide">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b-2 border-gray-300 bg-gradient-to-r from-gray-50 to-gray-100">
+
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">仓库代码</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700"></th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700" colspan="3">12.08-12.14</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700" colspan="3">12.15-12.21</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700" colspan="3">12.22-12.28</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700" colspan="3">12.29-01.04</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700" colspan="3">总计</th>
+            </tr>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th></th>
+              <th></th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">柜量</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">已到仓</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">上架</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">柜量</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">已到仓</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">上架</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">柜量</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">已到仓</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">上架</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">柜量</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">已到仓</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">上架</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">柜量</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">已到仓</th>
+              <th class="text-center py-2 px-2 font-medium text-gray-600 text-xs">上架</th>
+            </tr>
+          </thead>
+          <tbody id="warehouseTableBody">
+            <!-- 表格数据将通过JavaScript动态生成 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 图表区域：折线图和汇总 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <!-- 折线图 -->
+      <div class="lg:col-span-2 bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <i class="fas fa-chart-line text-blue-600"></i>
+          近四周趋势分析
+        </h2>
+        <div class="relative" style="height: 250px;">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 汇总进度条 -->
+      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <i class="fas fa-tasks text-blue-600"></i>
+          进度统计
+        </h2>
+        <div class="space-y-5">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-600 flex items-center gap-2">
+                <i class="fas fa-boxes text-blue-500"></i>
+                预报柜量
+              </span>
+              <span class="text-sm font-semibold text-gray-800">448</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div class="bg-gradient-to-r from-blue-300 to-blue-400 h-4 rounded-full progress-bar flex items-center justify-end pr-2" style="width: 100%">
+                <span class="text-xs font-semibold text-white">100%</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-600 flex items-center gap-2">
+                <i class="fas fa-truck text-indigo-500"></i>
+                已到仓柜量
+              </span>
+              <span class="text-sm font-semibold text-gray-800">152 <span class="text-xs text-gray-500">(33.9%)</span></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div class="bg-gradient-to-r from-indigo-400 to-indigo-500 h-4 rounded-full progress-bar flex items-center justify-end pr-2" style="width: 33.9%">
+                <span class="text-xs font-semibold text-white">33.9%</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-600 flex items-center gap-2">
+                <i class="fas fa-check-circle text-green-500"></i>
+                已提空柜量
+              </span>
+              <span class="text-sm font-semibold text-gray-800">78 <span class="text-xs text-gray-500">(17.4%)</span></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div class="bg-gradient-to-r from-green-400 to-green-500 h-4 rounded-full progress-bar flex items-center justify-end pr-2" style="width: 17.4%">
+                <span class="text-xs font-semibold text-white">17.4%</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm text-gray-600 flex items-center gap-2">
+                <i class="fas fa-warehouse text-purple-500"></i>
+                上架柜量
+              </span>
+              <span class="text-sm font-semibold text-gray-800">78 <span class="text-xs text-gray-500">(17.4%)</span></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+              <div class="bg-gradient-to-r from-purple-400 to-purple-500 h-4 rounded-full progress-bar flex items-center justify-end pr-2" style="width: 17.4%">
+                <span class="text-xs font-semibold text-white">17.4%</span>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 border-t-2 border-gray-200 mt-4">
+            <div class="text-center bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
+              <div class="flex items-center justify-center gap-2 mb-2">
+                <i class="fas fa-trophy text-yellow-500"></i>
+                <span class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">17.4%</span>
+              </div>
+              <p class="text-sm text-gray-600 font-medium">上架完成率</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 前15客户预计到柜量 -->
+      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <i class="fas fa-users text-blue-600"></i>
+          前15客户预计到柜量
+        </h2>
+        <div class="relative" style="height: 350px;">
+          <canvas id="customerChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 已到仓未上架时效情况 -->
+      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-clock text-blue-600"></i>
+            已到仓未上架时效情况
+          </h2>
+        </div>
+        <div class="mb-4 flex flex-wrap gap-3">
+          <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg px-4 py-3 flex-1 min-w-[200px] border border-orange-200">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fas fa-exclamation-triangle text-orange-500"></i>
+              <span class="text-sm text-gray-700 font-medium">到仓未完成柜量</span>
+            </div>
+            <span class="text-2xl font-bold text-orange-600">74</span>
+          </div>
+          <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-lg px-4 py-3 flex-1 min-w-[200px] border border-red-200">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="fas fa-exclamation-circle text-red-500"></i>
+              <span class="text-sm text-gray-700 font-medium">超3天以上未上架</span>
+            </div>
+            <span class="text-2xl font-bold text-red-600">50</span>
+          </div>
+        </div>
+        <div class="relative" style="height: 350px;">
+          <canvas id="agingChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 表格数据
+    let warehouseData = [
+      { warehouse: 'CA008', week1: { total: 45, arrived: 28, putAway: 12 }, week2: { total: 38, arrived: 15, putAway: 6 }, week3: { total: 42, arrived: 12, putAway: 10 }, week4: { total: 35, arrived: 2, putAway: 1 } },
+      { warehouse: 'CA005', week1: { total: 32, arrived: 18, putAway: 8 }, week2: { total: 28, arrived: 10, putAway: 4 }, week3: { total: 35, arrived: 9, putAway: 7 }, week4: { total: 28, arrived: 2, putAway: 1 } },
+      { warehouse: 'NJ006', week1: { total: 25, arrived: 15, putAway: 8 }, week2: { total: 22, arrived: 8, putAway: 2 }, week3: { total: 24, arrived: 7, putAway: 5 }, week4: { total: 18, arrived: 1, putAway: 0 } },
+      { warehouse: 'GA006', week1: { total: 25, arrived: 15, putAway: 7 }, week2: { total: 17, arrived: 4, putAway: 2 }, week3: { total: 20, arrived: 5, putAway: 4 }, week4: { total: 14, arrived: 1, putAway: 1 } }
+    ];
+
+    let filteredData = [...warehouseData];
+    let lineChartInstance = null;
+    let customerChartInstance = null;
+    let agingChartInstance = null;
+
+    // 计算总计
+    function calculateTotals(data) {
+      const totals = {
+        week1: { total: 0, arrived: 0, putAway: 0 },
+        week2: { total: 0, arrived: 0, putAway: 0 },
+        week3: { total: 0, arrived: 0, putAway: 0 },
+        week4: { total: 0, arrived: 0, putAway: 0 },
+        grandTotal: { total: 0, arrived: 0, putAway: 0 }
+      };
+
+      data.forEach(item => {
+        totals.week1.total += item.week1.total || 0;
+        totals.week1.arrived += item.week1.arrived || 0;
+        totals.week1.putAway += item.week1.putAway || 0;
+        totals.week2.total += item.week2.total || 0;
+        totals.week2.arrived += item.week2.arrived || 0;
+        totals.week2.putAway += item.week2.putAway || 0;
+        totals.week3.total += item.week3.total || 0;
+        totals.week3.arrived += item.week3.arrived || 0;
+        totals.week3.putAway += item.week3.putAway || 0;
+        totals.week4.total += item.week4.total || 0;
+        totals.week4.arrived += item.week4.arrived || 0;
+        totals.week4.putAway += item.week4.putAway || 0;
+      });
+
+      totals.grandTotal.total = totals.week1.total + totals.week2.total + totals.week3.total + totals.week4.total;
+      totals.grandTotal.arrived = totals.week1.arrived + totals.week2.arrived + totals.week3.arrived + totals.week4.arrived;
+      totals.grandTotal.putAway = totals.week1.putAway + totals.week2.putAway + totals.week3.putAway + totals.week4.putAway;
+
+      return totals;
+    }
+
+    // 筛选数据
+    function filterData() {
+      const weeklyPlan = document.getElementById('filterWeeklyPlan').value;
+      const warehouse = document.getElementById('filterWarehouse').value;
+      const type = document.getElementById('filterType').value;
+
+      filteredData = warehouseData.filter(item => {
+        if (warehouse !== 'all' && item.warehouse !== warehouse) return false;
+        return true;
+      });
+
+      updateAllCharts();
+    }
+
+    // 更新统计卡片
+    function updateStats() {
+      const totals = calculateTotals(filteredData);
+      document.getElementById('statTotal').textContent = totals.grandTotal.total;
+      document.getElementById('statArrived').textContent = totals.grandTotal.arrived;
+      document.getElementById('statEmpty').textContent = totals.grandTotal.putAway;
+      const rate = totals.grandTotal.total > 0 
+        ? ((totals.grandTotal.putAway / totals.grandTotal.total) * 100).toFixed(1)
+        : 0;
+      document.getElementById('statRate').textContent = rate + '%';
+    }
+
+    // 渲染表格
+    function renderTable() {
+      const tbody = document.getElementById('warehouseTableBody');
+      tbody.innerHTML = '';
+
+      const totals = calculateTotals(filteredData);
+
+      // 渲染仓库数据
+      filteredData.forEach((item, index) => {
+        const week1Total = item.week1.total || 0;
+        const week1Arrived = item.week1.arrived || 0;
+        const week1PutAway = item.week1.putAway || 0;
+        const week2Total = item.week2.total || 0;
+        const week2Arrived = item.week2.arrived || 0;
+        const week2PutAway = item.week2.putAway || 0;
+        const week3Total = item.week3.total || 0;
+        const week3Arrived = item.week3.arrived || 0;
+        const week3PutAway = item.week3.putAway || 0;
+        const week4Total = item.week4.total || 0;
+        const week4Arrived = item.week4.arrived || 0;
+        const week4PutAway = item.week4.putAway || 0;
+        
+        const rowTotal = week1Total + week2Total + week3Total + week4Total;
+        const rowArrived = week1Arrived + week2Arrived + week3Arrived + week4Arrived;
+        const rowPutAway = week1PutAway + week2PutAway + week3PutAway + week4PutAway;
+
+        const tr = document.createElement('tr');
+        tr.className = `table-row border-b border-gray-100 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`;
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-medium text-gray-800">
+            <span class="inline-flex items-center gap-1">
+              <i class="fas fa-warehouse text-blue-500 text-xs"></i>
+              ${item.warehouse}
+            </span>
+          </td>
+          <td class="py-3 px-2 text-center text-gray-700 font-medium"></td>
+          <td class="py-3 px-2 text-center text-gray-700 font-medium">${week1Total}</td>
+          <td class="py-3 px-2 text-center text-blue-600 font-semibold">${week1Arrived}</td>
+          <td class="py-3 px-2 text-center text-green-600 font-semibold">${week1PutAway}</td>
+          <td class="py-3 px-2 text-center text-gray-700 font-medium">${week2Total}</td>
+          <td class="py-3 px-2 text-center text-blue-600 font-semibold">${week2Arrived}</td>
+          <td class="py-3 px-2 text-center text-green-600 font-semibold">${week2PutAway}</td>
+          <td class="py-3 px-2 text-center text-gray-700 font-medium">${week3Total}</td>
+          <td class="py-3 px-2 text-center text-blue-600 font-semibold">${week3Arrived}</td>
+          <td class="py-3 px-2 text-center text-green-600 font-semibold">${week3PutAway}</td>
+          <td class="py-3 px-2 text-center text-gray-700 font-medium">${week4Total}</td>
+          <td class="py-3 px-2 text-center text-blue-600 font-semibold">${week4Arrived}</td>
+          <td class="py-3 px-2 text-center text-green-600 font-semibold">${week4PutAway}</td>
+          <td class="py-3 px-2 text-center font-bold text-gray-800 bg-gray-100">${rowTotal}</td>
+          <td class="py-3 px-2 text-center font-bold text-blue-600 bg-blue-50">${rowArrived}</td>
+          <td class="py-3 px-2 text-center font-bold text-green-600 bg-green-50">${rowPutAway}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 添加总计行
+      const totalRow = document.createElement('tr');
+      totalRow.className = 'border-t-2 border-gray-400 bg-gradient-to-r from-gray-100 to-gray-200 font-bold';
+      totalRow.innerHTML = `
+        <td class="py-4 px-4 text-gray-800">
+          <i class="fas fa-calculator text-blue-600 mr-1"></i>
+          总计
+        </td>
+        <td class="py-4 px-4 text-gray-700">-</td>
+        <td class="py-4 px-2 text-center text-gray-900">${totals.week1.total}</td>
+        <td class="py-4 px-2 text-center text-blue-700">${totals.week1.arrived}</td>
+        <td class="py-4 px-2 text-center text-green-700">${totals.week1.putAway}</td>
+        <td class="py-4 px-2 text-center text-gray-900">${totals.week2.total}</td>
+        <td class="py-4 px-2 text-center text-blue-700">${totals.week2.arrived}</td>
+        <td class="py-4 px-2 text-center text-green-700">${totals.week2.putAway}</td>
+        <td class="py-4 px-2 text-center text-gray-900">${totals.week3.total}</td>
+        <td class="py-4 px-2 text-center text-blue-700">${totals.week3.arrived}</td>
+        <td class="py-4 px-2 text-center text-green-700">${totals.week3.putAway}</td>
+        <td class="py-4 px-2 text-center text-gray-900">${totals.week4.total}</td>
+        <td class="py-4 px-2 text-center text-blue-700">${totals.week4.arrived}</td>
+        <td class="py-4 px-2 text-center text-green-700">${totals.week4.putAway}</td>
+        <td class="py-4 px-2 text-center text-gray-900 bg-blue-100">${totals.grandTotal.total}</td>
+        <td class="py-4 px-2 text-center text-blue-800 bg-blue-200">${totals.grandTotal.arrived}</td>
+        <td class="py-4 px-2 text-center text-green-800 bg-green-200">${totals.grandTotal.putAway}</td>
+      `;
+      tbody.appendChild(totalRow);
+    }
+
+    // 初始化折线图
+    function initLineChart() {
+      const ctx = document.getElementById('lineChart').getContext('2d');
+      if (lineChartInstance) {
+        lineChartInstance.destroy();
+      }
+      lineChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['12.08-12.14', '12.15-12.21', '12.22-12.28', '12.29-01.04'],
+          datasets: [
+            {
+              label: '散货',
+              data: [37, 29, 15, 17],
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: 'rgb(59, 130, 246)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              fill: true
+            },
+            {
+              label: '整柜',
+              data: [90, 76, 106, 78],
+              borderColor: 'rgb(30, 64, 175)',
+              backgroundColor: 'rgba(30, 64, 175, 0.1)',
+              tension: 0.4,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: 'rgb(30, 64, 175)',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 12,
+                  weight: '500'
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y + ' 柜';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 120,
+              ticks: {
+                stepSize: 20,
+                font: {
+                  size: 11
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 11
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化客户柱状图
+    function initCustomerChart() {
+      const ctx = document.getElementById('customerChart').getContext('2d');
+      if (customerChartInstance) {
+        customerChartInstance.destroy();
+      }
+      customerChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['JQKJ', 'AJMZ', 'YWSY', 'SHXH', 'GJJ', 'ZJGM', 'HZLB', 'HRDT', 'CZHL', 'ZJHHL', 'NBHN', 'SWSY', 'SZCX1', 'JZJCK', 'MLDS'],
+          datasets: [{
+            label: '柜量',
+            data: [80, 42, 41, 20, 18, 18, 17, 15, 14, 11, 10, 9, 9, 7, 6],
+            backgroundColor: (context) => {
+              const value = context.parsed.y;
+              if (value >= 50) return 'rgba(59, 130, 246, 0.9)';
+              if (value >= 20) return 'rgba(59, 130, 246, 0.7)';
+              return 'rgba(59, 130, 246, 0.5)';
+            },
+            borderColor: 'rgb(59, 130, 246)',
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: function(context) {
+                  return '柜量: ' + context.parsed.y;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 90,
+              ticks: {
+                stepSize: 20,
+                font: {
+                  size: 11
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                font: {
+                  size: 10
+                },
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化时效柱状图
+    function initAgingChart() {
+      const ctx = document.getElementById('agingChart').getContext('2d');
+      if (agingChartInstance) {
+        agingChartInstance.destroy();
+      }
+      const agingData = {
+        labels: ['0-1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '25'],
+        data: [16, 8, 2, 1, 3, 14, 1, 8, 10, 4, 1, 3, 1, 1]
+      };
+
+      agingChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: agingData.labels,
+          datasets: [{
+            label: '柜量',
+            data: agingData.data,
+            backgroundColor: (context) => {
+              const label = agingData.labels[context.dataIndex];
+              const days = parseInt(label.split('-')[0]);
+              if (days >= 3 || label === '3') {
+                return 'rgba(239, 68, 68, 0.8)'; // 红色 - 超3天
+              } else {
+                return 'rgba(59, 130, 246, 0.8)'; // 蓝色 - 正常
+              }
+            },
+            borderColor: (context) => {
+              const label = agingData.labels[context.dataIndex];
+              const days = parseInt(label.split('-')[0]);
+              if (days >= 3 || label === '3') {
+                return 'rgb(239, 68, 68)';
+              } else {
+                return 'rgb(59, 130, 246)';
+              }
+            },
+            borderWidth: 1,
+            borderRadius: 4,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: function(context) {
+                  return '柜量: ' + context.parsed.y;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: '时效(到仓以来停留天数)',
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                padding: { top: 10 }
+              },
+              ticks: {
+                font: {
+                  size: 10
+                }
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: true,
+              max: 20,
+              ticks: {
+                stepSize: 5,
+                font: {
+                  size: 11
+                }
+              },
+              title: {
+                display: true,
+                text: '柜量',
+                font: {
+                  size: 12,
+                  weight: 'bold'
+                },
+                padding: { right: 10 }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 更新所有图表
+    function updateAllCharts() {
+      renderTable();
+      updateStats();
+    }
+
+    // 刷新数据
+    function refreshData() {
+      const refreshIcon = document.getElementById('refreshIcon');
+      refreshIcon.classList.add('fa-spin');
+      
+      // 模拟数据刷新
+      setTimeout(() => {
+        refreshIcon.classList.remove('fa-spin');
+        updateAllCharts();
+        updateLastUpdateTime();
+      }, 1000);
+    }
+
+    // 更新最后更新时间
+    function updateLastUpdateTime() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('lastUpdate').textContent = timeStr;
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      renderTable();
+      updateStats();
+      initLineChart();
+      initCustomerChart();
+      initAgingChart();
+      updateLastUpdateTime();
+
+      // 绑定筛选器事件
+      document.getElementById('filterWeeklyPlan').addEventListener('change', filterData);
+      document.getElementById('filterWarehouse').addEventListener('change', filterData);
+      document.getElementById('filterType').addEventListener('change', filterData);
+
+      // 绑定重置按钮
+      document.getElementById('resetFilters').addEventListener('click', function() {
+        document.getElementById('filterWeeklyPlan').value = 'all';
+        document.getElementById('filterWarehouse').value = 'all';
+        document.getElementById('filterType').value = 'all';
+        filteredData = [...warehouseData];
+        updateAllCharts();
+      });
+
+      // 绑定刷新按钮
+      document.getElementById('refreshBtn').addEventListener('click', refreshData);
+
+      // 添加键盘快捷键支持
+      document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+          e.preventDefault();
+          refreshData();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

@@ -280,9 +280,8 @@
               <th class="text-left py-3 px-4 font-semibold text-gray-700">账单类型</th>
               <th class="text-right py-3 px-4 font-semibold text-gray-700">账单金额</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">账单状态</th>
-              <th class="text-left py-3 px-4 font-semibold text-gray-700">创建人</th>
-              <th class="text-left py-3 px-4 font-semibold text-gray-700">更新时间</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">操作人</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">操作时间</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">账单备注</th>
               <th class="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
             </tr>
@@ -400,6 +399,14 @@
                   </label>
                 </div>
               </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">运输方式</label>
+              <select id="modalCustomerCode" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <option value="" selected>全部</option>
+                <option value="ZJJS">FEDEX_MPS</option>
+                <option value="ZJHW">FEDEX_HOME_GROUND</option>
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">创建时间</label>
@@ -1110,6 +1117,7 @@
           // 根据客户代码自动填充销售、客服、次客服信息
           const customerInfo = getCustomerInfo(item.customerCode);
           
+          const currentTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
           billMap.set(key, {
             id: billNo,
             billNo: billNo,
@@ -1123,8 +1131,12 @@
             billAmount: 0,
             billStatus: '已出账',
             creator: '系统',
-            updateTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
-            operator: '系统',
+            createTime: currentTime,
+            createUser: '系统',
+            voidUser: '',
+            voidTime: '',
+            submitUser: '',
+            submitTime: '',
             billRemark: '',
             details: []
           });
@@ -1209,9 +1221,22 @@
           <td class="py-3 px-4">
             <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
           </td>
-          <td class="py-3 px-4">${item.creator || '-'}</td>
-          <td class="py-3 px-4 text-sm text-gray-500">${item.updateTime || '-'}</td>
-          <td class="py-3 px-4">${item.operator || '-'}</td>
+          <td class="py-3 px-4">
+            <div class="space-y-1 text-sm">
+              ${item.createUser ? `<div class="text-gray-700"><span class="text-gray-500">创建人:</span> ${item.createUser}</div>` : ''}
+              ${item.voidUser ? `<div class="text-gray-700"><span class="text-gray-500">作废人:</span> ${item.voidUser}</div>` : ''}
+              ${item.submitUser ? `<div class="text-gray-700"><span class="text-gray-500">提交人:</span> ${item.submitUser}</div>` : ''}
+              ${!item.createUser && !item.voidUser && !item.submitUser ? '-' : ''}
+            </div>
+          </td>
+          <td class="py-3 px-4">
+            <div class="space-y-1 text-sm text-gray-500">
+              ${item.createTime ? `<div>创建时间: ${item.createTime}</div>` : ''}
+              ${item.voidTime ? `<div>作废时间: ${item.voidTime}</div>` : ''}
+              ${item.submitTime ? `<div>提交时间: ${item.submitTime}</div>` : ''}
+              ${!item.createTime && !item.voidTime && !item.submitTime ? '-' : ''}
+            </div>
+          </td>
           <td class="py-3 px-4 text-sm text-gray-600 max-w-xs truncate" title="${item.billRemark || ''}">${item.billRemark || '-'}</td>
           <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center gap-2">
@@ -1289,8 +1314,8 @@
       
       // 更新账单状态为已作废
       item.billStatus = '已作废';
-      item.operator = '系统'; // 可以改为当前用户
-      item.updateTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      item.voidUser = '系统'; // 可以改为当前用户
+      item.voidTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
       
       // 更新明细状态为未出账
       if (item.details && item.details.length > 0) {
@@ -1329,8 +1354,8 @@
       
       // 更新账单状态为已完成
       item.billStatus = '已完成';
-      item.operator = '系统';
-      item.updateTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      item.submitUser = '系统';
+      item.submitTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
       
       // 更新明细状态为已完成
       if (item.details && item.details.length > 0) {
@@ -1378,8 +1403,8 @@
       selectedBills.forEach(item => {
         if (item.billStatus !== '已完成' && item.billStatus !== '已作废') {
           item.billStatus = '已完成';
-          item.operator = '系统';
-          item.updateTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+          item.submitUser = '系统';
+          item.submitTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
           
           // 更新明细状态为已完成
           if (item.details && item.details.length > 0) {
@@ -1735,12 +1760,22 @@
               <div class="font-semibold">${item.creator || '-'}</div>
             </div>
             <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">更新时间</div>
-              <div class="font-semibold text-sm">${item.updateTime || '-'}</div>
+              <div class="text-sm text-gray-500 mb-2">操作人</div>
+              <div class="space-y-1 text-sm">
+                ${item.createUser ? `<div class="text-gray-700"><span class="text-gray-500">创建人:</span> ${item.createUser}</div>` : ''}
+                ${item.voidUser ? `<div class="text-gray-700"><span class="text-gray-500">作废人:</span> ${item.voidUser}</div>` : ''}
+                ${item.submitUser ? `<div class="text-gray-700"><span class="text-gray-500">提交人:</span> ${item.submitUser}</div>` : ''}
+                ${!item.createUser && !item.voidUser && !item.submitUser ? '<div class="text-gray-500">-</div>' : ''}
+              </div>
             </div>
             <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">操作人</div>
-              <div class="font-semibold">${item.operator || '-'}</div>
+              <div class="text-sm text-gray-500 mb-2">操作时间</div>
+              <div class="space-y-1 text-sm text-gray-500">
+                ${item.createTime ? `<div>创建时间: ${item.createTime}</div>` : ''}
+                ${item.voidTime ? `<div>作废时间: ${item.voidTime}</div>` : ''}
+                ${item.submitTime ? `<div>提交时间: ${item.submitTime}</div>` : ''}
+                ${!item.createTime && !item.voidTime && !item.submitTime ? '<div>-</div>' : ''}
+              </div>
           </div>
           <div class="bg-gray-50 rounded-lg p-4 col-span-2">
               <div class="text-sm text-gray-500 mb-1">账单备注</div>
