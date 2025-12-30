@@ -575,40 +575,387 @@
             <h4 class="card-title">权限设置</h4>
           </div>
           <div class="card-body">
-            <div class="space-y-4">
-              <div class="flex items-center">
-                <input type="radio" id="role-admin" name="role" value="admin" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary/30 mr-2">
-                <label for="role-admin" class="text-gray-700">所有</label>
-              </div>
-              <div class="flex items-center">
-                <input type="radio" id="role-operator" name="role" value="operator" class="w-4 h-4 text-primary border-gray-300 focus:ring-primary/30 mr-2" checked>
-                <label for="role-operator" class="text-gray-700">指定权限</label>
-              </div>
+            <div class="space-y-6">
+              <!-- 隐藏的角色字段，默认为客户 -->
+              <input type="hidden" id="user-role" value="customer">
               
-              <!-- 操作员细粒度权限 -->
-              <div id="operator-permissions" class="pl-6 space-y-4 border-l border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                  <div class="flex items-center">
-                    <input type="checkbox" id="perm-inventory" name="permissions" value="inventory" class="checkbox-primary mr-2">
-                    <label for="perm-inventory">库存管理</label>
+              <!-- 角色信息显示 -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fa fa-user text-blue-600"></i>
                   </div>
-                  <div class="flex items-center">
-                    <input type="checkbox" id="perm-order" name="permissions" value="order" class="checkbox-primary mr-2">
-                    <label for="perm-order">订单管理</label>
+                  <div>
+                    <div class="font-medium text-blue-900">客户角色</div>
+                    <div class="text-sm text-blue-700">默认包含基础业务功能权限</div>
                   </div>
-                  <div class="flex items-center">
-                    <input type="checkbox" id="perm-report" name="permissions" value="report" class="checkbox-primary mr-2">
-                    <label for="perm-report">报表查看</label>
+                </div>
+              </div>
+
+              <!-- 菜单权限树形配置 -->
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <h5 class="font-medium flex items-center">
+                    <i class="fa fa-sitemap mr-2 text-primary"></i>
+                    菜单权限配置
+                  </h5>
+                  <div class="flex gap-2">
+                    <button type="button" class="btn-success text-xs" onclick="expandAll()">
+                      <i class="fa fa-expand mr-1"></i>展开全部
+                    </button>
+                    <button type="button" class="btn-secondary text-xs" onclick="collapseAll()">
+                      <i class="fa fa-compress mr-1"></i>收起全部
+                    </button>
+                    <button type="button" class="btn-warning text-xs" onclick="selectAllVisible()">
+                      <i class="fa fa-check-square mr-1"></i>全选可见
+                    </button>
+                    <button type="button" class="btn-secondary text-xs" onclick="resetToDefault()">
+                      <i class="fa fa-refresh mr-1"></i>重置默认
+                    </button>
                   </div>
-                  <div class="flex items-center">
-                    <input type="checkbox" id="perm-settings" name="permissions" value="settings" class="checkbox-primary mr-2">
-                    <label for="perm-settings">系统设置</label>
+                </div>
+                
+                <!-- 搜索框 -->
+                <div class="relative mb-4">
+                  <input type="text" id="menu-search-input" class="input-primary pl-8" placeholder="搜索菜单...">
+                  <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                </div>
+
+                <!-- 菜单树容器 -->
+                <div id="menu-tree-container" class="border border-gray-200 rounded-lg bg-white max-h-80 overflow-y-auto">
+                  <div id="menu-tree" class="p-3">
+                    <!-- 菜单树将在这里动态生成 -->
                   </div>
+                </div>
+              </div>
+
+              <!-- 最终权限预览 -->
+              <div>
+                <h5 class="font-medium mb-3 flex items-center">
+                  <i class="fa fa-eye mr-2 text-primary"></i>
+                  最终权限预览
+                  <span class="ml-2 text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full" id="final-count-badge">0项</span>
+                </h5>
+                <div id="final-permissions-preview" class="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                  <p class="text-gray-500 text-sm">正在加载权限...</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        <style>
+          /* 菜单树样式 */
+          .menu-tree-node {
+            margin-bottom: 4px;
+          }
+          
+          .menu-tree-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+          }
+          
+          .menu-tree-item:hover {
+            background-color: #f3f4f6;
+          }
+          
+          .menu-tree-item.selected {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+          }
+          
+          .menu-tree-item.default-enabled {
+            background-color: #ecfdf5;
+            border-left: 3px solid #10b981;
+          }
+          
+          .menu-tree-item.custom-added {
+            background-color: #f0f9ff;
+            border-left: 3px solid #0ea5e9;
+          }
+          
+          .menu-tree-item.custom-removed {
+            background-color: #fef2f2;
+            border-left: 3px solid #ef4444;
+            opacity: 0.7;
+          }
+          
+          .menu-tree-toggle {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 6px;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+          }
+          
+          .menu-tree-toggle:hover {
+            background-color: #e5e7eb;
+          }
+          
+          .menu-tree-toggle.expanded {
+            transform: rotate(90deg);
+          }
+          
+          .menu-tree-children {
+            margin-left: 20px;
+            border-left: 1px dashed #d1d5db;
+            padding-left: 12px;
+            margin-top: 4px;
+          }
+          
+          .menu-tree-children.collapsed {
+            display: none;
+          }
+          
+          .menu-tree-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            border-radius: 4px;
+            background-color: #f3f4f6;
+            color: #6b7280;
+          }
+          
+          .menu-tree-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          
+          .menu-tree-info {
+            flex: 1;
+          }
+          
+          .menu-tree-title {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+          }
+          
+          .menu-tree-desc {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+          }
+          
+          .menu-tree-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          
+          .menu-status-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 500;
+          }
+          
+          .menu-status-badge.default {
+            background-color: #dcfce7;
+            color: #166534;
+          }
+          
+          .menu-status-badge.added {
+            background-color: #dbeafe;
+            color: #1e40af;
+          }
+          
+          .menu-status-badge.removed {
+            background-color: #fee2e2;
+            color: #dc2626;
+          }
+          
+          .menu-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          
+          .menu-checkbox.checked {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+          }
+          
+          .menu-checkbox.indeterminate {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+            color: white;
+          }
+          
+          .menu-checkbox:hover {
+            border-color: #9ca3af;
+          }
+          
+          /* 搜索高亮 */
+          .search-highlight {
+            background-color: #fef3c7;
+            padding: 1px 2px;
+            border-radius: 2px;
+          }
+          
+          /* 动画效果 */
+          .menu-tree-item.animate-add {
+            animation: slideInRight 0.3s ease-out;
+          }
+          
+          .menu-tree-item.animate-remove {
+            animation: slideOutRight 0.3s ease-out;
+          }
+          
+          @keyframes slideInRight {
+            from {
+              transform: translateX(20px);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes slideOutRight {
+            from {
+              transform: translateX(0);
+              opacity: 1;
+            }
+            to {
+              transform: translateX(-20px);
+              opacity: 0;
+            }
+          }
+        </style>
+
+        <style>
+          /* 切换开关样式 */
+          .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+          }
+          .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+          }
+          .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 24px;
+            transition: .3s;
+          }
+          .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .3s;
+          }
+          input:checked + .toggle-slider {
+            background-color: #00B42A;
+          }
+          input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+          }
+          
+          /* 菜单项样式 */
+          .menu-permission-item {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            transition: all 0.2s;
+          }
+          .menu-permission-item:hover {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+          }
+          .menu-permission-item.role-menu {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+          }
+          .menu-permission-item.added-menu {
+            border-color: #10b981;
+            background-color: #ecfdf5;
+          }
+          .menu-permission-item.removed-menu {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+            opacity: 0.7;
+          }
+          
+          .permission-toggle {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+          }
+          .permission-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+          }
+          .permission-toggle .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: .3s;
+          }
+          .permission-toggle .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .3s;
+          }
+          .permission-toggle input:checked + .slider {
+            background-color: #00B42A;
+          }
+          .permission-toggle input:checked + .slider:before {
+            transform: translateX(16px);
+          }
+        </style>
         
         <!-- 仓库分配卡片 -->
         <div class="card-section">
@@ -720,11 +1067,15 @@
     </div>
   </div>
 
+  <!-- 权限管理核心模块 -->
+  <script src="../权限管理系统/permission-core.js"></script>
+
   <!-- 仓库和权限授权模态框已删除 -->
 
   <script>
     // 全局变量
     let currentSubaccountId = null;
+    let currentUserPermissions = { added: [], removed: [] };
     
     document.addEventListener('DOMContentLoaded', function() {
       // 设置当前日期
@@ -732,6 +1083,580 @@
       const currentDate = new Date().toLocaleDateString('zh-CN', dateOptions);
       if (document.getElementById('current-date')) {
         document.getElementById('current-date').textContent = currentDate;
+      }
+      
+      // 权限管理相关元素
+      const userRoleSelect = document.getElementById('user-role');
+      const menuSearchInput = document.getElementById('menu-search-input');
+      const menuTree = document.getElementById('menu-tree');
+      const finalPermissionsPreview = document.getElementById('final-permissions-preview');
+
+      // 菜单树状态
+      let expandedNodes = new Set();
+      let selectedNodes = new Set();
+      let searchTerm = '';
+
+      // 定义菜单树结构
+      const menuTreeData = {
+        'system': {
+          id: 'system',
+          name: '系统管理',
+          icon: 'fa-cogs',
+          description: '系统配置和管理功能',
+          children: ['user-management', 'role-management', 'system-settings', 'audit-logs']
+        },
+        'business': {
+          id: 'business',
+          name: '业务管理',
+          icon: 'fa-briefcase',
+          description: '核心业务功能模块',
+          children: ['inventory', 'orders', 'customer', 'supplier', 'warehouse']
+        },
+        'finance': {
+          id: 'finance',
+          name: '财务管理',
+          icon: 'fa-money',
+          description: '财务相关功能',
+          children: ['finance', 'recharge', 'reconciliation', 'cost-stats', 'cost-adjustment']
+        },
+        'logistics': {
+          id: 'logistics',
+          name: '物流管理',
+          icon: 'fa-truck',
+          description: '物流和运输管理',
+          children: ['ltl', 'inbound', 'outbound', 'transfer', 'container-plan']
+        },
+        'report': {
+          id: 'report',
+          name: '报表分析',
+          icon: 'fa-bar-chart',
+          description: '数据报表和分析',
+          children: ['reports', 'dashboard']
+        }
+      };
+
+      // 初始化权限管理事件监听器
+      if (userRoleSelect) {
+        userRoleSelect.addEventListener('change', handleRoleChange);
+      }
+      if (menuSearchInput) {
+        menuSearchInput.addEventListener('input', debounce(handleSearch, 300));
+      }
+
+      // 初始化客户角色权限
+      initializeCustomerRole();
+
+      // 初始化客户角色权限
+      function initializeCustomerRole() {
+        // 设置默认角色为客户
+        if (userRoleSelect) {
+          userRoleSelect.value = 'customer';
+        }
+        
+        // 重置权限为客户角色默认权限
+        resetToRoleDefaults('customer');
+        
+        // 更新权限显示
+        updatePermissionDisplay();
+      }
+
+      // 角色变更处理
+      function handleRoleChange() {
+        const roleId = userRoleSelect.value || 'customer'; // 默认为客户角色
+        if (roleId && window.permissionManager) {
+          // 重置权限为角色默认权限
+          resetToRoleDefaults(roleId);
+          updatePermissionDisplay();
+        } else {
+          clearPermissionDisplay();
+        }
+      }
+
+      // 重置为角色默认权限
+      function resetToRoleDefaults(roleId) {
+        if (!window.permissionManager) return;
+        
+        const role = window.permissionManager.getRole(roleId);
+        if (!role) return;
+
+        // 重置个人权限调整
+        currentUserPermissions = { added: [], removed: [] };
+        
+        // 展开所有节点以显示默认权限
+        expandedNodes.clear();
+        Object.keys(menuTreeData).forEach(nodeId => {
+          expandedNodes.add(nodeId);
+        });
+      }
+
+      // 搜索处理
+      function handleSearch() {
+        searchTerm = menuSearchInput.value.toLowerCase();
+        renderMenuTree();
+      }
+
+      // 更新权限显示
+      function updatePermissionDisplay() {
+        const roleId = userRoleSelect.value || 'customer';
+        if (!roleId || !window.permissionManager) return;
+
+        const role = window.permissionManager.getRole(roleId);
+        if (!role) return;
+
+        // 渲染菜单树
+        renderMenuTree();
+
+        // 更新最终权限预览
+        updateFinalPermissionsPreview(role);
+      }
+
+      // 渲染菜单树
+      function renderMenuTree() {
+        if (!window.permissionManager || !userRoleSelect.value) {
+          menuTree.innerHTML = '<div class="text-gray-500 text-center py-8">正在加载权限...</div>';
+          return;
+        }
+
+        const roleId = userRoleSelect.value || 'customer';
+        const role = window.permissionManager.getRole(roleId);
+        if (!role) return;
+
+        menuTree.innerHTML = '';
+
+        // 渲染树形结构
+        Object.values(menuTreeData).forEach(category => {
+          if (shouldShowCategory(category)) {
+            const categoryElement = renderTreeNode(category, role, 0);
+            menuTree.appendChild(categoryElement);
+          }
+        });
+      }
+
+      // 判断是否显示分类
+      function shouldShowCategory(category) {
+        if (!searchTerm) return true;
+        
+        // 检查分类本身是否匹配搜索
+        if (searchTerm && category.name.toLowerCase().includes(searchTerm)) {
+          return true;
+        }
+        
+        // 检查子菜单是否有匹配的
+        return category.children.some(menuId => {
+          const menu = window.permissionManager.getMenu(menuId);
+          return menu && shouldShowMenu(menu, menuId);
+        });
+      }
+
+      // 判断是否显示菜单
+      function shouldShowMenu(menu, menuId) {
+        const roleId = userRoleSelect.value || 'customer';
+        const role = window.permissionManager.getRole(roleId);
+        const isRoleMenu = role.menus.includes(menuId);
+        const isAdded = currentUserPermissions.added.includes(menuId);
+        const isRemoved = currentUserPermissions.removed.includes(menuId);
+        
+        // 搜索过滤
+        if (searchTerm) {
+          const matchesName = menu.name.toLowerCase().includes(searchTerm);
+          const matchesPath = (menu.path || '').toLowerCase().includes(searchTerm);
+          if (!matchesName && !matchesPath) return false;
+        }
+        
+        return true;
+      }
+
+      // 渲染树节点
+      function renderTreeNode(node, role, level) {
+        const nodeElement = document.createElement('div');
+        nodeElement.className = 'menu-tree-node';
+        
+        const isExpanded = expandedNodes.has(node.id);
+        const hasChildren = node.children && node.children.length > 0;
+        
+        // 计算子节点状态
+        let enabledChildren = 0;
+        let totalChildren = 0;
+        
+        if (hasChildren) {
+          node.children.forEach(childId => {
+            const childMenu = window.permissionManager.getMenu(childId);
+            if (childMenu && shouldShowMenu(childMenu, childId)) {
+              totalChildren++;
+              const isRoleMenu = role.menus.includes(childId);
+              const isAdded = currentUserPermissions.added.includes(childId);
+              const isRemoved = currentUserPermissions.removed.includes(childId);
+              const isEnabled = (isRoleMenu && !isRemoved) || isAdded;
+              if (isEnabled) enabledChildren++;
+            }
+          });
+        }
+        
+        // 确定复选框状态
+        let checkboxState = 'unchecked';
+        if (totalChildren > 0) {
+          if (enabledChildren === totalChildren) {
+            checkboxState = 'checked';
+          } else if (enabledChildren > 0) {
+            checkboxState = 'indeterminate';
+          }
+        }
+
+        nodeElement.innerHTML = `
+          <div class="menu-tree-item" data-node-id="${node.id}" data-level="${level}">
+            <div class="menu-tree-toggle ${isExpanded ? 'expanded' : ''}" onclick="toggleNode('${node.id}')" style="${hasChildren ? '' : 'visibility: hidden;'}">
+              <i class="fa fa-chevron-right text-xs"></i>
+            </div>
+            <div class="menu-tree-icon">
+              <i class="fa ${node.icon}"></i>
+            </div>
+            <div class="menu-tree-content">
+              <div class="menu-tree-info">
+                <div class="menu-tree-title">${highlightSearchTerm(node.name)}</div>
+                <div class="menu-tree-desc">${node.description}</div>
+              </div>
+              <div class="menu-tree-status">
+                <span class="text-xs text-gray-500">${enabledChildren}/${totalChildren}</span>
+                <div class="menu-checkbox ${checkboxState}" onclick="toggleCategoryPermission('${node.id}')">
+                  ${checkboxState === 'checked' ? '<i class="fa fa-check text-xs"></i>' : 
+                    checkboxState === 'indeterminate' ? '<i class="fa fa-minus text-xs"></i>' : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 添加子节点
+        if (hasChildren) {
+          const childrenContainer = document.createElement('div');
+          childrenContainer.className = `menu-tree-children ${isExpanded ? '' : 'collapsed'}`;
+          
+          node.children.forEach(childId => {
+            const childMenu = window.permissionManager.getMenu(childId);
+            if (childMenu && shouldShowMenu(childMenu, childId)) {
+              const childElement = renderMenuNode(childMenu, childId, role, level + 1);
+              childrenContainer.appendChild(childElement);
+            }
+          });
+          
+          nodeElement.appendChild(childrenContainer);
+        }
+
+        return nodeElement;
+      }
+
+      // 渲染菜单节点
+      function renderMenuNode(menu, menuId, role, level) {
+        const isRoleMenu = role.menus.includes(menuId);
+        const isAdded = currentUserPermissions.added.includes(menuId);
+        const isRemoved = currentUserPermissions.removed.includes(menuId);
+        const isEnabled = (isRoleMenu && !isRemoved) || isAdded;
+        
+        // 确定状态类型
+        let statusType = 'none';
+        let statusText = '未授权';
+        if (isRoleMenu && !isRemoved && !isAdded) {
+          statusType = 'default';
+          statusText = '默认';
+        } else if (isAdded) {
+          statusType = 'added';
+          statusText = '已添加';
+        } else if (isRemoved) {
+          statusType = 'removed';
+          statusText = '已移除';
+        }
+
+        const menuElement = document.createElement('div');
+        menuElement.className = 'menu-tree-node';
+        menuElement.innerHTML = `
+          <div class="menu-tree-item ${getMenuItemClass(statusType)}" data-menu-id="${menuId}" data-level="${level}">
+            <div class="menu-tree-toggle" style="visibility: hidden;"></div>
+            <div class="menu-tree-icon">
+              <i class="fa ${menu.icon}"></i>
+            </div>
+            <div class="menu-tree-content">
+              <div class="menu-tree-info">
+                <div class="menu-tree-title">${highlightSearchTerm(menu.name)}</div>
+                <div class="menu-tree-desc">${menu.path || '菜单路径'}</div>
+              </div>
+              <div class="menu-tree-status">
+                <span class="menu-status-badge ${statusType}">${statusText}</span>
+                <div class="menu-checkbox ${isEnabled ? 'checked' : ''}" onclick="toggleMenuPermission('${menuId}')">
+                  ${isEnabled ? '<i class="fa fa-check text-xs"></i>' : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        return menuElement;
+      }
+
+      // 获取菜单项样式类
+      function getMenuItemClass(statusType) {
+        switch(statusType) {
+          case 'default': return 'default-enabled';
+          case 'added': return 'custom-added';
+          case 'removed': return 'custom-removed';
+          default: return '';
+        }
+      }
+
+      // 高亮搜索词
+      function highlightSearchTerm(text) {
+        if (!searchTerm) return text;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+      }
+
+      // 切换节点展开/收起
+      function toggleNode(nodeId) {
+        if (expandedNodes.has(nodeId)) {
+          expandedNodes.delete(nodeId);
+        } else {
+          expandedNodes.add(nodeId);
+        }
+        renderMenuTree();
+      }
+
+      // 展开所有节点
+      function expandAll() {
+        Object.keys(menuTreeData).forEach(nodeId => {
+          expandedNodes.add(nodeId);
+        });
+        renderMenuTree();
+      }
+
+      // 收起所有节点
+      function collapseAll() {
+        expandedNodes.clear();
+        renderMenuTree();
+      }
+
+      // 切换分类权限
+      function toggleCategoryPermission(categoryId) {
+        const category = menuTreeData[categoryId];
+        if (!category || !category.children) return;
+
+        const roleId = userRoleSelect.value || 'customer';
+        const role = window.permissionManager.getRole(roleId);
+        if (!role) return;
+
+        // 计算当前启用的子菜单数量
+        let enabledCount = 0;
+        let totalCount = 0;
+
+        category.children.forEach(menuId => {
+          const menu = window.permissionManager.getMenu(menuId);
+          if (menu && shouldShowMenu(menu, menuId)) {
+            totalCount++;
+            const isRoleMenu = role.menus.includes(menuId);
+            const isAdded = currentUserPermissions.added.includes(menuId);
+            const isRemoved = currentUserPermissions.removed.includes(menuId);
+            const isEnabled = (isRoleMenu && !isRemoved) || isAdded;
+            if (isEnabled) enabledCount++;
+          }
+        });
+
+        // 决定是全选还是全不选
+        const shouldEnable = enabledCount < totalCount;
+
+        category.children.forEach(menuId => {
+          const menu = window.permissionManager.getMenu(menuId);
+          if (menu && shouldShowMenu(menu, menuId)) {
+            setMenuPermission(menuId, shouldEnable);
+          }
+        });
+
+        updatePermissionDisplay();
+      }
+
+      // 设置菜单权限
+      function setMenuPermission(menuId, enabled) {
+        const roleId = userRoleSelect.value || 'customer';
+        const role = window.permissionManager.getRole(roleId);
+        if (!role) return;
+
+        const isRoleMenu = role.menus.includes(menuId);
+        const isAdded = currentUserPermissions.added.includes(menuId);
+        const isRemoved = currentUserPermissions.removed.includes(menuId);
+
+        if (enabled) {
+          // 启用菜单
+          if (isRoleMenu) {
+            // 如果是角色菜单且被移除了，则恢复
+            if (isRemoved) {
+              const index = currentUserPermissions.removed.indexOf(menuId);
+              currentUserPermissions.removed.splice(index, 1);
+            }
+          } else {
+            // 如果不是角色菜单，则添加
+            if (!isAdded) {
+              currentUserPermissions.added.push(menuId);
+            }
+          }
+        } else {
+          // 禁用菜单
+          if (isRoleMenu) {
+            // 如果是角色菜单，则添加到移除列表
+            if (!isRemoved) {
+              currentUserPermissions.removed.push(menuId);
+            }
+          } else {
+            // 如果是个人添加的菜单，则从添加列表中移除
+            if (isAdded) {
+              const index = currentUserPermissions.added.indexOf(menuId);
+              currentUserPermissions.added.splice(index, 1);
+            }
+          }
+        }
+      }
+
+      // 切换菜单权限
+      function toggleMenuPermission(menuId) {
+        const roleId = userRoleSelect.value || 'customer';
+        const role = window.permissionManager.getRole(roleId);
+        if (!role) return;
+
+        const isRoleMenu = role.menus.includes(menuId);
+        const isAdded = currentUserPermissions.added.includes(menuId);
+        const isRemoved = currentUserPermissions.removed.includes(menuId);
+        const currentlyEnabled = (isRoleMenu && !isRemoved) || isAdded;
+
+        setMenuPermission(menuId, !currentlyEnabled);
+        updatePermissionDisplay();
+
+        // 显示操作反馈
+        const menu = window.permissionManager.getMenu(menuId);
+        const newStatus = !currentlyEnabled ? '已启用' : '已禁用';
+        showPermissionMessage(`${menu.name} ${newStatus}`, 'success');
+      }
+
+      // 重置为默认权限
+      function resetToDefault() {
+        const roleId = userRoleSelect.value || 'customer';
+        if (!roleId) return;
+
+        if (confirm('确定要重置为角色默认权限吗？这将清除所有个人权限调整。')) {
+          resetToRoleDefaults(roleId);
+          updatePermissionDisplay();
+          showPermissionMessage('已重置为角色默认权限', 'info');
+        }
+      }
+
+      // 更新最终权限预览
+      function updateFinalPermissionsPreview(role) {
+        if (!finalPermissionsPreview) return;
+
+        const finalMenus = getFinalMenus(role);
+        const finalCountBadge = document.getElementById('final-count-badge');
+        
+        if (finalCountBadge) {
+          finalCountBadge.textContent = `${finalMenus.length}项`;
+        }
+
+        if (finalMenus.length === 0) {
+          finalPermissionsPreview.innerHTML = '<p class="text-gray-500 text-sm">暂无权限</p>';
+          return;
+        }
+
+        const menusByCategory = {};
+        finalMenus.forEach(menuId => {
+          const menu = window.permissionManager.getMenu(menuId);
+          if (!menu) return;
+
+          // 找到菜单所属分类
+          let categoryName = '其他';
+          for (const [catId, catData] of Object.entries(menuTreeData)) {
+            if (catData.children.includes(menuId)) {
+              categoryName = catData.name;
+              break;
+            }
+          }
+
+          if (!menusByCategory[categoryName]) {
+            menusByCategory[categoryName] = [];
+          }
+          menusByCategory[categoryName].push(menu);
+        });
+
+        let html = '';
+        Object.entries(menusByCategory).forEach(([categoryName, menus]) => {
+          html += `
+            <div class="mb-3">
+              <div class="text-xs font-medium text-gray-600 mb-1">${categoryName}</div>
+              <div class="flex flex-wrap gap-1">
+                ${menus.map(menu => `
+                  <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    <i class="fa ${menu.icon} mr-1"></i>
+                    ${menu.name}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        });
+
+        finalPermissionsPreview.innerHTML = html;
+      }
+
+      // 获取最终菜单列表
+      function getFinalMenus(role) {
+        const roleMenus = role.menus || [];
+        const filteredRoleMenus = roleMenus.filter(menuId => 
+          !currentUserPermissions.removed.includes(menuId)
+        );
+        
+        return [...new Set([
+          ...filteredRoleMenus,
+          ...currentUserPermissions.added
+        ])];
+      }
+
+      // 清除权限显示
+      function clearPermissionDisplay() {
+        if (menuTree) {
+          menuTree.innerHTML = '<div class="text-gray-500 text-center py-8">正在加载权限...</div>';
+        }
+        if (finalPermissionsPreview) {
+          finalPermissionsPreview.innerHTML = '<p class="text-gray-500 text-sm">正在加载权限...</p>';
+        }
+      }
+
+      // 显示权限操作消息
+      function showPermissionMessage(message, type = 'info') {
+        // 简单的消息提示，可以根据需要扩展
+        console.log(`[${type.toUpperCase()}] ${message}`);
+      }
+
+      // 全选可见菜单
+      function selectAllVisible() {
+        if (!window.permissionManager) return;
+
+        const roleId = userRoleSelect.value || 'customer';
+        const allMenus = Array.from(window.permissionManager.menus.keys());
+        allMenus.forEach(menuId => {
+          const menu = window.permissionManager.getMenu(menuId);
+          if (menu && shouldShowMenu(menu, menuId)) {
+            setMenuPermission(menuId, true);
+          }
+        });
+
+        updatePermissionDisplay();
+        showPermissionMessage('已选择所有可见菜单', 'success');
+      }
+
+      // 防抖函数
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
       }
       
       // 立即执行的调试代码，验证 DOM 元素是否存在
@@ -962,9 +1887,6 @@
       // 仓库和权限模态框按钮
       // 仓库和权限模态框按钮已删除
       
-      // 当前正在操作的子账号ID
-      let currentSubaccountId = null;
-      
       // 打开创建子账号模态框
       document.getElementById('add-subaccount-btn').addEventListener('click', function() {
         // 重置表单
@@ -972,9 +1894,12 @@
         // 设置为创建模式
         modalTitle.textContent = '创建子账号';
         accountIdInput.value = '';
-        // 选中操作员角色
-        document.getElementById('role-operator').checked = true;
-        toggleOperatorPermissions();
+        // 设置默认角色为客户
+        document.getElementById('user-role').value = 'customer';
+        // 重置权限调整
+        currentUserPermissions = { added: [], removed: [] };
+        // 自动加载客户角色的默认权限
+        handleRoleChange();
         // 切换密码字段显示
         togglePasswordFieldDisplay();
         // 显示模态框
@@ -1005,7 +1930,10 @@
             document.getElementById('display-name').value = '张三';
             document.getElementById('email').value = 'zhangsan@example.com';
             document.getElementById('phone').value = '138****1234';
-            document.getElementById('role-admin').checked = true;
+            document.getElementById('user-role').value = 'customer';
+            // 模拟个人权限调整 - 客户额外添加了财务管理权限
+            currentUserPermissions = { added: ['finance'], removed: ['reconciliation'] };
+            handleRoleChange();
             document.getElementById('warehouse-1').checked = true;
             document.getElementById('warehouse-2').checked = true;
           } else if (id === '2') {
@@ -1013,20 +1941,24 @@
             document.getElementById('display-name').value = '李四';
             document.getElementById('email').value = 'lisi@example.com';
             document.getElementById('phone').value = '139****5678';
-            document.getElementById('role-operator').checked = true;
+            document.getElementById('user-role').value = 'customer';
+            // 客户移除了库存调拨，添加了客户管理
+            currentUserPermissions = { added: ['customer'], removed: ['transfer'] };
+            handleRoleChange();
             document.getElementById('warehouse-3').checked = true;
           } else if (id === '3') {
             document.getElementById('account-name').value = 'wangwu';
             document.getElementById('display-name').value = '王五';
             document.getElementById('email').value = 'wangwu@example.com';
             document.getElementById('phone').value = '137****9012';
-            document.getElementById('role-operator').checked = true;
+            document.getElementById('user-role').value = 'operator';
+            // 操作员添加了供应商管理
+            currentUserPermissions = { added: ['supplier'], removed: [] };
+            handleRoleChange();
             document.getElementById('warehouse-4').checked = true;
           }
           
           toggleOperatorPermissions();
-          // 显示模态框
-          subaccountModal.classList.remove('hidden');
         });
       });
       
@@ -1129,16 +2061,10 @@
         setTimeout(() => successModal.classList.add('hidden'), 300);
       });
       
-      // 角色切换时控制权限选项显示
+      // 角色切换时控制权限选项显示（已移除旧逻辑）
       function toggleOperatorPermissions() {
-        const operatorPermissions = document.getElementById('operator-permissions');
-        const isOperator = document.getElementById('role-operator').checked;
-        
-        if (isOperator) {
-          operatorPermissions.style.display = 'block';
-        } else {
-          operatorPermissions.style.display = 'none';
-        }
+        // 新的权限管理逻辑已集成到handleRoleChange中
+        console.log('权限管理已更新为新的基于角色+个人调整的模式');
       }
       
       // 更新选中的仓库显示
@@ -1193,9 +2119,7 @@
       
       // 确保DOM完全加载后再执行JavaScript代码
       document.addEventListener('DOMContentLoaded', function() {
-        // 角色切换时控制权限选项显示
-        document.getElementById('role-admin').addEventListener('change', toggleOperatorPermissions);
-        document.getElementById('role-operator').addEventListener('change', toggleOperatorPermissions);
+        // 权限管理事件监听器已在上面初始化
         
         // 点击外部关闭下拉
         document.addEventListener('click', function(e) {
@@ -1310,20 +2234,22 @@
         }
         
         // 收集权限
-        const role = document.querySelector('input[name="role"]:checked').value;
-        const permissions = role === 'operator' ? 
-          Array.from(document.querySelectorAll('input[name="permissions"]:checked'))
-            .map(el => el.value) : [];
-        
+        const roleId = document.getElementById('user-role').value || 'customer';
+        if (!roleId) {
+          alert('系统错误：无法获取用户角色');
+          return;
+        }
+
         // 构建提交数据
         const formData = {
           id: accountIdInput.value,
-          accountName,
-          displayName,
-          email,
-          phone,
-          role,
-          permissions,
+          accountName: document.getElementById('account-name').value,
+          displayName: document.getElementById('display-name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          gender: document.getElementById('gender').value,
+          roleId: roleId,
+          personalPermissions: currentUserPermissions,
           warehouses: selectedWarehouses
         };
         

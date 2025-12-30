@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>库存调拨管理</title>
+  <!-- 引入外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            dark: '#1F2937',
+            light: '#F3F4F6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义样式 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .table-row-hover:hover {
+        background-color: #F9FAFB;
+      }
+      .step-active {
+        background: linear-gradient(135deg, #165DFF 0%, #36CFC9 100%);
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <main class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <!-- 页面标题和操作栏 -->
+    <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-dark mb-2">库存调拨管理</h1>
+          <p class="text-gray-500">组织间库存调拨申请与审批</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="btnCreateTransfer" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+            <i class="fa fa-plus"></i>
+            <span>发起调拨</span>
+          </button>
+          <button id="btnBatchApprove" class="px-6 py-3 bg-success text-white rounded-lg hover:bg-success/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+            <i class="fa fa-check-square"></i>
+            <span>批量审批</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">待审批</span>
+          <i class="fa fa-clock-o text-warning text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1 text-warning" id="pendingCount">12</div>
+        <div class="text-xs text-gray-500">需要处理</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">已审批</span>
+          <i class="fa fa-check-circle text-success text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1 text-success" id="approvedCount">45</div>
+        <div class="text-xs text-gray-500">等待执行</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">执行中</span>
+          <i class="fa fa-truck text-secondary text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1 text-secondary" id="executingCount">8</div>
+        <div class="text-xs text-gray-500">正在调拨</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">已完成</span>
+          <i class="fa fa-check text-primary text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1 text-primary" id="completedCount">156</div>
+        <div class="text-xs text-gray-500">本月完成</div>
+      </div>
+    </div>
+    <!-- 筛选区域 -->
+    <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-700">筛选条件</h3>
+      </div>
+      
+      <div class="flex flex-wrap gap-4 items-center mb-3">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">调拨状态:</label>
+          <select id="filterStatus" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[120px]">
+            <option value="">全部状态</option>
+            <option value="pending">待审批</option>
+            <option value="approved">已审批</option>
+            <option value="executing">执行中</option>
+            <option value="completed">已完成</option>
+            <option value="rejected">已拒绝</option>
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">调出组织:</label>
+          <select id="filterFromOrg" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[150px]">
+            <option value="">全部组织</option>
+            <option value="org1">华东分公司</option>
+            <option value="org2">华南分公司</option>
+            <option value="org3">华北分公司</option>
+            <option value="org4">西南分公司</option>
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">调入组织:</label>
+          <select id="filterToOrg" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[150px]">
+            <option value="">全部组织</option>
+            <option value="org1">华东分公司</option>
+            <option value="org2">华南分公司</option>
+            <option value="org3">华北分公司</option>
+            <option value="org4">西南分公司</option>
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">申请时间:</label>
+          <input type="date" id="filterStartDate" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <span class="text-gray-400">至</span>
+          <input type="date" id="filterEndDate" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2 pt-3 border-t border-gray-200">
+        <button id="btnFilter" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          <i class="fa fa-search mr-2"></i>筛选
+        </button>
+        <button id="btnResetFilter" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          <i class="fa fa-refresh mr-2"></i>重置
+        </button>
+      </div>
+    </div>
+    <!-- 调拨列表 -->
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-dark">调拨申请列表</h3>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500">已选择 <span id="selectedCount" class="font-semibold text-primary">0</span> 条</span>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table id="transferTable" class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">
+                <input type="checkbox" id="tableCheckAll" class="rounded border-gray-300">
+              </th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">调拨单号</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">调出组织</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">调入组织</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">商品信息</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-700">调拨数量</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">申请人</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">申请时间</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">状态</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
+            </tr>
+          </thead>
+          <tbody id="transferTableBody">
+            <!-- 数据将通过JavaScript动态渲染 -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页 -->
+      <div class="flex items-center justify-between mt-4">
+        <div id="paginationInfo" class="text-sm text-gray-500">显示 0-0 条，共 0 条</div>
+        <div class="flex gap-2 items-center">
+          <button id="prevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-left text-xs"></i>
+          </button>
+          <div id="pageButtons" class="flex gap-2">
+            <!-- 页码按钮将通过JavaScript动态生成 -->
+          </div>
+          <button id="nextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <!-- 发起调拨弹窗 -->
+  <div id="createTransferModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-primary to-primary/80">
+        <h3 class="text-xl font-bold text-white">发起库存调拨</h3>
+        <button id="closeCreateModal" class="text-white/80 hover:text-white transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
+
+      <!-- 步骤指示器 -->
+      <div class="p-6 border-b border-gray-200 bg-gray-50">
+        <div class="flex items-center justify-center">
+          <div class="flex items-center">
+            <div class="flex items-center">
+              <div id="step1" class="w-8 h-8 rounded-full step-active text-white flex items-center justify-center text-sm font-semibold">1</div>
+              <span class="ml-2 text-sm font-medium text-gray-700">选择组织</span>
+            </div>
+            <div class="w-16 h-0.5 bg-gray-300 mx-4"></div>
+            <div class="flex items-center">
+              <div id="step2" class="w-8 h-8 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center text-sm font-semibold">2</div>
+              <span class="ml-2 text-sm font-medium text-gray-500">选择商品</span>
+            </div>
+            <div class="w-16 h-0.5 bg-gray-300 mx-4"></div>
+            <div class="flex items-center">
+              <div id="step3" class="w-8 h-8 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center text-sm font-semibold">3</div>
+              <span class="ml-2 text-sm font-medium text-gray-500">确认提交</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <!-- 步骤1：选择组织 -->
+        <div id="stepContent1" class="step-content">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="fa fa-upload text-danger"></i>
+                <h4 class="font-semibold text-dark">调出组织</h4>
+              </div>
+              <select id="fromOrganization" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <option value="">请选择调出组织</option>
+                <option value="org1">华东分公司</option>
+                <option value="org2">华南分公司</option>
+                <option value="org3">华北分公司</option>
+                <option value="org4">西南分公司</option>
+              </select>
+              <div class="mt-2 text-sm text-gray-500">
+                <i class="fa fa-info-circle mr-1"></i>
+                选择库存调出的组织
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div class="flex items-center gap-2 mb-3">
+                <i class="fa fa-download text-success"></i>
+                <h4 class="font-semibold text-dark">调入组织</h4>
+              </div>
+              <select id="toOrganization" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <option value="">请选择调入组织</option>
+                <option value="org1">华东分公司</option>
+                <option value="org2">华南分公司</option>
+                <option value="org3">华北分公司</option>
+                <option value="org4">西南分公司</option>
+              </select>
+              <div class="mt-2 text-sm text-gray-500">
+                <i class="fa fa-info-circle mr-1"></i>
+                选择库存调入的组织
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <i class="fa fa-lightbulb-o text-blue-500 mt-1"></i>
+              <div>
+                <h5 class="font-medium text-blue-800 mb-1">温馨提示</h5>
+                <p class="text-sm text-blue-600">
+                  • 调出组织必须有足够的库存数量<br>
+                  • 调入组织需要有接收权限<br>
+                  • 跨区域调拨可能需要额外审批流程
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 步骤2：选择商品 -->
+        <div id="stepContent2" class="step-content hidden">
+          <div class="mb-4">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="flex-1">
+                <input type="text" id="productSearch" placeholder="搜索商品名称、SKU或条码" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30">
+              </div>
+              <button id="btnSearchProduct" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                <i class="fa fa-search mr-2"></i>搜索
+              </button>
+            </div>
+          </div>
+          
+          <!-- 可用库存列表 -->
+          <div class="border border-gray-200 rounded-lg">
+            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <h5 class="font-semibold text-gray-700">可调拨商品库存</h5>
+            </div>
+            <div class="max-h-80 overflow-y-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th class="text-left py-2 px-4 font-medium text-gray-600 text-sm">商品信息</th>
+                    <th class="text-right py-2 px-4 font-medium text-gray-600 text-sm">可用库存</th>
+                    <th class="text-right py-2 px-4 font-medium text-gray-600 text-sm">调拨数量</th>
+                    <th class="text-center py-2 px-4 font-medium text-gray-600 text-sm">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="productListBody">
+                  <!-- 商品列表将通过JavaScript动态渲染 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- 已选商品列表 -->
+          <div class="mt-6 border border-gray-200 rounded-lg">
+            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <h5 class="font-semibold text-gray-700">已选择商品 (<span id="selectedProductCount">0</span>)</h5>
+            </div>
+            <div id="selectedProductsList" class="p-4 min-h-[100px]">
+              <div class="text-center text-gray-500 py-8">
+                <i class="fa fa-shopping-cart text-3xl mb-2 block"></i>
+                暂未选择商品
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 步骤3：确认提交 -->
+        <div id="stepContent3" class="step-content hidden">
+          <div class="space-y-6">
+            <!-- 调拨信息确认 -->
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h5 class="font-semibold text-gray-700 mb-3">调拨信息确认</h5>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">调出组织</label>
+                  <div id="confirmFromOrg" class="text-gray-800 font-medium">-</div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">调入组织</label>
+                  <div id="confirmToOrg" class="text-gray-800 font-medium">-</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 商品清单确认 -->
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h5 class="font-semibold text-gray-700 mb-3">商品清单确认</h5>
+              <div id="confirmProductList" class="space-y-2">
+                <!-- 商品确认列表将通过JavaScript动态渲染 -->
+              </div>
+            </div>
+            
+            <!-- 申请说明 -->
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h5 class="font-semibold text-gray-700 mb-3">申请说明</h5>
+              <textarea id="transferReason" rows="4" placeholder="请输入调拨原因和说明..." class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+        <button id="btnPrevStep" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors hidden">
+          <i class="fa fa-chevron-left mr-2"></i>上一步
+        </button>
+        <div class="flex items-center gap-3 ml-auto">
+          <button id="btnCancelCreate" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            取消
+          </button>
+          <button id="btnNextStep" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            下一步<i class="fa fa-chevron-right ml-2"></i>
+          </button>
+          <button id="btnSubmitTransfer" class="px-6 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors hidden">
+            <i class="fa fa-check mr-2"></i>提交申请
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 调拨详情弹窗 -->
+  <div id="transferDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-dark">调拨详情</h3>
+        <button id="closeDetailModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6">
+        <div id="transferDetailContent">
+          <!-- 详情内容将通过JavaScript动态渲染 -->
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <button id="btnCloseDetail" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          关闭
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审批弹窗 -->
+  <div id="approvalModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-dark">调拨审批</h3>
+        <button id="closeApprovalModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <div id="approvalContent" class="space-y-4">
+          <!-- 审批内容将通过JavaScript动态渲染 -->
+        </div>
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">审批意见</label>
+          <textarea id="approvalComment" rows="4" placeholder="请输入审批意见..." class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"></textarea>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+        <button id="btnCancelApproval" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+          取消
+        </button>
+        <button id="btnRejectTransfer" class="px-6 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors">
+          <i class="fa fa-times mr-2"></i>拒绝
+        </button>
+        <button id="btnApproveTransfer" class="px-6 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors">
+          <i class="fa fa-check mr-2"></i>通过
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // 模拟数据
+    let transferData = [];
+    let selectedItems = new Set();
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let currentStep = 1;
+    let selectedProducts = [];
+
+    // 组织数据
+    const organizations = {
+      'org1': '华东分公司',
+      'org2': '华南分公司', 
+      'org3': '华北分公司',
+      'org4': '西南分公司'
+    };
+
+    // 模拟商品库存数据
+    const mockProducts = [
+      { id: 'p1', sku: 'SKU001', name: '苹果iPhone 15', barcode: '1234567890123', stock: 150, unit: '台' },
+      { id: 'p2', sku: 'SKU002', name: '华为Mate60', barcode: '1234567890124', stock: 80, unit: '台' },
+      { id: 'p3', sku: 'SKU003', name: '小米14', barcode: '1234567890125', stock: 200, unit: '台' },
+      { id: 'p4', sku: 'SKU004', name: '三星Galaxy S24', barcode: '1234567890126', stock: 60, unit: '台' },
+      { id: 'p5', sku: 'SKU005', name: 'iPad Air', barcode: '1234567890127', stock: 90, unit: '台' }
+    ];
+
+    // 初始化模拟数据
+    function initMockData() {
+      const statuses = ['pending', 'approved', 'executing', 'completed', 'rejected'];
+      const statusTexts = ['待审批', '已审批', '执行中', '已完成', '已拒绝'];
+      
+      for (let i = 1; i <= 50; i++) {
+        const statusIndex = Math.floor(Math.random() * statuses.length);
+        const fromOrg = `org${Math.floor(Math.random() * 4) + 1}`;
+        let toOrg = `org${Math.floor(Math.random() * 4) + 1}`;
+        while (toOrg === fromOrg) {
+          toOrg = `org${Math.floor(Math.random() * 4) + 1}`;
+        }
+        
+        const product = mockProducts[Math.floor(Math.random() * mockProducts.length)];
+        const quantity = Math.floor(Math.random() * 50) + 1;
+        
+        transferData.push({
+          id: `T${String(i).padStart(6, '0')}`,
+          transferNo: `TF${new Date().getFullYear()}${String(i).padStart(6, '0')}`,
+          fromOrg: fromOrg,
+          toOrg: toOrg,
+          product: product,
+          quantity: quantity,
+          applicant: '张三',
+          applyTime: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: statuses[statusIndex],
+          statusText: statusTexts[statusIndex],
+          reason: '业务需要调拨库存',
+          approver: statusIndex > 0 ? '李四' : '',
+          approveTime: statusIndex > 0 ? new Date(Date.now() - Math.random() * 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : ''
+        });
+      }
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      initMockData();
+      renderTable();
+      updateSummary();
+      
+      // 绑定事件
+      bindEvents();
+    });
+
+    // 绑定事件
+    function bindEvents() {
+      // 发起调拨
+      document.getElementById('btnCreateTransfer').addEventListener('click', openCreateModal);
+      document.getElementById('closeCreateModal').addEventListener('click', closeCreateModal);
+      document.getElementById('btnCancelCreate').addEventListener('click', closeCreateModal);
+      
+      // 步骤控制
+      document.getElementById('btnNextStep').addEventListener('click', nextStep);
+      document.getElementById('btnPrevStep').addEventListener('click', prevStep);
+      document.getElementById('btnSubmitTransfer').addEventListener('click', submitTransfer);
+      
+      // 组织选择变化
+      document.getElementById('fromOrganization').addEventListener('change', loadProducts);
+      
+      // 商品搜索
+      document.getElementById('btnSearchProduct').addEventListener('click', searchProducts);
+      document.getElementById('productSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          searchProducts();
+        }
+      });
+      
+      // 筛选
+      document.getElementById('btnFilter').addEventListener('click', filterData);
+      document.getElementById('btnResetFilter').addEventListener('click', resetFilter);
+      
+      // 全选
+      document.getElementById('tableCheckAll').addEventListener('change', toggleSelectAll);
+      
+      // 批量审批
+      document.getElementById('btnBatchApprove').addEventListener('click', batchApprove);
+      
+      // 关闭弹窗
+      document.getElementById('closeDetailModal').addEventListener('click', closeDetailModal);
+      document.getElementById('btnCloseDetail').addEventListener('click', closeDetailModal);
+      document.getElementById('closeApprovalModal').addEventListener('click', closeApprovalModal);
+      document.getElementById('btnCancelApproval').addEventListener('click', closeApprovalModal);
+      
+      // 审批操作
+      document.getElementById('btnApproveTransfer').addEventListener('click', () => approveTransfer(true));
+      document.getElementById('btnRejectTransfer').addEventListener('click', () => approveTransfer(false));
+    }
+    // 渲染表格
+    function renderTable() {
+      const tbody = document.getElementById('transferTableBody');
+      tbody.innerHTML = '';
+      
+      if (transferData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="py-8 text-center text-gray-500">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              暂无调拨记录
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = transferData.slice(startIndex, endIndex);
+
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'table-row-hover border-b border-gray-100';
+        
+        const statusClass = getStatusClass(item.status);
+        
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <input type="checkbox" data-id="${item.id}" class="rounded border-gray-300 item-checkbox" ${selectedItems.has(item.id) ? 'checked' : ''}>
+          </td>
+          <td class="py-3 px-4 font-medium text-primary">${item.transferNo}</td>
+          <td class="py-3 px-4">${organizations[item.fromOrg]}</td>
+          <td class="py-3 px-4">${organizations[item.toOrg]}</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2">
+              <div>
+                <div class="font-medium">${item.product.name}</div>
+                <div class="text-sm text-gray-500">SKU: ${item.product.sku}</div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-right font-semibold">${item.quantity} ${item.product.unit}</td>
+          <td class="py-3 px-4">${item.applicant}</td>
+          <td class="py-3 px-4">${item.applyTime}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${item.statusText}</span>
+          </td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="viewDetail('${item.id}')" class="px-3 py-1 text-primary hover:bg-primary/10 rounded transition-colors">
+                <i class="fa fa-eye mr-1"></i>详情
+              </button>
+              ${item.status === 'pending' ? `
+                <button onclick="approveTransferSingle('${item.id}')" class="px-3 py-1 text-success hover:bg-success/10 rounded transition-colors">
+                  <i class="fa fa-check mr-1"></i>审批
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 绑定复选框事件
+      document.querySelectorAll('.item-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+          const itemId = this.dataset.id;
+          if (this.checked) {
+            selectedItems.add(itemId);
+          } else {
+            selectedItems.delete(itemId);
+          }
+          updateSelectedCount();
+          updateCheckAll();
+        });
+      });
+
+      updatePagination();
+    }
+
+    // 获取状态样式
+    function getStatusClass(status) {
+      const statusMap = {
+        'pending': 'bg-warning/20 text-warning',
+        'approved': 'bg-blue-100 text-blue-700',
+        'executing': 'bg-secondary/20 text-secondary',
+        'completed': 'bg-success/20 text-success',
+        'rejected': 'bg-danger/20 text-danger'
+      };
+      return statusMap[status] || 'bg-gray-100 text-gray-600';
+    }
+
+    // 更新统计数据
+    function updateSummary() {
+      const pending = transferData.filter(item => item.status === 'pending').length;
+      const approved = transferData.filter(item => item.status === 'approved').length;
+      const executing = transferData.filter(item => item.status === 'executing').length;
+      const completed = transferData.filter(item => item.status === 'completed').length;
+      
+      document.getElementById('pendingCount').textContent = pending;
+      document.getElementById('approvedCount').textContent = approved;
+      document.getElementById('executingCount').textContent = executing;
+      document.getElementById('completedCount').textContent = completed;
+    }
+
+    // 更新选中数量
+    function updateSelectedCount() {
+      document.getElementById('selectedCount').textContent = selectedItems.size;
+    }
+
+    // 更新全选状态
+    function updateCheckAll() {
+      const checkAll = document.getElementById('tableCheckAll');
+      const checkboxes = document.querySelectorAll('.item-checkbox');
+      checkAll.checked = checkboxes.length > 0 && checkboxes.length === selectedItems.size;
+    }
+
+    // 全选切换
+    function toggleSelectAll() {
+      const checkAll = document.getElementById('tableCheckAll');
+      const checkboxes = document.querySelectorAll('.item-checkbox');
+      
+      checkboxes.forEach(cb => {
+        cb.checked = checkAll.checked;
+        if (checkAll.checked) {
+          selectedItems.add(cb.dataset.id);
+        } else {
+          selectedItems.delete(cb.dataset.id);
+        }
+      });
+      updateSelectedCount();
+    }
+    // 分页相关
+    function updatePagination() {
+      const totalPages = Math.ceil(transferData.length / itemsPerPage);
+      const startItem = transferData.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, transferData.length);
+      
+      document.getElementById('paginationInfo').textContent = `显示 ${startItem}-${endItem} 条，共 ${transferData.length} 条`;
+
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage >= totalPages;
+
+      const pageButtons = document.getElementById('pageButtons');
+      pageButtons.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.className = `w-8 h-8 flex items-center justify-center rounded border transition-all ${
+          i === currentPage ? 'bg-primary text-white border-primary' : 'border-gray-200 hover:border-primary hover:text-primary'
+        }`;
+        btn.textContent = i;
+        btn.addEventListener('click', () => {
+          currentPage = i;
+          renderTable();
+        });
+        pageButtons.appendChild(btn);
+      }
+    }
+
+    // 筛选数据
+    function filterData() {
+      // 这里可以根据筛选条件过滤数据
+      renderTable();
+    }
+
+    // 重置筛选
+    function resetFilter() {
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterFromOrg').value = '';
+      document.getElementById('filterToOrg').value = '';
+      document.getElementById('filterStartDate').value = '';
+      document.getElementById('filterEndDate').value = '';
+      renderTable();
+    }
+
+    // 发起调拨相关函数
+    function openCreateModal() {
+      document.getElementById('createTransferModal').classList.remove('hidden');
+      document.getElementById('createTransferModal').classList.add('flex');
+      resetCreateForm();
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createTransferModal').classList.add('hidden');
+      document.getElementById('createTransferModal').classList.remove('flex');
+      resetCreateForm();
+    }
+
+    function resetCreateForm() {
+      currentStep = 1;
+      selectedProducts = [];
+      updateStepDisplay();
+      document.getElementById('fromOrganization').value = '';
+      document.getElementById('toOrganization').value = '';
+      document.getElementById('productSearch').value = '';
+      document.getElementById('transferReason').value = '';
+      updateSelectedProductsList();
+    }
+
+    function nextStep() {
+      if (currentStep === 1) {
+        const fromOrg = document.getElementById('fromOrganization').value;
+        const toOrg = document.getElementById('toOrganization').value;
+        
+        if (!fromOrg || !toOrg) {
+          alert('请选择调出和调入组织');
+          return;
+        }
+        
+        if (fromOrg === toOrg) {
+          alert('调出和调入组织不能相同');
+          return;
+        }
+        
+        currentStep = 2;
+        loadProducts();
+      } else if (currentStep === 2) {
+        if (selectedProducts.length === 0) {
+          alert('请至少选择一个商品');
+          return;
+        }
+        
+        currentStep = 3;
+        updateConfirmInfo();
+      }
+      
+      updateStepDisplay();
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        updateStepDisplay();
+      }
+    }
+
+    function updateStepDisplay() {
+      // 更新步骤指示器
+      for (let i = 1; i <= 3; i++) {
+        const stepEl = document.getElementById(`step${i}`);
+        const stepContent = document.getElementById(`stepContent${i}`);
+        
+        if (i <= currentStep) {
+          stepEl.className = 'w-8 h-8 rounded-full step-active text-white flex items-center justify-center text-sm font-semibold';
+        } else {
+          stepEl.className = 'w-8 h-8 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center text-sm font-semibold';
+        }
+        
+        if (i === currentStep) {
+          stepContent.classList.remove('hidden');
+        } else {
+          stepContent.classList.add('hidden');
+        }
+      }
+      
+      // 更新按钮显示
+      const prevBtn = document.getElementById('btnPrevStep');
+      const nextBtn = document.getElementById('btnNextStep');
+      const submitBtn = document.getElementById('btnSubmitTransfer');
+      
+      if (currentStep === 1) {
+        prevBtn.classList.add('hidden');
+      } else {
+        prevBtn.classList.remove('hidden');
+      }
+      
+      if (currentStep === 3) {
+        nextBtn.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+      } else {
+        nextBtn.classList.remove('hidden');
+        submitBtn.classList.add('hidden');
+      }
+    }
+    // 加载商品列表
+    function loadProducts() {
+      const fromOrg = document.getElementById('fromOrganization').value;
+      if (!fromOrg) return;
+      
+      const tbody = document.getElementById('productListBody');
+      tbody.innerHTML = '';
+      
+      mockProducts.forEach(product => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div>
+              <div class="font-medium">${product.name}</div>
+              <div class="text-sm text-gray-500">SKU: ${product.sku} | 条码: ${product.barcode}</div>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-right font-semibold">${product.stock} ${product.unit}</td>
+          <td class="py-3 px-4 text-right">
+            <input type="number" id="qty_${product.id}" min="1" max="${product.stock}" class="w-20 border border-gray-200 rounded px-2 py-1 text-center" placeholder="0">
+          </td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="addProduct('${product.id}')" class="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 transition-colors text-sm">
+              <i class="fa fa-plus mr-1"></i>添加
+            </button>
+          </td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 搜索商品
+    function searchProducts() {
+      const keyword = document.getElementById('productSearch').value.toLowerCase();
+      const tbody = document.getElementById('productListBody');
+      const rows = tbody.querySelectorAll('tr');
+      
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(keyword)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // 添加商品到选择列表
+    function addProduct(productId) {
+      const product = mockProducts.find(p => p.id === productId);
+      const qtyInput = document.getElementById(`qty_${productId}`);
+      const quantity = parseInt(qtyInput.value);
+      
+      if (!quantity || quantity <= 0) {
+        alert('请输入有效的调拨数量');
+        return;
+      }
+      
+      if (quantity > product.stock) {
+        alert('调拨数量不能超过可用库存');
+        return;
+      }
+      
+      // 检查是否已添加
+      const existingIndex = selectedProducts.findIndex(p => p.id === productId);
+      if (existingIndex >= 0) {
+        selectedProducts[existingIndex].quantity = quantity;
+      } else {
+        selectedProducts.push({
+          ...product,
+          quantity: quantity
+        });
+      }
+      
+      qtyInput.value = '';
+      updateSelectedProductsList();
+    }
+
+    // 更新已选商品列表
+    function updateSelectedProductsList() {
+      const container = document.getElementById('selectedProductsList');
+      const countEl = document.getElementById('selectedProductCount');
+      
+      countEl.textContent = selectedProducts.length;
+      
+      if (selectedProducts.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-gray-500 py-8">
+            <i class="fa fa-shopping-cart text-3xl mb-2 block"></i>
+            暂未选择商品
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '<div class="space-y-2">';
+      selectedProducts.forEach((product, index) => {
+        html += `
+          <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+            <div class="flex-1">
+              <div class="font-medium">${product.name}</div>
+              <div class="text-sm text-gray-500">SKU: ${product.sku}</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="font-semibold">${product.quantity} ${product.unit}</span>
+              <button onclick="removeProduct(${index})" class="text-danger hover:bg-danger/10 p-1 rounded">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      container.innerHTML = html;
+    }
+
+    // 移除选中的商品
+    function removeProduct(index) {
+      selectedProducts.splice(index, 1);
+      updateSelectedProductsList();
+    }
+
+    // 更新确认信息
+    function updateConfirmInfo() {
+      const fromOrg = document.getElementById('fromOrganization').value;
+      const toOrg = document.getElementById('toOrganization').value;
+      
+      document.getElementById('confirmFromOrg').textContent = organizations[fromOrg];
+      document.getElementById('confirmToOrg').textContent = organizations[toOrg];
+      
+      const container = document.getElementById('confirmProductList');
+      let html = '';
+      selectedProducts.forEach(product => {
+        html += `
+          <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+            <div>
+              <div class="font-medium">${product.name}</div>
+              <div class="text-sm text-gray-500">SKU: ${product.sku}</div>
+            </div>
+            <div class="font-semibold">${product.quantity} ${product.unit}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+    // 提交调拨申请
+    function submitTransfer() {
+      const fromOrg = document.getElementById('fromOrganization').value;
+      const toOrg = document.getElementById('toOrganization').value;
+      const reason = document.getElementById('transferReason').value;
+      
+      if (!reason.trim()) {
+        alert('请填写申请说明');
+        return;
+      }
+      
+      // 生成新的调拨记录
+      selectedProducts.forEach(product => {
+        const newTransfer = {
+          id: `T${String(transferData.length + 1).padStart(6, '0')}`,
+          transferNo: `TF${new Date().getFullYear()}${String(transferData.length + 1).padStart(6, '0')}`,
+          fromOrg: fromOrg,
+          toOrg: toOrg,
+          product: product,
+          quantity: product.quantity,
+          applicant: '当前用户',
+          applyTime: new Date().toISOString().split('T')[0],
+          status: 'pending',
+          statusText: '待审批',
+          reason: reason,
+          approver: '',
+          approveTime: ''
+        };
+        
+        transferData.unshift(newTransfer);
+      });
+      
+      alert('调拨申请提交成功！');
+      closeCreateModal();
+      renderTable();
+      updateSummary();
+    }
+
+    // 查看详情
+    function viewDetail(id) {
+      const item = transferData.find(t => t.id === id);
+      if (!item) return;
+      
+      const content = document.getElementById('transferDetailContent');
+      content.innerHTML = `
+        <div class="space-y-6">
+          <!-- 基本信息 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h5 class="font-semibold text-gray-700 mb-3">基本信息</h5>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">调拨单号</label>
+                <div class="text-gray-800 font-medium">${item.transferNo}</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">申请人</label>
+                <div class="text-gray-800">${item.applicant}</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">申请时间</label>
+                <div class="text-gray-800">${item.applyTime}</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">当前状态</label>
+                <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(item.status)}">${item.statusText}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 调拨信息 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h5 class="font-semibold text-gray-700 mb-3">调拨信息</h5>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">调出组织</label>
+                <div class="text-gray-800 font-medium">${organizations[item.fromOrg]}</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">调入组织</label>
+                <div class="text-gray-800 font-medium">${organizations[item.toOrg]}</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 商品信息 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h5 class="font-semibold text-gray-700 mb-3">商品信息</h5>
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-medium">${item.product.name}</div>
+                  <div class="text-sm text-gray-500">SKU: ${item.product.sku}</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-semibold text-lg">${item.quantity} ${item.product.unit}</div>
+                  <div class="text-sm text-gray-500">调拨数量</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 申请说明 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h5 class="font-semibold text-gray-700 mb-3">申请说明</h5>
+            <div class="text-gray-800">${item.reason}</div>
+          </div>
+          
+          ${item.approver ? `
+          <!-- 审批信息 -->
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h5 class="font-semibold text-gray-700 mb-3">审批信息</h5>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">审批人</label>
+                <div class="text-gray-800">${item.approver}</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">审批时间</label>
+                <div class="text-gray-800">${item.approveTime}</div>
+              </div>
+            </div>
+          </div>
+          ` : ''}
+        </div>
+      `;
+      
+      document.getElementById('transferDetailModal').classList.remove('hidden');
+      document.getElementById('transferDetailModal').classList.add('flex');
+    }
+
+    // 关闭详情弹窗
+    function closeDetailModal() {
+      document.getElementById('transferDetailModal').classList.add('hidden');
+      document.getElementById('transferDetailModal').classList.remove('flex');
+    }
+
+    // 单个审批
+    function approveTransferSingle(id) {
+      const item = transferData.find(t => t.id === id);
+      if (!item) return;
+      
+      showApprovalModal([item]);
+    }
+
+    // 批量审批
+    function batchApprove() {
+      if (selectedItems.size === 0) {
+        alert('请选择要审批的调拨申请');
+        return;
+      }
+      
+      const selectedTransfers = transferData.filter(item => 
+        selectedItems.has(item.id) && item.status === 'pending'
+      );
+      
+      if (selectedTransfers.length === 0) {
+        alert('所选项目中没有待审批的申请');
+        return;
+      }
+      
+      showApprovalModal(selectedTransfers);
+    }
+
+    // 显示审批弹窗
+    function showApprovalModal(transfers) {
+      const content = document.getElementById('approvalContent');
+      let html = '<div class="space-y-3">';
+      
+      transfers.forEach(item => {
+        html += `
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-medium">${item.transferNo}</div>
+                <div class="text-sm text-gray-500">${organizations[item.fromOrg]} → ${organizations[item.toOrg]}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-medium">${item.product.name}</div>
+                <div class="text-sm text-gray-500">${item.quantity} ${item.product.unit}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      content.innerHTML = html;
+      
+      // 存储待审批的项目
+      window.currentApprovalItems = transfers;
+      
+      document.getElementById('approvalModal').classList.remove('hidden');
+      document.getElementById('approvalModal').classList.add('flex');
+    }
+
+    // 关闭审批弹窗
+    function closeApprovalModal() {
+      document.getElementById('approvalModal').classList.add('hidden');
+      document.getElementById('approvalModal').classList.remove('flex');
+      document.getElementById('approvalComment').value = '';
+    }
+
+    // 执行审批
+    function approveTransfer(isApproved) {
+      const comment = document.getElementById('approvalComment').value;
+      
+      if (!comment.trim()) {
+        alert('请填写审批意见');
+        return;
+      }
+      
+      window.currentApprovalItems.forEach(item => {
+        item.status = isApproved ? 'approved' : 'rejected';
+        item.statusText = isApproved ? '已审批' : '已拒绝';
+        item.approver = '当前用户';
+        item.approveTime = new Date().toISOString().split('T')[0];
+        item.approvalComment = comment;
+      });
+      
+      alert(`${isApproved ? '审批通过' : '审批拒绝'}成功！`);
+      closeApprovalModal();
+      selectedItems.clear();
+      renderTable();
+      updateSummary();
+      updateSelectedCount();
+    }
+
+    // 暴露全局函数
+    window.viewDetail = viewDetail;
+    window.approveTransferSingle = approveTransferSingle;
+    window.addProduct = addProduct;
+    window.removeProduct = removeProduct;
+  </script>
+</body>
+</html>
