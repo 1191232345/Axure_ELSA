@@ -70,74 +70,6 @@
       font-weight: bold;
     }
     
-    /* 时间轴样式 */
-    .timeline {
-      position: relative;
-      padding-left: 30px;
-    }
-    
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 8px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #e5e5e5;
-    }
-    
-    .timeline-item {
-      position: relative;
-      padding-bottom: 24px;
-    }
-    
-    .timeline-item:last-child {
-      padding-bottom: 0;
-    }
-    
-    .timeline-item::before {
-      content: '';
-      position: absolute;
-      left: -22px;
-      top: 4px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #fff;
-      border: 2px solid #1890ff;
-      z-index: 1;
-    }
-    
-    /* 响应式布局 */
-    @media (max-width: 1024px) {
-      .timeline {
-        padding-left: 30px;
-      }
-    }
-    
-    .timeline-item.completed::before {
-      background: #1890ff;
-    }
-    
-    .timeline-item.processing::before {
-      background: #1890ff;
-      box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.2);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% {
-        box-shadow: 0 0 0 4px rgba(24, 144, 255, 0.2);
-      }
-      50% {
-        box-shadow: 0 0 0 8px rgba(24, 144, 255, 0.1);
-      }
-    }
-    
-    .timeline-item.waiting::before {
-      background: #fff;
-      border-color: #d9d9d9;
-    }
     
     /* 表格样式 */
     .table-container {
@@ -184,7 +116,7 @@
   <!-- 页面头部 -->
   <header class="bg-white shadow-sm sticky top-0 z-20">
     <div class="container mx-auto px-4 py-3">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <button id="back-button" class="text-neutral-500 hover:text-primary">
             <i class="fa fa-arrow-left text-lg"></i>
@@ -195,106 +127,110 @@
           <i class="fa fa-download mr-2"></i>导出
         </button>
       </div>
-      
-      <!-- 标签导航 -->
-      <nav class="flex space-x-6 border-b border-neutral-200">
-        <button class="tab-item tab-active px-2 py-3 text-sm font-medium" data-tab="basic">
-          基本信息
-        </button>
-        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="delivery">
-          配送信息
-        </button>
-        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="pallet">
-          打托信息
-        </button>
-        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="empty">
-          提空信息
-        </button>
-        <button class="tab-item tab-inactive px-2 py-3 text-sm font-medium" data-tab="outbound">
-          出库信息
-        </button>
-      </nav>
     </div>
   </header>
 
   <!-- 主要内容 -->
   <main class="container mx-auto px-4 py-6">
-    <div class="flex flex-col lg:flex-row gap-6">
-      <!-- 左侧内容区 -->
-      <div class="flex-1 min-w-0">
-        <!-- 基本信息标签页 -->
-        <div id="tab-basic" class="tab-content">
-          <!-- 基本信息卡片 -->
-          <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
-            <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">基本信息</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 基本信息卡片（始终显示） -->
+    <div class="bg-white rounded-lg p-4 shadow-sm mb-4">
+      <h2 class="text-sm font-medium text-neutral-800 mb-3 pb-2 border-b border-neutral-200">基本信息</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">客户代码</span>
+          <span class="text-xs text-neutral-500 mb-0.5">客户代码</span>
                 <span class="text-sm font-medium text-neutral-800">GJJJ</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">业务类型</span>
+          <span class="text-xs text-neutral-500 mb-0.5">业务类型</span>
                 <span class="text-sm font-medium text-neutral-800">储存</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">参考号</span>
+          <span class="text-xs text-neutral-500 mb-0.5">参考号</span>
                 <span class="text-sm font-medium text-neutral-800">RVGJJJ-251210-0001</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">预计到港日期</span>
+          <span class="text-xs text-neutral-500 mb-0.5">预计到港日期</span>
                 <span class="text-sm font-medium text-neutral-800">2025-12-10 08:00:00</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">联系人</span>
+          <span class="text-xs text-neutral-500 mb-0.5">联系人</span>
                 <span class="text-sm font-medium text-neutral-800">KUKA</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">仓群</span>
+          <span class="text-xs text-neutral-500 mb-0.5">仓群</span>
                 <span class="text-sm font-medium text-neutral-800">美东仓群02</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">柜号</span>
+          <span class="text-xs text-neutral-500 mb-0.5">柜号</span>
                 <span class="text-sm font-medium text-neutral-800">KJDB-2512-011</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">提单号</span>
+          <span class="text-xs text-neutral-500 mb-0.5">提单号</span>
                 <span class="text-sm font-medium text-neutral-800">-</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">邮箱</span>
+          <span class="text-xs text-neutral-500 mb-0.5">邮箱</span>
                 <span class="text-sm font-medium text-neutral-800">gujing@kukahome.com</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">仓库</span>
+          <span class="text-xs text-neutral-500 mb-0.5">仓库</span>
                 <span class="text-sm font-medium text-neutral-800">MD001</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">柜型</span>
+          <span class="text-xs text-neutral-500 mb-0.5">柜型</span>
                 <span class="text-sm font-medium text-neutral-800">53HQ1</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">船公司</span>
+          <span class="text-xs text-neutral-500 mb-0.5">船公司</span>
                 <span class="text-sm font-medium text-neutral-800">-</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">手机号码</span>
+          <span class="text-xs text-neutral-500 mb-0.5">手机号码</span>
                 <span class="text-sm font-medium text-neutral-800">17671196647</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">入库类型</span>
-                <span class="badge-pill bg-primary/10 text-primary">整柜</span>
+          <span class="text-xs text-neutral-500 mb-0.5">入库类型</span>
+          <span class="badge-pill bg-primary/10 text-primary text-xs">整柜</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">目的港</span>
+          <span class="text-xs text-neutral-500 mb-0.5">目的港</span>
                 <span class="text-sm font-medium text-neutral-800"></span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-neutral-500 mb-1">交货方式</span>
+          <span class="text-xs text-neutral-500 mb-0.5">交货方式</span>
                 <span class="text-sm font-medium text-neutral-800"></span>
               </div>
             </div>
           </div>
 
+    <!-- Tab导航栏 -->
+    <div class="bg-white rounded-lg shadow-sm mb-4">
+      <nav class="flex space-x-6 border-b border-neutral-200 px-4">
+        <button class="tab-item tab-active px-4 py-3 text-sm font-medium" data-tab="basic">
+          基本信息
+        </button>
+        <button class="tab-item tab-inactive px-4 py-3 text-sm font-medium" data-tab="delivery">
+          配送信息
+        </button>
+        <button class="tab-item tab-inactive px-4 py-3 text-sm font-medium" data-tab="pallet">
+          打托信息
+        </button>
+        <button class="tab-item tab-inactive px-4 py-3 text-sm font-medium" data-tab="empty">
+          提空信息
+        </button>
+        <button class="tab-item tab-inactive px-4 py-3 text-sm font-medium" data-tab="outbound">
+          出库信息
+        </button>
+        <button class="tab-item tab-inactive px-4 py-3 text-sm font-medium" data-tab="logs">
+          操作日志
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab内容区 -->
+    <div class="flex-1 min-w-0">
+      <!-- 基本信息标签页 -->
+      <div id="tab-basic" class="tab-content">
           <!-- 存储产品列表 -->
           <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
             <div class="flex items-center justify-between mb-4">
@@ -469,69 +405,122 @@
           <div class="bg-white rounded-lg p-6 shadow-sm">
             <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">出库信息</h2>
             <div class="text-sm text-neutral-500 text-center py-8">暂无出库信息</div>
-          </div>
         </div>
       </div>
 
-      <!-- 右侧时间轴区域 -->
-      <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
-        <div class="bg-white rounded-lg p-6 shadow-sm lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-          <h2 class="text-base font-medium text-neutral-800 mb-4 pb-2 border-b border-neutral-200">操作时间轴</h2>
-          <div class="timeline">
-            <div class="timeline-item completed">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="text-sm font-medium text-neutral-800">订单创建</div>
-                  <div class="text-xs text-neutral-500 mt-1">2025-12-10 08:00:00</div>
-                  <div class="text-xs text-neutral-600 mt-1">系统自动创建入库订单</div>
-                </div>
+      <!-- 操作日志标签页 -->
+      <div id="tab-logs" class="tab-content hidden">
+        <div class="bg-white rounded-lg p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-neutral-200">
+            <h2 class="text-base font-medium text-neutral-800">操作日志</h2>
+            <button id="refresh-logs" class="text-xs text-primary hover:text-primary/80 transition-colors" title="刷新">
+              <i class="fa fa-sync-alt"></i>
+                        </button>
+            </div>
+            
+          <!-- 查询条件 -->
+          <div class="mb-4 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <!-- 操作人查询 -->
+              <div class="relative">
+                <label class="block text-xs text-neutral-500 mb-1">操作人</label>
+                <input 
+                  type="text" 
+                  id="log-operator" 
+                  placeholder="请输入操作人..." 
+                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                <i class="fa fa-user absolute right-3 top-8 text-neutral-400 text-xs"></i>
+            </div>
+            
+              <!-- 操作时间查询（开始时间） -->
+              <div>
+                <label class="block text-xs text-neutral-500 mb-1">开始时间</label>
+                <input 
+                  type="datetime-local" 
+                  id="log-time-start" 
+                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+            </div>
+            
+              <!-- 操作时间查询（结束时间） -->
+              <div>
+                <label class="block text-xs text-neutral-500 mb-1">结束时间</label>
+                <input 
+                  type="datetime-local" 
+                  id="log-time-end" 
+                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
               </div>
             </div>
-            <div class="timeline-item completed">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="text-sm font-medium text-neutral-800">车队预约</div>
-                  <div class="text-xs text-neutral-500 mt-1">2025-12-10 09:15:00</div>
-                  <div class="text-xs text-neutral-600 mt-1">已预约车队，预计12月12日到达</div>
-                </div>
+            
+            <!-- 通用搜索 -->
+            <div class="grid grid-cols-1 gap-3">
+              <div class="relative">
+                <label class="block text-xs text-neutral-500 mb-1">内容搜索</label>
+                <input 
+                  type="text" 
+                  id="log-search" 
+                  placeholder="搜索操作内容..." 
+                  class="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                <i class="fa fa-search absolute right-3 top-8 text-neutral-400 text-xs"></i>
               </div>
             </div>
-            <div class="timeline-item completed">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="text-sm font-medium text-neutral-800">仓库审核</div>
-                  <div class="text-xs text-neutral-500 mt-1">2025-12-10 10:30:00</div>
-                  <div class="text-xs text-neutral-600 mt-1">仓库管理员已审核通过</div>
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item processing">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="text-sm font-medium text-neutral-800">货物到港</div>
-                  <div class="text-xs text-neutral-500 mt-1">进行中</div>
-                  <div class="text-xs text-neutral-600 mt-1">等待货物到达港口</div>
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item waiting">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="text-sm font-medium text-neutral-500">货物入库</div>
-                  <div class="text-xs text-neutral-400 mt-1">待处理</div>
-                  <div class="text-xs text-neutral-400 mt-1">等待货物到达后进行入库操作</div>
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item waiting">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="text-sm font-medium text-neutral-500">上架完成</div>
-                  <div class="text-xs text-neutral-400 mt-1">待处理</div>
-                  <div class="text-xs text-neutral-400 mt-1">等待货物上架完成</div>
-                </div>
-              </div>
-            </div>
+            
+          <!-- 操作日志表格 -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>操作人</th>
+                  <th>时间</th>
+                  <th>内容</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>系统自动</td>
+                  <td>2025-12-10 08:00:00</td>
+                  <td>创建入库订单</td>
+                </tr>
+                <tr>
+                  <td>张三</td>
+                  <td>2025-12-10 09:15:00</td>
+                  <td>预约车队</td>
+                </tr>
+                <tr>
+                  <td>李四</td>
+                  <td>2025-12-10 14:20:00</td>
+                  <td>修改送仓时间</td>
+                </tr>
+                <tr>
+                  <td>王五（仓库管理员）</td>
+                  <td>2025-12-11 10:30:00</td>
+                  <td>确认送仓</td>
+                </tr>
+                <tr>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>到仓</td>
+                </tr>
+                <tr>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>卸货/打托/上架</td>
+                </tr>
+                <tr>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>提空</td>
+                </tr>
+                <tr>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>取消订单</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -571,9 +560,149 @@
       window.history.back();
     });
 
+    // 操作日志查询功能
+    function initLogs() {
+      const searchInput = document.getElementById('log-search');
+      const operatorInput = document.getElementById('log-operator');
+      const timeStartInput = document.getElementById('log-time-start');
+      const timeEndInput = document.getElementById('log-time-end');
+      const logTable = document.querySelector('#tab-logs table');
+      const logRows = logTable ? logTable.querySelectorAll('tbody tr') : [];
+      
+      // 初始隐藏"未执行"的日志记录（通过判断内容是否为"取消订单"）
+      logRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3) {
+          const content = cells[2].textContent.toLowerCase();
+          // 判断是否为未执行的环节：内容为"取消订单"
+          if (content.includes('取消订单')) {
+            row.style.display = 'none';
+          }
+        }
+      });
+      
+      // 将日期时间字符串转换为可比较的格式
+      function parseDateTime(dateTimeStr) {
+        if (!dateTimeStr || dateTimeStr === '-') return null;
+        // 将 "2025-12-10 08:00:00" 转换为 "2025-12-10T08:00"
+        const formatted = dateTimeStr.replace(' ', 'T').substring(0, 16);
+        return new Date(formatted);
+      }
+      
+      // 搜索和筛选函数
+      function filterLogs() {
+        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const operatorTerm = operatorInput ? operatorInput.value.toLowerCase().trim() : '';
+        const timeStart = timeStartInput ? timeStartInput.value : '';
+        const timeEnd = timeEndInput ? timeEndInput.value : '';
+        
+        logRows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length === 0) return;
+          
+          // 获取各列数据（新结构：操作人、时间、内容）
+          const operator = cells[0].textContent.toLowerCase();
+          const timeStr = cells[1].textContent;
+          const content = cells[2].textContent.toLowerCase();
+          const allContent = Array.from(cells).map(cell => cell.textContent.toLowerCase()).join(' ');
+          
+          // 隐藏"未执行"的日志记录
+          if (content.includes('取消订单')) {
+            row.style.display = 'none';
+            return;
+          }
+          
+          // 检查操作人
+          const matchesOperator = !operatorTerm || operator.includes(operatorTerm);
+          
+          // 检查操作时间范围
+          let matchesTime = true;
+          if (timeStart || timeEnd) {
+            const rowTime = parseDateTime(timeStr);
+            if (rowTime) {
+              if (timeStart) {
+                const startTime = new Date(timeStart);
+                if (rowTime < startTime) matchesTime = false;
+              }
+              if (timeEnd) {
+                const endTime = new Date(timeEnd);
+                // 结束时间设置为当天的23:59:59
+                endTime.setHours(23, 59, 59, 999);
+                if (rowTime > endTime) matchesTime = false;
+              }
+            } else {
+              // 如果行的时间为空，且设置了时间范围，则不匹配
+              if (timeStart || timeEnd) matchesTime = false;
+            }
+          }
+          
+          // 检查内容搜索
+          const matchesSearch = !searchTerm || allContent.includes(searchTerm);
+          
+          if (matchesOperator && matchesTime && matchesSearch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+          }
+        });
+      }
+      
+      // 绑定所有查询事件
+      if (searchInput) {
+        searchInput.addEventListener('input', filterLogs);
+      }
+      if (operatorInput) {
+        operatorInput.addEventListener('input', filterLogs);
+      }
+      if (timeStartInput) {
+        timeStartInput.addEventListener('change', filterLogs);
+      }
+      if (timeEndInput) {
+        timeEndInput.addEventListener('change', filterLogs);
+      }
+      
+      // 刷新按钮功能
+      const refreshBtn = document.getElementById('refresh-logs');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+          // 重置所有查询条件
+          if (searchInput) searchInput.value = '';
+          if (operatorInput) operatorInput.value = '';
+          if (timeStartInput) timeStartInput.value = '';
+          if (timeEndInput) timeEndInput.value = '';
+          
+          // 显示所有行，但隐藏"未执行"的日志记录
+          logRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 3) {
+              const content = cells[2].textContent.toLowerCase();
+              // 隐藏未执行的环节
+              if (content.includes('取消订单')) {
+                row.style.display = 'none';
+              } else {
+                row.style.display = '';
+              }
+            } else {
+              row.style.display = '';
+            }
+          });
+          
+          // 添加旋转动画
+          const icon = refreshBtn.querySelector('i');
+          if (icon) {
+            icon.classList.add('fa-spin');
+      setTimeout(() => {
+              icon.classList.remove('fa-spin');
+            }, 1000);
+          }
+        });
+      }
+    }
+    
     // 页面加载完成后初始化
     document.addEventListener('DOMContentLoaded', function() {
       initTabs();
+      initLogs();
     });
   </script>
 </body>

@@ -1480,6 +1480,74 @@
         }
       }
       
+      // 显示订单状态选择对话框
+      function showStatusSelectionDialog(callback) {
+        // 创建模态框
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center';
+        modal.id = 'status-selection-modal';
+        
+        modal.innerHTML = `
+          <div class="bg-white rounded-lg p-6 m-4 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-800">选择订单状态</h3>
+              <button id="close-status-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">请选择订单状态：</label>
+              <select id="selected-order-status" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <option value="">请选择状态</option>
+                <option value="待预约">待预约</option>
+                <option value="待确认">待确认</option>
+                <option value="待送仓">待送仓</option>
+              </select>
+            </div>
+            <div class="flex gap-3 justify-end">
+              <button id="cancel-status-selection" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                取消
+              </button>
+              <button id="confirm-status-selection" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+                确认
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 关闭按钮事件
+        const closeBtn = modal.querySelector('#close-status-modal');
+        const cancelBtn = modal.querySelector('#cancel-status-selection');
+        const confirmBtn = modal.querySelector('#confirm-status-selection');
+        
+        const closeModal = () => {
+          document.body.removeChild(modal);
+        };
+        
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        
+        // 点击外部关闭
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+        
+        // 确认按钮事件
+        confirmBtn.addEventListener('click', function() {
+          const selectedStatus = document.getElementById('selected-order-status').value;
+          if (!selectedStatus) {
+            alert('请选择订单状态');
+            return;
+          }
+          closeModal();
+          callback(selectedStatus);
+        });
+      }
+      
       // 全局提交订单表单
       function submitGlobalOrderForm() {
         // 获取柜号（相同柜号只提交一次）
@@ -1515,77 +1583,178 @@
           }
         }
         
-        // 筛选状态为待预约、待仓库确认（审核）或待送仓的订单
-        const pendingOrders = orderData.filter(order => 
-          order.status === '待预约' || order.status === '待仓库审核' || order.status === '待仓库确认' || order.status === '待送仓'
-        );
-        
-        // 检查是否存在可提交的订单
-        if (pendingOrders.length === 0) {
-          alert('没有可提交的订单，仅支持提交状态为"待预约"、"待仓库确认"和"待送仓"的订单');
-          return;
-        }
-        
-        // 检查是否有待送仓状态的订单
-        const hasPendingDeliveryOrders = pendingOrders.some(order => order.status === '待送仓');
-        
-        // 如果有待送仓状态的订单，提示是否变更送仓时间
-        if (hasPendingDeliveryOrders) {
-          const confirmChangeTime = confirm('检测到有订单状态为"待送仓"，是否变更送仓时间？');
-          if (!confirmChangeTime) {
-            return; // 用户取消变更送仓时间
+        // 先显示状态选择对话框
+        showStatusSelectionDialog(function(selectedStatus) {
+          // 根据选择的状态进行处理
+          if (selectedStatus === '待预约' || selectedStatus === '待确认') {
+            // 筛选状态为待预约或待确认的订单
+            const pendingOrders = orderData.filter(order => 
+              order.status === selectedStatus
+            );
+            
+            // 检查是否存在可提交的订单
+            if (pendingOrders.length === 0) {
+              alert(`没有状态为"${selectedStatus}"的订单`);
+              return;
+            }
+            
+            // 执行提交
+            processOrderSubmission(pendingOrders, containerNo, deliveryMethod, warehouseTime, teamPhone, teamBackupPhone, teamRemark, emails, selectedStatus);
+          } else if (selectedStatus === '待送仓') {
+            // 二次确认
+            const confirmMessage = '当前为待送仓状态，重新提交要重新审核，是否继续该操作？';
+            const userConfirm = confirm(confirmMessage);
+            
+            if (!userConfirm) {
+              return; // 用户取消操作
+            }
+            
+            // 筛选状态为待送仓的订单
+            const pendingOrders = orderData.filter(order => 
+              order.status === '待送仓'
+            );
+            
+            // 检查是否存在可提交的订单
+            if (pendingOrders.length === 0) {
+              alert('没有状态为"待送仓"的订单');
+              return;
+            }
+            
+            // 执行提交
+            processOrderSubmission(pendingOrders, containerNo, deliveryMethod, warehouseTime, teamPhone, teamBackupPhone, teamRemark, emails, selectedStatus);
           }
+        });
+      }
+      
+      // 显示提交成功提示模态框
+      function showSuccessModal(selectedStatus, successCount, successOrders, failedCount, failedOrders) {
+        // 创建模态框
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center';
+        modal.id = 'success-modal';
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.3s ease-in-out';
+        
+        // 根据状态确定标题和图标
+        let title = '';
+        let iconClass = '';
+        let iconBgClass = '';
+        
+        if (selectedStatus === '待预约' || selectedStatus === '待确认') {
+          title = '预约成功';
+          iconClass = 'fas fa-check-circle';
+          iconBgClass = 'bg-green-100';
+        } else if (selectedStatus === '待送仓') {
+          title = '提交成功';
+          iconClass = 'fas fa-check-circle';
+          iconBgClass = 'bg-green-100';
         }
         
-        // 检查历史记录，展示已有提交记录
-        const historyKey = `history_${currentUser ? currentUser.username : 'guest'}`;
-        const historyData = localStorage.getItem(historyKey);
-        const records = historyData ? JSON.parse(historyData) : [];
+        // 构建订单列表HTML
+        let ordersListHTML = '';
+        if (successOrders && successOrders.length > 0) {
+          ordersListHTML = '<div class="mt-4 max-h-48 overflow-y-auto"><div class="text-sm font-medium text-gray-700 mb-2">成功提交的订单：</div><ul class="space-y-1">';
+          successOrders.forEach(order => {
+            ordersListHTML += `<li class="text-sm text-gray-600 flex items-center gap-2">
+              <i class="fas fa-check text-green-500 text-xs"></i>
+              <span>${order.orderNo}</span>
+            </li>`;
+          });
+          ordersListHTML += '</ul></div>';
+        }
         
-        // 检查是否有相同订单的历史记录
-        const existingRecords = [];
-        pendingOrders.forEach(order => {
-          const matchedRecords = records.filter(record => 
-            record.orderNo === order.orderNo && 
-            record.containerNo === containerNo
-          );
-          if (matchedRecords.length > 0) {
-            existingRecords.push({
-              orderNo: order.orderNo,
-              warehouseNo: order.warehouseNo,
-              contactPerson: order.contactPerson,
-              lastSubmitted: new Date(matchedRecords[0].createTime).toLocaleString()
-            });
+        // 构建失败订单列表HTML
+        let failedOrdersHTML = '';
+        if (failedCount > 0 && failedOrders && failedOrders.length > 0) {
+          failedOrdersHTML = '<div class="mt-4 max-h-32 overflow-y-auto"><div class="text-sm font-medium text-red-700 mb-2">提交失败的订单：</div><ul class="space-y-1">';
+          failedOrders.forEach(orderNo => {
+            failedOrdersHTML += `<li class="text-sm text-red-600 flex items-center gap-2">
+              <i class="fas fa-times-circle text-red-500 text-xs"></i>
+              <span>${orderNo}</span>
+            </li>`;
+          });
+          failedOrdersHTML += '</ul></div>';
+        }
+        
+        modal.innerHTML = `
+          <div class="bg-white rounded-lg p-6 m-4 w-full max-w-md shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-800">${title}</h3>
+              <button id="close-success-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="text-center mb-4">
+              <div class="inline-flex items-center justify-center w-16 h-16 ${iconBgClass} rounded-full mb-3">
+                <i class="${iconClass} text-green-600 text-3xl"></i>
+              </div>
+              <p class="text-base font-medium text-gray-800 mb-1">${title}！</p>
+              <p class="text-sm text-gray-600">成功提交 <span class="font-semibold text-primary">${successCount}</span> 条订单</p>
+            </div>
+            
+            ${ordersListHTML}
+            ${failedOrdersHTML}
+            
+            <div class="mt-6 flex justify-end">
+              <button id="confirm-success-btn" class="px-6 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+                确定
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 关闭按钮事件
+        const closeBtn = modal.querySelector('#close-success-modal');
+        const confirmBtn = modal.querySelector('#confirm-success-btn');
+        
+        const closeModal = () => {
+          modal.style.opacity = '0';
+          setTimeout(() => {
+            if (document.body.contains(modal)) {
+              document.body.removeChild(modal);
+            }
+          }, 300);
+        };
+        
+        if (closeBtn) {
+          closeBtn.addEventListener('click', closeModal);
+        }
+        
+        if (confirmBtn) {
+          confirmBtn.addEventListener('click', closeModal);
+        }
+        
+        // 点击外部关闭
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeModal();
           }
         });
         
-        // 如果有重复提交记录，展示并询问
-        if (existingRecords.length > 0) {
-          const duplicateMessage = `发现以下订单已有相同柜号的提交记录：\n\n${existingRecords.map(record => 
-            `订单号: ${record.orderNo}\n仓库: ${record.warehouseNo}\n联系人: ${record.contactPerson}\n上次提交时间: ${record.lastSubmitted}`
-          ).join('\n\n')}\n\n是否确认继续提交？`;
-          
-          const confirmDuplicate = confirm(duplicateMessage);
-          if (!confirmDuplicate) {
-            return; // 用户取消重复提交
+        // ESC键关闭
+        const handleEsc = (e) => {
+          if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', handleEsc);
           }
-        }
+        };
+        document.addEventListener('keydown', handleEsc);
         
-        // 显示预约记录确认提示
-        const orderDetails = pendingOrders.map(order => 
-          `订单号: ${order.orderNo}\n仓库: ${order.warehouseNo}\n联系人: ${order.contactPerson}`
-        ).join('\n\n');
-        
-        const confirmRecord = confirm(`预约记录确认:\n\n${orderDetails}\n\n是否确认提交？`);
-        
-        if (!confirmRecord) {
-          return; // 用户取消提交
-        }
-        
+        // 添加淡入动画
+        setTimeout(() => {
+          modal.style.opacity = '1';
+        }, 10);
+      }
+      
+      // 处理订单提交
+      function processOrderSubmission(pendingOrders, containerNo, deliveryMethod, warehouseTime, teamPhone, teamBackupPhone, teamRemark, emails, selectedStatus) {
         // 获取待提交订单的ID
         const orderIds = pendingOrders.map(order => order.id);
         
-        // 构造提交数据 - 只提交符合状态要求的订单
+        // 构造提交数据
         const formData = {
           containerNo,
           orderIds,
@@ -1603,6 +1772,7 @@
         let successCount = 0;
         let failedCount = 0;
         const failedOrders = [];
+        const successOrders = [];
         
         pendingOrders.forEach(order => {
           try {
@@ -1623,6 +1793,7 @@
             // 添加到历史记录
             addHistoryRecord(historyRecord);
             successCount++;
+            successOrders.push(order);
           } catch (error) {
             failedCount++;
             failedOrders.push(order.orderNo);
@@ -1630,18 +1801,8 @@
           }
         });
         
-        // 构造简洁的提交成功信息
-        let resultMessage = `✅ 预约提交成功！\n\n`;
-        resultMessage += `📋 共提交订单数: ${pendingOrders.length}\n`;
-        resultMessage += `✅ 成功提交: ${successCount}\n`;
-        
-        if (failedCount > 0) {
-          resultMessage += `❌ 提交失败: ${failedCount}\n`;
-          resultMessage += `📝 失败订单: ${failedOrders.join(', ')}\n`;
-        }
-        
-        // 显示提交成功信息
-        alert(resultMessage);
+        // 显示优化后的成功提示
+        showSuccessModal(selectedStatus, successCount, successOrders, failedCount, failedOrders);
       }
       
       // 为全局表单添加事件监听
