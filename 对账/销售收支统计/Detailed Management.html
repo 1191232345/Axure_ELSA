@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>业务管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E88E5',
+            secondary: '#FF9800',
+            danger: '#F53F3F',
+            neutral: '#F5F7FA',
+            dark: '#333647',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .table-shadow {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      .btn-hover {
+        @apply transition-all duration-300 hover:shadow-md hover:-translate-y-0.5;
+      }
+      .input-focus {
+        @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
+      }
+      .watermark {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.05;
+        background-image: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 100px,
+          rgba(0, 0, 0, 0.03) 100px,
+          rgba(0, 0, 0, 0.03) 200px
+        );
+      }
+      .watermark::before {
+        content: 'zsw';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 200px;
+        color: rgba(0, 0, 0, 0.05);
+        font-weight: bold;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark relative">
+  <!-- 水印 -->
+  <div class="watermark"></div>
+  
+  <div class="container mx-auto px-4 py-8 max-w-[1920px] relative z-10">
+    
+    <!-- 搜索筛选区域 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex flex-wrap gap-4 items-end">
+        <!-- 月度筛选 -->
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">月度</label>
+          <div class="relative">
+            <input 
+              type="month" 
+              id="monthFilter" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus"
+              placeholder="请选择月度"
+            >
+            <i class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+          </div>
+        </div>
+        
+        <!-- 客户代码筛选 -->
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="customerCodeFilter" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus pr-10"
+              placeholder="请选择客户代码"
+              list="customerCodes"
+            >
+            <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+            <datalist id="customerCodes">
+              <option value="7TH">7TH</option>
+              <option value="AJKC">AJKC</option>
+              <option value="DEMO">DEMO</option>
+            </datalist>
+          </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="flex gap-2">
+          <button id="resetBtn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
+            重置
+          </button>
+          <button id="searchBtn" class="px-6 py-2 bg-primary text-white rounded-lg btn-hover">
+            搜索
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 功能按钮区域 -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex flex-wrap gap-3">
+        <button id="addBtn" class="px-4 py-2 bg-primary text-white rounded-lg btn-hover flex items-center">
+          <i class="fas fa-plus mr-2"></i>新增
+        </button>
+        <button id="importBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover flex items-center">
+          <i class="fas fa-arrow-up mr-2"></i>导入
+        </button>
+        <button id="exportBtn" class="px-4 py-2 bg-secondary text-white rounded-lg btn-hover flex items-center">
+          <i class="fas fa-arrow-down mr-2"></i>导出
+        </button>
+        <button id="batchDeleteBtn" class="px-4 py-2 bg-danger text-white rounded-lg btn-hover">
+          批量删除
+        </button>
+        <button id="detailAdjustBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover flex items-center">
+          <i class="fas fa-arrow-up mr-2"></i>明细调整
+        </button>
+      </div>
+    </div>
+    
+    <!-- 数据表格区域 -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 table-shadow">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-4 py-3 w-12">
+                <input type="checkbox" id="selectAll" class="rounded text-primary focus:ring-primary">
+              </th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务ID</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务编号</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账单月</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户代码</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户编号</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预计开航日</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务员</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客服</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">次客服</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提单号</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支出结算单位</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收入结算单位</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">币种</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">对仓成本</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客服收入</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+            <!-- 表格数据将通过JS动态生成 -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页控件 -->
+      <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200">
+        <div class="text-sm text-gray-500">
+          Total <span id="totalRecords">0</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="pageSize" class="border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <option value="10">10/page</option>
+            <option value="20">20/page</option>
+            <option value="50">50/page</option>
+            <option value="100">100/page</option>
+          </select>
+          <nav class="flex items-center gap-1" id="pagination">
+            <!-- 分页按钮将通过JS动态生成 -->
+          </nav>
+          <div class="flex items-center gap-1">
+            <span class="text-sm text-gray-500">Go to</span>
+            <input type="number" id="goToPage" value="1" min="1" class="w-12 h-8 border rounded text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 查看详情弹窗 -->
+  <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative">
+      <!-- 弹窗头部 -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <h3 class="text-xl font-semibold text-gray-800">
+          <i class="fas fa-eye text-primary mr-2"></i>
+          查看详情
+        </h3>
+        <button id="closeViewModal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="px-6 py-4">
+        <div class="grid grid-cols-2 gap-4" id="viewContent">
+          <!-- 详情内容将通过JS动态生成 -->
+        </div>
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-2 sticky bottom-0 bg-white">
+        <button id="closeViewBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+          关闭
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑弹窗 -->
+  <div id="formModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative">
+      <!-- 弹窗头部 -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+        <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">
+          <i class="fas fa-plus text-primary mr-2"></i>
+          <span id="modalTitleText">新增业务</span>
+        </h3>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="px-6 py-4">
+        <form id="businessForm" class="space-y-4">
+          <input type="hidden" id="businessId">
+          
+          <div class="grid grid-cols-2 gap-4">
+            <!-- 业务ID -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">业务ID <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                id="businessIdInput" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+                placeholder="系统自动生成"
+                readonly
+                disabled
+              >
+            </div>
+            
+            <!-- 业务编号 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">业务编号</label>
+              <input 
+                type="text" 
+                id="businessNumber" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="请输入业务编号"
+              >
+            </div>
+            
+            <!-- 账单月 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">账单月 <span class="text-red-500">*</span></label>
+              <input 
+                type="month" 
+                id="billMonth" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                required
+              >
+            </div>
+            
+            <!-- 客户代码 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">客户代码 <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                id="customerCode" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="请输入客户代码"
+                list="customerCodeList"
+                required
+              >
+              <datalist id="customerCodeList">
+                <option value="7TH">7TH</option>
+                <option value="AJKC">AJKC</option>
+                <option value="DEMO">DEMO</option>
+              </datalist>
+            </div>
+            
+            <!-- 客户编号 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">客户编号</label>
+              <input 
+                type="text" 
+                id="customerNumber" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="请输入客户编号"
+              >
+            </div>
+            
+            <!-- 预计开航日 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">预计开航日 <span class="text-red-500">*</span></label>
+              <input 
+                type="date" 
+                id="estimatedSailingDate" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                required
+              >
+            </div>
+            
+            <!-- 业务员 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">业务员</label>
+              <select 
+                id="salesperson" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+              >
+                <option value="">请选择业务员</option>
+                <option value="甘鹏远">甘鹏远</option>
+                <option value="钱宇阳">钱宇阳</option>
+                <option value="张三">张三</option>
+                <option value="李四">李四</option>
+                <option value="王五">王五</option>
+                <option value="-">-</option>
+              </select>
+            </div>
+            
+            <!-- 客服 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">客服</label>
+              <select 
+                id="customerService" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+              >
+                <option value="">请选择客服</option>
+                <option value="客服A">客服A</option>
+                <option value="客服B">客服B</option>
+                <option value="客服C">客服C</option>
+                <option value="客服D">客服D</option>
+                <option value="-">-</option>
+              </select>
+            </div>
+            
+            <!-- 次客服 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">次客服</label>
+              <select 
+                id="secondaryCustomerService" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+              >
+                <option value="">请选择次客服</option>
+                <option value="次客服A">次客服A</option>
+                <option value="次客服B">次客服B</option>
+                <option value="次客服C">次客服C</option>
+                <option value="次客服D">次客服D</option>
+                <option value="-">-</option>
+              </select>
+            </div>
+            
+            <!-- 提单号 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">提单号</label>
+              <input 
+                type="text" 
+                id="billOfLading" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="请输入提单号"
+              >
+            </div>
+            
+            <!-- 支出结算单位 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">支出结算单位</label>
+              <input 
+                type="text" 
+                id="expenseSettlementUnit" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="请输入支出结算单位"
+              >
+            </div>
+            
+            <!-- 收入结算单位 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">收入结算单位</label>
+              <input 
+                type="text" 
+                id="revenueSettlementUnit" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="请输入收入结算单位"
+              >
+            </div>
+            
+            <!-- 项目 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">项目 <span class="text-red-500">*</span></label>
+              <select 
+                id="item" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                required
+              >
+                <option value="">请选择项目</option>
+                <option value="仓储费">仓储费</option>
+                <option value="转仓费">转仓费</option>
+                <option value="出库费">出库费</option>
+                <option value="快递费">快递费</option>
+                <option value="操作费">操作费</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            
+            <!-- 币种 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">币种 <span class="text-red-500">*</span></label>
+              <select 
+                id="currency" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                required
+              >
+                <option value="USD">USD</option>
+                <option value="CNY">CNY</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+            
+            <!-- 对仓成本 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">对仓成本 <span class="text-red-500">*</span></label>
+              <input 
+                type="number" 
+                id="warehouseCost" 
+                step="0.001"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="0.000"
+                required
+              >
+            </div>
+            
+            <!-- 客服收入 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">客服收入 <span class="text-red-500">*</span></label>
+              <input 
+                type="number" 
+                id="customerServiceRevenue" 
+                step="0.001"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
+                placeholder="0.000"
+                required
+              >
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-2 sticky bottom-0 bg-white">
+        <button id="cancelBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+          取消
+        </button>
+        <button id="saveBtn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors duration-200">
+          <i class="fas fa-save mr-2"></i>保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示消息组件 -->
+  <div id="toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 flex items-center hidden">
+    <i id="toastIcon" class="mr-2 text-xl"></i>
+    <span id="toastMessage"></span>
+  </div>
+
+  <script>
+    // 全局变量
+    let businessData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    let pageSize = 10;
+    let currentEditId = null;
+    
+    // DOM 元素
+    const tableBody = document.getElementById('tableBody');
+    const formModal = document.getElementById('formModal');
+    const modalTitleText = document.getElementById('modalTitleText');
+    const businessForm = document.getElementById('businessForm');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const addBtn = document.getElementById('addBtn');
+    const searchBtn = document.getElementById('searchBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const selectAll = document.getElementById('selectAll');
+    const pageSizeSelect = document.getElementById('pageSize');
+    const goToPageInput = document.getElementById('goToPage');
+    const pagination = document.getElementById('pagination');
+    const totalRecordsSpan = document.getElementById('totalRecords');
+    
+    // 初始化示例数据
+    function initSampleData() {
+      businessData = [
+        {
+          id: '251201107',
+          businessId: '251201107',
+          businessNumber: '-',
+          billMonth: '2025-08',
+          customerCode: '7TH',
+          customerNumber: '',
+          estimatedSailingDate: '2025/08/01',
+          salesperson: '甘鹏远',
+          customerService: '-',
+          secondaryCustomerService: '-',
+          billOfLading: '',
+          expenseSettlementUnit: '',
+          revenueSettlementUnit: '',
+          item: '仓储费',
+          currency: 'USD',
+          warehouseCost: 49.104,
+          customerServiceRevenue: 73.409
+        }
+      ];
+      filteredData = [...businessData];
+      renderTable();
+    }
+    
+    // 渲染表格
+    function renderTable() {
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageData = filteredData.slice(start, end);
+      
+      tableBody.innerHTML = pageData.map(item => `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3 whitespace-nowrap">
+            <input type="checkbox" class="row-checkbox rounded text-primary focus:ring-primary" data-id="${item.id}">
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.businessId || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.businessNumber || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.billMonth || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerCode || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerNumber || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.estimatedSailingDate || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.salesperson || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerService || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.secondaryCustomerService || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.billOfLading || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.expenseSettlementUnit || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.revenueSettlementUnit || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.item || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.currency || '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.warehouseCost !== undefined ? item.warehouseCost.toFixed(3) : '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerServiceRevenue !== undefined ? item.customerServiceRevenue.toFixed(3) : '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+            <button onclick="viewDetail('${item.id}')" class="text-primary hover:text-primary/80 mr-3" title="查看">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button onclick="openEditModal('${item.id}')" class="text-secondary hover:text-secondary/80 mr-3" title="编辑">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="deleteItem('${item.id}')" class="text-danger hover:text-danger/80" title="删除">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+      
+      renderPagination();
+      updateTotalRecords();
+    }
+    
+    // 渲染分页
+    function renderPagination() {
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      let paginationHTML = '';
+      
+      // 上一页按钮
+      paginationHTML += `
+        <button 
+          onclick="goToPage(${currentPage - 1})" 
+          ${currentPage === 1 ? 'disabled' : ''}
+          class="px-3 py-1 border rounded-md text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-50'}">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      `;
+      
+      // 页码按钮
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+      
+      if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+      }
+      
+      if (startPage > 1) {
+        paginationHTML += `
+          <button onclick="goToPage(1)" class="px-3 py-1 border rounded-md text-sm hover:bg-gray-50">1</button>
+        `;
+        if (startPage > 2) {
+          paginationHTML += `<span class="px-2 text-gray-500">...</span>`;
+        }
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        paginationHTML += `
+          <button 
+            onclick="goToPage(${i})" 
+            class="px-3 py-1 border rounded-md text-sm ${i === currentPage ? 'bg-primary text-white' : 'hover:bg-gray-50'}">
+            ${i}
+          </button>
+        `;
+      }
+      
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          paginationHTML += `<span class="px-2 text-gray-500">...</span>`;
+        }
+        paginationHTML += `
+          <button onclick="goToPage(${totalPages})" class="px-3 py-1 border rounded-md text-sm hover:bg-gray-50">${totalPages}</button>
+        `;
+      }
+      
+      // 下一页按钮
+      paginationHTML += `
+        <button 
+          onclick="goToPage(${currentPage + 1})" 
+          ${currentPage === totalPages ? 'disabled' : ''}
+          class="px-3 py-1 border rounded-md text-sm ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-50'}">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      `;
+      
+      pagination.innerHTML = paginationHTML;
+      goToPageInput.value = currentPage;
+      goToPageInput.max = totalPages;
+    }
+    
+    // 更新总记录数
+    function updateTotalRecords() {
+      totalRecordsSpan.textContent = filteredData.length;
+    }
+    
+    // 跳转到指定页
+    function goToPage(page) {
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+    }
+    
+    // 搜索功能
+    function handleSearch() {
+      const monthFilter = document.getElementById('monthFilter').value;
+      const customerCodeFilter = document.getElementById('customerCodeFilter').value;
+      
+      filteredData = businessData.filter(item => {
+        const matchMonth = !monthFilter || item.billMonth === monthFilter;
+        const matchCustomerCode = !customerCodeFilter || item.customerCode.toLowerCase().includes(customerCodeFilter.toLowerCase());
+        return matchMonth && matchCustomerCode;
+      });
+      
+      currentPage = 1;
+      renderTable();
+    }
+    
+    // 重置搜索
+    function handleReset() {
+      document.getElementById('monthFilter').value = '';
+      document.getElementById('customerCodeFilter').value = '';
+      filteredData = [...businessData];
+      currentPage = 1;
+      renderTable();
+    }
+    
+    // 打开新增弹窗
+    function openAddModal() {
+      currentEditId = null;
+      modalTitleText.textContent = '新增业务';
+      businessForm.reset();
+      document.getElementById('businessIdInput').value = '系统自动生成';
+      formModal.classList.remove('hidden');
+    }
+    
+    // 打开编辑弹窗
+    function openEditModal(id) {
+      const item = businessData.find(d => d.id === id);
+      if (!item) return;
+      
+      currentEditId = id;
+      modalTitleText.textContent = '编辑业务';
+      document.getElementById('businessIdInput').value = item.businessId;
+      document.getElementById('businessNumber').value = item.businessNumber || '';
+      document.getElementById('billMonth').value = item.billMonth || '';
+      document.getElementById('customerCode').value = item.customerCode || '';
+      document.getElementById('customerNumber').value = item.customerNumber || '';
+      document.getElementById('estimatedSailingDate').value = item.estimatedSailingDate ? item.estimatedSailingDate.replace(/\//g, '-') : '';
+      document.getElementById('salesperson').value = item.salesperson || '';
+      document.getElementById('customerService').value = item.customerService || '';
+      document.getElementById('secondaryCustomerService').value = item.secondaryCustomerService || '';
+      document.getElementById('billOfLading').value = item.billOfLading || '';
+      document.getElementById('expenseSettlementUnit').value = item.expenseSettlementUnit || '';
+      document.getElementById('revenueSettlementUnit').value = item.revenueSettlementUnit || '';
+      document.getElementById('item').value = item.item || '';
+      document.getElementById('currency').value = item.currency || 'USD';
+      document.getElementById('warehouseCost').value = item.warehouseCost || '';
+      document.getElementById('customerServiceRevenue').value = item.customerServiceRevenue || '';
+      
+      formModal.classList.remove('hidden');
+    }
+    
+    // 查看详情
+    function viewDetail(id) {
+      const item = businessData.find(d => d.id === id);
+      if (!item) return;
+      
+      const viewContent = document.getElementById('viewContent');
+      viewContent.innerHTML = `
+        <div><strong>业务ID:</strong> ${item.businessId || '-'}</div>
+        <div><strong>业务编号:</strong> ${item.businessNumber || '-'}</div>
+        <div><strong>账单月:</strong> ${item.billMonth || '-'}</div>
+        <div><strong>客户代码:</strong> ${item.customerCode || '-'}</div>
+        <div><strong>客户编号:</strong> ${item.customerNumber || '-'}</div>
+        <div><strong>预计开航日:</strong> ${item.estimatedSailingDate || '-'}</div>
+        <div><strong>业务员:</strong> ${item.salesperson || '-'}</div>
+        <div><strong>客服:</strong> ${item.customerService || '-'}</div>
+        <div><strong>次客服:</strong> ${item.secondaryCustomerService || '-'}</div>
+        <div><strong>提单号:</strong> ${item.billOfLading || '-'}</div>
+        <div><strong>支出结算单位:</strong> ${item.expenseSettlementUnit || '-'}</div>
+        <div><strong>收入结算单位:</strong> ${item.revenueSettlementUnit || '-'}</div>
+        <div><strong>项目:</strong> ${item.item || '-'}</div>
+        <div><strong>币种:</strong> ${item.currency || '-'}</div>
+        <div><strong>对仓成本:</strong> ${item.warehouseCost !== undefined ? item.warehouseCost.toFixed(3) : '-'}</div>
+        <div><strong>客服收入:</strong> ${item.customerServiceRevenue !== undefined ? item.customerServiceRevenue.toFixed(3) : '-'}</div>
+      `;
+      
+      document.getElementById('viewModal').classList.remove('hidden');
+    }
+    
+    // 删除项目
+    function deleteItem(id) {
+      if (confirm('确定要删除这条记录吗？')) {
+        businessData = businessData.filter(item => item.id !== id);
+        filteredData = filteredData.filter(item => item.id !== id);
+        showToast('删除成功', 'success');
+        renderTable();
+      }
+    }
+    
+    // 批量删除
+    function batchDelete() {
+      const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+      if (checkedBoxes.length === 0) {
+        showToast('请至少选择一条记录', 'warning');
+        return;
+      }
+      
+      if (confirm(`确定要删除选中的 ${checkedBoxes.length} 条记录吗？`)) {
+        const idsToDelete = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+        businessData = businessData.filter(item => !idsToDelete.includes(item.id));
+        filteredData = filteredData.filter(item => !idsToDelete.includes(item.id));
+        showToast(`成功删除 ${idsToDelete.length} 条记录`, 'success');
+        renderTable();
+      }
+    }
+    
+    // 保存表单
+    function saveForm() {
+      if (!businessForm.checkValidity()) {
+        businessForm.reportValidity();
+        return;
+      }
+      
+      const formData = {
+        businessNumber: document.getElementById('businessNumber').value,
+        billMonth: document.getElementById('billMonth').value,
+        customerCode: document.getElementById('customerCode').value,
+        customerNumber: document.getElementById('customerNumber').value,
+        estimatedSailingDate: document.getElementById('estimatedSailingDate').value.replace(/-/g, '/'),
+        salesperson: document.getElementById('salesperson').value,
+        customerService: document.getElementById('customerService').value,
+        secondaryCustomerService: document.getElementById('secondaryCustomerService').value,
+        billOfLading: document.getElementById('billOfLading').value,
+        expenseSettlementUnit: document.getElementById('expenseSettlementUnit').value,
+        revenueSettlementUnit: document.getElementById('revenueSettlementUnit').value,
+        item: document.getElementById('item').value,
+        currency: document.getElementById('currency').value,
+        warehouseCost: parseFloat(document.getElementById('warehouseCost').value) || 0,
+        customerServiceRevenue: parseFloat(document.getElementById('customerServiceRevenue').value) || 0
+      };
+      
+      if (currentEditId) {
+        // 编辑模式
+        const index = businessData.findIndex(item => item.id === currentEditId);
+        if (index !== -1) {
+          businessData[index] = { ...businessData[index], ...formData };
+          showToast('更新成功', 'success');
+        }
+      } else {
+        // 新增模式
+        const newId = String(Date.now());
+        const newItem = {
+          id: newId,
+          businessId: newId,
+          ...formData
+        };
+        businessData.push(newItem);
+        showToast('新增成功', 'success');
+      }
+      
+      filteredData = [...businessData];
+      formModal.classList.add('hidden');
+      renderTable();
+    }
+    
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      toastMessage.textContent = message;
+      
+      const icons = {
+        success: 'fas fa-check-circle text-green-500',
+        error: 'fas fa-exclamation-circle text-red-500',
+        warning: 'fas fa-exclamation-triangle text-yellow-500',
+        info: 'fas fa-info-circle text-blue-500'
+      };
+      
+      const colors = {
+        success: 'bg-green-50 border border-green-200',
+        error: 'bg-red-50 border border-red-200',
+        warning: 'bg-yellow-50 border border-yellow-200',
+        info: 'bg-blue-50 border border-blue-200'
+      };
+      
+      toastIcon.className = `mr-2 text-xl ${icons[type] || icons.info}`;
+      toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-0 transition-transform duration-300 z-50 flex items-center ${colors[type] || colors.info}`;
+      
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+      }, 3000);
+    }
+    
+    // 导出功能（示例）
+    function exportData() {
+      showToast('导出功能开发中...', 'info');
+    }
+    
+    // 导入功能（示例）
+    function importData() {
+      showToast('导入功能开发中...', 'info');
+    }
+    
+    // 明细调整功能（示例）
+    function detailAdjust() {
+      showToast('明细调整功能开发中...', 'info');
+    }
+    
+    // 事件监听
+    addBtn.addEventListener('click', openAddModal);
+    searchBtn.addEventListener('click', handleSearch);
+    resetBtn.addEventListener('click', handleReset);
+    saveBtn.addEventListener('click', saveForm);
+    cancelBtn.addEventListener('click', () => formModal.classList.add('hidden'));
+    closeModal.addEventListener('click', () => formModal.classList.add('hidden'));
+    
+    // 关闭查看详情弹窗
+    document.getElementById('closeViewModal').addEventListener('click', () => {
+      document.getElementById('viewModal').classList.add('hidden');
+    });
+    document.getElementById('closeViewBtn').addEventListener('click', () => {
+      document.getElementById('viewModal').classList.add('hidden');
+    });
+    
+    // 全选功能
+    selectAll.addEventListener('change', (e) => {
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+      checkboxes.forEach(cb => cb.checked = e.target.checked);
+    });
+    
+    // 分页大小改变
+    pageSizeSelect.addEventListener('change', (e) => {
+      pageSize = parseInt(e.target.value);
+      currentPage = 1;
+      renderTable();
+    });
+    
+    // 跳转到指定页
+    goToPageInput.addEventListener('change', (e) => {
+      const page = parseInt(e.target.value);
+      if (page >= 1 && page <= Math.ceil(filteredData.length / pageSize)) {
+        goToPage(page);
+      }
+    });
+    
+    // 批量删除按钮
+    document.getElementById('batchDeleteBtn').addEventListener('click', batchDelete);
+    
+    // 导出按钮
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+    
+    // 导入按钮
+    document.getElementById('importBtn').addEventListener('click', importData);
+    
+    // 明细调整按钮
+    document.getElementById('detailAdjustBtn').addEventListener('click', detailAdjust);
+    
+    // 点击弹窗外部关闭
+    formModal.addEventListener('click', (e) => {
+      if (e.target === formModal) {
+        formModal.classList.add('hidden');
+      }
+    });
+    
+    document.getElementById('viewModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('viewModal')) {
+        document.getElementById('viewModal').classList.add('hidden');
+      }
+    });
+    
+    // 初始化
+    initSampleData();
+  </script>
+</body>
+</html>
