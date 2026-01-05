@@ -132,76 +132,91 @@
 
   <!-- 主要内容 -->
   <main class="container mx-auto px-4 py-6">
+    <!-- 单号信息卡片（新，独立于基础信息卡片之上） -->
+    <div class="bg-white rounded-lg p-4 shadow-sm mb-3">
+      <h2 class="text-sm font-medium text-neutral-800 mb-2 pb-2 border-b border-neutral-200">单号信息</h2>
+      <div class="flex flex-wrap gap-x-8 gap-y-2 text-xs">
+        <div class="flex flex-col">
+          <span class="text-neutral-500 mb-0.5">订单号</span>
+          <span class="text-sm font-medium text-neutral-800">RVGJJJ-251210-0001</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-neutral-500 mb-0.5">入库单号</span>
+          <span class="text-sm font-medium text-neutral-800">KJDB-2512-011</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-neutral-500 mb-0.5">参考号</span>
+          <span class="text-sm font-medium text-neutral-800">RVGJJJ-251210-0001</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 基本信息卡片（始终显示） -->
     <div class="bg-white rounded-lg p-4 shadow-sm mb-4">
       <h2 class="text-sm font-medium text-neutral-800 mb-3 pb-2 border-b border-neutral-200">基本信息</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
-              <div class="flex flex-col">
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">客户代码</span>
-                <span class="text-sm font-medium text-neutral-800">GJJJ</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">GJJJ</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">业务类型</span>
-                <span class="text-sm font-medium text-neutral-800">储存</span>
-              </div>
-              <div class="flex flex-col">
-          <span class="text-xs text-neutral-500 mb-0.5">参考号</span>
-                <span class="text-sm font-medium text-neutral-800">RVGJJJ-251210-0001</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">储存</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">预计到港日期</span>
-                <span class="text-sm font-medium text-neutral-800">2025-12-10 08:00:00</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">2025-12-10 08:00:00</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">联系人</span>
-                <span class="text-sm font-medium text-neutral-800">KUKA</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">KUKA</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">仓群</span>
-                <span class="text-sm font-medium text-neutral-800">美东仓群02</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">美东仓群02</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">柜号</span>
-                <span class="text-sm font-medium text-neutral-800">KJDB-2512-011</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">KJDB-2512-011</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">提单号</span>
-                <span class="text-sm font-medium text-neutral-800">-</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">-</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">邮箱</span>
-                <span class="text-sm font-medium text-neutral-800">gujing@kukahome.com</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">gujing@kukahome.com</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">仓库</span>
-                <span class="text-sm font-medium text-neutral-800">MD001</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">MD001</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">柜型</span>
-                <span class="text-sm font-medium text-neutral-800">53HQ1</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">53HQ1</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">船公司</span>
-                <span class="text-sm font-medium text-neutral-800">-</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">-</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">手机号码</span>
-                <span class="text-sm font-medium text-neutral-800">17671196647</span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800">17671196647</span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">入库类型</span>
           <span class="badge-pill bg-primary/10 text-primary text-xs">整柜</span>
-              </div>
-              <div class="flex flex-col">
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">目的港</span>
-                <span class="text-sm font-medium text-neutral-800"></span>
-              </div>
-              <div class="flex flex-col">
+          <span class="text-sm font-medium text-neutral-800"></span>
+        </div>
+        <div class="flex flex-col">
           <span class="text-xs text-neutral-500 mb-0.5">交货方式</span>
-                <span class="text-sm font-medium text-neutral-800"></span>
-              </div>
-            </div>
-          </div>
+          <span class="text-sm font-medium text-neutral-800"></span>
+        </div>
+      </div>
+    </div>
 
     <!-- Tab导航栏 -->
     <div class="bg-white rounded-lg shadow-sm mb-4">
