@@ -116,16 +116,11 @@
   <!-- 页面头部 -->
   <header class="bg-white shadow-sm sticky top-0 z-20">
     <div class="container mx-auto px-4 py-3">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <button id="back-button" class="text-neutral-500 hover:text-primary">
-            <i class="fa fa-arrow-left text-lg"></i>
-          </button>
-          <h1 class="text-lg font-semibold text-neutral-800">入库详情</h1>
-        </div>
-        <button class="btn-primary">
-          <i class="fa fa-download mr-2"></i>导出
+      <div class="flex items-center space-x-2">
+        <button id="back-button" class="text-neutral-500 hover:text-primary">
+          <i class="fa fa-arrow-left text-lg"></i>
         </button>
+        <h1 class="text-lg font-semibold text-neutral-800">入库详情</h1>
       </div>
     </div>
   </header>
@@ -428,10 +423,17 @@
         <div class="bg-white rounded-lg p-6 shadow-sm">
           <div class="flex items-center justify-between mb-4 pb-2 border-b border-neutral-200">
             <h2 class="text-base font-medium text-neutral-800">操作日志</h2>
-            <button id="refresh-logs" class="text-xs text-primary hover:text-primary/80 transition-colors" title="刷新">
-              <i class="fa fa-sync-alt"></i>
-                        </button>
+            <div class="flex items-center space-x-3">
+              <!-- 导出按钮展示与产品列表一致 -->
+              <button id="export-logs" class="btn-primary flex items-center" title="导出日志">
+                <i class="fa fa-download mr-2"></i>导出
+              </button>
+              <!-- 刷新按钮保持为小文字按钮 -->
+              <button id="refresh-logs" class="text-xs text-primary hover:text-primary/80 transition-colors flex items-center" title="刷新">
+                <i class="fa fa-sync-alt mr-1"></i>刷新
+              </button>
             </div>
+          </div>
             
           <!-- 查询条件 -->
           <div class="mb-4 space-y-3">
