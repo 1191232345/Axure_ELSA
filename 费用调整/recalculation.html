@@ -101,7 +101,7 @@
           <button class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 btn-hover">
             重置
           </button>
-          <button class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
+          <button id="searchBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
             搜索
           </button>
           <button class="flex items-center text-primary text-sm hover:text-primary/80">
@@ -116,7 +116,7 @@
       <!-- 批量操作按钮 -->
       <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-100">
         <div class="flex gap-3">
-          <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
+          <button id="batchRecalculateBtn" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
             <i class="fa fa-repeat mr-1"></i> 批量重计
           </button>
           <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
@@ -155,165 +155,12 @@
               <th class="px-4 py-3 font-medium text-gray-500">操作</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- 订单数据行 -->
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 16:42:07</td>
-              <td class="px-4 py-3">2025-11-12 16:32:55</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-6GK8HTD...</td>
-              <td class="px-4 py-3">FEDEX_MPS</td>
-              <td class="px-4 py-3">98.667</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 16:41:41</td>
-              <td class="px-4 py-3">2025-11-12 16:31:46</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-FIR5HCW...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">78.233</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 16:45:14</td>
-              <td class="px-4 py-3">2025-11-12 16:30:56</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-P4GL5WI...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">20.173</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 16:23:14</td>
-              <td class="px-4 py-3">2025-11-12 16:10:00</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-U7548MZ0...</td>
-              <td class="px-4 py-3">FEDEX_MPS</td>
-              <td class="px-4 py-3">121.457</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 16:22:30</td>
-              <td class="px-4 py-3">2025-11-12 16:09:00</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-LEQH7HR...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">82.533</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 16:23:45</td>
-              <td class="px-4 py-3">2025-11-12 16:06:46</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-8H196FIO...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">24.473</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 14:18:24</td>
-              <td class="px-4 py-3">2025-11-12 11:02:12</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-3WSQ2WI...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">78.018</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 14:19:04</td>
-              <td class="px-4 py-3">2025-11-12 10:29:18</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-JK9ZXVYJ...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">27.626</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-11-12 14:22:03</td>
-              <td class="px-4 py-3">2025-11-12 10:24:31</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251112-Q2U72JPE...</td>
-              <td class="px-4 py-3">FEDEX_MPS</td>
-              <td class="px-4 py-3">423.925</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
-              </td>
-            </tr>
-            
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary"></td>
-              <td class="px-4 py-3">2025-10-25 14:25:34</td>
-              <td class="px-4 py-3">2025-10-25 14:22:49</td>
-              <td class="px-4 py-3">出库单</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DEMO-20251025-H7QNQW...</td>
-              <td class="px-4 py-3">ZYBQ</td>
-              <td class="px-4 py-3">10</td>
-              <td class="px-4 py-3">USD</td>
-              <td class="px-4 py-3">
-                <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
+          <tbody id="orderTableBody">
+            <!-- 空数据提示 -->
+            <tr id="emptyRow" class="border-t border-gray-100">
+              <td colspan="11" class="px-4 py-12 text-center text-gray-400">
+                <i class="fa fa-inbox text-4xl mb-2 block"></i>
+                <p>暂无数据</p>
               </td>
             </tr>
           </tbody>
@@ -323,7 +170,7 @@
       <!-- 分页控制 -->
       <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
         <div class="text-sm text-gray-500">
-          Total 56
+          Total <span id="totalCount">0</span>
         </div>
         <div class="flex items-center gap-2">
           <select class="border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
@@ -437,20 +284,13 @@
               <th class="px-4 py-3 font-medium text-gray-500">失败原因</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- 重计中数据 -->
-            <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3">2025-11-12 16:42:07</td>
-              <td class="px-4 py-3">system</td>
-              <td class="px-4 py-3">DEMO</td>
-              <td class="px-4 py-3">DE001</td>
-              <td class="px-4 py-3">DEMO-20251112-6GK8HTD...</td>
-              <td class="px-4 py-3">FEDEX_HOME_GROUND</td>
-              <td class="px-4 py-3">操作费</td>
-              <td class="px-4 py-3">2025-11-12 16:42:07</td>
-              <td class="px-4 py-3">98.667 USD</td>
-              <td class="px-4 py-3">-</td>
-              <td class="px-4 py-3">这是一条备注</td>
+          <tbody id="recalculateTableBody">
+            <!-- 空数据提示 -->
+            <tr id="recalculateEmptyRow" class="border-t border-gray-100">
+              <td colspan="11" class="px-4 py-12 text-center text-gray-400">
+                <i class="fa fa-inbox text-4xl mb-2 block"></i>
+                <p>暂无数据</p>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -459,7 +299,7 @@
       <!-- 弹窗底部 -->
       <div class="p-4 border-t border-gray-100 flex items-center justify-between">
         <div class="text-sm text-gray-500">
-          共 1 条记录
+          共 <span id="recalculateTotalCount">0</span> 条记录
         </div>
         <button class="px-4 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover" id="closeModalBtn">
           关闭
@@ -468,46 +308,541 @@
     </div>
   </div>
 
+  <!-- 数据量超限提示弹窗 -->
+  <div id="limitExceededModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mr-4">
+            <i class="fa fa-exclamation-triangle text-warning text-xl"></i>
+          </div>
+          <h3 class="text-lg font-medium">数据量超限提示</h3>
+        </div>
+        <div class="mb-6">
+          <p class="text-gray-600 mb-2">当前筛选结果共 <span id="exceededCount" class="font-semibold text-warning">0</span> 条记录，超过单次最大处理量（50,000条）。</p>
+          <p class="text-gray-600 mb-4">请选择以下处理方式：</p>
+          <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+            <label class="flex items-start cursor-pointer">
+              <input type="radio" name="processOption" value="limit" class="mt-1 mr-3" checked>
+              <div>
+                <div class="font-medium text-gray-700">仅处理前50,000条</div>
+                <div class="text-sm text-gray-500 mt-1">系统将自动处理前50,000条记录，剩余数据需要调整筛选条件后分批处理</div>
+              </div>
+            </label>
+            <label class="flex items-start cursor-pointer">
+              <input type="radio" name="processOption" value="cancel" class="mt-1 mr-3">
+              <div>
+                <div class="font-medium text-gray-700">取消操作</div>
+                <div class="text-sm text-gray-500 mt-1">返回页面，调整筛选条件以减少数据量</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button id="cancelLimitBtn" class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+            取消
+          </button>
+          <button id="confirmLimitBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
+            确认处理
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批量重计进度弹窗 -->
+  <div id="progressModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium">批量重计处理中</h3>
+          <button id="closeProgressBtn" class="text-gray-400 hover:text-gray-600 hidden">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-600">处理进度</span>
+            <span class="text-sm font-medium text-primary" id="progressText">0%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div id="progressBar" class="bg-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="text-sm text-gray-600 mb-4">
+          <div class="flex items-center justify-between mb-1">
+            <span>已处理：</span>
+            <span id="processedCount" class="font-medium">0</span>
+          </div>
+          <div class="flex items-center justify-between mb-1">
+            <span>总数量：</span>
+            <span id="totalProcessCount" class="font-medium">0</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>预计剩余时间：</span>
+            <span id="estimatedTime" class="font-medium">计算中...</span>
+          </div>
+        </div>
+        <div id="progressStatus" class="text-sm text-gray-500 mb-4">
+          <i class="fa fa-spinner fa-spin mr-2"></i>
+          <span>正在处理中，请稍候...</span>
+        </div>
+        <div class="flex justify-end">
+          <button id="cancelProgressBtn" class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+            取消处理
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提交成功提示弹窗 -->
+  <div id="successModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+      <div class="p-6">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mr-4">
+            <i class="fa fa-check-circle text-success text-xl"></i>
+          </div>
+          <h3 class="text-lg font-medium">提交成功</h3>
+        </div>
+        <div class="mb-6">
+          <p class="text-gray-600 mb-2">批量重计任务已成功提交，系统正在后台处理中。</p>
+          <p class="text-gray-600 mb-4">您可以在 <strong class="text-primary">重计明细</strong> 中查看执行结果和处理状态。</p>
+          <div class="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+            <div class="flex items-start">
+              <i class="fa fa-info-circle text-primary mr-2 mt-0.5"></i>
+              <div class="text-sm text-gray-600">
+                <p class="mb-1"><strong>提示：</strong></p>
+                <p>处理完成后，您可以在重计明细中查看成功、失败和处理中的数据详情。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button id="closeSuccessBtn" class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+            知道了
+          </button>
+          <button id="goToRecalculateDetailBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
+            <i class="fa fa-list mr-1"></i> 查看重计明细
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // 重计明细弹窗功能
+    // 常量配置
+    const MAX_BATCH_SIZE = 50000; // 单次最大处理量
+    const BATCH_SIZE = 1000; // 每批处理数量
+    
+    // 全局状态
+    let currentTotalCount = 0;
+    let isProcessing = false;
+    let processCanceled = false;
+    
+    // DOM 元素
     const modal = document.getElementById('recalculateModal');
     const recalculateBtn = document.getElementById('recalculateBtn');
     const closeModal = document.getElementById('closeModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
+    const batchRecalculateBtn = document.getElementById('batchRecalculateBtn');
+    const limitExceededModal = document.getElementById('limitExceededModal');
+    const progressModal = document.getElementById('progressModal');
+    const successModal = document.getElementById('successModal');
+    const totalCountEl = document.getElementById('totalCount');
+    const recalculateTotalCountEl = document.getElementById('recalculateTotalCount');
     
-    // 打开弹窗
-    function openModal() {
-      modal.classList.remove('hidden');
-      // 触发重绘以启用过渡动画
+    // 通用弹窗打开函数
+    function openModal(modalEl) {
+      modalEl.classList.remove('hidden');
       setTimeout(() => {
-        modal.classList.add('opacity-100');
-        modal.querySelector('div').classList.remove('scale-95');
-        modal.querySelector('div').classList.add('scale-100');
+        modalEl.classList.add('opacity-100');
+        const content = modalEl.querySelector('div');
+        if (content) {
+          content.classList.remove('scale-95');
+          content.classList.add('scale-100');
+        }
       }, 10);
       document.body.style.overflow = 'hidden';
     }
     
-    // 关闭弹窗
-    function closeModalFunc() {
-      modal.classList.remove('opacity-100');
-      modal.querySelector('div').classList.remove('scale-100');
-      modal.querySelector('div').classList.add('scale-95');
+    // 通用弹窗关闭函数
+    function closeModalFunc(modalEl) {
+      modalEl.classList.remove('opacity-100');
+      const content = modalEl.querySelector('div');
+      if (content) {
+        content.classList.remove('scale-100');
+        content.classList.add('scale-95');
+      }
       
       setTimeout(() => {
-        modal.classList.add('hidden');
+        modalEl.classList.add('hidden');
         document.body.style.overflow = '';
       }, 300);
     }
     
+    // 重计明细弹窗
+    function openRecalculateModal() {
+      openModal(modal);
+      // 获取当前激活的标签页
+      const activeTab = modal.querySelector('.border-b button.text-primary');
+      if (activeTab) {
+        const status = activeTab.textContent.trim();
+        loadRecalculateData(status);
+      } else {
+        // 默认加载"重计中"标签页
+        loadRecalculateData('重计中');
+      }
+    }
+    
+    function closeRecalculateModal() {
+      closeModalFunc(modal);
+    }
+    
+    // 数据量超限弹窗
+    function openLimitExceededModal(count) {
+      document.getElementById('exceededCount').textContent = count.toLocaleString();
+      openModal(limitExceededModal);
+    }
+    
+    function closeLimitExceededModal() {
+      closeModalFunc(limitExceededModal);
+    }
+    
+    // 进度弹窗
+    function openProgressModal() {
+      openModal(progressModal);
+      document.getElementById('closeProgressBtn').classList.add('hidden');
+      document.getElementById('cancelProgressBtn').classList.remove('hidden');
+    }
+    
+    function closeProgressModal() {
+      closeModalFunc(progressModal);
+    }
+    
+    // 成功提示弹窗
+    function openSuccessModal() {
+      openModal(successModal);
+    }
+    
+    function closeSuccessModal() {
+      closeModalFunc(successModal);
+    }
+    
+    // 跳转到重计明细
+    function goToRecalculateDetail() {
+      closeSuccessModal();
+      // 打开重计明细弹窗
+      setTimeout(() => {
+        openRecalculateModal();
+        // 默认显示"重计中"标签页
+        loadRecalculateData('重计中');
+      }, 350);
+    }
+    
+    // 更新进度
+    function updateProgress(processed, total) {
+      const percentage = Math.min(Math.round((processed / total) * 100), 100);
+      document.getElementById('progressBar').style.width = percentage + '%';
+      document.getElementById('progressText').textContent = percentage + '%';
+      document.getElementById('processedCount').textContent = processed.toLocaleString();
+      document.getElementById('totalProcessCount').textContent = total.toLocaleString();
+      
+      // 计算预计剩余时间（简单估算）
+      if (processed > 0) {
+        const elapsed = Date.now() - progressStartTime;
+        const avgTimePerItem = elapsed / processed;
+        const remaining = total - processed;
+        const estimatedSeconds = Math.ceil(remaining * avgTimePerItem / 1000);
+        
+        if (estimatedSeconds < 60) {
+          document.getElementById('estimatedTime').textContent = estimatedSeconds + '秒';
+        } else if (estimatedSeconds < 3600) {
+          document.getElementById('estimatedTime').textContent = Math.ceil(estimatedSeconds / 60) + '分钟';
+        } else {
+          document.getElementById('estimatedTime').textContent = Math.ceil(estimatedSeconds / 3600) + '小时';
+        }
+      }
+    }
+    
+    let progressStartTime = 0;
+    
+    // 提交批量重计任务
+    async function submitBatchRecalculate(selectedIds, totalCount) {
+      if (isProcessing) {
+        alert('正在处理中，请稍候...');
+        return;
+      }
+      
+      isProcessing = true;
+      const processCount = Math.min(selectedIds.length, MAX_BATCH_SIZE);
+      
+      try {
+        // 提交任务到后台（异步处理）
+        // 这里应该调用实际的重计API
+        // const response = await fetch('/api/recalculate/submit', { 
+        //   method: 'POST', 
+        //   body: JSON.stringify({ 
+        //     orderIds: selectedIds.slice(0, processCount),
+        //     totalCount: processCount 
+        //   }) 
+        // });
+        // const result = await response.json();
+        
+        // 模拟API调用延迟
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 添加任务到重计明细
+        addRecalculateTasks(selectedIds.slice(0, processCount), processCount);
+        
+        // 提交成功，立即显示成功提示
+        openSuccessModal();
+        
+        // 刷新数据
+        loadOrderData();
+        
+      } catch (error) {
+        console.error('提交失败:', error);
+        alert('提交失败，请稍后重试');
+      } finally {
+        isProcessing = false;
+      }
+    }
+    
+    // 模拟异步批量重计处理（用于需要实时进度显示的场景）
+    async function processBatchRecalculate(selectedIds, totalCount) {
+      isProcessing = true;
+      processCanceled = false;
+      progressStartTime = Date.now();
+      
+      const processCount = Math.min(selectedIds.length, MAX_BATCH_SIZE);
+      let processed = 0;
+      
+      openProgressModal();
+      
+      // 分批处理
+      for (let i = 0; i < processCount; i += BATCH_SIZE) {
+        if (processCanceled) {
+          document.getElementById('progressStatus').innerHTML = 
+            '<i class="fa fa-times-circle text-danger mr-2"></i><span>处理已取消</span>';
+          document.getElementById('closeProgressBtn').classList.remove('hidden');
+          document.getElementById('cancelProgressBtn').classList.add('hidden');
+          isProcessing = false;
+          return;
+        }
+        
+        const batch = selectedIds.slice(i, i + BATCH_SIZE);
+        
+        // 模拟异步处理
+        await new Promise(resolve => {
+          setTimeout(() => {
+            // 这里应该调用实际的重计API
+            // await fetch('/api/recalculate', { method: 'POST', body: JSON.stringify(batch) });
+            
+            processed += batch.length;
+            updateProgress(processed, processCount);
+            resolve();
+          }, 100); // 模拟处理时间
+        });
+      }
+      
+      // 处理完成
+      document.getElementById('progressStatus').innerHTML = 
+        '<i class="fa fa-check-circle text-success mr-2"></i><span>处理完成！共处理 ' + processed.toLocaleString() + ' 条记录</span>';
+      document.getElementById('closeProgressBtn').classList.remove('hidden');
+      document.getElementById('cancelProgressBtn').classList.add('hidden');
+      
+      isProcessing = false;
+      
+      // 1.5秒后关闭进度弹窗，显示成功提示弹窗
+      setTimeout(() => {
+        closeProgressModal();
+        // 显示成功提示弹窗
+        setTimeout(() => {
+          openSuccessModal();
+        }, 350);
+        // 刷新数据
+        loadOrderData();
+      }, 1500);
+    }
+    
+    // 获取选中的订单ID
+    function getSelectedOrderIds() {
+      const checkboxes = document.querySelectorAll('#orderTableBody input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        // 如果没有选中任何项，返回空数组（不提交全部）
+        return [];
+      }
+      return Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-order-id')));
+    }
+    
+    // 获取全部订单ID（用于全选提交）
+    function getAllOrderIds() {
+      return Array.from({ length: currentTotalCount }, (_, i) => i + 1);
+    }
+    
+    // 批量重计处理
+    async function handleBatchRecalculate() {
+      if (isProcessing) {
+        alert('正在处理中，请稍候...');
+        return;
+      }
+      
+      // 获取选中的订单ID
+      const selectedIds = getSelectedOrderIds();
+      
+      // 如果没有选中任何项，询问是否提交全部
+      if (selectedIds.length === 0) {
+        if (!confirm('未选中任何记录，是否提交全部数据进行批量重计？')) {
+          return;
+        }
+        // 提交全部
+        const allIds = getAllOrderIds();
+        if (allIds.length === 0) {
+          alert('当前没有可处理的数据');
+          return;
+        }
+        
+        // 检查数据量是否超限
+        if (allIds.length > MAX_BATCH_SIZE) {
+          openLimitExceededModal(allIds.length);
+          return;
+        }
+        
+        await submitBatchRecalculate(allIds, allIds.length);
+      } else {
+        // 检查数据量是否超限
+        if (selectedIds.length > MAX_BATCH_SIZE) {
+          openLimitExceededModal(selectedIds.length);
+          return;
+        }
+        
+        // 提交选中的数据
+        await submitBatchRecalculate(selectedIds, selectedIds.length);
+      }
+    }
+    
+    // 加载测试数据
+    function loadTestData() {
+      // 生成测试数据
+      const testData = [];
+      const testCount = 10; // 测试数据条数
+      
+      for (let i = 1; i <= testCount; i++) {
+        testData.push({
+          id: i,
+          feeTime: '2025-11-12 16:42:07',
+          orderTime: '2025-11-12 16:32:55',
+          billType: '出库单',
+          warehouse: 'DE001',
+          customerCode: 'DEMO',
+          orderNo: `DEMO-20251112-${Math.random().toString(36).substr(2, 9).toUpperCase()}...`,
+          logisticsProduct: i % 2 === 0 ? 'FEDEX_MPS' : 'FEDEX_HOME_GROUND',
+          amount: (Math.random() * 500 + 10).toFixed(3),
+          currency: 'USD'
+        });
+      }
+      
+      currentTotalCount = testCount;
+      totalCountEl.textContent = testCount.toLocaleString();
+      
+      // 渲染表格
+      const tbody = document.getElementById('orderTableBody');
+      tbody.innerHTML = testData.map(item => `
+        <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary" data-order-id="${item.id}"></td>
+          <td class="px-4 py-3">${item.feeTime}</td>
+          <td class="px-4 py-3">${item.orderTime}</td>
+          <td class="px-4 py-3">${item.billType}</td>
+          <td class="px-4 py-3">${item.warehouse}</td>
+          <td class="px-4 py-3">${item.customerCode}</td>
+          <td class="px-4 py-3">${item.orderNo}</td>
+          <td class="px-4 py-3">${item.logisticsProduct}</td>
+          <td class="px-4 py-3">${item.amount}</td>
+          <td class="px-4 py-3">${item.currency}</td>
+          <td class="px-4 py-3">
+            <button class="text-primary hover:text-primary/80"><i class="fa fa-eye"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // 加载订单数据
+    function loadOrderData() {
+      // 初始化时数据为空
+      currentTotalCount = 0;
+      totalCountEl.textContent = '0';
+      
+      // 清空表格
+      const tbody = document.getElementById('orderTableBody');
+      tbody.innerHTML = `
+        <tr id="emptyRow" class="border-t border-gray-100">
+          <td colspan="11" class="px-4 py-12 text-center text-gray-400">
+            <i class="fa fa-inbox text-4xl mb-2 block"></i>
+            <p>暂无数据</p>
+          </td>
+        </tr>
+      `;
+    }
+    
     // 事件监听
-    recalculateBtn.addEventListener('click', openModal);
-    closeModal.addEventListener('click', closeModalFunc);
-    closeModalBtn.addEventListener('click', closeModalFunc);
+    const searchBtn = document.getElementById('searchBtn');
+    searchBtn.addEventListener('click', loadTestData);
+    
+    recalculateBtn.addEventListener('click', openRecalculateModal);
+    closeModal.addEventListener('click', closeRecalculateModal);
+    closeModalBtn.addEventListener('click', closeRecalculateModal);
+    batchRecalculateBtn.addEventListener('click', handleBatchRecalculate);
     
     // 点击弹窗外部关闭
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
-        closeModalFunc();
+        closeRecalculateModal();
+      }
+    });
+    
+    limitExceededModal.addEventListener('click', (e) => {
+      if (e.target === limitExceededModal) {
+        closeLimitExceededModal();
+      }
+    });
+    
+    progressModal.addEventListener('click', (e) => {
+      if (e.target === progressModal && !isProcessing) {
+        closeProgressModal();
+      }
+    });
+    
+    // 超限弹窗按钮
+    document.getElementById('cancelLimitBtn').addEventListener('click', closeLimitExceededModal);
+    document.getElementById('confirmLimitBtn').addEventListener('click', async () => {
+      const option = document.querySelector('input[name="processOption"]:checked').value;
+      closeLimitExceededModal();
+      
+      if (option === 'limit') {
+        // 模拟超过5万条的数据，只提交前5万条
+        const selectedIds = Array.from({ length: MAX_BATCH_SIZE + 10000 }, (_, i) => i + 1);
+        await submitBatchRecalculate(selectedIds.slice(0, MAX_BATCH_SIZE), MAX_BATCH_SIZE);
+      }
+    });
+    
+    // 进度弹窗按钮
+    document.getElementById('closeProgressBtn').addEventListener('click', closeProgressModal);
+    document.getElementById('cancelProgressBtn').addEventListener('click', () => {
+      if (confirm('确定要取消处理吗？')) {
+        processCanceled = true;
+      }
+    });
+    
+    // 成功提示弹窗按钮
+    document.getElementById('closeSuccessBtn').addEventListener('click', closeSuccessModal);
+    document.getElementById('goToRecalculateDetailBtn').addEventListener('click', goToRecalculateDetail);
+    
+    // 点击成功弹窗外部关闭
+    successModal.addEventListener('click', (e) => {
+      if (e.target === successModal) {
+        closeSuccessModal();
       }
     });
     
@@ -515,19 +850,144 @@
     const tabs = modal.querySelectorAll('.border-b button');
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        // 移除所有标签的活跃状态
         tabs.forEach(t => {
           t.classList.remove('text-primary', 'border-primary', 'border-b-2', 'font-medium');
           t.classList.add('text-gray-500');
         });
         
-        // 设置当前标签为活跃状态
         tab.classList.remove('text-gray-500');
         tab.classList.add('text-primary', 'border-primary', 'border-b-2', 'font-medium');
         
         // 这里可以添加切换内容的逻辑
+        loadRecalculateData(tab.textContent.trim());
       });
     });
+    
+    // 存储提交的重计任务数据
+    let recalculateTasks = [];
+    
+    // 加载重计明细数据
+    function loadRecalculateData(status = '重计中') {
+      // 模拟API调用
+      // const response = await fetch(`/api/recalculate-details?status=${status}`);
+      // const data = await response.json();
+      
+      const tbody = document.getElementById('recalculateTableBody');
+      
+      // 根据状态筛选数据
+      let filteredData = [];
+      if (status === '重计中') {
+        filteredData = recalculateTasks.filter(item => item.status === 'processing');
+      } else if (status === '成功') {
+        filteredData = recalculateTasks.filter(item => item.status === 'success');
+      } else if (status === '失败') {
+        filteredData = recalculateTasks.filter(item => item.status === 'failed');
+      }
+      
+      const count = filteredData.length;
+      recalculateTotalCountEl.textContent = count;
+      
+      if (count === 0) {
+        tbody.innerHTML = `
+          <tr id="recalculateEmptyRow" class="border-t border-gray-100">
+            <td colspan="11" class="px-4 py-12 text-center text-gray-400">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              <p>暂无数据</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = filteredData.map(item => `
+          <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3">${item.operateTime}</td>
+            <td class="px-4 py-3">${item.operator}</td>
+            <td class="px-4 py-3">${item.warehouse}</td>
+            <td class="px-4 py-3">${item.customerCode}</td>
+            <td class="px-4 py-3">${item.orderNo}</td>
+            <td class="px-4 py-3">${item.logisticsProduct}</td>
+            <td class="px-4 py-3">${item.billType}</td>
+            <td class="px-4 py-3">${item.feeTime}</td>
+            <td class="px-4 py-3">${item.originalAmount}</td>
+            <td class="px-4 py-3 ${item.status === 'success' ? 'text-success font-medium' : item.status === 'failed' ? 'text-danger' : ''}">${item.recalculatedAmount || '-'}</td>
+            <td class="px-4 py-3 ${item.status === 'failed' ? 'text-danger' : 'text-gray-400'}">${item.failReason || '-'}</td>
+          </tr>
+        `).join('');
+      }
+    }
+    
+    // 添加重计任务到明细
+    function addRecalculateTasks(orderIds, totalCount) {
+      const now = new Date();
+      const operateTime = now.toLocaleString('zh-CN', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+      
+      // 为每个订单创建任务记录
+      orderIds.forEach((orderId, index) => {
+        // 模拟订单数据（实际应该从API获取）
+        const task = {
+          id: Date.now() + index,
+          operateTime: operateTime,
+          operator: '系统管理员',
+          warehouse: 'DE001',
+          customerCode: 'DEMO',
+          orderNo: `DEMO-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(orderId).padStart(6, '0')}`,
+          logisticsProduct: index % 2 === 0 ? 'FEDEX_MPS' : 'FEDEX_HOME_GROUND',
+          billType: '出库单',
+          feeTime: now.toLocaleString('zh-CN', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          originalAmount: (Math.random() * 500 + 10).toFixed(2),
+          recalculatedAmount: null,
+          failReason: null,
+          status: 'processing' // processing, success, failed
+        };
+        
+        recalculateTasks.push(task);
+        
+        // 模拟异步处理，随机设置成功或失败
+        setTimeout(() => {
+          const random = Math.random();
+          if (random > 0.2) {
+            // 80% 成功率
+            task.status = 'success';
+            task.recalculatedAmount = (parseFloat(task.originalAmount) + (Math.random() * 10 - 5)).toFixed(2);
+          } else {
+            // 20% 失败率
+            task.status = 'failed';
+            task.failReason = ['计费规则不存在', '订单状态异常', '数据校验失败'][Math.floor(Math.random() * 3)];
+          }
+          
+          // 状态变化时，刷新当前显示的标签页数据
+          const activeTab = modal.querySelector('.border-b button.text-primary');
+          if (activeTab) {
+            const currentStatus = activeTab.textContent.trim();
+            // 如果当前显示的是对应状态的标签页，刷新数据
+            if ((currentStatus === '重计中' && task.status === 'processing') ||
+                (currentStatus === '成功' && task.status === 'success') ||
+                (currentStatus === '失败' && task.status === 'failed')) {
+              loadRecalculateData(currentStatus);
+            } else if (currentStatus === '重计中' && task.status !== 'processing') {
+              // 如果任务从"重计中"变为其他状态，也需要刷新"重计中"标签页（移除该任务）
+              loadRecalculateData(currentStatus);
+            }
+          }
+        }, 2000 + Math.random() * 3000); // 2-5秒后完成
+      });
+    }
+    
+    // 初始化
+    loadOrderData();
+    loadRecalculateData();
   </script>
 </body>
 </html>
