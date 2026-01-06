@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>产品备案</title>
+  <!-- 与首页保持一致，使用 Tailwind CDN 脚本 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <style>
+    body { font-family: "Inter", "PingFang SC", "Microsoft Yahei", sans-serif; }
+    .card { box-shadow: 0 6px 24px rgba(0,0,0,0.06); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 0.875rem;
+      color: #374151;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { border-color: #3b82f6; color: #1d4ed8; }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .btn-primary:hover { background: #1d4ed8; color: #fff; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .tab-active { color: #2563eb; border-color: #2563eb; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-7xl mx-auto px-6 py-6 space-y-4">
+    <!-- 筛选区 -->
+    <div class="card bg-white rounded-xl p-4 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <label class="text-sm text-gray-600 space-y-1">
+          <span>SKU</span>
+          <input id="filterSku" type="text" placeholder="精准查询" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+        </label>
+        <label class="text-sm text-gray-600 space-y-1">
+          <span>客户代码</span>
+          <select id="filterClient" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+            <option value="">全部</option>
+            <option value="DEMO">DEMO</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </label>
+        <label class="text-sm text-gray-600 space-y-1 md:col-span-2">
+          <span>产品名称</span>
+          <input id="filterName" type="text" placeholder="请输入产品名称" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+        </label>
+        <label class="text-sm text-gray-600 space-y-1">
+          <span>自定义编码</span>
+          <input id="filterCode" type="text" placeholder="请输入自定义编码" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+        </label>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="resetBtn" class="btn"><i class="fa-solid fa-rotate"></i>重置</button>
+        <button id="searchBtn" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i>搜索</button>
+      </div>
+    </div>
+
+    <!-- 状态标签 -->
+    <div class="flex flex-wrap gap-2">
+      <button data-tab="all" class="status-btn px-4 py-2 rounded border border-gray-200 bg-white text-sm tab-active">全部</button>
+      <button data-tab="draft" class="status-btn px-4 py-2 rounded border border-gray-200 bg-white text-sm">草稿</button>
+      <button data-tab="pending" class="status-btn px-4 py-2 rounded border border-gray-200 bg-white text-sm">待发布</button>
+      <button data-tab="published" class="status-btn px-4 py-2 rounded border border-gray-200 bg-white text-sm">已发布</button>
+      <button data-tab="void" class="status-btn px-4 py-2 rounded border border-gray-200 bg-white text-sm">已作废</button>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="card bg-white rounded-xl p-4 flex flex-wrap gap-3 items-center">
+      <button class="btn btn-primary" id="btnAdd"><i class="fa-solid fa-plus"></i>新增</button>
+      <button class="btn"><i class="fa-solid fa-print"></i>打印条码</button>
+      <button class="btn" id="btnImport"><i class="fa-solid fa-file-import"></i>导入</button>
+      <button class="btn"><i class="fa-solid fa-file-export"></i>导出</button>
+      <button class="btn"><i class="fa-solid fa-pen-to-square"></i>批量修改自定义编码</button>
+      <button class="btn"><i class="fa-solid fa-cloud-arrow-down"></i>产品拉取</button>
+      <div class="h-5 w-px bg-gray-200"></div>
+      <button class="btn bg-orange-50 border-orange-300 text-orange-600" id="btnImportSize"><i class="fa-solid fa-ruler-combined"></i>批量编辑尺寸</button>
+      <input id="importSizeInput" type="file" accept=".csv,.txt,.json" class="hidden">
+    </div>
+
+    <!-- 表格 -->
+    <div class="card bg-white rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm" id="productTable">
+          <thead class="bg-gray-100 text-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-left">SKU</th>
+              <th class="px-4 py-3 text-left">客户代码</th>
+              <th class="px-4 py-3 text-left">自定义编码</th>
+              <th class="px-4 py-3 text-left">产品类型</th>
+              <th class="px-4 py-3 text-left">产品中文名称</th>
+              <th class="px-4 py-3 text-left">产品英文名称</th>
+              <th class="px-4 py-3 text-right">产品价值</th>
+              <th class="px-4 py-3 text-left">货币单位</th>
+              <th class="px-4 py-3 text-left">长*宽*高</th>
+              <th class="px-4 py-3 text-right">重量</th>
+              <th class="px-4 py-3 text-left">不承运标记</th>
+              <th class="px-4 py-3 text-center">状态</th>
+              <th class="px-4 py-3 text-center">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y" id="productTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新增/复制新增 弹窗 -->
+  <div id="formModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <div class="text-base font-semibold text-gray-800" id="formModalTitle">新增产品</div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeFormModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="px-6 pt-5 pb-2 text-sm text-gray-700">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label class="space-y-1">
+            <span class="text-gray-600">SKU <span class="text-red-500">*</span></span>
+            <input id="formSku" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="请输入SKU">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">客户代码</span>
+            <input id="formClient" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="请输入客户代码">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">自定义编码 <span class="text-red-500">*</span></span>
+            <input id="formCode" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="请输入自定义编码">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">产品中文名称</span>
+            <input id="formNameZh" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="请输入产品中文名称">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">产品英文名称</span>
+            <input id="formNameEn" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="请输入产品英文名称">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">产品类型</span>
+            <input id="formType" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="请输入产品类型">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">产品价值</span>
+            <input id="formValue" type="number" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="0">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">货币单位</span>
+            <input id="formCurrency" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="USD">
+          </label>
+          <label class="space-y-1 md:col-span-2">
+            <span class="text-gray-600">长*宽*高</span>
+            <input id="formSize" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="示例：50CM x 10CM x 10CM">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">重量 (g)</span>
+            <input id="formWeight" type="number" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="0">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">不承运标记</span>
+            <input id="formForbidden" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="标准/异形等">
+          </label>
+          <label class="space-y-1">
+            <span class="text-gray-600">状态</span>
+            <select id="formStatus" class="border rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500">
+              <option value="草稿">草稿</option>
+              <option value="已发布">已发布</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="px-6 py-3 border-t flex justify-end gap-3 bg-gray-50">
+        <button class="px-4 py-1.5 rounded border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" onclick="closeFormModal()">取消</button>
+        <button class="px-4 py-1.5 rounded bg-blue-500 text-sm text-white hover:bg-blue-600" onclick="submitForm()">提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批量尺寸导入弹窗 -->
+  <div id="sizeModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <div class="text-base font-semibold text-gray-800">导入</div>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeSizeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="px-6 pt-6 pb-2 text-sm text-gray-700">
+        <div
+          id="sizeDropArea"
+          class="border-2 border-dashed border-blue-200 rounded-lg bg-blue-50/30 flex flex-col items-center justify-center py-10 cursor-pointer transition hover:border-blue-400 hover:bg-blue-50"
+          onclick="triggerSizeImport()"
+          ondragover="handleSizeDragOver(event)"
+          ondrop="handleSizeDrop(event)"
+        >
+          <div class="text-5xl text-blue-300 mb-3">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <div class="text-gray-600 mb-1">拖拽文件到此处或点击开始上传资料</div>
+          <div class="text-xs text-gray-400 mt-1">仅限上传 xls xlsx 格式文件单个不得超过100MB</div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <button class="text-xs text-blue-500 hover:text-blue-600" onclick="downloadSizeTemplate()">下载模板</button>
+        </div>
+      </div>
+      <div class="px-6 py-3 border-t flex justify-end gap-3 bg-gray-50">
+        <button class="px-4 py-1.5 rounded border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" onclick="closeSizeModal()">关闭</button>
+        <button class="px-4 py-1.5 rounded bg-blue-500 text-sm text-white hover:bg-blue-600" onclick="triggerSizeImport()">提交</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 复制新增提示 -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm opacity-0 pointer-events-none transition">
+    操作成功
+  </div>
+
+  <script>
+    const products = [
+      { sku: 'ADADAD', client: 'DEMO', code: 'ADADAD', type: '统一品类&统一品类1&统一品类2', nameZh: 'adadad', nameEn: 'adadad', value: 21, currency: 'USD', size: '50CM x 10CM x 10CM', weight: 50000, forbidden: '标准', complete: true, status: '已发布' }
+    ];
+    let filtered = [...products];
+    const tbody = document.getElementById('productTbody');
+    let formMode = 'add'; // add | copy
+
+    function renderTable() {
+      tbody.innerHTML = '';
+      filtered.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 ? 'bg-white' : 'bg-gray-50';
+        tr.innerHTML = `
+          <td class="px-4 py-3">${p.sku}</td>
+          <td class="px-4 py-3">${p.client}</td>
+          <td class="px-4 py-3">${p.code}</td>
+          <td class="px-4 py-3">${p.type}</td>
+          <td class="px-4 py-3">${p.nameZh}</td>
+          <td class="px-4 py-3">${p.nameEn}</td>
+          <td class="px-4 py-3 text-right">${p.value}</td>
+          <td class="px-4 py-3">${p.currency}</td>
+          <td class="px-4 py-3">${p.size}</td>
+          <td class="px-4 py-3 text-right">${p.weight} g</td>
+          <td class="px-4 py-3">${p.forbidden}</td>
+          <td class="px-4 py-3 text-center">
+            <span class="badge ${p.status === '已发布' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'}">${p.status}</span>
+          </td>
+          <td class="px-4 py-3 text-center space-x-2">
+            <button class="text-blue-600 hover:text-blue-700 text-sm" onclick="viewProduct('${p.sku}')"><i class="fa-regular fa-eye"></i></button>
+            <button class="text-emerald-600 hover:text-emerald-700 text-sm" onclick="copyProduct('${p.sku}')"><i class="fa-regular fa-clone"></i></button>
+            <button class="text-red-500 hover:text-red-600 text-sm" onclick="removeProduct('${p.sku}')"><i class="fa-regular fa-trash-can"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('opacity-0');
+      t.classList.add('opacity-100');
+      setTimeout(() => t.classList.add('opacity-0'), 1600);
+    }
+
+    function filterData() {
+      const sku = document.getElementById('filterSku').value.trim().toLowerCase();
+      const client = document.getElementById('filterClient').value;
+      const name = document.getElementById('filterName').value.trim().toLowerCase();
+      const code = document.getElementById('filterCode').value.trim().toLowerCase();
+      filtered = products.filter(p =>
+        (!sku || p.sku.toLowerCase().includes(sku)) &&
+        (!client || p.client === client) &&
+        (!name || p.nameZh.toLowerCase().includes(name) || p.nameEn.toLowerCase().includes(name)) &&
+        (!code || p.code.toLowerCase().includes(code))
+      );
+      renderTable();
+    }
+
+    function resetFilters() {
+      ['filterSku','filterClient','filterName','filterCode'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el.tagName === 'SELECT') el.value = '';
+        else el.value = '';
+      });
+      filtered = [...products];
+      renderTable();
+    }
+
+    function viewProduct(sku) {
+      alert('查看产品：' + sku);
+    }
+
+    function copyProduct(sku) {
+      const original = products.find(p => p.sku === sku);
+      if (!original) return;
+      const draft = { ...original, sku: sku + '-COPY', code: original.code + '-COPY', status: '草稿' };
+      openFormModal('copy', draft);
+    }
+
+    function removeProduct(sku) {
+      const idx = products.findIndex(p => p.sku === sku);
+      if (idx > -1 && confirm('确认删除该产品吗？')) {
+        products.splice(idx,1);
+        filterData();
+      }
+    }
+
+    function parseSizeText(text) {
+      return text.split(/[\n\r]+/).map(l => l.trim()).filter(Boolean);
+    }
+
+    function applySizeUpdates(lines) {
+      let updated = 0;
+      lines.forEach(line => {
+        // 支持CSV: SKU,长,宽,高,重量  或 SKU,尺寸,重量
+        const cells = line.split(',').map(c => c.trim());
+        if (cells.length < 2) return;
+        const sku = cells[0];
+        const product = products.find(p => p.sku === sku);
+        if (!product) return;
+        if (cells.length >= 4) {
+          const [ , l, w, h, weight ] = cells;
+          product.size = `${l} x ${w} x ${h}`;
+          if (weight) product.weight = Number(weight) || product.weight;
+        } else {
+          const size = cells[1];
+          product.size = size || product.size;
+          if (cells[2]) product.weight = Number(cells[2]) || product.weight;
+        }
+        updated++;
+      });
+      filterData();
+      toast(updated ? `已更新 ${updated} 条尺寸` : '未找到匹配SKU');
+    }
+
+    function handleImportSize(file, onDone) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result;
+        try {
+          if (text.trim().startsWith('[')) {
+            const arr = JSON.parse(text);
+            const lines = arr.map(item => `${item.sku},${item.length || ''},${item.width || ''},${item.height || ''},${item.weight || ''}`);
+            applySizeUpdates(lines);
+          } else {
+            applySizeUpdates(parseSizeText(text));
+          }
+        } catch (e) {
+          toast('导入失败：文件格式错误');
+        }
+        if (onDone) onDone();
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    // 事件绑定
+    document.getElementById('searchBtn').addEventListener('click', filterData);
+    document.getElementById('resetBtn').addEventListener('click', resetFilters);
+    document.getElementById('btnImportSize').addEventListener('click', openSizeModal);
+    document.getElementById('importSizeInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleImportSize(file, closeSizeModal);
+      e.target.value = '';
+    });
+    document.getElementById('btnAdd').addEventListener('click', () => openFormModal('add'));
+
+    // 状态切换（示例仅做标签高亮）
+    document.querySelectorAll('.status-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('tab-active'));
+        btn.classList.add('tab-active');
+      });
+    });
+
+    renderTable();
+
+    // 新增/复制 弹窗
+    function openFormModal(mode = 'add', data = {}) {
+      formMode = mode;
+      const title = mode === 'add' ? '新增产品' : '复制新增产品';
+      document.getElementById('formModalTitle').textContent = title;
+      const m = document.getElementById('formModal');
+      const defaults = {
+        sku: '',
+        client: 'DEMO',
+        code: '',
+        type: '',
+        nameZh: '',
+        nameEn: '',
+        value: '',
+        currency: 'USD',
+        size: '',
+        weight: '',
+        forbidden: '标准',
+        status: '草稿'
+      };
+      const initData = { ...defaults, ...data };
+      m.querySelector('#formSku').value = initData.sku;
+      m.querySelector('#formClient').value = initData.client;
+      m.querySelector('#formCode').value = initData.code;
+      m.querySelector('#formType').value = initData.type;
+      m.querySelector('#formNameZh').value = initData.nameZh;
+      m.querySelector('#formNameEn').value = initData.nameEn;
+      m.querySelector('#formValue').value = initData.value;
+      m.querySelector('#formCurrency').value = initData.currency;
+      m.querySelector('#formSize').value = initData.size;
+      m.querySelector('#formWeight').value = initData.weight;
+      m.querySelector('#formForbidden').value = initData.forbidden;
+      m.querySelector('#formStatus').value = initData.status;
+      m.classList.remove('hidden');
+    }
+
+    function closeFormModal() {
+      document.getElementById('formModal').classList.add('hidden');
+    }
+
+    function submitForm() {
+      const m = document.getElementById('formModal');
+      const newItem = {
+        sku: m.querySelector('#formSku').value.trim(),
+        client: m.querySelector('#formClient').value.trim() || 'DEMO',
+        code: m.querySelector('#formCode').value.trim(),
+        type: m.querySelector('#formType').value.trim(),
+        nameZh: m.querySelector('#formNameZh').value.trim(),
+        nameEn: m.querySelector('#formNameEn').value.trim(),
+        value: Number(m.querySelector('#formValue').value) || 0,
+        currency: m.querySelector('#formCurrency').value.trim() || 'USD',
+        size: m.querySelector('#formSize').value.trim(),
+        weight: Number(m.querySelector('#formWeight').value) || 0,
+        forbidden: m.querySelector('#formForbidden').value.trim() || '标准',
+        complete: true,
+        status: m.querySelector('#formStatus').value || '草稿'
+      };
+      if (!newItem.sku || !newItem.code) {
+        toast('SKU 和自定义编码必填');
+        return;
+      }
+      products.push(newItem);
+      filterData();
+      closeFormModal();
+      toast(formMode === 'add' ? '新增成功' : '复制新增成功');
+    }
+
+    // 尺寸导入弹窗
+    function openSizeModal() {
+      document.getElementById('sizeModal').classList.remove('hidden');
+    }
+
+    function closeSizeModal() {
+      document.getElementById('sizeModal').classList.add('hidden');
+    }
+
+    function triggerSizeImport() {
+      document.getElementById('importSizeInput').click();
+    }
+
+    function downloadSizeTemplate() {
+      const csv = ['SKU,长,宽,高,重量', 'SKU0001,10,20,30,500', 'SKU0002,5,6,7,200'].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '尺寸批量导入模板.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function handleSizeDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    }
+
+    function handleSizeDrop(e) {
+      e.preventDefault();
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) {
+        handleImportSize(file, closeSizeModal);
+      }
+    }
+  </script>
+</body>
+</html>
+
