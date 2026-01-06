@@ -142,7 +142,7 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="bg-gray-50 text-left">
-              <th class="px-4 py-3 w-10"><input type="checkbox" class="rounded text-primary focus:ring-primary"></th>
+              <th class="px-4 py-3 w-10"><input type="checkbox" id="selectAllCheckbox" class="rounded text-primary focus:ring-primary"></th>
               <th class="px-4 py-3 font-medium text-gray-500">费用发生时间</th>
               <th class="px-4 py-3 font-medium text-gray-500">下单时间</th>
               <th class="px-4 py-3 font-medium text-gray-500">账单类型</th>
@@ -751,7 +751,7 @@
       const tbody = document.getElementById('orderTableBody');
       tbody.innerHTML = testData.map(item => `
         <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-          <td class="px-4 py-3"><input type="checkbox" class="rounded text-primary focus:ring-primary" data-order-id="${item.id}"></td>
+          <td class="px-4 py-3"><input type="checkbox" class="order-checkbox rounded text-primary focus:ring-primary" data-order-id="${item.id}"></td>
           <td class="px-4 py-3">${item.feeTime}</td>
           <td class="px-4 py-3">${item.orderTime}</td>
           <td class="px-4 py-3">${item.billType}</td>
@@ -766,6 +766,9 @@
           </td>
         </tr>
       `).join('');
+      
+      // 更新全选复选框状态
+      updateSelectAllCheckbox();
     }
     
     // 加载订单数据
@@ -784,6 +787,9 @@
           </td>
         </tr>
       `;
+      
+      // 更新全选复选框状态
+      updateSelectAllCheckbox();
     }
     
     // 事件监听
@@ -794,6 +800,50 @@
     closeModal.addEventListener('click', closeRecalculateModal);
     closeModalBtn.addEventListener('click', closeRecalculateModal);
     batchRecalculateBtn.addEventListener('click', handleBatchRecalculate);
+    
+    // 全选功能
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    
+    // 全选复选框事件
+    selectAllCheckbox.addEventListener('change', function() {
+      const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+      orderCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+      });
+    });
+    
+    // 行复选框事件（用于更新全选复选框状态）
+    // 使用事件委托，因为复选框是动态生成的
+    document.addEventListener('change', function(e) {
+      if (e.target.classList.contains('order-checkbox')) {
+        updateSelectAllCheckbox();
+      }
+    });
+    
+    // 更新全选复选框状态
+    function updateSelectAllCheckbox() {
+      if (!selectAllCheckbox) return; // 如果全选复选框不存在，直接返回
+      
+      const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+      const checkedCount = document.querySelectorAll('.order-checkbox:checked').length;
+      
+      if (orderCheckboxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        return;
+      }
+      
+      if (checkedCount === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+      } else if (checkedCount === orderCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+      } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true; // 部分选中状态
+      }
+    }
     
     // 点击弹窗外部关闭
     modal.addEventListener('click', (e) => {
