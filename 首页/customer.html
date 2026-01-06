@@ -4178,13 +4178,18 @@
       },
       // 仓库维度数据
       warehouse: {
+        // 入库：按仓库拆分整柜/散货/快递
         inbound: {
           labels: ['demo1', 'demo2', 'demo3', 'demo4'],
-          values: [456, 342, 289, 161]
+          fcl:    [180, 145, 120, 60],  // 整柜
+          lcl:    [190, 135, 110, 70],  // 散货
+          express:[86,  62,  59,  31]   // 快递
         },
+        // 出库：按仓库拆分一件代发/中转
         outbound: {
           labels: ['demo1', 'demo2', 'demo3', 'demo4'],
-          values: [1423, 1189, 876, 368]
+          direct: [920, 770, 580, 230], // 一件代发
+          transit:[503, 419, 296, 138]  // 中转
         }
       },
       // 明细数据
@@ -4354,29 +4359,52 @@
         warehouseInboundChart.destroy();
       }
 
+      const inbound = orderData.warehouse.inbound;
+
       warehouseInboundChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: orderData.warehouse.inbound.labels,
-          datasets: [{
-            label: '入库单数量',
-            data: orderData.warehouse.inbound.values,
-            backgroundColor: '#165DFF',
-            borderColor: '#165DFF',
-            borderWidth: 1
-          }]
+          labels: inbound.labels,
+          datasets: [
+            {
+              label: '整柜',
+              data: inbound.fcl,
+              backgroundColor: '#165DFF',
+              stack: 'inbound'
+            },
+            {
+              label: '散货',
+              data: inbound.lcl,
+              backgroundColor: '#36CFC9',
+              stack: 'inbound'
+            },
+            {
+              label: '快递',
+              data: inbound.express,
+              backgroundColor: '#52C41A',
+              stack: 'inbound'
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 12,
+                font: { size: 11 }
+              }
             },
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `入库单: ${context.parsed.y}单`;
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: ${value}单`;
                 }
               }
             }
@@ -4384,6 +4412,7 @@
           scales: {
             y: {
               beginAtZero: true,
+              stacked: true,
               ticks: {
                 callback: function(value) {
                   return value + '单';
@@ -4394,6 +4423,7 @@
               }
             },
             x: {
+              stacked: true,
               grid: {
                 display: false
               }
@@ -4412,29 +4442,46 @@
         warehouseOutboundChart.destroy();
       }
 
+      const outbound = orderData.warehouse.outbound;
+
       warehouseOutboundChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: orderData.warehouse.outbound.labels,
-          datasets: [{
-            label: '出库单数量',
-            data: orderData.warehouse.outbound.values,
-            backgroundColor: '#52C41A',
-            borderColor: '#52C41A',
-            borderWidth: 1
-          }]
+          labels: outbound.labels,
+          datasets: [
+            {
+              label: '一件代发',
+              data: outbound.direct,
+              backgroundColor: '#52C41A',
+              stack: 'outbound'
+            },
+            {
+              label: '中转',
+              data: outbound.transit,
+              backgroundColor: '#FAAD14',
+              stack: 'outbound'
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 12,
+                font: { size: 11 }
+              }
             },
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `出库单: ${context.parsed.y}单`;
+                  const label = context.dataset.label || '';
+                  const value = context.parsed.y || 0;
+                  return `${label}: ${value}单`;
                 }
               }
             }
@@ -4442,6 +4489,7 @@
           scales: {
             y: {
               beginAtZero: true,
+              stacked: true,
               ticks: {
                 callback: function(value) {
                   return value + '单';
@@ -4452,6 +4500,7 @@
               }
             },
             x: {
+              stacked: true,
               grid: {
                 display: false
               }
