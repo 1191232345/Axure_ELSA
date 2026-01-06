@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客服看板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            dark: '#1F2937',
+            light: '#F3F4F6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+      .indicator-card { @apply bg-white rounded-xl p-6 card-shadow hover:shadow-lg transition-all relative; }
+      .badge-soft { @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium; }
+      .section-title { @apply text-lg font-semibold text-gray-800 flex items-center gap-2; }
+      .table-head { @apply text-left py-3 px-3 font-semibold text-gray-700 text-sm; }
+      .table-cell { @apply py-3 px-3 text-sm text-gray-700; }
+      .tab-button { @apply px-6 py-3 text-sm font-medium transition-all duration-300 relative; }
+      .tab-button.active { @apply text-primary; }
+      .tab-button.active::after { content: ''; @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary; }
+      .tab-button:not(.active) { @apply text-gray-600 hover:text-primary; }
+      .tab-content.hidden { display: none; }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <main class="container mx-auto px-4 py-6 max-w-[1920px] space-y-6">
+    <header>
+      <h1 class="text-2xl font-bold text-dark mb-1">客服看板</h1>
+      <p class="text-gray-500 text-sm">实时掌握客服工单负载与质控表现</p>
+    </header>
+
+    <!-- 筛选区域，保持与 customer 布局一致的卡片样式 -->
+    <div class="bg-white rounded-xl p-4 card-shadow">
+      <div class="flex flex-wrap gap-4 items-center">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">时间范围:</label>
+          <input id="dateStart" type="date" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-01">
+          <span class="text-gray-400">-</span>
+          <input id="dateEnd" type="date" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-30">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">渠道:</label>
+          <select id="channelSelect" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="all">全部渠道</option>
+            <option>电话</option>
+            <option>邮件</option>
+            <option>工单</option>
+            <option>IM</option>
+          </select>
+        </div>
+        <button id="refreshBtn" class="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm flex items-center gap-2">
+          <i class="fa fa-refresh"></i><span>刷新数据</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 切换，样式对齐 customer.html -->
+    <div class="bg-white rounded-xl card-shadow">
+      <div class="flex border-b border-gray-200 overflow-x-auto">
+        <button class="tab-button active" data-tab="complaint">
+          <i class="fa fa-bar-chart mr-2"></i>客诉实时统计
+        </button>
+        <button class="tab-button" data-tab="root">
+          <i class="fa fa-search mr-2"></i>问题溯源
+        </button>
+        <button class="tab-button" data-tab="performance">
+          <i class="fa fa-star mr-2"></i>绩效指标
+        </button>
+      </div>
+    </div>
+
+    <!-- 客诉实时统计 Tab -->
+    <div id="tab-complaint" class="tab-content">
+      <!-- 核心指标 -->
+      <section>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">未处理/处理中工单</span>
+            <span class="badge-soft bg-primary/10 text-primary"><i class="fa fa-clock-o mr-1"></i>实时</span>
+          </div>
+          <div class="text-3xl font-bold" id="pendingCount">--</div>
+          <p class="text-xs text-gray-500 mt-1">含待分配与处理中</p>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">平均响应 / 解决时长</span>
+            <span class="badge-soft bg-success/10 text-success">SLA 30m / 24h</span>
+          </div>
+          <div class="text-xl font-bold"><span id="respTime">--</span> / <span id="solveTime">--</span></div>
+          <p class="text-xs text-gray-500 mt-1">分钟 / 小时</p>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">超时工单预警</span>
+            <span class="badge-soft bg-warning/10 text-warning"><i class="fa fa-bell-o mr-1"></i>告警</span>
+          </div>
+          <div class="text-3xl font-bold" id="overdueCount">--</div>
+          <p class="text-xs text-gray-500 mt-1" id="overdueDesc">--</p>
+        </div>
+        <div class="indicator-card">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-gray-500 text-sm">满意度 / 首次解决率</span>
+            <span class="badge-soft bg-secondary/10 text-secondary">质控</span>
+          </div>
+          <div class="text-xl font-bold"><span id="csatScore">--</span> / <span id="fcrScore">--</span></div>
+          <p class="text-xs text-gray-500 mt-1">CSAT / FCR</p>
+        </div>
+        </div>
+      </section>
+
+      <!-- 维度与分布 -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="col-span-2 bg-white rounded-xl p-5 card-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title"><i class="fa fa-line-chart text-primary"></i><span>按紧急度与状态分布</span></div>
+          <span class="text-xs text-gray-500">近30天</span>
+        </div>
+        <div class="h-72"><canvas id="urgencyChart"></canvas></div>
+      </div>
+      <div class="bg-white rounded-xl p-5 card-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title"><i class="fa fa-pie-chart text-success"></i><span>问题类型占比</span></div>
+          <span class="text-xs text-gray-500">Top 5</span>
+        </div>
+        <div class="h-72"><canvas id="typeChart"></canvas></div>
+        </div>
+      </section>
+
+      <!-- 超时 & 明细表 -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl p-5 card-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <div class="section-title"><i class="fa fa-exclamation-triangle text-danger"></i><span>超时工单预警</span></div>
+            <span class="text-xs text-gray-500">按SLA倒计时</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="border-b border-gray-200">
+                <tr>
+                  <th class="table-head">工单号</th>
+                  <th class="table-head">渠道</th>
+                  <th class="table-head">紧急度</th>
+                  <th class="table-head">剩余SLA</th>
+                  <th class="table-head">责任人</th>
+                </tr>
+              </thead>
+              <tbody id="overdueTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-5 card-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <div class="section-title"><i class="fa fa-list-alt text-primary"></i><span>问题明细 Top10</span></div>
+            <button class="text-sm text-primary hover:underline flex items-center gap-1"><i class="fa fa-download"></i>导出</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="border-b border-gray-200">
+                <tr>
+                  <th class="table-head">问题</th>
+                  <th class="table-head">仓库/环节</th>
+                  <th class="table-head">工单数</th>
+                  <th class="table-head">重复率</th>
+                  <th class="table-head">改善建议</th>
+                </tr>
+              </thead>
+              <tbody id="issueTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 问题溯源 Tab -->
+    <div id="tab-root" class="tab-content hidden">
+      <section class="bg-white rounded-xl p-5 card-shadow">
+      <div class="flex items-center justify-between mb-3">
+        <div class="section-title"><i class="fa fa-search text-primary"></i><span>问题溯源分析</span></div>
+        <span class="text-xs text-gray-500">自动聚合 Top 3 问题-原因</span>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-gray-700">问题类型分布</span>
+            <span class="badge-soft bg-primary/10 text-primary">Top 3</span>
+          </div>
+          <ul class="space-y-2 text-sm text-gray-700" id="issueTypeList"></ul>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-gray-700">关联仓库/环节</span>
+            <span class="badge-soft bg-warning/10 text-warning">瓶颈</span>
+          </div>
+          <ul class="space-y-2 text-sm text-gray-700" id="linkList"></ul>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-semibold text-gray-700">重复问题发生率</span>
+            <span class="badge-soft bg-danger/10 text-danger">追踪</span>
+          </div>
+          <div class="text-3xl font-bold text-danger" id="repeatRate">--</div>
+          <p class="text-xs text-gray-500 mt-1">近30天重复提及的工单占比</p>
+        </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 绩效指标 Tab -->
+    <div id="tab-performance" class="tab-content hidden">
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl p-5 card-shadow">
+        <div class="section-title mb-3"><i class="fa fa-star text-warning"></i><span>客服绩效指标</span></div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <div class="text-gray-500">个人处理量</div>
+            <div class="text-xl font-bold" id="agentVolume">--</div>
+            <div class="text-xs text-gray-400">日均</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <div class="text-gray-500">团队处理量</div>
+            <div class="text-xl font-bold" id="teamVolume">--</div>
+            <div class="text-xs text-gray-400">日均</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <div class="text-gray-500">工单转派率</div>
+            <div class="text-xl font-bold" id="transferRate">--</div>
+            <div class="text-xs text-gray-400">越低越好</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <div class="text-gray-500">满意度得分</div>
+            <div class="text-xl font-bold" id="csatCard">--</div>
+            <div class="text-xs text-gray-400">目标 ≥ 4.6</div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-5 card-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title"><i class="fa fa-line-chart text-primary"></i><span>FCR 与 SLA</span></div>
+          <span class="text-xs text-gray-500">按周</span>
+        </div>
+        <div class="h-64"><canvas id="fcrChart"></canvas></div>
+      </div>
+      <div class="bg-white rounded-xl p-5 card-shadow">
+        <div class="flex items-center justify-between mb-3">
+          <div class="section-title"><i class="fa fa-users text-secondary"></i><span>客服绩效榜</span></div>
+          <span class="text-xs text-gray-500">TOP5</span>
+        </div>
+        <div class="h-64"><canvas id="agentChart"></canvas></div>
+      </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const dashboardData = {
+      summary: {
+        pending: 42,
+        inProgress: 68,
+        avgResponse: 12.4,
+        avgResolve: 28.6,
+        overdue: 8,
+        csat: 4.63,
+        fcr: 82.5
+      },
+      urgency: {
+        labels: ['P0 - 严重', 'P1 - 高', 'P2 - 中', 'P3 - 低'],
+        open: [6, 14, 32, 18],
+        inProgress: [4, 12, 28, 12],
+        closed: [2, 9, 25, 15]
+      },
+      types: {
+        labels: ['缺货', '错发/漏发', '延迟/时效', '退换货', '损坏', '计费/账单'],
+        values: [18, 22, 26, 14, 10, 8]
+      },
+      issueRoot: {
+        types: [
+          { name: '缺货', value: 26, advice: '补充安全库存，启用替代品' },
+          { name: '错发/漏发', value: 22, advice: '复核拣货+称重校验' },
+          { name: '延迟/时效', value: 18, advice: '增加波次，优化时段人力' }
+        ],
+        links: [
+          { name: 'US-WH2 出库环节', value: 28 },
+          { name: 'DE-WH1 揽收环节', value: 18 },
+          { name: '末端派送', value: 12 }
+        ],
+        repeatRate: 14.6
+      },
+      performance: {
+        agentVolume: 38,
+        teamVolume: 264,
+        transferRate: 7.2,
+        csat: 4.65,
+        fcrTrend: {
+          labels: ['第1周','第2周','第3周','第4周','第5周'],
+          fcr: [78, 80, 82, 83, 82.5],
+          sla: 80
+        },
+        agentRank: [
+          { name: 'Alice', value: 92 },
+          { name: 'Ben', value: 88 },
+          { name: 'Chen', value: 86 },
+          { name: 'Doris', value: 82 },
+          { name: 'Ethan', value: 80 }
+        ]
+      },
+      overdueList: [
+        { id: 'CS-2401', channel: '电话', priority: 'P0', sla: '-15m', owner: 'Alice' },
+        { id: 'CS-2407', channel: '邮件', priority: 'P1', sla: '12m', owner: 'Ben' },
+        { id: 'CS-2410', channel: 'IM', priority: 'P1', sla: '25m', owner: 'Chen' },
+        { id: 'CS-2421', channel: '工单', priority: 'P2', sla: '42m', owner: 'Doris' }
+      ],
+      issues: [
+        { title: '缺货导致订单取消', link: 'US-WH2 出库', count: 46, rate: '28%', advice: '设定安全库存阈值+自动补货' },
+        { title: '派送延迟>48h', link: '末端派送', count: 38, rate: '21%', advice: '更换服务商或升级服务级别' },
+        { title: '错发/漏发', link: '拣货复核', count: 32, rate: '18%', advice: '上线复核抽检&称重校验' },
+        { title: '账单差异', link: '计费结算', count: 18, rate: '11%', advice: '对齐计费口径并增加试算' },
+        { title: '包装破损', link: '中转装卸', count: 12, rate: '7%', advice: '加固包装&标识易碎' }
+      ]
+    };
+
+    function setSummary() {
+      document.getElementById('pendingCount').textContent = `${dashboardData.summary.pending} / ${dashboardData.summary.inProgress}`;
+      document.getElementById('respTime').textContent = `${dashboardData.summary.avgResponse}m`;
+      document.getElementById('solveTime').textContent = `${dashboardData.summary.avgResolve}h`;
+      document.getElementById('overdueCount').textContent = dashboardData.summary.overdue;
+      document.getElementById('overdueDesc').textContent = '含 P0-P1 ' + dashboardData.summary.overdue + ' 单需加急';
+      document.getElementById('csatScore').textContent = dashboardData.summary.csat.toFixed(2);
+      document.getElementById('fcrScore').textContent = dashboardData.summary.fcr.toFixed(1) + '%';
+      document.getElementById('agentVolume').textContent = dashboardData.performance.agentVolume;
+      document.getElementById('teamVolume').textContent = dashboardData.performance.teamVolume;
+      document.getElementById('transferRate').textContent = dashboardData.performance.transferRate + '%';
+      document.getElementById('csatCard').textContent = dashboardData.performance.csat.toFixed(2);
+      document.getElementById('repeatRate').textContent = dashboardData.issueRoot.repeatRate.toFixed(1) + '%';
+    }
+
+    function renderLists() {
+      const typeList = document.getElementById('issueTypeList');
+      typeList.innerHTML = '';
+      dashboardData.issueRoot.types.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-100';
+        li.innerHTML = `<div>
+          <div class="font-semibold text-gray-800">${item.name}</div>
+          <div class="text-xs text-gray-500">${item.advice}</div>
+        </div>
+        <span class="badge-soft bg-primary/10 text-primary font-semibold">${item.value} 单</span>`;
+        typeList.appendChild(li);
+      });
+
+      const linkList = document.getElementById('linkList');
+      linkList.innerHTML = '';
+      dashboardData.issueRoot.links.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-100';
+        li.innerHTML = `<span class="text-gray-800">${item.name}</span>
+        <span class="badge-soft bg-warning/10 text-warning font-semibold">${item.value} 单</span>`;
+        linkList.appendChild(li);
+      });
+
+      const overdueTable = document.getElementById('overdueTable');
+      overdueTable.innerHTML = '';
+      dashboardData.overdueList.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        const priorityColor = row.priority === 'P0' ? 'text-danger' : row.priority === 'P1' ? 'text-warning' : 'text-gray-700';
+        tr.innerHTML = `
+          <td class="table-cell font-medium">${row.id}</td>
+          <td class="table-cell">${row.channel}</td>
+          <td class="table-cell ${priorityColor}">${row.priority}</td>
+          <td class="table-cell">${row.sla}</td>
+          <td class="table-cell">${row.owner}</td>
+        `;
+        overdueTable.appendChild(tr);
+      });
+
+      const issueTable = document.getElementById('issueTable');
+      issueTable.innerHTML = '';
+      dashboardData.issues.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        tr.innerHTML = `
+          <td class="table-cell font-medium">${row.title}</td>
+          <td class="table-cell">${row.link}</td>
+          <td class="table-cell">${row.count}</td>
+          <td class="table-cell text-warning font-semibold">${row.rate}</td>
+          <td class="table-cell text-gray-600">${row.advice}</td>
+        `;
+        issueTable.appendChild(tr);
+      });
+    }
+
+    function initUrgencyChart() {
+      const ctx = document.getElementById('urgencyChart');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dashboardData.urgency.labels,
+          datasets: [
+            { label: '未处理', data: dashboardData.urgency.open, backgroundColor: '#FF4D4F' },
+            { label: '处理中', data: dashboardData.urgency.inProgress, backgroundColor: '#FAAD14' },
+            { label: '已解决', data: dashboardData.urgency.closed, backgroundColor: '#52C41A' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: { stacked: true, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }
+          }
+        }
+      });
+    }
+
+    function initTypeChart() {
+      const ctx = document.getElementById('typeChart');
+      const total = dashboardData.types.values.reduce((s,v)=>s+v,0);
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: dashboardData.types.labels,
+          datasets: [{
+            data: dashboardData.types.values,
+            backgroundColor: ['#165DFF','#36CFC9','#52C41A','#FAAD14','#FF4D4F','#9CA3AF'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '55%',
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.label}: ${ctx.parsed} 单 (${((ctx.parsed/total)*100).toFixed(1)}%)`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function initFcrChart() {
+      const ctx = document.getElementById('fcrChart');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dashboardData.performance.fcrTrend.labels,
+          datasets: [
+            {
+              label: 'FCR',
+              data: dashboardData.performance.fcrTrend.fcr,
+              borderColor: '#165DFF',
+              backgroundColor: 'rgba(22,93,255,0.1)',
+              borderWidth: 2,
+              tension: 0.35,
+              fill: true,
+              pointRadius: 4
+            },
+            {
+              label: 'SLA',
+              data: new Array(dashboardData.performance.fcrTrend.labels.length).fill(dashboardData.performance.fcrTrend.sla),
+              borderColor: '#FAAD14',
+              borderWidth: 2,
+              borderDash: [6,4],
+              pointRadius: 0,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: {
+              min: 60, max: 100,
+              ticks: { callback: v => v + '%' },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function initAgentChart() {
+      const ctx = document.getElementById('agentChart');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dashboardData.performance.agentRank.map(i => i.name),
+          datasets: [{
+            label: '综合得分',
+            data: dashboardData.performance.agentRank.map(i => i.value),
+            backgroundColor: '#36CFC9',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => `得分 ${c.parsed.y}` } }
+          },
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color:'rgba(0,0,0,0.05)' } },
+            x: { grid: { display:false } }
+          }
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setSummary();
+      renderLists();
+      initUrgencyChart();
+      initTypeChart();
+      initFcrChart();
+      initAgentChart();
+      document.getElementById('refreshBtn').addEventListener('click', () => {
+        alert('已刷新数据（示例静态数据）');
+      });
+
+      // Tab 切换逻辑（与 customer.html 同步）
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+      function switchTab(name) {
+        tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+        tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `tab-${name}`));
+      }
+      tabButtons.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+      switchTab('complaint'); // 默认显示客诉实时统计
+    });
+  </script>
+</body>
+</html>
