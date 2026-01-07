@@ -276,7 +276,6 @@
               <th class="text-left py-3 px-4 font-semibold text-gray-700">客户代码</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">销售</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">客服</th>
-              <th class="text-left py-3 px-4 font-semibold text-gray-700">次客服</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">账单类型</th>
               <th class="text-right py-3 px-4 font-semibold text-gray-700">账单金额</th>
               <th class="text-left py-3 px-4 font-semibold text-gray-700">账单状态</th>
@@ -495,19 +494,29 @@
   <!-- 详情查看弹窗 -->
   <div id="detailModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
     <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-      <div class="flex items-center justify-between p-6 border-b border-gray-200">
-        <h3 class="text-xl font-bold text-dark">费用明细详情</h3>
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+        <h3 class="text-lg font-bold text-dark">费用明细详情</h3>
         <button id="closeDetailModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-          <i class="fa fa-times text-2xl"></i>
+          <i class="fa fa-times text-xl"></i>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-6">
-        <div id="detailContent" class="space-y-4">
-          <!-- 详情内容将通过JavaScript动态渲染 -->
+      
+      <!-- 账单信息固定区域 -->
+      <div id="billInfoSection" class="border-b border-gray-200 bg-white">
+        <!-- 账单信息内容将通过JavaScript动态渲染 -->
+      </div>
+      
+      <!-- 明细列表可滚动区域 -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <div id="detailContent">
+          <!-- 明细内容将通过JavaScript动态渲染 -->
         </div>
       </div>
-      <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-        <button id="detailClose" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+      
+      <!-- 弹窗底部 -->
+      <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50">
+        <button id="detailClose" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">
           关闭
         </button>
       </div>
@@ -522,7 +531,6 @@
     const itemsPerPage = 10;
     let selectedItems = new Set();
     let modalSelectedItems = new Set();
-    let expandedRows = new Set(); // 记录展开的行
     
     // 检索条件配置定义
     const filterConfigDefinitions = {
@@ -1014,13 +1022,13 @@
       checkAll.checked = checkboxes.length > 0 && checkboxes.length === modalSelectedItems.size;
     }
 
-    // 根据客户代码获取客户信息（销售、客服、次客服）
+    // 根据客户代码获取客户信息（销售、客服）
     function getCustomerInfo(customerCode) {
       // 客户信息映射表，可以根据实际需求修改
       const customerMap = {
-        'ZJJS': { sales: '张三', customerService: '李四', subCustomerService: '王五' },
-        'ZJHW': { sales: '赵六', customerService: '钱七', subCustomerService: '孙八' },
-        'ZJWL': { sales: '周九', customerService: '吴十', subCustomerService: '郑一' }
+        'ZJJS': { sales: '张三', customerService: '李四' },
+        'ZJHW': { sales: '赵六', customerService: '钱七' },
+        'ZJWL': { sales: '周九', customerService: '吴十' }
       };
       
       // 如果找到映射，返回对应信息，否则返回默认值
@@ -1031,8 +1039,7 @@
       // 默认值
       return {
         sales: '-',
-        customerService: '-',
-        subCustomerService: '-'
+        customerService: '-'
       };
     }
 
@@ -1062,15 +1069,48 @@
         return;
       }
       
+      // 记录本次提交中已生成的账单号，用于流水号计算
+      const generatedBillNos = [];
+      
+      // 生成账单号函数：客户代码+年月日+3位流水号
+      function generateBillNo(customerCode) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+        const billNoPrefix = `${customerCode}${dateStr}`;
+        
+        // 查找当天该客户代码已存在的账单数量（包括已保存的和本次生成的）
+        const existingBills = reconciliationData.filter(bill => {
+          if (!bill.billNo) return false;
+          return bill.billNo.startsWith(billNoPrefix);
+        });
+        
+        // 统计本次提交中已生成的相同前缀的账单号数量
+        const currentSessionBills = generatedBillNos.filter(billNo => 
+          billNo.startsWith(billNoPrefix)
+        );
+        
+        // 计算流水号（从001开始）
+        const totalCount = existingBills.length + currentSessionBills.length;
+        const sequence = String(totalCount + 1).padStart(3, '0');
+        
+        const billNo = `${customerCode}${dateStr}${sequence}`;
+        generatedBillNos.push(billNo);
+        
+        return billNo;
+      }
+      
       selectedData.forEach(item => {
         const billMonth = document.getElementById('modalBillMonth').value || new Date().toISOString().slice(0, 7);
         const key = `${item.customerCode}_${billMonth}_${billType}`;
         
         if (!billMap.has(key)) {
-          const billNo = `BILL-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+          const billNo = generateBillNo(item.customerCode);
           const voyagePeriod = document.getElementById('modalVoyagePeriod').value || '';
           
-          // 根据客户代码自动填充销售、客服、次客服信息
+          // 根据客户代码自动填充销售、客服信息
           const customerInfo = getCustomerInfo(item.customerCode);
           
           const currentTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -1082,7 +1122,6 @@
             customerCode: item.customerCode,
             sales: customerInfo.sales,
             customerService: customerInfo.customerService,
-            subCustomerService: customerInfo.subCustomerService,
             billType: billType,
             billAmount: 0,
             billStatus: '已出账',
@@ -1140,7 +1179,7 @@
       if (reconciliationData.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="16" class="py-8 text-center text-gray-500">
+            <td colspan="14" class="py-8 text-center text-gray-500">
               <i class="fa fa-inbox text-4xl mb-2 block"></i>
               暂无数据，请点击"费用获取"按钮获取数据
             </td>
@@ -1171,7 +1210,6 @@
           <td class="py-3 px-4">${item.customerCode || '-'}</td>
           <td class="py-3 px-4">${item.sales || '-'}</td>
           <td class="py-3 px-4">${item.customerService || '-'}</td>
-          <td class="py-3 px-4">${item.subCustomerService || '-'}</td>
           <td class="py-3 px-4">${item.billType || '-'}</td>
           <td class="py-3 px-4 text-right font-semibold text-success">$${(item.billAmount || 0).toFixed(2)}</td>
           <td class="py-3 px-4">
@@ -1196,9 +1234,6 @@
           <td class="py-3 px-4 text-sm text-gray-600 max-w-xs truncate" title="${item.billRemark || ''}">${item.billRemark || '-'}</td>
           <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center gap-2">
-              <button onclick="toggleDetailRow('${item.id || item.billNo}')" class="px-3 py-1 text-secondary hover:bg-secondary/10 rounded transition-colors">
-                <i class="fa fa-list mr-1"></i>明细
-              </button>
               <button onclick="viewDetail('${item.id || item.billNo}')" class="px-3 py-1 text-primary hover:bg-primary/10 rounded transition-colors">
                 <i class="fa fa-eye mr-1"></i>详情
             </button>
@@ -1216,12 +1251,6 @@
           </td>
         `;
         tbody.appendChild(tr);
-
-        // 如果该行已展开，添加明细行
-        if (expandedRows.has(item.id || item.billNo)) {
-          const detailTr = createDetailRow(item);
-          tbody.appendChild(detailTr);
-        }
       });
 
       // 绑定复选框事件
@@ -1689,104 +1718,75 @@
       const item = reconciliationData.find(d => (d.id === id || d.billNo === id));
       if (!item) return;
 
+      const billInfoSection = document.getElementById('billInfoSection');
       const detailContent = document.getElementById('detailContent');
       
-      // 账单基本信息
-      let html = `
-        <div class="mb-6">
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-1 h-6 bg-primary rounded"></div>
-            <h4 class="text-lg font-semibold text-dark">账单信息</h4>
-          </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">账单号</div>
-              <div class="font-semibold text-primary">${item.billNo || '-'}</div>
+      // 账单基本信息 - 固定在顶部，使用紧凑的标签式布局
+      let billInfoHtml = `
+        <div class="p-3">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+            <!-- 关键信息突出显示 -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-400">账单号</span>
+              <span class="font-bold text-primary text-sm">${item.billNo || '-'}</span>
             </div>
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">账单月</div>
-              <div class="font-semibold">${item.billMonth || '-'}</div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-400">金额</span>
+              <span class="font-bold text-success text-sm">$${(item.billAmount || 0).toFixed(2)}</span>
             </div>
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">航期</div>
-              <div class="font-semibold">${item.voyagePeriod || '-'}</div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-400">状态</span>
+              <span class="px-1.5 py-0.5 rounded text-xs font-medium ${getStatusClass(item.billStatus || '待审核')}">${item.billStatus || '待审核'}</span>
             </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-            <div class="text-sm text-gray-500 mb-1">客户代码</div>
-              <div class="font-semibold">${item.customerCode || '-'}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">销售</div>
-              <div class="font-semibold">${item.sales || '-'}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">客服</div>
-              <div class="font-semibold">${item.customerService || '-'}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">次客服</div>
-              <div class="font-semibold">${item.subCustomerService || '-'}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">账单类型</div>
-              <div class="font-semibold">${item.billType || '-'}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">账单状态</div>
-              <div class="font-semibold">
-                <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(item.billStatus || '待审核')}">${item.billStatus || '待审核'}</span>
-              </div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">账单金额</div>
-              <div class="font-semibold text-success text-xl">$${(item.billAmount || 0).toFixed(2)}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-1">创建人</div>
-              <div class="font-semibold">${item.creator || '-'}</div>
+            <div class="w-px h-4 bg-gray-300"></div>
+            <!-- 其他信息 -->
+            <div class="flex items-center gap-1">
+              <span class="text-gray-400">账单月</span>
+              <span class="text-gray-700">${item.billMonth || '-'}</span>
             </div>
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-2">操作人</div>
-              <div class="space-y-1 text-sm">
-                ${item.createUser ? `<div class="text-gray-700"><span class="text-gray-500">创建人:</span> ${item.createUser}</div>` : ''}
-                ${item.voidUser ? `<div class="text-gray-700"><span class="text-gray-500">作废人:</span> ${item.voidUser}</div>` : ''}
-                ${item.submitUser ? `<div class="text-gray-700"><span class="text-gray-500">提交人:</span> ${item.submitUser}</div>` : ''}
-                ${!item.createUser && !item.voidUser && !item.submitUser ? '<div class="text-gray-500">-</div>' : ''}
-              </div>
+            <div class="flex items-center gap-1">
+              <span class="text-gray-400">客户代码</span>
+              <span class="text-gray-700">${item.customerCode || '-'}</span>
             </div>
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="text-sm text-gray-500 mb-2">操作时间</div>
-              <div class="space-y-1 text-sm text-gray-500">
-                ${item.createTime ? `<div>创建时间: ${item.createTime}</div>` : ''}
-                ${item.voidTime ? `<div>作废时间: ${item.voidTime}</div>` : ''}
-                ${item.submitTime ? `<div>提交时间: ${item.submitTime}</div>` : ''}
-                ${!item.createTime && !item.voidTime && !item.submitTime ? '<div>-</div>' : ''}
-              </div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-4 col-span-2">
-              <div class="text-sm text-gray-500 mb-1">账单备注</div>
-              <div class="font-semibold">${item.billRemark || '-'}</div>
+            <div class="flex items-center gap-1">
+              <span class="text-gray-400">账单类型</span>
+              <span class="text-gray-700">${item.billType || '-'}</span>
             </div>
+            ${item.voyagePeriod ? `
+            <div class="flex items-center gap-1">
+              <span class="text-gray-400">航期</span>
+              <span class="text-gray-700">${item.voyagePeriod}</span>
+            </div>
+            ` : ''}
+            ${item.billRemark ? `
+            <div class="w-full flex items-start gap-1 mt-1">
+              <span class="text-gray-400 whitespace-nowrap">备注</span>
+              <span class="text-gray-700 flex-1">${item.billRemark}</span>
+            </div>
+            ` : ''}
           </div>
         </div>
       `;
       
+      billInfoSection.innerHTML = billInfoHtml;
+      
       // 费用明细列表
+      let detailHtml = '';
       if (item.details && item.details.length > 0) {
         // 根据账单类型获取字段配置
         const billType = item.billType || '出库+快递(YC)';
         const fieldConfig = getBillTypeFields(billType);
         
-        html += `
+        detailHtml += `
           <div>
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-1 h-6 bg-primary rounded"></div>
-              <h4 class="text-lg font-semibold text-dark">费用明细</h4>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-1 h-5 bg-primary rounded"></div>
+              <h4 class="text-base font-semibold text-dark">费用明细</h4>
               <span class="text-sm text-gray-500 ml-2">共 ${item.details.length} 条</span>
             </div>
             <div class="overflow-x-auto border border-gray-200 rounded-lg">
-              <table class="w-full">
-                <thead class="bg-gray-50">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 sticky top-0">
                   <tr>
         `;
         
@@ -1795,18 +1795,18 @@
           const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
             ? 'text-right' 
             : 'text-left';
-          html += `<th class="${alignClass} py-3 px-4 font-semibold text-gray-700">${header}</th>`;
+          detailHtml += `<th class="${alignClass} py-2 px-3 font-semibold text-gray-700 text-xs">${header}</th>`;
         });
         
-        html += `
+        detailHtml += `
                   </tr>
                 </thead>
                 <tbody>
         `;
         
         // 根据字段配置动态生成数据行
-        item.details.forEach(detail => {
-          html += `<tr class="border-b border-gray-100 table-row-hover">`;
+        item.details.forEach((detail, index) => {
+          detailHtml += `<tr class="border-b border-gray-100 hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}">`;
           
           fieldConfig.fields.forEach(field => {
             let value = detail[field] || '-';
@@ -1826,20 +1826,20 @@
               }
             }
             
-            html += `<td class="py-3 px-4 ${alignClass}">${displayValue}</td>`;
+            detailHtml += `<td class="py-2 px-3 ${alignClass}">${displayValue}</td>`;
           });
           
-          html += `</tr>`;
+          detailHtml += `</tr>`;
         });
         
-        html += `
+        detailHtml += `
                 </tbody>
               </table>
             </div>
           </div>
         `;
       } else {
-        html += `
+        detailHtml += `
           <div class="text-center py-8 text-gray-500">
             <i class="fa fa-inbox text-4xl mb-2 block"></i>
             暂无明细数据
@@ -1847,7 +1847,7 @@
         `;
       }
       
-      detailContent.innerHTML = html;
+      detailContent.innerHTML = detailHtml;
 
       document.getElementById('detailModal').classList.remove('hidden');
       document.getElementById('detailModal').classList.add('flex');
@@ -1874,104 +1874,6 @@
     window.viewDetail = viewDetail;
     window.voidBill = voidBill;
     window.submitBill = submitBill;
-    window.toggleDetailRow = toggleDetailRow;
-
-    // 切换明细行展开/收起
-    function toggleDetailRow(id) {
-      if (expandedRows.has(id)) {
-        expandedRows.delete(id);
-      } else {
-        expandedRows.add(id);
-      }
-      renderTable();
-    }
-
-    // 创建明细行
-    function createDetailRow(item) {
-      const detailTr = document.createElement('tr');
-      detailTr.className = 'bg-gray-50 border-b border-gray-200';
-      
-      if (!item.details || item.details.length === 0) {
-        detailTr.innerHTML = `
-          <td colspan="15" class="py-4 px-6">
-            <div class="text-center text-gray-500">
-              <i class="fa fa-inbox text-2xl mb-2 block"></i>
-              暂无明细数据
-            </div>
-          </td>
-        `;
-        return detailTr;
-      }
-
-      // 根据账单类型获取字段配置
-      const billType = item.billType || '出库+快递(YC)';
-      const fieldConfig = getBillTypeFields(billType);
-      
-      let detailHtml = `
-        <td colspan="15" class="py-4 px-6">
-          <div class="bg-white rounded-lg border border-gray-200 p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <i class="fa fa-list text-secondary"></i>
-              <h5 class="font-semibold text-gray-700">费用明细 (${item.details.length} 条)</h5>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead class="bg-gray-50">
-                  <tr>
-      `;
-      
-      // 根据字段配置动态生成表头
-      fieldConfig.headers.forEach(header => {
-        const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
-          ? 'text-right' 
-          : 'text-left';
-        detailHtml += `<th class="${alignClass} py-2 px-3 font-medium text-gray-600 border-b">${header}</th>`;
-      });
-      
-      detailHtml += `
-                  </tr>
-                </thead>
-                <tbody>
-      `;
-      
-      // 根据字段配置动态生成数据行
-      item.details.forEach((detail, index) => {
-        detailHtml += `<tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50">`;
-        
-        fieldConfig.fields.forEach(field => {
-          let value = detail[field] || '-';
-          let alignClass = 'text-left';
-          let displayValue = value;
-          
-          // 处理数值字段
-          if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
-            alignClass = 'text-right';
-            if (typeof value === 'number') {
-              if (field === 'adjustAmount') {
-                displayValue = value.toFixed(2);
-              } else {
-                displayValue = `${value.toFixed(2)}`;
-              }
-            }
-          }
-          
-          detailHtml += `<td class="py-2 px-3 ${alignClass} border-b border-gray-100">${displayValue}</td>`;
-        });
-        
-        detailHtml += `</tr>`;
-      });
-      
-      detailHtml += `
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </td>
-      `;
-      
-      detailTr.innerHTML = detailHtml;
-      return detailTr;
-    }
   </script>
 </body>
 </html>
