@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRD字典管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <style>
+    body { font-family: "Inter", "PingFang SC", "Microsoft Yahei", sans-serif; }
+    .card { box-shadow: 0 6px 24px rgba(0,0,0,0.06); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 0.875rem;
+      color: #374151;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: #3b82f6; color: #1d4ed8; }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .btn-primary:hover { background: #1d4ed8; color: #fff; }
+    .btn-success {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .btn-success:hover { background: #059669; }
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      border-bottom: 2px solid transparent;
+      color: #6b7280;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .tab-btn:hover { color: #2563eb; }
+    .tab-btn.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .section-card {
+      border-left: 3px solid #3b82f6;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .section-card:hover {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .section-card.active {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+
+    /* 侧边栏编辑面板 */
+    .edit-sidebar {
+      position: fixed;
+      right: -480px;
+      top: 0;
+      width: 480px;
+      height: 100vh;
+      background: white;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+    .edit-sidebar.open {
+      right: 0;
+    }
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 99;
+    }
+    .sidebar-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* 富文本编辑器样式 */
+    .editor-toolbar {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-bottom: none;
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+    .editor-btn {
+      padding: 0.375rem 0.75rem;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .editor-btn:hover {
+      background: #f3f4f6;
+      border-color: #3b82f6;
+    }
+    .editor-btn.active {
+      background: #dbeafe;
+      border-color: #3b82f6;
+      color: #2563eb;
+    }
+
+    /* 视图切换 */
+    .view-toggle {
+      display: inline-flex;
+      background: #f3f4f6;
+      border-radius: 0.5rem;
+      padding: 0.25rem;
+    }
+    .view-toggle button {
+      padding: 0.375rem 0.75rem;
+      border: none;
+      background: transparent;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    .view-toggle button.active {
+      background: white;
+      color: #2563eb;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* 快捷键提示 */
+    .shortcut-hint {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      padding: 0.125rem 0.375rem;
+      background: #f3f4f6;
+      border-radius: 0.25rem;
+      font-family: monospace;
+    }
+
+    /* Markdown预览 */
+    .markdown-preview {
+      padding: 1rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      min-height: 100px;
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .markdown-preview code {
+      background: #e5e7eb;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+    .markdown-preview ul, .markdown-preview ol {
+      margin-left: 1.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* 动画效果 */
+    @keyframes slideInRight {
+      from { transform: translateX(20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .animate-slide-in {
+      animation: slideInRight 0.3s ease;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .edit-sidebar {
+        width: 100%;
+        right: -100%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- 顶部导航 -->
+  <div class="bg-white border-b sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-center justify-between py-4">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-database text-2xl text-blue-600"></i>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">PRD字典管理</h1>
+            <p class="text-xs text-gray-500 mt-0.5">在统一的字典体系中维护命名规范、章节结构与字段定义</p>
+          </div>
+        </div>
+        <div class="flex gap-3 items-center">
+          <button class="btn" onclick="goToHome()">
+            <i class="fa-solid fa-arrow-left"></i> 返回首页
+          </button>
+          <button class="btn" onclick="window.location.href='prd-list.html'">
+            <i class="fa-solid fa-file-lines"></i>PRD文档
+          </button>
+          <button class="btn" onclick="window.location.href='requirement-pool.html'">
+            <i class="fa-solid fa-inbox"></i>需求池
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-6 space-y-6">
+    <!-- 顶部说明 -->
+    <div class="card bg-white rounded-xl p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h2 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+          <i class="fa-solid fa-circle-nodes text-blue-500"></i>
+          字典中心
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">
+          所有用于 PRD 生成的规则与模板都集中在这里维护，保持「命名 - 章节 - 字段」三层标准的一致性。
+        </p>
+      </div>
+      <div class="flex gap-3 text-xs text-gray-500">
+        <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+          <i class="fa-solid fa-key"></i> 命名规则字典
+        </span>
+        <span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full">
+          <i class="fa-solid fa-layer-group"></i> 章节结构字典
+        </span>
+        <span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-3 py-1 rounded-full">
+          <i class="fa-solid fa-table"></i> 字段定义字典
+        </span>
+      </div>
+    </div>
+
+    <!-- 字典管理：在字典内配置命名规范、章节配置和字段定义 -->
+    <div class="card bg-white rounded-xl p-6 space-y-8">
+      <!-- 文档命名字典（默认收起） -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between cursor-pointer" onclick="toggleDictSection('naming')">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-angle-right text-gray-400 transition-transform" id="dict-naming-arrow"></i>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-800">文档命名字典</h2>
+              <p class="text-sm text-gray-500 mt-1">统一管理 PRD 文档的命名规则，供生成器和团队共享使用</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="event.stopPropagation();addNamingRule()">
+            <i class="fa-solid fa-plus"></i>新增命名规则
+          </button>
+        </div>
+        <div id="dict-naming-body" class="space-y-4 hidden">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <i class="fa-solid fa-lightbulb text-blue-600 mt-1"></i>
+              <div class="text-sm text-blue-900">
+                <p class="font-semibold mb-2">命名字典说明</p>
+                <p>支持变量: <code class="bg-white px-2 py-1 rounded">{系统模块}</code> <code class="bg-white px-2 py-1 rounded">{功能名称}</code> <code class="bg-white px-2 py-1 rounded">{版本号}</code> <code class="bg-white px-2 py-1 rounded">{日期}</code></p>
+                <p class="mt-1">示例: <span class="font-mono bg-white px-2 py-1 rounded">产品备案-批量导入优化-PRD-V1.2</span></p>
+              </div>
+            </div>
+          </div>
+          <div id="namingRulesList" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <hr class="border-dashed">
+
+      <!-- 章节配置字典（默认收起） -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between cursor-pointer" onclick="toggleDictSection('sections')">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-angle-right text-gray-400 transition-transform" id="dict-sections-arrow"></i>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-800">PRD章节字典</h2>
+              <p class="text-sm text-gray-500 mt-1">在字典中维护标准章节清单，驱动 PRD 模板结构</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-center">
+            <div class="view-toggle">
+              <button onclick="event.stopPropagation();toggleSectionView('list')" class="active" id="viewBtnList">
+                <i class="fa-solid fa-list"></i> 列表
+              </button>
+              <button onclick="event.stopPropagation();toggleSectionView('card')" id="viewBtnCard">
+                <i class="fa-solid fa-grip"></i> 卡片
+              </button>
+            </div>
+            <button class="btn btn-primary" onclick="event.stopPropagation();addSection()">
+              <i class="fa-solid fa-plus"></i>新增章节
+            </button>
+          </div>
+        </div>
+
+        <div id="dict-sections-body" class="space-y-4 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-blue-600" id="totalSections">0</div>
+              <div class="text-sm text-blue-700 mt-1">总章节数</div>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-green-600" id="requiredSections">0</div>
+              <div class="text-sm text-green-700 mt-1">必填章节</div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 text-center">
+              <div class="text-3xl font-bold text-purple-600" id="optionalSections">0</div>
+              <div class="text-sm text-purple-700 mt-1">可选章节</div>
+            </div>
+          </div>
+
+          <p class="text-xs text-gray-400 mb-1">提示：点击某一章节行即可在右侧侧边栏中按字典方式编辑详细配置</p>
+          <div id="sectionsList" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <hr class="border-dashed">
+
+      <!-- 字段定义字典（默认收起） -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between cursor-pointer" onclick="toggleDictSection('fields')">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-angle-right text-gray-400 transition-transform" id="dict-fields-arrow"></i>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-800">字段定义字典</h2>
+              <p class="text-sm text-gray-500 mt-1">集中管理各业务域的字段含义、类型和校验规则，供 PRD 与设计、研发统一理解</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="event.stopPropagation();addFieldTemplate()">
+            <i class="fa-solid fa-plus"></i>新增字段模板
+          </button>
+        </div>
+
+        <div id="dict-fields-body" class="space-y-4 hidden">
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div class="flex items-start gap-3">
+              <i class="fa-solid fa-table text-amber-600 mt-1"></i>
+              <div class="text-sm text-amber-900">
+                <p class="font-semibold mb-2">字段字典包含以下属性</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <span>• 字段名称</span>
+                  <span>• 数据类型</span>
+                  <span>• 字段长度</span>
+                  <span>• 是否必填</span>
+                  <span>• 校验规则</span>
+                  <span>• 示例值</span>
+                  <span>• 字段说明</span>
+                  <span>• 默认值</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm" id="fieldTemplateTable">
+              <thead class="bg-gray-100 text-gray-600">
+                <tr>
+                  <th class="px-4 py-3 text-left">字段名</th>
+                  <th class="px-4 py-3 text-left">类型</th>
+                  <th class="px-4 py-3 text-left">长度</th>
+                  <th class="px-4 py-3 text-center">必填</th>
+                  <th class="px-4 py-3 text-left">校验规则</th>
+                  <th class="px-4 py-3 text-left">示例</th>
+                  <th class="px-4 py-3 text-left">说明</th>
+                  <th class="px-4 py-3 text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody id="fieldTemplateTbody" class="divide-y"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加/编辑字段弹窗 -->
+  <div id="fieldModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800" id="fieldModalTitle">添加字段</h3>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeFieldModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">字段名称 <span class="text-red-500">*</span></span>
+            <input type="text" id="fieldName" class="w-full border rounded-lg px-3 py-2" placeholder="例如: SKU">
+          </label>
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">数据类型</span>
+            <select id="fieldType" class="w-full border rounded-lg px-3 py-2">
+              <option value="String">String</option>
+              <option value="Integer">Integer</option>
+              <option value="Decimal">Decimal</option>
+              <option value="DateTime">DateTime</option>
+              <option value="Boolean">Boolean</option>
+              <option value="Enum">Enum</option>
+              <option value="Array">Array</option>
+              <option value="Object">Object</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">字段长度</span>
+            <input type="text" id="fieldLength" class="w-full border rounded-lg px-3 py-2" placeholder="例如: 50">
+          </label>
+          <label class="space-y-1 flex items-end gap-3">
+            <span class="text-sm text-gray-700">是否必填</span>
+            <input type="checkbox" id="fieldRequired" class="w-5 h-5">
+          </label>
+        </div>
+        <label class="space-y-1">
+          <span class="text-sm text-gray-700">校验规则</span>
+          <input type="text" id="fieldRule" class="w-full border rounded-lg px-3 py-2" placeholder="例如: 唯一性、非空">
+        </label>
+        <div class="grid grid-cols-2 gap-4">
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">示例值</span>
+            <input type="text" id="fieldExample" class="w-full border rounded-lg px-3 py-2" placeholder="例如: ADADAD">
+          </label>
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">默认值</span>
+            <input type="text" id="fieldDefault" class="w-full border rounded-lg px-3 py-2" placeholder="例如: 当前时间">
+          </label>
+        </div>
+        <label class="space-y-1">
+          <span class="text-sm text-gray-700">字段说明</span>
+          <textarea id="fieldDesc" rows="2" class="w-full border rounded-lg px-3 py-2" placeholder="描述该字段的用途"></textarea>
+        </label>
+      </div>
+      <div class="px-6 py-3 border-t flex justify-end gap-3 bg-gray-50">
+        <button class="btn" onclick="closeFieldModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveFieldModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 添加/编辑章节弹窗 -->
+  <div id="sectionModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800" id="sectionModalTitle">添加章节</h3>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeSectionModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">章节序号 <span class="text-red-500">*</span></span>
+            <input type="number" id="sectionOrder" class="w-full border rounded-lg px-3 py-2" placeholder="1">
+          </label>
+          <label class="space-y-1">
+            <span class="text-sm text-gray-700">是否必填</span>
+            <select id="sectionRequired" class="w-full border rounded-lg px-3 py-2">
+              <option value="true">必填</option>
+              <option value="false">可选</option>
+            </select>
+          </label>
+        </div>
+        <label class="space-y-1">
+          <span class="text-sm text-gray-700">章节标题 <span class="text-red-500">*</span></span>
+          <input type="text" id="sectionTitle" class="w-full border rounded-lg px-3 py-2" placeholder="例如: 需求背景与目标">
+        </label>
+        <label class="space-y-1">
+          <span class="text-sm text-gray-700">章节描述</span>
+          <textarea id="sectionDesc" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="描述该章节的内容要求和注意事项"></textarea>
+        </label>
+        <label class="space-y-1">
+          <span class="text-sm text-gray-700">内容模板 (可选)</span>
+          <textarea id="sectionTemplate" rows="4" class="w-full border rounded-lg px-3 py-2 font-mono text-sm" placeholder="该章节的默认内容模板"></textarea>
+        </label>
+      </div>
+      <div class="px-6 py-3 border-t flex justify-end gap-3 bg-gray-50">
+        <button class="btn" onclick="closeSectionModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveSectionModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 侧边栏编辑面板 -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="edit-sidebar" id="editSidebar">
+    <div class="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50">
+      <div>
+        <h3 class="text-base font-semibold text-gray-800" id="sidebarTitleText">编辑章节</h3>
+        <p class="text-xs text-gray-500 mt-1">按 <span class="shortcut-hint">Esc</span> 关闭</p>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600 text-xl" onclick="closeSidebar()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+      <div class="grid grid-cols-2 gap-4">
+        <label class="space-y-2">
+          <span class="text-sm font-medium text-gray-700">章节序号</span>
+          <input type="number" id="sidebarOrder" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="1" oninput="triggerAutoSave()">
+        </label>
+        <label class="space-y-2">
+          <span class="text-sm font-medium text-gray-700">是否必填</span>
+          <select id="sidebarRequired" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" onchange="triggerAutoSave()">
+            <option value="true">必填</option>
+            <option value="false">可选</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="space-y-2">
+        <span class="text-sm font-medium text-gray-700">章节标题</span>
+        <input type="text" id="sidebarTitleInput" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="例如: 需求背景与目标" oninput="triggerAutoSave()">
+      </label>
+
+      <label class="space-y-2">
+        <span class="text-sm font-medium text-gray-700">章节描述</span>
+        <textarea id="sidebarDesc" rows="3" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="描述该章节的内容要求和注意事项" oninput="triggerAutoSave()"></textarea>
+      </label>
+
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-gray-700">内容模板</span>
+          <div class="flex gap-2">
+            <button class="editor-btn active" onclick="togglePreviewMode(false)" id="editModeBtn">
+              <i class="fa-solid fa-pen"></i> 编辑
+            </button>
+            <button class="editor-btn" onclick="togglePreviewMode(true)" id="previewModeBtn">
+              <i class="fa-solid fa-eye"></i> 预览
+            </button>
+          </div>
+        </div>
+
+        <div id="templateEditor">
+          <div class="editor-toolbar">
+            <button class="editor-btn" onclick="insertMarkdown('**', '**')" title="加粗">
+              <i class="fa-solid fa-bold"></i>
+            </button>
+            <button class="editor-btn" onclick="insertMarkdown('*', '*')" title="斜体">
+              <i class="fa-solid fa-italic"></i>
+            </button>
+            <button class="editor-btn" onclick="insertMarkdown('`', '`')" title="代码">
+              <i class="fa-solid fa-code"></i>
+            </button>
+            <button class="editor-btn" onclick="insertMarkdown('- ', '')" title="列表">
+              <i class="fa-solid fa-list-ul"></i>
+            </button>
+            <button class="editor-btn" onclick="insertMarkdown('### ', '')" title="标题">
+              <i class="fa-solid fa-heading"></i>
+            </button>
+          </div>
+          <textarea id="sidebarTemplate" rows="8" class="w-full border border-t-0 rounded-b-lg px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-500" placeholder="该章节的默认内容模板&#10;支持Markdown格式" oninput="triggerAutoSave()"></textarea>
+        </div>
+
+        <div id="templatePreview" class="markdown-preview hidden"></div>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t bg-gray-50 flex justify-between items-center">
+      <button class="text-red-600 hover:text-red-700 text-sm font-medium" onclick="deleteSectionFromSidebar()">
+        <i class="fa-solid fa-trash-can mr-1"></i>删除章节
+      </button>
+      <div class="flex gap-3">
+        <button class="btn" onclick="closeSidebar()">关闭 <span class="shortcut-hint ml-2">Esc</span></button>
+        <button class="btn btn-primary" onclick="saveSidebarChanges()">
+          <i class="fa-solid fa-check"></i>保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast提示 -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm opacity-0 pointer-events-none transition-opacity">
+    操作成功
+  </div>
+
+  <script>
+    // ==================== 数据存储 ====================
+    let config = {
+      namingRules: [
+        {
+          id: 1,
+          pattern: '{系统模块}-{功能名称}-PRD-V{版本号}',
+          example: '产品备案-批量导入优化-PRD-V1.2',
+          description: '标准命名格式'
+        }
+      ],
+      sections: [
+        { id: 1, order: 1, title: '文档信息', required: true, description: '产品、版本、日期、负责人等基本信息', template: '产品名称:\n版本号:\n创建日期:\n负责人:\n审核人:' },
+        { id: 2, order: 2, title: '需求背景与目标', required: true, description: '说明为什么要做这个需求,期望达成的目标', template: '背景:\n目标:\n预期收益:' },
+        { id: 3, order: 3, title: '用户角色与使用场景', required: true, description: '定义使用该功能的用户角色和典型场景', template: '用户角色:\n使用场景:' },
+        { id: 4, order: 4, title: '功能需求列表', required: true, description: '详细列出所有功能点,标注优先级', template: 'P0 (必须有):\nP1 (重要):\nP2 (优化项):' },
+        { id: 5, order: 5, title: '页面交互说明', required: true, description: '描述页面布局、交互流程、状态变化', template: '页面结构:\n交互流程:\n异常处理:' },
+        { id: 6, order: 6, title: '数据字段定义', required: true, description: '定义所有数据字段的属性和规则', template: '见字段定义表格' },
+        { id: 7, order: 7, title: '业务规则与异常处理', required: true, description: '明确业务逻辑规则和各种异常情况的处理方式', template: '业务规则:\n异常场景:' },
+        { id: 8, order: 8, title: '非功能性需求', required: false, description: '性能、安全、兼容性等要求', template: '性能要求:\n安全要求:\n兼容性:' },
+        { id: 9, order: 9, title: '验收标准', required: true, description: '明确的验收条件和测试要点', template: '功能验收:\n性能验收:\n体验验收:' },
+        { id: 10, order: 10, title: '附录', required: false, description: '原型链接、参考资料等', template: '原型链接:\n参考文档:' }
+      ],
+      fieldTemplates: [
+        { id: 1, name: 'SKU', type: 'String', length: '50', required: true, rule: '唯一性', example: 'ADADAD', description: '产品唯一标识', defaultValue: '' },
+        { id: 2, name: '产品名称', type: 'String', length: '100', required: true, rule: '非空', example: '蓝牙耳机', description: '产品中文名称', defaultValue: '' },
+        { id: 3, name: '创建时间', type: 'DateTime', length: '-', required: true, rule: '格式: YYYY-MM-DD HH:mm:ss', example: '2024-01-08 10:30:00', description: '记录创建时间', defaultValue: '当前时间' },
+        { id: 4, name: '状态', type: 'Enum', length: '-', required: true, rule: '枚举值: 草稿/已发布/已作废', example: '已发布', description: '数据状态', defaultValue: '草稿' }
+      ]
+    };
+
+    let currentEditSectionId = null;
+    let currentEditFieldId = null;
+    let autoSaveTimer = null;
+    let sectionViewMode = 'list'; // list or card
+
+    // ==================== 初始化 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      renderNamingRules();
+      renderSections();
+      renderFieldTemplates();
+      updateSectionStats();
+      setupKeyboardShortcuts();
+      loadSavedConfig();
+      // 默认全部类型折叠
+      ['naming', 'sections', 'fields'].forEach(name => {
+        const body = document.getElementById('dict-' + name + '-body');
+        const arrow = document.getElementById('dict-' + name + '-arrow');
+        if (body) body.classList.add('hidden');
+        if (arrow) arrow.classList.remove('rotate-90');
+      });
+    });
+
+    // ==================== 快捷键设置 ====================
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        // Esc - 关闭侧边栏
+        if (e.key === 'Escape') {
+          closeSidebar();
+        }
+        // Cmd/Ctrl + S - 保存
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+          e.preventDefault();
+          saveAllConfig();
+        }
+      });
+    }
+
+    // ==================== 自动保存功能 ====================
+    function triggerAutoSave() {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        saveAllConfig(true);
+      }, 800);
+    }
+
+    // ==================== 命名规范 ====================
+    function addNamingRule() {
+      const newRule = {
+        id: Date.now(),
+        pattern: '',
+        example: '',
+        description: ''
+      };
+      config.namingRules.push(newRule);
+      renderNamingRules();
+      saveAllConfig(true);
+    }
+
+    function renderNamingRules() {
+      const list = document.getElementById('namingRulesList');
+      list.innerHTML = config.namingRules.map((rule, idx) => `
+        <div class="section-card card bg-white rounded-lg p-4">
+          <div class="flex items-start gap-4">
+            <div class="flex-1 space-y-3">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-600">命名格式</span>
+                  <input type="text" value="${rule.pattern || ''}" onchange="config.namingRules[${idx}].pattern = this.value; saveAllConfig(true);" class="w-full border rounded-lg px-3 py-2 text-sm font-mono" placeholder="{系统模块}-{功能名称}-PRD-V{版本号}">
+                </label>
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-600">示例</span>
+                  <input type="text" value="${rule.example || ''}" onchange="config.namingRules[${idx}].example = this.value; saveAllConfig(true);" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="产品备案-批量导入优化-PRD-V1.2">
+                </label>
+              </div>
+              <label class="space-y-1">
+                <span class="text-sm text-gray-600">规则说明</span>
+                <input type="text" value="${rule.description || ''}" onchange="config.namingRules[${idx}].description = this.value; saveAllConfig(true);" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="描述该规则的适用场景">
+              </label>
+            </div>
+            <button class="text-red-500 hover:text-red-700 p-2" onclick="deleteNamingRule(${rule.id})">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteNamingRule(id) {
+      if (confirm('确认删除该命名规则吗?')) {
+        config.namingRules = config.namingRules.filter(r => r.id !== id);
+        renderNamingRules();
+        saveAllConfig(true);
+        toast('已删除命名规则');
+      }
+    }
+
+    // ==================== 章节配置 ====================
+    function toggleSectionView(mode) {
+      sectionViewMode = mode;
+      document.getElementById('viewBtnList').classList.toggle('active', mode === 'list');
+      document.getElementById('viewBtnCard').classList.toggle('active', mode === 'card');
+      renderSections();
+    }
+
+    function addSection() {
+      currentEditSectionId = null;
+      document.getElementById('sectionModalTitle').textContent = '添加章节';
+      document.getElementById('sectionOrder').value = config.sections.length + 1;
+      document.getElementById('sectionTitle').value = '';
+      document.getElementById('sectionDesc').value = '';
+      document.getElementById('sectionTemplate').value = '';
+      document.getElementById('sectionRequired').value = 'true';
+      document.getElementById('sectionModal').classList.remove('hidden');
+    }
+
+    function editSection(id) {
+      const section = config.sections.find(s => s.id === id);
+      if (!section) return;
+
+      currentEditSectionId = id;
+      document.getElementById('sidebarOrder').value = section.order;
+      document.getElementById('sidebarTitleInput').value = section.title;
+      document.getElementById('sidebarDesc').value = section.description;
+      document.getElementById('sidebarTemplate').value = section.template || '';
+      document.getElementById('sidebarRequired').value = section.required.toString();
+
+      document.getElementById('editSidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('show');
+
+      document.querySelectorAll('.section-card').forEach(card => card.classList.remove('active'));
+      const currentCard = document.querySelector(`.section-card[data-section-id="${id}"]`);
+      if (currentCard) currentCard.classList.add('active');
+    }
+
+    function closeSidebar() {
+      document.getElementById('editSidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('show');
+      document.querySelectorAll('.section-card').forEach(card => card.classList.remove('active'));
+      currentEditSectionId = null;
+    }
+
+    function saveSidebarChanges() {
+      if (!currentEditSectionId) return;
+      const section = config.sections.find(s => s.id === currentEditSectionId);
+      if (!section) return;
+
+      section.order = parseInt(document.getElementById('sidebarOrder').value);
+      section.title = document.getElementById('sidebarTitleInput').value.trim();
+      section.description = document.getElementById('sidebarDesc').value.trim();
+      section.template = document.getElementById('sidebarTemplate').value.trim();
+      section.required = document.getElementById('sidebarRequired').value === 'true';
+
+      config.sections.sort((a, b) => a.order - b.order);
+      renderSections();
+      updateSectionStats();
+      saveAllConfig(true);
+      toast('章节已更新');
+    }
+
+    function deleteSectionFromSidebar() {
+      if (!currentEditSectionId) return;
+      if (confirm('确认删除该章节吗?')) {
+        config.sections = config.sections.filter(s => s.id !== currentEditSectionId);
+        closeSidebar();
+        renderSections();
+        updateSectionStats();
+        saveAllConfig(true);
+        toast('章节已删除');
+      }
+    }
+
+    function closeSectionModal() {
+      document.getElementById('sectionModal').classList.add('hidden');
+      currentEditSectionId = null;
+    }
+
+    function saveSectionModal() {
+      const order = parseInt(document.getElementById('sectionOrder').value);
+      const title = document.getElementById('sectionTitle').value.trim();
+      const description = document.getElementById('sectionDesc').value.trim();
+      const template = document.getElementById('sectionTemplate').value.trim();
+      const required = document.getElementById('sectionRequired').value === 'true';
+
+      if (!title) {
+        toast('请填写章节标题');
+        return;
+      }
+
+      if (currentEditSectionId) {
+        const section = config.sections.find(s => s.id === currentEditSectionId);
+        section.order = order;
+        section.title = title;
+        section.description = description;
+        section.template = template;
+        section.required = required;
+      } else {
+        config.sections.push({
+          id: Date.now(),
+          order,
+          title,
+          description,
+          template,
+          required
+        });
+      }
+
+      config.sections.sort((a, b) => a.order - b.order);
+      renderSections();
+      updateSectionStats();
+      closeSectionModal();
+      saveAllConfig(true);
+      toast('章节已保存');
+    }
+
+    function deleteSection(id) {
+      if (confirm('确认删除该章节吗?')) {
+        config.sections = config.sections.filter(s => s.id !== id);
+        renderSections();
+        updateSectionStats();
+        saveAllConfig(true);
+        toast('章节已删除');
+      }
+    }
+
+    function renderSections() {
+      const list = document.getElementById('sectionsList');
+
+      if (sectionViewMode === 'card') {
+        list.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+        list.innerHTML = config.sections.map(section => `
+          <div class="section-card card bg-white rounded-lg p-5 animate-slide-in" data-section-id="${section.id}" onclick="editSection(${section.id})">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold text-sm flex-shrink-0">
+                ${section.order}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-semibold text-gray-800 truncate">${section.title}</h3>
+                  ${section.required ? '<span class="badge bg-red-100 text-red-600">必填</span>' : '<span class="badge bg-gray-100 text-gray-600">可选</span>'}
+                </div>
+                <p class="text-sm text-gray-600 line-clamp-2">${section.description}</p>
+              </div>
+            </div>
+            ${section.template ? `<div class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-solid fa-file-lines"></i> 包含模板</div>` : ''}
+          </div>
+        `).join('');
+      } else {
+        list.className = 'space-y-3';
+        list.innerHTML = config.sections.map(section => `
+          <div class="section-card card bg-white rounded-lg p-4 animate-slide-in" data-section-id="${section.id}">
+            <div class="flex items-start gap-4">
+              <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold text-sm flex-shrink-0">
+                ${section.order}
+              </div>
+              <div class="flex-1 min-w-0" onclick="editSection(${section.id})">
+                <div class="flex items-center gap-2 mb-2">
+                  <h3 class="font-semibold text-gray-800">${section.title}</h3>
+                  ${section.required ? '<span class="badge bg-red-100 text-red-600">必填</span>' : '<span class="badge bg-gray-100 text-gray-600">可选</span>'}
+                  <span class="text-xs text-gray-400 ml-auto">点击编辑</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">${section.description}</p>
+                ${section.template ? `<details class="text-sm"><summary class="cursor-pointer text-blue-600 hover:text-blue-700">查看模板</summary><pre class="mt-2 bg-gray-50 p-3 rounded text-xs overflow-x-auto">${section.template}</pre></details>` : ''}
+              </div>
+              <div class="flex gap-2 flex-shrink-0">
+                <button class="text-blue-600 hover:text-blue-700 p-2" onclick="event.stopPropagation(); editSection(${section.id})" title="编辑">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+                <button class="text-red-500 hover:text-red-700 p-2" onclick="event.stopPropagation(); deleteSection(${section.id})" title="删除">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function updateSectionStats() {
+      const total = config.sections.length;
+      const required = config.sections.filter(s => s.required).length;
+      const optional = total - required;
+
+      document.getElementById('totalSections').textContent = total;
+      document.getElementById('requiredSections').textContent = required;
+      document.getElementById('optionalSections').textContent = optional;
+    }
+
+    // ==================== 字段模板 ====================
+    function addFieldTemplate() {
+      currentEditFieldId = null;
+      document.getElementById('fieldModalTitle').textContent = '添加字段';
+      document.getElementById('fieldName').value = '';
+      document.getElementById('fieldType').value = 'String';
+      document.getElementById('fieldLength').value = '';
+      document.getElementById('fieldRequired').checked = false;
+      document.getElementById('fieldRule').value = '';
+      document.getElementById('fieldExample').value = '';
+      document.getElementById('fieldDefault').value = '';
+      document.getElementById('fieldDesc').value = '';
+      document.getElementById('fieldModal').classList.remove('hidden');
+    }
+
+    function editFieldTemplate(id) {
+      const field = config.fieldTemplates.find(f => f.id === id);
+      if (!field) return;
+      currentEditFieldId = id;
+      document.getElementById('fieldModalTitle').textContent = '编辑字段';
+      document.getElementById('fieldName').value = field.name;
+      document.getElementById('fieldType').value = field.type;
+      document.getElementById('fieldLength').value = field.length;
+      document.getElementById('fieldRequired').checked = field.required;
+      document.getElementById('fieldRule').value = field.rule;
+      document.getElementById('fieldExample').value = field.example;
+      document.getElementById('fieldDefault').value = field.defaultValue || '';
+      document.getElementById('fieldDesc').value = field.description;
+      document.getElementById('fieldModal').classList.remove('hidden');
+    }
+
+    function closeFieldModal() {
+      document.getElementById('fieldModal').classList.add('hidden');
+      currentEditFieldId = null;
+    }
+
+    function saveFieldModal() {
+      const name = document.getElementById('fieldName').value.trim();
+      if (!name) { toast('请填写字段名称'); return; }
+      const data = {
+        name,
+        type: document.getElementById('fieldType').value,
+        length: document.getElementById('fieldLength').value.trim(),
+        required: document.getElementById('fieldRequired').checked,
+        rule: document.getElementById('fieldRule').value.trim(),
+        example: document.getElementById('fieldExample').value.trim(),
+        defaultValue: document.getElementById('fieldDefault').value.trim(),
+        description: document.getElementById('fieldDesc').value.trim()
+      };
+      if (currentEditFieldId) {
+        const field = config.fieldTemplates.find(f => f.id === currentEditFieldId);
+        Object.assign(field, data);
+      } else {
+        config.fieldTemplates.push({ id: Date.now(), ...data });
+      }
+      renderFieldTemplates();
+      closeFieldModal();
+      saveAllConfig(true);
+      toast('字段模板已保存');
+    }
+
+    function deleteFieldTemplate(id) {
+      if (confirm('确认删除该字段模板吗?')) {
+        config.fieldTemplates = config.fieldTemplates.filter(f => f.id !== id);
+        renderFieldTemplates();
+        saveAllConfig(true);
+        toast('字段模板已删除');
+      }
+    }
+
+    function renderFieldTemplates() {
+      const tbody = document.getElementById('fieldTemplateTbody');
+      tbody.innerHTML = config.fieldTemplates.map((field, idx) => `
+        <tr class="${idx % 2 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 cursor-pointer" onclick="editFieldTemplate(${field.id})">
+          <td class="px-4 py-3 font-medium">${field.name || '-'}</td>
+          <td class="px-4 py-3">${field.type}</td>
+          <td class="px-4 py-3">${field.length || '-'}</td>
+          <td class="px-4 py-3 text-center">${field.required ? '<i class="fa-solid fa-check text-green-600"></i>' : '<i class="fa-solid fa-minus text-gray-400"></i>'}</td>
+          <td class="px-4 py-3">${field.rule || '-'}</td>
+          <td class="px-4 py-3">${field.example || '-'}</td>
+          <td class="px-4 py-3">${field.description || '-'}</td>
+          <td class="px-4 py-3 text-center">
+            <button class="text-blue-600 hover:text-blue-700 p-1" onclick="event.stopPropagation(); editFieldTemplate(${field.id})" title="编辑"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button class="text-red-500 hover:text-red-700 p-1" onclick="event.stopPropagation(); deleteFieldTemplate(${field.id})" title="删除"><i class="fa-regular fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ==================== Markdown工具栏与预览 ====================
+    function insertMarkdown(prefix, suffix) {
+      const textarea = document.getElementById('sidebarTemplate');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = textarea.value.substring(start, end);
+      const newText = prefix + selectedText + suffix;
+
+      textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+
+      triggerAutoSave();
+    }
+
+    function togglePreviewMode(isPreview) {
+      const editor = document.getElementById('templateEditor');
+      const preview = document.getElementById('templatePreview');
+      const editBtn = document.getElementById('editModeBtn');
+      const previewBtn = document.getElementById('previewModeBtn');
+
+      if (isPreview) {
+        const markdown = document.getElementById('sidebarTemplate').value;
+        preview.innerHTML = renderMarkdown(markdown);
+        editor.classList.add('hidden');
+        preview.classList.remove('hidden');
+        editBtn.classList.remove('active');
+        previewBtn.classList.add('active');
+      } else {
+        editor.classList.remove('hidden');
+        preview.classList.add('hidden');
+        editBtn.classList.add('active');
+        previewBtn.classList.remove('active');
+      }
+    }
+
+    function renderMarkdown(text) {
+      if (!text) return '<p class="text-gray-400">暂无内容</p>';
+      return text
+        .replace(/### (.*)/g, '<h3>$1</h3>')
+        .replace(/## (.*)/g, '<h2>$1</h2>')
+        .replace(/# (.*)/g, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/^- (.*)/gm, '<ul><li>$1</li></ul>')
+        .replace(/<\/ul>\n<ul>/g, '')
+        .replace(/\n/g, '<br>');
+    }
+
+    // ==================== 保存与加载 ====================
+    function saveAllConfig(isAutoSave = false) {
+      localStorage.setItem('prdStandardConfig', JSON.stringify(config));
+      if (!isAutoSave) {
+        toast('字典配置已保存');
+      }
+    }
+
+    function loadSavedConfig() {
+      const savedConfig = localStorage.getItem('prdStandardConfig');
+      if (savedConfig) {
+        try {
+          config = JSON.parse(savedConfig);
+          renderNamingRules();
+          renderSections();
+          renderFieldTemplates();
+          updateSectionStats();
+        } catch (e) {
+          console.error('字典配置加载失败', e);
+        }
+      }
+    }
+
+    // ==================== 工具函数 ====================
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('opacity-0');
+      t.classList.add('opacity-100');
+      setTimeout(() => {
+        t.classList.remove('opacity-100');
+        t.classList.add('opacity-0');
+      }, 2000);
+    }
+
+    // ==================== 字典类型展开/收起 ====================
+    function toggleDictSection(name) {
+      const body = document.getElementById('dict-' + name + '-body');
+      const arrow = document.getElementById('dict-' + name + '-arrow');
+      if (!body) return;
+      body.classList.toggle('hidden');
+      if (arrow) {
+        arrow.classList.toggle('rotate-90');
+      }
+    }
+
+    // ==================== 返回首页函数 ====================
+    function goToHome() {
+      // 检查是否在 iframe 中
+      if (window.self !== window.top) {
+        // 在 iframe 中，发送消息给父页面关闭弹窗
+        window.parent.postMessage({ type: 'CLOSE_FEATURE_MODAL' }, '*');
+        // 延迟导航，让父页面有时间关闭弹窗
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 100);
+      } else {
+        // 不在 iframe 中，直接导航
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>
+

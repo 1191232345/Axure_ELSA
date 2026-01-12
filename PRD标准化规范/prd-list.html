@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRD文档列表</title>
+    <!-- 与首页保持一致的样式与图标库 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Inter", "PingFang SC", "Microsoft Yahei", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+        }
+
+        .card {
+            box-shadow: 0 6px 24px rgba(0,0,0,0.04);
+            border-radius: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            font-size: 0.875rem;
+            color: #374151;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            border-color: #3b82f6;
+            color: #1d4ed8;
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+            color: #fff;
+        }
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+            border-color: #10b981;
+        }
+        .btn-success:hover {
+            background: #059669;
+            color: #fff;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-default {
+            background: #fff;
+            border-color: #d1d5db;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        tr:hover td {
+            background: #f3f4ff;
+        }
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 50;
+        }
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            width: 95%;
+            height: 95%;
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .modal iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航，与首页风格保持一致 -->
+    <div class="bg-white border-b sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-file-lines text-2xl text-blue-600"></i>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800">PRD文档列表</h1>
+                        <p class="text-xs text-gray-500">查看与管理通过生成器创建的PRD文档</p>
+                    </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <button class="btn" onclick="goToHome()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        返回首页
+                    </button>
+                    <button class="btn" onclick="window.location.href='requirement-pool.html'">
+                        <i class="fa-solid fa-inbox"></i>
+                        需求池
+                    </button>
+                    <button class="btn" onclick="window.location.href='ai-assistant.html'">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        智能助手
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="max-w-7xl mx-auto px-6 py-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+                <p class="text-sm text-gray-600">
+                    支持在线新建、编辑、导出与删除 PRD 文档，列表数据来自本地服务 <span class="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">http://localhost:3001</span>
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button class="btn btn-primary" onclick="openModal()">
+                    <i class="fa-solid fa-plus"></i>
+                    新建PRD
+                </button>
+                <button class="btn" onclick="refreshList()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    刷新列表
+                </button>
+            </div>
+        </div>
+
+        <div class="card bg-white overflow-hidden">
+            <div class="border-b px-4 py-3 flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    <i class="fa-solid fa-table mr-1 text-blue-500"></i>
+                    文档列表
+                </div>
+                <div class="text-xs text-gray-400">
+                    提示：双击行可在新标签页打开编辑
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>文件名</th>
+                            <th>项目名称</th>
+                            <th>创建时间</th>
+                            <th style="width: 260px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listBody">
+                        <tr>
+                            <td colspan="4" class="empty">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fa-solid fa-xmark"></i>
+                关闭
+            </button>
+            <iframe id="modalFrame"></iframe>
+        </div>
+    </div>
+    <script>
+        const API = 'http://localhost:3001';
+
+        function openModal(file) {
+            const url = file ? 'prd-generator.html?file=' + encodeURIComponent(file) : 'prd-generator.html';
+            document.getElementById('modalFrame').src = url;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            document.getElementById('modalFrame').src = '';
+            refreshList();
+        }
+
+        async function refreshList() {
+            const tbody = document.getElementById('listBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="empty">加载中，请稍候...</td></tr>';
+            try {
+                const res = await fetch(API + '/list');
+                const files = await res.json();
+                if (!files.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty">暂无PRD文档，可以点击右上角“新建PRD”开始创建。</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = files.map(f => {
+                    const filename = f.filename || '-';
+                    const projectName = (f.data && f.data.projectName) || '-';
+                    const createTime = (f.data && f.data.createTime) || '-';
+                    const rowClick = `ondblclick="window.open('prd-generator.html?file=${encodeURIComponent(filename)}','_blank')"`;
+                    return '<tr ' + rowClick + '>' +
+                        '<td>' + filename + '</td>' +
+                        '<td>' + projectName + '</td>' +
+                        '<td>' + createTime + '</td>' +
+                        '<td class="actions">' +
+                        '<a href="prd-generator.html?file=' + encodeURIComponent(filename) + '" class="btn btn-default">编辑</a>' +
+                        '<button class="btn btn-success" onclick="exportFile(\\'' + filename + '\\')">导出</button>' +
+                        '<button class="btn btn-danger" onclick="deleteFile(\\'' + filename + '\\')">删除</button>' +
+                        '</td>' +
+                        '</tr>';
+                }).join('');
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty">加载失败，请确认本地服务已通过 <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded">node server.js</span> 启动。</td></tr>';
+            }
+        }
+
+        async function deleteFile(filename) {
+            if (!confirm('确定删除 ' + filename + '？')) return;
+            await fetch(API + '/delete/' + encodeURIComponent(filename), { method: 'DELETE' });
+            refreshList();
+        }
+
+        function exportFile(filename) {
+            window.open(API + '/load/' + encodeURIComponent(filename));
+        }
+
+        // 返回首页函数：如果在 iframe 中，先通知父页面关闭弹窗
+        function goToHome() {
+            // 检查是否在 iframe 中
+            if (window.self !== window.top) {
+                // 在 iframe 中，发送消息给父页面关闭弹窗
+                window.parent.postMessage({ type: 'CLOSE_FEATURE_MODAL' }, '*');
+                // 延迟导航，让父页面有时间关闭弹窗
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 100);
+            } else {
+                // 不在 iframe 中，直接导航
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 首次进入自动加载列表
+        refreshList();
+    </script>
+</body>
+</html>

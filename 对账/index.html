@@ -361,7 +361,7 @@
               <h4 class="font-semibold text-dark">检索条件</h4>
             </div>
             <div class="space-y-3">
-              <div>
+              <div id="conditionCustomerCode">
                 <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
                 <select id="modalCustomerCode" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
                   <option value="" selected>全部</option>
@@ -370,7 +370,7 @@
                   <option value="ZJWL">ZJWL</option>
                 </select>
               </div>
-              <div>
+              <div id="conditionWarehouse">
                 <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
                 <div class="relative">
                   <div id="modalWarehouseDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleWarehouseDropdown()">
@@ -401,7 +401,21 @@
                   </div>
                 </div>
               </div>
-              <div>
+              <div id="conditionSettlementDate">
+                <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
+                <div class="space-y-2">
+                  <input type="date" id="modalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                  <input type="date" id="modalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                </div>
+              </div>
+              <div id="conditionCompensationTime">
+                <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
+                <div class="space-y-2">
+                  <input type="date" id="modalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                  <input type="date" id="modalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                </div>
+              </div>
+              <div id="conditionShippingMethod">
                 <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
                 <select id="modalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
                   <option value="" selected>全部</option>
@@ -409,14 +423,14 @@
                   <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
                 </select>
               </div>
-              <div>
+              <div id="conditionCreateTime">
                 <label class="block text-sm font-medium text-gray-700 mb-1">创建时间</label>
                 <div class="space-y-2">
                   <input type="date" id="modalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
                   <input type="date" id="modalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
                 </div>
               </div>
-              <div>
+              <div id="conditionOutboundTime">
                 <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
                 <div class="space-y-2">
                   <input type="date" id="modalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
@@ -637,11 +651,12 @@
         // 初始化客户代码和仓库为全部
         document.getElementById('modalCustomerCode').value = '';
         initWarehouseAll();
-        // 如果已选择账单类型，更新表头
+        // 如果已选择账单类型，更新表头和检索条件
         const billType = document.getElementById('modalBillType').value;
         if (billType) {
           updateModalTableHeader();
         }
+        updateSearchConditions(); // 打开弹窗时更新检索条件显示
       });
 
       // 关闭费用获取弹窗
@@ -669,9 +684,10 @@
       document.getElementById('modalSearch').addEventListener('click', searchModalData);
       document.getElementById('modalReset').addEventListener('click', resetModalForm);
       
-      // 账单类型变化时更新表头
+      // 账单类型变化时更新表头和检索条件
       document.getElementById('modalBillType').addEventListener('change', function() {
         updateModalTableHeader();
+        updateSearchConditions();
         // 清空数据列表
         document.getElementById('modalDataTableBody').innerHTML = '';
         modalData = [];
@@ -728,13 +744,6 @@
       
       // 初始化检索条件
       renderBasicFilters();
-
-      // 批量选择
-      document.getElementById('btnBatchSelect').addEventListener('click', function() {
-        const checkAll = document.getElementById('tableCheckAll');
-        checkAll.checked = !checkAll.checked;
-        checkAll.dispatchEvent(new Event('change'));
-      });
 
       // 导出功能
       document.getElementById('btnExport').addEventListener('click', exportData);
@@ -802,12 +811,17 @@
       document.getElementById('modalCreateEndDate').value = '';
       document.getElementById('modalOutboundStartDate').value = '';
       document.getElementById('modalOutboundEndDate').value = '';
+      document.getElementById('modalSettlementStartDate').value = '';
+      document.getElementById('modalSettlementEndDate').value = '';
+      document.getElementById('modalCompensationStartDate').value = '';
+      document.getElementById('modalCompensationEndDate').value = '';
       document.getElementById('modalDataTableBody').innerHTML = '';
       modalSelectedItems.clear();
       updateModalSelectedCount();
+      updateSearchConditions(); // 重置后更新检索条件显示
     }
 
-    // 获取账单类型对应的字段配置
+    // 获取账单类型对应的字配置
     function getBillTypeFields(billType) {
       const fieldConfigs = {
         '出库+快递(YC)': {
@@ -835,16 +849,16 @@
           fields: ['customerCode', 'warehouse', 'feeItem', 'amount', 'currency', 'remark']
         },
         '充值': {
-          headers: ['客户代码', '充值金额', '币种', '充值时间', '充值方式', '备注'],
-          fields: ['customerCode', 'rechargeAmount', 'currency', 'rechargeTime', 'rechargeMethod', 'remark']
+          headers: ['订单号', '客户代码', '仓库', '销售', '客服', '费用类型', '金额', '币种', '付款日期', '实际付款人', '交易号', '备注'],
+          fields: ['orderNo', 'customerCode', 'warehouse', 'sales', 'customerService', 'feeType', 'amount', 'currency', 'paymentDate', 'actualPayer', 'transactionNo', 'remark']
         },
         '费用调整': {
-          headers: ['客户代码', '仓库', '调整类型', '调整金额', '币种', '调整原因', '备注'],
-          fields: ['customerCode', 'warehouse', 'adjustType', 'adjustAmount', 'currency', 'adjustReason', 'remark']
+          headers: ['订单号', '客户代码', '仓库', '销售', '客服', '费用类型', '应收状态', '金额', '币种'],
+          fields: ['orderNo', 'customerCode', 'warehouse', 'sales', 'customerService', 'feeType', 'receivableStatus', 'amount', 'currency']
         }
       };
       
-      // 默认返回出库+快递的字段配置
+      // 默认返回出库+快递的字配置
       return fieldConfigs[billType] || fieldConfigs['出库+快递(YC)'];
     }
     
@@ -862,7 +876,7 @@
         </th>
       `;
       
-      // 根据字段配置生成表头
+      // 根据字配置生成表头
       fieldConfig.headers.forEach((header, index) => {
         const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
           ? 'text-right' 
@@ -885,6 +899,61 @@
         });
         updateModalSelectedCount();
       });
+    }
+    
+    // 根据账单类型更新检索条件显示
+    function updateSearchConditions() {
+      const billType = document.getElementById('modalBillType').value;
+      const isStorageFee = billType === '仓储费';
+      const isCompensationFee = billType.includes('库内赔付');
+      const isRechargeOrAdjust = billType === '充值' || billType === '费用调整';
+      
+      // 获取所有检索条件元素
+      const customerCodeEl = document.getElementById('conditionCustomerCode');
+      const warehouseEl = document.getElementById('conditionWarehouse');
+      const settlementDateEl = document.getElementById('conditionSettlementDate');
+      const compensationTimeEl = document.getElementById('conditionCompensationTime');
+      const shippingMethodEl = document.getElementById('conditionShippingMethod');
+      const createTimeEl = document.getElementById('conditionCreateTime');
+      const outboundTimeEl = document.getElementById('conditionOutboundTime');
+      
+      if (isStorageFee) {
+        // 仓储费只显示仓库和结算日期
+        customerCodeEl.style.display = 'none';
+        warehouseEl.style.display = 'block';
+        settlementDateEl.style.display = 'block';
+        compensationTimeEl.style.display = 'none';
+        shippingMethodEl.style.display = 'none';
+        createTimeEl.style.display = 'none';
+        outboundTimeEl.style.display = 'none';
+      } else if (isCompensationFee) {
+        // 库内赔付只显示仓库和赔付时间
+        customerCodeEl.style.display = 'none';
+        warehouseEl.style.display = 'block';
+        settlementDateEl.style.display = 'none';
+        compensationTimeEl.style.display = 'block';
+        shippingMethodEl.style.display = 'none';
+        createTimeEl.style.display = 'none';
+        outboundTimeEl.style.display = 'none';
+      } else if (isRechargeOrAdjust) {
+        // 充值和费用调整只显示仓库和创建时间
+        customerCodeEl.style.display = 'none';
+        warehouseEl.style.display = 'block';
+        settlementDateEl.style.display = 'none';
+        compensationTimeEl.style.display = 'none';
+        shippingMethodEl.style.display = 'none';
+        createTimeEl.style.display = 'block';
+        outboundTimeEl.style.display = 'none';
+      } else {
+        // 其他类型显示所有条件（除了赔付时间）
+        customerCodeEl.style.display = 'block';
+        warehouseEl.style.display = 'block';
+        settlementDateEl.style.display = 'block';
+        compensationTimeEl.style.display = 'none';
+        shippingMethodEl.style.display = 'block';
+        createTimeEl.style.display = 'block';
+        outboundTimeEl.style.display = 'block';
+      }
     }
 
     // 搜索弹窗数据
@@ -924,13 +993,13 @@
         ];
       } else if (billType === '充值') {
         mockData = [
-          { id: 'm1', customerCode: 'ZJJS', rechargeAmount: 1000.00, currency: 'USD', rechargeTime: '2025-01-15', rechargeMethod: '银行转账', remark: '充值说明' },
-          { id: 'm2', customerCode: 'ZJHW', rechargeAmount: 2000.00, currency: 'USD', rechargeTime: '2025-01-15', rechargeMethod: '在线支付', remark: '充值说明' }
+          { id: 'm1', orderNo: 'ORD-20250115-001', customerCode: 'ZJJS', warehouse: 'CA008', sales: '张三', customerService: '李四', feeType: '充值', amount: 1000.00, currency: 'USD', paymentDate: '2025-01-15', actualPayer: '客户A', transactionNo: 'TRX-001', remark: '充值说明' },
+          { id: 'm2', orderNo: 'ORD-20250115-002', customerCode: 'ZJHW', warehouse: 'CA009', sales: '王五', customerService: '赵六', feeType: '充值', amount: 2000.00, currency: 'USD', paymentDate: '2025-01-15', actualPayer: '客户B', transactionNo: 'TRX-002', remark: '充值说明' }
         ];
       } else if (billType === '费用调整') {
         mockData = [
-          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', adjustType: '入款', adjustAmount: 50.00, currency: 'USD', adjustReason: '费用调整', remark: '调整说明' },
-          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', adjustType: '扣款', adjustAmount: 30.00, currency: 'USD', adjustReason: '费用调整', remark: '调整说明' }
+          { id: 'm1', orderNo: 'ORD-20250115-003', customerCode: 'ZJJS', warehouse: 'CA008', sales: '张三', customerService: '李四', feeType: '费用调整', receivableStatus: '已收', amount: 50.00, currency: 'USD' },
+          { id: 'm2', orderNo: 'ORD-20250115-004', customerCode: 'ZJHW', warehouse: 'CA009', sales: '王五', customerService: '赵六', feeType: '费用调整', receivableStatus: '未收', amount: 30.00, currency: 'USD' }
         ];
       }
       
@@ -970,13 +1039,13 @@
           </td>
         `;
         
-        // 根据字段配置动态生成表格行
+        // 根据字配置动态生成表格行
         fieldConfig.fields.forEach(field => {
           let value = item[field] || '-';
           let alignClass = 'text-left';
           let displayValue = value;
           
-          // 处理数值字段
+          // 处理数值字
           if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
             alignClass = 'text-right';
             if (typeof value === 'number') {
@@ -1138,7 +1207,7 @@
         }
         
         const bill = billMap.get(key);
-        // 根据账单类型获取金额字段
+        // 根据账单类型获取金额字
         let amount = 0;
         if (item.total !== undefined) {
           amount = item.total;
@@ -1153,7 +1222,7 @@
         }
         bill.billAmount += amount;
         
-        // 为明细添加状态字段，默认为"已出账"
+        // 为明细添加状态字，默认为"已出账"
         const detailWithStatus = {
           ...item,
           detailStatus: '已出账'
@@ -1454,12 +1523,24 @@
       // 计算明细总数（所有账单的明细数量）
       const totalDetails = reconciliationData.reduce((sum, item) => sum + (item.details ? item.details.length : 0), 0);
 
-      document.getElementById('totalRecords').textContent = totalRecords;
-      document.getElementById('selectedRecords').textContent = selectedRecords;
-      document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
-      document.getElementById('selectedAmount').textContent = `$${selectedAmount.toFixed(2)}`;
-      document.getElementById('customerCount').textContent = customers.size;
-      document.getElementById('warehouseCount').textContent = totalDetails; // 显示明细总数
+      // 只更新存在的元素
+      const totalRecordsEl = document.getElementById('totalRecords');
+      if (totalRecordsEl) totalRecordsEl.textContent = totalRecords;
+      
+      const selectedRecordsEl = document.getElementById('selectedRecords');
+      if (selectedRecordsEl) selectedRecordsEl.textContent = selectedRecords;
+      
+      const totalAmountEl = document.getElementById('totalAmount');
+      if (totalAmountEl) totalAmountEl.textContent = `$${totalAmount.toFixed(2)}`;
+      
+      const selectedAmountEl = document.getElementById('selectedAmount');
+      if (selectedAmountEl) selectedAmountEl.textContent = `$${selectedAmount.toFixed(2)}`;
+      
+      const customerCountEl = document.getElementById('customerCount');
+      if (customerCountEl) customerCountEl.textContent = customers.size;
+      
+      const warehouseCountEl = document.getElementById('warehouseCount');
+      if (warehouseCountEl) warehouseCountEl.textContent = totalDetails; // 显示明细总数
     }
 
     // 更新全选状态
@@ -1773,7 +1854,7 @@
       // 费用明细列表
       let detailHtml = '';
       if (item.details && item.details.length > 0) {
-        // 根据账单类型获取字段配置
+        // 根据账单类型获取字配置
         const billType = item.billType || '出库+快递(YC)';
         const fieldConfig = getBillTypeFields(billType);
         
@@ -1790,7 +1871,7 @@
                   <tr>
         `;
         
-        // 根据字段配置动态生成表头
+        // 根据字配置动态生成表头
         fieldConfig.headers.forEach(header => {
           const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
             ? 'text-right' 
@@ -1804,7 +1885,7 @@
                 <tbody>
         `;
         
-        // 根据字段配置动态生成数据行
+        // 根据字配置动态生成数据行
         item.details.forEach((detail, index) => {
           detailHtml += `<tr class="border-b border-gray-100 hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}">`;
           
@@ -1813,7 +1894,7 @@
             let alignClass = 'text-left';
             let displayValue = value;
             
-            // 处理数值字段
+            // 处理数值字
             if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
               alignClass = 'text-right';
               if (typeof value === 'number') {

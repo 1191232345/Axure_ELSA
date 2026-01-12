@@ -1,0 +1,39 @@
+{
+  "product": "1",
+  "version": "1",
+  "date": "2026-01-09",
+  "pm": "1",
+  "reviewer": "1",
+  "module": "",
+  "sections": [
+    {
+      "id": 1,
+      "title": "1. 文档信息",
+      "content": "",
+      "required": true,
+      "placeholder": "产品名称、版本号、负责人"
+    },
+    {
+      "id": 2,
+      "title": "2. 需求背景",
+      "content": "**背景:**\n1\n\n**目标:**\n1\n\n**预期收益:**\n1",
+      "required": true,
+      "placeholder": "背景说明"
+    },
+    {
+      "id": 3,
+      "title": "3. 功能说明",
+      "content": "1",
+      "required": true,
+      "placeholder": "功能描述"
+    },
+    {
+      "id": 4,
+      "title": "4. 验收标准",
+      "content": "**功能验收:**\n1\n\n**性能验收:**\n\n\n**体验验收:**\n",
+      "required": true,
+      "placeholder": "验收条件"
+    }
+  ],
+  "prototypes": []
+}

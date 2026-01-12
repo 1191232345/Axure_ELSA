@@ -1,0 +1,2306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRD文档生成器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+  <!-- Word导出库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.min.js"></script>
+  <!-- AI配置模块 -->
+  <script src="ai-config.js"></script>
+  <style>
+    body { font-family: "Inter", "PingFang SC", "Microsoft Yahei", sans-serif; }
+    .card { box-shadow: 0 6px 24px rgba(0,0,0,0.06); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 0.875rem;
+      color: #374151;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: #3b82f6; color: #1d4ed8; }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-success {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .btn-success:hover { background: #059669; }
+    .section-editor {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .section-header {
+      background: #f9fafb;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .prd-preview {
+      font-family: "Georgia", "PingFang SC", serif;
+      line-height: 1.8;
+    }
+    .prd-preview h1 { font-size: 24px; font-weight: bold; margin: 24px 0 16px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+    .prd-preview h2 { font-size: 20px; font-weight: bold; margin: 20px 0 12px; color: #2563eb; }
+    .prd-preview h3 { font-size: 16px; font-weight: 600; margin: 16px 0 8px; }
+    .prd-preview p { margin: 8px 0; }
+    .prd-preview table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .prd-preview table th, .prd-preview table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .prd-preview table th { background: #f9fafb; font-weight: 600; }
+
+    /* AI助手侧边栏样式 */
+    .ai-sidebar {
+      position: fixed;
+      right: -500px;
+      top: 0;
+      width: 500px;
+      height: 100vh;
+      background: white;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+    .ai-sidebar.open {
+      right: 0;
+    }
+    .ai-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 99;
+    }
+    .ai-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ai-tool-card {
+      border: 2px solid #e5e7eb;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .ai-tool-card:hover {
+      border-color: #3b82f6;
+      background: #f9fafb;
+    }
+    .result-item {
+      border-left: 3px solid #3b82f6;
+      transition: all 0.2s;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- 顶部导航 -->
+  <div class="bg-white border-b sticky top-0 z-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex items-center justify-between py-4">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-file-lines text-2xl text-blue-600"></i>
+          <h1 class="text-xl font-bold text-gray-800">PRD文档生成器</h1>
+        </div>
+        <div class="flex gap-3">
+          <button class="btn" onclick="goToHome()">
+            <i class="fa-solid fa-arrow-left"></i>返回规范管理
+          </button>
+          <button class="btn" onclick="openAISettings()">
+            <i class="fa-solid fa-gear"></i>AI设置
+          </button>
+          <button class="btn" onclick="uploadPrototype()">
+            <i class="fa-solid fa-image"></i>上传原型图
+          </button>
+          <button class="btn" onclick="saveDraftToJSON()">
+            <i class="fa-regular fa-floppy-disk"></i>保存草稿
+          </button>
+          <button class="btn" onclick="loadDraftFromJSON()">
+            <i class="fa-solid fa-folder-open"></i>加载草稿
+          </button>
+          <div class="relative">
+            <button class="btn btn-success" onclick="toggleExportMenu()">
+              <i class="fa-solid fa-file-export"></i>导出文档
+              <i class="fa-solid fa-chevron-down ml-1"></i>
+            </button>
+            <!-- 导出下拉菜单 -->
+            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border z-20">
+              <button class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3" onclick="exportPRD('markdown')">
+                <i class="fa-brands fa-markdown text-gray-600"></i>
+                <span class="text-sm">Markdown格式</span>
+              </button>
+              <button class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3" onclick="exportPRD('word')">
+                <i class="fa-solid fa-file-word text-blue-600"></i>
+                <span class="text-sm">Word文档</span>
+              </button>
+              <button class="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3" onclick="exportPRD('html')">
+                <i class="fa-brands fa-html5 text-orange-600"></i>
+                <span class="text-sm">HTML格式</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 左侧编辑区 -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- 模板选择 -->
+        <div class="card bg-white rounded-xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">
+              <i class="fa-solid fa-file-contract text-blue-600 mr-2"></i>选择PRD模板
+            </h2>
+            <button class="btn btn-primary" onclick="loadTemplate()">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>应用模板
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label class="border-2 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition">
+              <input type="radio" name="template" value="standard" checked class="mb-2">
+              <div class="font-semibold text-gray-800">标准模板</div>
+              <div class="text-xs text-gray-500 mt-1">包含所有必备章节</div>
+            </label>
+            <label class="border-2 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition">
+              <input type="radio" name="template" value="simple" class="mb-2">
+              <div class="font-semibold text-gray-800">精简模板</div>
+              <div class="text-xs text-gray-500 mt-1">仅核心章节</div>
+            </label>
+            <label class="border-2 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition">
+              <input type="radio" name="template" value="custom" class="mb-2">
+              <div class="font-semibold text-gray-800">自定义模板</div>
+              <div class="text-xs text-gray-500 mt-1">从规范配置加载</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 章节编辑器 -->
+        <div class="card bg-white rounded-xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">
+              <i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i>PRD内容编辑
+            </h2>
+            <div class="flex gap-2">
+              <button class="btn" onclick="addCustomSection()">
+                <i class="fa-solid fa-plus"></i>添加章节
+              </button>
+              <button class="btn" onclick="importFromRequirement()">
+                <i class="fa-solid fa-inbox"></i>从需求池导入
+              </button>
+            </div>
+          </div>
+
+          <!-- 原型图展示区 -->
+          <div id="prototypeGallery" class="hidden mb-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid fa-image text-blue-600"></i>
+                  <span class="font-semibold text-blue-800">已上传原型图</span>
+                  <span class="text-xs bg-blue-200 text-blue-700 px-2 py-0.5 rounded" id="prototypeCount">0</span>
+                </div>
+                <button class="text-sm text-blue-600 hover:text-blue-700" onclick="clearPrototypes()">
+                  <i class="fa-solid fa-trash mr-1"></i>清空
+                </button>
+              </div>
+              <div id="prototypeImages" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+            </div>
+          </div>
+
+          <div id="sectionsEditor" class="space-y-4"></div>
+        </div>
+      </div>
+
+      <!-- 右侧预览区 -->
+      <div class="lg:col-span-1">
+        <div class="card bg-white rounded-xl p-6 sticky top-24">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">
+              <i class="fa-solid fa-eye text-blue-600 mr-2"></i>实时预览
+            </h2>
+            <button class="btn btn-sm" onclick="togglePreviewMode()">
+              <i class="fa-solid fa-maximize"></i>
+            </button>
+          </div>
+          <div id="prdPreview" class="prd-preview bg-gray-50 rounded-lg p-4 max-h-[600px] overflow-y-auto text-sm">
+            <p class="text-gray-400 text-center py-8">填写基础信息后查看预览</p>
+          </div>
+          <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
+            <i class="fa-solid fa-circle-check mr-2"></i>
+            <span id="completionRate">完成度: 0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入需求弹窗 -->
+  <div id="importReqModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-3xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800">从需求池导入</h3>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeImportReqModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        <div class="mb-4">
+          <input type="text" id="searchReq" placeholder="搜索需求..." class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div id="requirementList" class="space-y-2 max-h-96 overflow-y-auto"></div>
+      </div>
+      <div class="px-6 py-3 border-t flex justify-end gap-3 bg-gray-50">
+        <button class="btn" onclick="closeImportReqModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 隐藏的文件上传 -->
+  <input type="file" id="prototypeInput" multiple accept="image/*" class="hidden" onchange="handlePrototypeUpload(event)">
+  <input type="file" id="jsonDraftInput" accept=".json" class="hidden" onchange="handleJSONDraftLoad(event)">
+
+  <!-- AI设置弹窗 -->
+  <div id="aiSettingsModal" class="fixed inset-0 bg-black/35 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800">AI设置</h3>
+        <button class="text-gray-400 hover:text-gray-600" onclick="closeAISettings()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-5">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <i class="fa-solid fa-circle-info text-blue-600 mt-1"></i>
+            <div class="text-sm text-blue-900">
+              <p class="font-semibold mb-1">AI服务说明</p>
+              <p>选择AI提供商并配置API Key后,即可使用智能生成功能。如果不配置,将使用模拟模式。</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-sm font-medium text-gray-700 mb-2 block">AI提供商</label>
+          <select id="aiProvider" class="w-full border rounded-lg px-3 py-2" onchange="updateAIProviderUI()">
+            <option value="mock">模拟模式 (无需配置)</option>
+            <option value="openai">OpenAI (GPT-3.5/GPT-4)</option>
+            <option value="claude">Claude (Anthropic)</option>
+            <option value="gemini">Gemini (Google)</option>
+            <option value="local">本地模型 (Ollama)</option>
+          </select>
+        </div>
+
+        <div id="apiKeySection" class="hidden">
+          <label class="text-sm font-medium text-gray-700 mb-2 block">API Key</label>
+          <div class="flex gap-2">
+            <input type="password" id="aiApiKey" class="flex-1 border rounded-lg px-3 py-2 font-mono text-sm" placeholder="sk-...">
+            <button class="btn" onclick="toggleApiKeyVisibility()">
+              <i class="fa-solid fa-eye" id="apiKeyToggleIcon"></i>
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">API Key将保存在浏览器本地,不会上传到服务器</p>
+        </div>
+
+        <div id="localEndpointSection" class="hidden">
+          <label class="text-sm font-medium text-gray-700 mb-2 block">本地服务地址</label>
+          <input type="text" id="localEndpoint" class="w-full border rounded-lg px-3 py-2 font-mono text-sm" placeholder="http://localhost:11434/api/generate">
+          <p class="text-xs text-gray-500 mt-1">请确保Ollama服务正在运行</p>
+        </div>
+
+        <div>
+          <label class="text-sm font-medium text-gray-700 mb-2 block">模型选择</label>
+          <select id="aiModel" class="w-full border rounded-lg px-3 py-2">
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+            <option value="gemini-pro">Gemini Pro</option>
+            <option value="llama2">Llama 2</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-2 block">Temperature (创造性)</label>
+            <input type="range" id="aiTemperature" min="0" max="1" step="0.1" value="0.7" class="w-full" oninput="document.getElementById('tempValue').textContent = this.value">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>保守</span>
+              <span id="tempValue">0.7</span>
+              <span>创新</span>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-2 block">最大Token数</label>
+            <input type="number" id="aiMaxTokens" class="w-full border rounded-lg px-3 py-2" value="2000" min="100" max="4000" step="100">
+          </div>
+        </div>
+
+        <div>
+          <button class="btn btn-primary w-full" onclick="testAIConnection()">
+            <i class="fa-solid fa-vial"></i>测试连接
+          </button>
+          <div id="aiTestResult" class="mt-3 hidden"></div>
+        </div>
+      </div>
+      <div class="px-6 py-3 border-t flex justify-end gap-3 bg-gray-50">
+        <button class="btn" onclick="closeAISettings()">取消</button>
+        <button class="btn btn-primary" onclick="saveAISettings()">
+          <i class="fa-solid fa-save"></i>保存设置
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI智能助手侧边栏 -->
+  <div class="ai-overlay" id="aiOverlay" onclick="closeAIAssistant()"></div>
+  <div class="ai-sidebar" id="aiSidebar">
+    <div class="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-purple-50 to-blue-50">
+      <div>
+        <h3 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-purple-600"></i>
+          <span id="aiSidebarTitle">AI智能助手</span>
+        </h3>
+        <p class="text-xs text-gray-500 mt-1">为当前章节生成内容建议</p>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600 text-xl" onclick="closeAIAssistant()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto px-6 py-5" id="aiToolsContainer">
+      <!-- AI工具将动态加载 -->
+    </div>
+
+    <div class="px-6 py-4 border-t bg-gray-50">
+      <button class="btn w-full" onclick="closeAIAssistant()">
+        <i class="fa-solid fa-xmark"></i>关闭
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast提示 -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm opacity-0 pointer-events-none transition-opacity">
+    操作成功
+  </div>
+
+  <script>
+    // ==================== AI服务初始化 ====================
+    let aiService = null;
+
+    // 初始化AI服务
+    function initAIService() {
+      // 从localStorage加载配置
+      const savedConfig = localStorage.getItem('aiConfig');
+      if (savedConfig) {
+        try {
+          const config = JSON.parse(savedConfig);
+          Object.assign(AIConfig, config);
+        } catch (e) {
+          console.error('AI配置加载失败', e);
+        }
+      }
+
+      aiService = new AIService(AIConfig);
+    }
+
+    // ==================== AI设置管理 ====================
+    function openAISettings() {
+      // 加载当前配置到表单
+      document.getElementById('aiProvider').value = AIConfig.provider;
+      document.getElementById('aiTemperature').value = AIConfig.requestConfig.temperature;
+      document.getElementById('aiMaxTokens').value = AIConfig.requestConfig.maxTokens;
+
+      // 根据provider设置模型
+      const provider = AIConfig.provider;
+      const modelSelect = document.getElementById('aiModel');
+      modelSelect.innerHTML = '';
+
+      if (provider === 'openai') {
+        modelSelect.innerHTML = `
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          <option value="gpt-4">GPT-4</option>
+          <option value="gpt-4-turbo">GPT-4 Turbo</option>
+        `;
+        modelSelect.value = AIConfig.models.openai;
+      } else if (provider === 'claude') {
+        modelSelect.innerHTML = `
+          <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+          <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+          <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+        `;
+        modelSelect.value = AIConfig.models.claude;
+      } else if (provider === 'gemini') {
+        modelSelect.innerHTML = `<option value="gemini-pro">Gemini Pro</option>`;
+        modelSelect.value = AIConfig.models.gemini;
+      } else if (provider === 'local') {
+        modelSelect.innerHTML = `
+          <option value="llama2">Llama 2</option>
+          <option value="mistral">Mistral</option>
+          <option value="codellama">Code Llama</option>
+        `;
+        modelSelect.value = AIConfig.models.local;
+      }
+
+      // 加载API Key
+      if (AIConfig.apiKeys[provider]) {
+        document.getElementById('aiApiKey').value = AIConfig.apiKeys[provider];
+      }
+
+      // 加载本地端点
+      if (provider === 'local') {
+        document.getElementById('localEndpoint').value = AIConfig.endpoints.local;
+      }
+
+      updateAIProviderUI();
+      document.getElementById('aiSettingsModal').classList.remove('hidden');
+    }
+
+    function closeAISettings() {
+      document.getElementById('aiSettingsModal').classList.add('hidden');
+    }
+
+    function updateAIProviderUI() {
+      const provider = document.getElementById('aiProvider').value;
+      const apiKeySection = document.getElementById('apiKeySection');
+      const localEndpointSection = document.getElementById('localEndpointSection');
+
+      if (provider === 'mock') {
+        apiKeySection.classList.add('hidden');
+        localEndpointSection.classList.add('hidden');
+      } else if (provider === 'local') {
+        apiKeySection.classList.add('hidden');
+        localEndpointSection.classList.remove('hidden');
+      } else {
+        apiKeySection.classList.remove('hidden');
+        localEndpointSection.classList.add('hidden');
+      }
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('aiApiKey');
+      const icon = document.getElementById('apiKeyToggleIcon');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fa-solid fa-eye';
+      }
+    }
+
+    async function testAIConnection() {
+      const resultDiv = document.getElementById('aiTestResult');
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = '<div class="text-sm text-gray-600"><i class="fa-solid fa-spinner fa-spin mr-2"></i>测试连接中...</div>';
+
+      try {
+        // 临时创建配置进行测试
+        const testConfig = {
+          provider: document.getElementById('aiProvider').value,
+          apiKeys: { ...AIConfig.apiKeys },
+          endpoints: { ...AIConfig.endpoints },
+          models: { ...AIConfig.models },
+          requestConfig: {
+            temperature: parseFloat(document.getElementById('aiTemperature').value),
+            maxTokens: parseInt(document.getElementById('aiMaxTokens').value)
+          }
+        };
+
+        const provider = testConfig.provider;
+        if (provider !== 'mock') {
+          testConfig.apiKeys[provider] = document.getElementById('aiApiKey').value;
+        }
+        if (provider === 'local') {
+          testConfig.endpoints.local = document.getElementById('localEndpoint').value;
+        }
+        testConfig.models[provider] = document.getElementById('aiModel').value;
+
+        const testService = new AIService(testConfig);
+        const result = await testService.generate('请回复"连接成功"', '你是一个测试助手');
+
+        resultDiv.innerHTML = `
+          <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div class="flex items-start gap-2">
+              <i class="fa-solid fa-circle-check text-green-600 mt-0.5"></i>
+              <div class="text-sm text-green-800">
+                <p class="font-semibold">连接成功!</p>
+                <p class="mt-1 text-xs">AI响应: ${result.substring(0, 100)}${result.length > 100 ? '...' : ''}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="flex items-start gap-2">
+              <i class="fa-solid fa-circle-xmark text-red-600 mt-0.5"></i>
+              <div class="text-sm text-red-800">
+                <p class="font-semibold">连接失败</p>
+                <p class="mt-1 text-xs">${error.message}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function saveAISettings() {
+      const provider = document.getElementById('aiProvider').value;
+
+      AIConfig.provider = provider;
+      AIConfig.requestConfig.temperature = parseFloat(document.getElementById('aiTemperature').value);
+      AIConfig.requestConfig.maxTokens = parseInt(document.getElementById('aiMaxTokens').value);
+
+      if (provider !== 'mock') {
+        AIConfig.apiKeys[provider] = document.getElementById('aiApiKey').value;
+      }
+
+      if (provider === 'local') {
+        AIConfig.endpoints.local = document.getElementById('localEndpoint').value;
+      }
+
+      AIConfig.models[provider] = document.getElementById('aiModel').value;
+
+      // 保存到localStorage
+      localStorage.setItem('aiConfig', JSON.stringify(AIConfig));
+
+      // 重新初始化AI服务
+      initAIService();
+
+      closeAISettings();
+      toast('AI设置已保存');
+    }
+
+    // ==================== 数据结构 ====================
+    let prdDocument = {
+      product: '',
+      version: '',
+      date: '',
+      pm: '',
+      reviewer: '',
+      module: '',
+      sections: [],
+      prototypes: [] // 存储原型图
+    };
+
+    const standardTemplate = [
+      { id: 1, title: '1. 文档信息', content: '', required: true, placeholder: '产品名称、版本号、创建日期、负责人、审核人' },
+      { id: 2, title: '2. 需求背景与目标', content: '', required: true, placeholder: '为什么要做这个需求?\n当前存在什么问题?\n期望达成的目标是什么?' },
+      { id: 3, title: '3. 用户角色与使用场景', content: '', required: true, placeholder: '目标用户:\n使用场景:\n典型操作流程:' },
+      { id: 4, title: '4. 功能需求列表', content: '', required: true, placeholder: 'P0 (必须有):\n- \n\nP1 (重要):\n- \n\nP2 (优化项):\n- ' },
+      { id: 5, title: '5. 页面交互说明', content: '', required: true, placeholder: '页面结构:\n交互流程:\n状态变化:\n异常处理:' },
+      { id: 6, title: '6. 数据字段定义', content: '', required: true, placeholder: '见字段定义表格' },
+      { id: 7, title: '7. 业务规则与异常处理', content: '', required: true, placeholder: '业务规则:\n1. \n\n异常场景:\n1. ' },
+      { id: 8, title: '8. 非功能性需求', content: '', required: false, placeholder: '性能要求:\n安全要求:\n兼容性要求:' },
+      { id: 9, title: '9. 验收标准', content: '', required: true, placeholder: '功能验收:\n性能验收:\n体验验收:' },
+      { id: 10, title: '10. 附录', content: '', required: false, placeholder: '原型链接:\n参考文档:\n相关资料:' }
+    ];
+
+    const simpleTemplate = [
+      { id: 1, title: '1. 文档信息', content: '', required: true, placeholder: '产品名称、版本号、负责人' },
+      { id: 2, title: '2. 需求背景', content: '', required: true, placeholder: '背景说明' },
+      { id: 3, title: '3. 功能说明', content: '', required: true, placeholder: '功能描述' },
+      { id: 4, title: '4. 验收标准', content: '', required: true, placeholder: '验收条件' }
+    ];
+
+    // ==================== 初始化 ====================
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 设置默认日期
+      prdDocument.date = new Date().toISOString().split('T')[0];
+      
+      // 检查URL参数是否有file参数，用于编辑已有文件
+      const urlParams = new URLSearchParams(window.location.search);
+      const fileToLoad = urlParams.get('file');
+      
+      if (fileToLoad) {
+        try {
+          const res = await fetch(`${API_BASE}/load/${encodeURIComponent(fileToLoad)}`);
+          const result = await res.json();
+          if (result.success) {
+            prdDocument = result.data;
+            if (!prdDocument.prototypes) prdDocument.prototypes = [];
+            renderSectionEditor();
+            renderPrototypes();
+            updatePreview();
+            toast('已加载: ' + fileToLoad);
+            return;
+          }
+        } catch (e) {
+          console.error('加载文件失败:', e);
+        }
+      }
+      
+      loadTemplate();
+    });
+
+    // ==================== 模板加载 ====================
+    function loadTemplate() {
+      const selectedTemplate = document.querySelector('input[name="template"]:checked').value;
+
+      if (selectedTemplate === 'standard') {
+        prdDocument.sections = JSON.parse(JSON.stringify(standardTemplate));
+      } else if (selectedTemplate === 'simple') {
+        prdDocument.sections = JSON.parse(JSON.stringify(simpleTemplate));
+      } else {
+        // 从规范配置加载
+        const config = localStorage.getItem('prdStandardConfig');
+        if (config) {
+          try {
+            const parsed = JSON.parse(config);
+            prdDocument.sections = parsed.sections.map(s => ({
+              id: s.id,
+              title: `${s.order}. ${s.title}`,
+              content: s.template || '',
+              required: s.required,
+              placeholder: s.description
+            }));
+          } catch (e) {
+            prdDocument.sections = JSON.parse(JSON.stringify(standardTemplate));
+          }
+        } else {
+          prdDocument.sections = JSON.parse(JSON.stringify(standardTemplate));
+        }
+      }
+
+      renderSectionEditor();
+      updatePreview();
+      toast('模板已加载');
+    }
+
+    // ==================== 章节编辑器渲染 ====================
+    function renderSectionEditor() {
+      const container = document.getElementById('sectionsEditor');
+      container.innerHTML = prdDocument.sections.map((section, idx) => {
+        return renderStructuredSection(section, idx);
+      }).join('');
+    }
+
+    // 渲染结构化章节
+    function renderStructuredSection(section, idx) {
+      const sectionTitle = section.title.toLowerCase();
+
+      // 解析已有内容为结构化数据
+      const sectionData = parseSectionContent(section.content, sectionTitle);
+
+      // 1. 文档信息章节
+      if (idx === 0 && (sectionTitle.includes('文档信息') || sectionTitle.includes('1.'))) {
+        return renderDocInfoSection(section, idx);
+      }
+
+      // 2. 需求背景与目标章节
+      if (sectionTitle.includes('背景') || sectionTitle.includes('目标')) {
+        return renderBackgroundSection(section, idx, sectionData);
+      }
+
+      // 3. 用户角色与场景章节
+      if (sectionTitle.includes('用户') || sectionTitle.includes('角色') || sectionTitle.includes('场景')) {
+        return renderUserRoleSection(section, idx, sectionData);
+      }
+
+      // 4. 功能需求章节
+      if (sectionTitle.includes('功能') && sectionTitle.includes('需求')) {
+        return renderFeatureSection(section, idx, sectionData);
+      }
+
+      // 5. 验收标准章节
+      if (sectionTitle.includes('验收')) {
+        return renderAcceptanceSection(section, idx, sectionData);
+      }
+
+      // 6. 数据字段定义章节
+      if (sectionTitle.includes('字段') || sectionTitle.includes('数据')) {
+        return renderDataFieldSection(section, idx);
+      }
+
+      // 其他章节使用 textarea
+      return renderTextareaSection(section, idx);
+    }
+
+    // 解析章节内容为结构化数据
+    function parseSectionContent(content, sectionTitle) {
+      if (!content) return {};
+
+      const data = {};
+      const lines = content.split('\n');
+
+      // 简单的关键字解析
+      if (sectionTitle.includes('背景')) {
+        data.background = extractField(content, '背景:', '目标:') || extractField(content, '**背景:**', '**目标:**');
+        data.goal = extractField(content, '目标:', '预期收益:') || extractField(content, '**目标:**', '**预期收益:**');
+        data.benefit = extractField(content, '预期收益:') || extractField(content, '**预期收益:**');
+      }
+
+      return data;
+    }
+
+    function extractField(text, start, end) {
+      const startIdx = text.indexOf(start);
+      if (startIdx === -1) return '';
+
+      const content = text.substring(startIdx + start.length);
+      if (!end) return content.trim();
+
+      const endIdx = content.indexOf(end);
+      if (endIdx === -1) return content.trim();
+
+      return content.substring(0, endIdx).trim();
+    }
+
+    // 渲染文档信息章节
+    function renderDocInfoSection(section, idx) {
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})" title="智能助手">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="text-xs ml-1">AI助手</span>
+              </button>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-700">产品名称 <span class="text-red-500">*</span></span>
+                  <input type="text" id="docProduct" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="例如: 仓储管理系统" onchange="updateDocInfo()" value="${prdDocument.product || ''}">
+                </label>
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-700">版本号 <span class="text-red-500">*</span></span>
+                  <input type="text" id="docVersion" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="V1.0" onchange="updateDocInfo()" value="${prdDocument.version || ''}">
+                </label>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-700">创建日期</span>
+                  <input type="date" id="docDate" class="w-full border rounded-lg px-3 py-2 text-sm" onchange="updateDocInfo()" value="${prdDocument.date || ''}">
+                </label>
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-700">产品经理</span>
+                  <input type="text" id="docPM" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="负责人姓名" onchange="updateDocInfo()" value="${prdDocument.pm || ''}">
+                </label>
+                <label class="space-y-1">
+                  <span class="text-sm text-gray-700">审核人</span>
+                  <input type="text" id="docReviewer" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="审核人姓名" onchange="updateDocInfo()" value="${prdDocument.reviewer || ''}">
+                </label>
+              </div>
+              <label class="space-y-1">
+                <span class="text-sm text-gray-700">功能模块 <span class="text-red-500">*</span></span>
+                <input type="text" id="docModule" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="例如: 产品备案-批量导入优化" onchange="updateDocInfo()" value="${prdDocument.module || ''}">
+              </label>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 渲染需求背景章节（结构化）
+    function renderBackgroundSection(section, idx, data) {
+      const content = section.content || '';
+      const parts = content.split('**');
+      const background = data.background || extractBetween(content, '背景:', '目标:') || '';
+      const goal = data.goal || extractBetween(content, '目标:', '预期收益:') || '';
+      const benefit = data.benefit || extractAfter(content, '预期收益:') || '';
+
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              ${section.required ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>' : '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">可选</span>'}
+            </div>
+            <div class="flex gap-2">
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})" title="智能助手">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="text-xs ml-1">AI助手</span>
+              </button>
+              <button class="text-red-500 hover:text-red-700" onclick="removeSection(${idx})">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 space-y-4">
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">需求背景</span>
+              <textarea id="section-${idx}-background" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="当前存在什么问题？为什么要做这个需求？" oninput="updateStructuredContent(${idx})">${background}</textarea>
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">需求目标</span>
+              <textarea id="section-${idx}-goal" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="期望达成什么目标？" oninput="updateStructuredContent(${idx})">${goal}</textarea>
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">预期收益</span>
+              <textarea id="section-${idx}-benefit" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="预期带来哪些收益？" oninput="updateStructuredContent(${idx})">${benefit}</textarea>
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    // 渲染用户角色章节（结构化）
+    function renderUserRoleSection(section, idx, data) {
+      const content = section.content || '';
+      const userRole = extractBetween(content, '用户角色:', '使用场景:') || '';
+      const scenario = extractAfter(content, '使用场景:') || '';
+
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              ${section.required ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>' : '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">可选</span>'}
+            </div>
+            <div class="flex gap-2">
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})" title="智能助手">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="text-xs ml-1">AI助手</span>
+              </button>
+              <button class="text-red-500 hover:text-red-700" onclick="removeSection(${idx})">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 space-y-4">
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">用户角色</span>
+              <textarea id="section-${idx}-role" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="列出使用该功能的用户角色" oninput="updateStructuredContent(${idx})">${userRole}</textarea>
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">使用场景</span>
+              <textarea id="section-${idx}-scenario" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="描述典型使用场景和操作流程" oninput="updateStructuredContent(${idx})">${scenario}</textarea>
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    // 渲染功能需求章节（结构化 - 优先级分组）
+    function renderFeatureSection(section, idx, data) {
+      const content = section.content || '';
+      const p0 = extractBetween(content, 'P0', 'P1') || extractBetween(content, 'P0 (必须有):', 'P1') || '';
+      const p1 = extractBetween(content, 'P1', 'P2') || extractBetween(content, 'P1 (重要):', 'P2') || '';
+      const p2 = extractAfter(content, 'P2') || extractAfter(content, 'P2 (优化项):') || '';
+
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              ${section.required ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>' : '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">可选</span>'}
+            </div>
+            <div class="flex gap-2">
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})" title="智能助手">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="text-xs ml-1">AI助手</span>
+              </button>
+              <button class="text-red-500 hover:text-red-700" onclick="removeSection(${idx})">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 space-y-4">
+            <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-3">
+              <label class="space-y-1">
+                <span class="text-sm font-semibold text-red-700">P0 (必须有)</span>
+                <textarea id="section-${idx}-p0" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm mt-2" placeholder="列出核心功能，每行一个功能点" oninput="updateStructuredContent(${idx})">${p0}</textarea>
+              </label>
+            </div>
+            <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-3">
+              <label class="space-y-1">
+                <span class="text-sm font-semibold text-orange-700">P1 (重要)</span>
+                <textarea id="section-${idx}-p1" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm mt-2" placeholder="列出重要功能" oninput="updateStructuredContent(${idx})">${p1}</textarea>
+              </label>
+            </div>
+            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-3">
+              <label class="space-y-1">
+                <span class="text-sm font-semibold text-blue-700">P2 (优化项)</span>
+                <textarea id="section-${idx}-p2" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm mt-2" placeholder="列出优化功能" oninput="updateStructuredContent(${idx})">${p2}</textarea>
+              </label>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 渲染验收标准章节（结构化）
+    function renderAcceptanceSection(section, idx, data) {
+      const content = section.content || '';
+      const funcTest = extractBetween(content, '功能验收:', '性能验收:') || '';
+      const perfTest = extractBetween(content, '性能验收:', '体验验收:') || '';
+      const uxTest = extractAfter(content, '体验验收:') || '';
+
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              ${section.required ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>' : '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">可选</span>'}
+            </div>
+            <div class="flex gap-2">
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})" title="智能助手">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="text-xs ml-1">AI助手</span>
+              </button>
+              <button class="text-red-500 hover:text-red-700" onclick="removeSection(${idx})">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+          <div class="p-4 space-y-4">
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">功能验收</span>
+              <textarea id="section-${idx}-func" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="列出功能验收标准" oninput="updateStructuredContent(${idx})">${funcTest}</textarea>
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">性能验收</span>
+              <textarea id="section-${idx}-perf" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="列出性能要求（响应时间、并发量等）" oninput="updateStructuredContent(${idx})">${perfTest}</textarea>
+            </label>
+            <label class="space-y-1">
+              <span class="text-sm font-medium text-gray-700">体验验收</span>
+              <textarea id="section-${idx}-ux" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="列出用户体验验收标准" oninput="updateStructuredContent(${idx})">${uxTest}</textarea>
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    // 解析字段内容为数组
+    function parseFieldsFromContent(content) {
+      if (!content) return [{ name: '', type: 'String', length: '', required: '是', rule: '', desc: '' }];
+      const lines = content.split('\n').filter(l => l.includes('|') && !l.includes('---'));
+      const fields = [];
+      lines.slice(1).forEach(line => {
+        const cols = line.split('|').map(c => c.trim());
+        // 移除首尾空元素（由于 | 开头和结尾产生）
+        if (cols[0] === '') cols.shift();
+        if (cols[cols.length - 1] === '') cols.pop();
+        if (cols.length >= 6) {
+          fields.push({ name: cols[0], type: cols[1] || 'String', length: cols[2], required: cols[3] || '是', rule: cols[4], desc: cols[5] });
+        }
+      });
+      return fields.length ? fields : [{ name: '', type: 'String', length: '', required: '是', rule: '', desc: '' }];
+    }
+
+    // 渲染数据字段定义章节（表格形式）
+    function renderDataFieldSection(section, idx) {
+      const fields = parseFieldsFromContent(section.content);
+      const rowsHtml = fields.map((f, i) => `
+        <tr>
+          <td class="border px-2 py-1"><input type="text" class="w-full border-0 text-sm" value="${f.name}" onchange="updateFieldTable(${idx})"></td>
+          <td class="border px-2 py-1"><select class="w-full border-0 text-sm" onchange="updateFieldTable(${idx})">
+            <option ${f.type === 'String' ? 'selected' : ''}>String</option>
+            <option ${f.type === 'Integer' ? 'selected' : ''}>Integer</option>
+            <option ${f.type === 'Decimal' ? 'selected' : ''}>Decimal</option>
+            <option ${f.type === 'DateTime' ? 'selected' : ''}>DateTime</option>
+            <option ${f.type === 'Boolean' ? 'selected' : ''}>Boolean</option>
+            <option ${f.type === 'Text' ? 'selected' : ''}>Text</option>
+          </select></td>
+          <td class="border px-2 py-1"><input type="text" class="w-full border-0 text-sm" value="${f.length}" onchange="updateFieldTable(${idx})"></td>
+          <td class="border px-2 py-1"><select class="w-full border-0 text-sm" onchange="updateFieldTable(${idx})">
+            <option ${f.required === '是' ? 'selected' : ''}>是</option>
+            <option ${f.required === '否' ? 'selected' : ''}>否</option>
+          </select></td>
+          <td class="border px-2 py-1"><input type="text" class="w-full border-0 text-sm" value="${f.rule}" onchange="updateFieldTable(${idx})"></td>
+          <td class="border px-2 py-1"><input type="text" class="w-full border-0 text-sm" value="${f.desc}" onchange="updateFieldTable(${idx})"></td>
+          <td class="border px-2 py-1 text-center"><button class="text-red-500 hover:text-red-700" onclick="removeFieldRow(${idx}, ${i})"><i class="fa-solid fa-trash-can text-xs"></i></button></td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              ${section.required ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>' : '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">可选</span>'}
+            </div>
+            <div class="flex gap-2">
+              <button class="text-green-600 hover:text-green-700 px-2 py-1 rounded hover:bg-green-50 transition" onclick="addFieldRow(${idx})">
+                <i class="fa-solid fa-plus"></i><span class="text-xs ml-1">添加行</span>
+              </button>
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})">
+                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="text-xs ml-1">AI助手</span>
+              </button>
+              <button class="text-red-500 hover:text-red-700" onclick="removeSection(${idx})"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
+          </div>
+          <div class="p-4 overflow-x-auto">
+            <table class="w-full text-sm border-collapse" id="fieldTable-${idx}">
+              <thead><tr class="bg-gray-100">
+                <th class="border px-2 py-2 text-left font-semibold">字段名</th>
+                <th class="border px-2 py-2 text-left font-semibold">类型</th>
+                <th class="border px-2 py-2 text-left font-semibold">长度</th>
+                <th class="border px-2 py-2 text-left font-semibold">必填</th>
+                <th class="border px-2 py-2 text-left font-semibold">校验规则</th>
+                <th class="border px-2 py-2 text-left font-semibold">说明</th>
+                <th class="border px-2 py-2 text-center font-semibold w-12">操作</th>
+              </tr></thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // 添加字段行
+    function addFieldRow(idx) {
+      const section = prdDocument.sections[idx];
+      // 先从当前表格读取数据，而不是从content解析
+      const table = document.getElementById(`fieldTable-${idx}`);
+      let fields = [];
+      if (table) {
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+          const inputs = row.querySelectorAll('input, select');
+          fields.push({
+            name: inputs[0].value, type: inputs[1].value, length: inputs[2].value,
+            required: inputs[3].value, rule: inputs[4].value, desc: inputs[5].value
+          });
+        });
+      }
+      if (fields.length === 0) {
+        fields = parseFieldsFromContent(section.content);
+      }
+      fields.push({ name: '', type: 'String', length: '', required: '是', rule: '', desc: '' });
+      section.content = fieldsToMarkdown(fields);
+      renderSectionEditor();
+      updatePreview();
+    }
+
+    // 删除字段行
+    function removeFieldRow(idx, rowIdx) {
+      const section = prdDocument.sections[idx];
+      const fields = parseFieldsFromContent(section.content);
+      if (fields.length > 1) {
+        fields.splice(rowIdx, 1);
+        section.content = fieldsToMarkdown(fields);
+        renderSectionEditor();
+        updatePreview();
+      }
+    }
+
+    // 更新字段表格
+    function updateFieldTable(idx) {
+      const table = document.getElementById(`fieldTable-${idx}`);
+      const rows = table.querySelectorAll('tbody tr');
+      const fields = [];
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input, select');
+        fields.push({
+          name: inputs[0].value, type: inputs[1].value, length: inputs[2].value,
+          required: inputs[3].value, rule: inputs[4].value, desc: inputs[5].value
+        });
+      });
+      prdDocument.sections[idx].content = fieldsToMarkdown(fields);
+      updatePreview();
+    }
+
+    // 字段数组转Markdown表格
+    function fieldsToMarkdown(fields) {
+      let md = '| 字段名 | 类型 | 长度 | 必填 | 校验规则 | 说明 |\n|---|---|---|---|---|---|\n';
+      fields.forEach(f => { md += `| ${f.name} | ${f.type} | ${f.length} | ${f.required} | ${f.rule} | ${f.desc} |\n`; });
+      return md;
+    }
+
+    // 渲染普通textarea章节
+    function renderTextareaSection(section, idx) {
+      return `
+        <div class="section-editor">
+          <div class="section-header">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800">${section.title}</span>
+              ${section.required ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">必填</span>' : '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">可选</span>'}
+            </div>
+            <div class="flex gap-2">
+              <button class="text-purple-600 hover:text-purple-700 px-2 py-1 rounded hover:bg-purple-50 transition" onclick="openAIAssistant(${idx})">
+                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="text-xs ml-1">AI助手</span>
+              </button>
+              <button class="text-red-500 hover:text-red-700" onclick="removeSection(${idx})"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
+          </div>
+          <div class="p-4">
+            <textarea id="section-${idx}" rows="6" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="${section.placeholder}" oninput="updateSectionContent(${idx}, this.value)">${section.content}</textarea>
+          </div>
+        </div>
+      `;
+    }
+
+    // 辅助函数：提取内容
+    function extractBetween(text, start, end) {
+      const startIdx = text.indexOf(start);
+      if (startIdx === -1) return '';
+      const content = text.substring(startIdx + start.length);
+      if (!end) return content.trim();
+      const endIdx = content.indexOf(end);
+      if (endIdx === -1) return content.trim();
+      return content.substring(0, endIdx).trim();
+    }
+
+    function extractAfter(text, start) {
+      const startIdx = text.indexOf(start);
+      if (startIdx === -1) return '';
+      return text.substring(startIdx + start.length).trim();
+    }
+
+    // 更新结构化内容
+    function updateStructuredContent(idx) {
+      const section = prdDocument.sections[idx];
+      const sectionTitle = section.title.toLowerCase();
+
+      let content = '';
+
+      // 需求背景章节
+      if (sectionTitle.includes('背景') || sectionTitle.includes('目标')) {
+        const background = document.getElementById(`section-${idx}-background`)?.value || '';
+        const goal = document.getElementById(`section-${idx}-goal`)?.value || '';
+        const benefit = document.getElementById(`section-${idx}-benefit`)?.value || '';
+
+        content = `**背景:**\n${background}\n\n**目标:**\n${goal}\n\n**预期收益:**\n${benefit}`;
+      }
+      // 用户角色章节
+      else if (sectionTitle.includes('用户') || sectionTitle.includes('角色') || sectionTitle.includes('场景')) {
+        const role = document.getElementById(`section-${idx}-role`)?.value || '';
+        const scenario = document.getElementById(`section-${idx}-scenario`)?.value || '';
+
+        content = `**用户角色:**\n${role}\n\n**使用场景:**\n${scenario}`;
+      }
+      // 功能需求章节
+      else if (sectionTitle.includes('功能') && sectionTitle.includes('需求')) {
+        const p0 = document.getElementById(`section-${idx}-p0`)?.value || '';
+        const p1 = document.getElementById(`section-${idx}-p1`)?.value || '';
+        const p2 = document.getElementById(`section-${idx}-p2`)?.value || '';
+
+        content = `**P0 (必须有):**\n${p0}\n\n**P1 (重要):**\n${p1}\n\n**P2 (优化项):**\n${p2}`;
+      }
+      // 验收标准章节
+      else if (sectionTitle.includes('验收')) {
+        const func = document.getElementById(`section-${idx}-func`)?.value || '';
+        const perf = document.getElementById(`section-${idx}-perf`)?.value || '';
+        const ux = document.getElementById(`section-${idx}-ux`)?.value || '';
+
+        content = `**功能验收:**\n${func}\n\n**性能验收:**\n${perf}\n\n**体验验收:**\n${ux}`;
+      }
+
+      section.content = content;
+      updatePreview();
+    }
+
+    // 更新文档基础信息
+    function updateDocInfo() {
+      prdDocument.product = document.getElementById('docProduct').value;
+      prdDocument.version = document.getElementById('docVersion').value;
+      prdDocument.date = document.getElementById('docDate').value;
+      prdDocument.pm = document.getElementById('docPM').value;
+      prdDocument.reviewer = document.getElementById('docReviewer').value;
+      prdDocument.module = document.getElementById('docModule').value;
+      updatePreview();
+    }
+
+    function updateSectionContent(idx, value) {
+      prdDocument.sections[idx].content = value;
+      updatePreview();
+    }
+
+    function removeSection(idx) {
+      if (confirm('确认删除该章节吗?')) {
+        prdDocument.sections.splice(idx, 1);
+        renderSectionEditor();
+        updatePreview();
+      }
+    }
+
+    function addCustomSection() {
+      const title = prompt('请输入章节标题:');
+      if (title) {
+        prdDocument.sections.push({
+          id: Date.now(),
+          title: `${prdDocument.sections.length + 1}. ${title}`,
+          content: '',
+          required: false,
+          placeholder: '请输入内容...'
+        });
+        renderSectionEditor();
+        updatePreview();
+      }
+    }
+
+    // ==================== 预览更新 ====================
+    function updatePreview() {
+      // 从表单读取最新数据（只有在表单存在时）
+      const productInput = document.getElementById('docProduct');
+      if (productInput) {
+        prdDocument.product = productInput.value;
+        prdDocument.version = document.getElementById('docVersion').value;
+        prdDocument.date = document.getElementById('docDate').value;
+        prdDocument.pm = document.getElementById('docPM').value;
+        prdDocument.reviewer = document.getElementById('docReviewer').value;
+        prdDocument.module = document.getElementById('docModule').value;
+      }
+
+      const preview = document.getElementById('prdPreview');
+
+      let html = `<h1>${prdDocument.module || '功能模块'} - PRD</h1>`;
+
+      // 文档信息表格
+      html += `
+        <table>
+          <tr><th>产品名称</th><td>${prdDocument.product || '-'}</td></tr>
+          <tr><th>版本号</th><td>${prdDocument.version || '-'}</td></tr>
+          <tr><th>创建日期</th><td>${prdDocument.date || '-'}</td></tr>
+          <tr><th>产品经理</th><td>${prdDocument.pm || '-'}</td></tr>
+          <tr><th>审核人</th><td>${prdDocument.reviewer || '-'}</td></tr>
+        </table>
+      `;
+
+      // 各章节内容（跳过第一个文档信息章节）
+      prdDocument.sections.slice(1).forEach(section => {
+        html += `<h2>${section.title}</h2>`;
+        if (section.content) {
+          html += `<p>${section.content.replace(/\n/g, '<br>')}</p>`;
+        } else {
+          html += `<p class="text-gray-400 italic">${section.placeholder}</p>`;
+        }
+      });
+
+      preview.innerHTML = html;
+
+      // 计算完成度
+      const totalFields = 6 + prdDocument.sections.filter((s, idx) => s.required && idx > 0).length;
+      let filledFields = 0;
+      if (prdDocument.product) filledFields++;
+      if (prdDocument.version) filledFields++;
+      if (prdDocument.date) filledFields++;
+      if (prdDocument.pm) filledFields++;
+      if (prdDocument.reviewer) filledFields++;
+      if (prdDocument.module) filledFields++;
+
+      prdDocument.sections.filter((s, idx) => s.required && idx > 0).forEach(s => {
+        if (s.content && s.content.trim()) filledFields++;
+      });
+
+      const rate = Math.round((filledFields / totalFields) * 100);
+      document.getElementById('completionRate').textContent = `完成度: ${rate}%`;
+    }
+
+    // ==================== 导入需求 ====================
+    function importFromRequirement() {
+      const requirements = JSON.parse(localStorage.getItem('requirements') || '[]');
+      const list = document.getElementById('requirementList');
+
+      list.innerHTML = requirements.map(req => `
+        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="selectRequirement(${req.id})">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-semibold text-sm">${req.title}</span>
+            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">${req.code}</span>
+          </div>
+          <div class="text-xs text-gray-500">${req.background}</div>
+        </div>
+      `).join('') || '<p class="text-gray-400 text-center py-8">暂无需求数据</p>';
+
+      document.getElementById('importReqModal').classList.remove('hidden');
+    }
+
+    function selectRequirement(id) {
+      const requirements = JSON.parse(localStorage.getItem('requirements') || '[]');
+      const req = requirements.find(r => r.id === id);
+
+      if (req) {
+        document.getElementById('docModule').value = req.title;
+
+        // 自动填充章节内容
+        prdDocument.sections.forEach(section => {
+          if (section.title.includes('背景')) {
+            section.content = req.background;
+          } else if (section.title.includes('目标')) {
+            section.content = req.goal;
+          }
+        });
+
+        renderSectionEditor();
+        updatePreview();
+        closeImportReqModal();
+        toast('需求已导入');
+      }
+    }
+
+    function closeImportReqModal() {
+      document.getElementById('importReqModal').classList.add('hidden');
+    }
+
+    // ==================== 原型图处理 ====================
+    function uploadPrototype() {
+      document.getElementById('prototypeInput').click();
+    }
+
+    function handlePrototypeUpload(event) {
+      const files = Array.from(event.target.files);
+      if (!files.length) return;
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const prototypeData = {
+            name: file.name,
+            data: e.target.result,
+            timestamp: Date.now()
+          };
+          prdDocument.prototypes.push(prototypeData);
+          renderPrototypes();
+
+          // 尝试OCR识别(模拟)
+          analyzePrototype(prototypeData);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      event.target.value = '';
+      toast(`已上传 ${files.length} 张原型图`);
+    }
+
+    function analyzePrototype(prototype) {
+      // 模拟OCR识别 - 实际应用中可以调用OCR API
+      setTimeout(() => {
+        const mockElements = [
+          '页面标题: 产品备案',
+          '筛选条件: SKU, 客户代码, 产品名称',
+          '按钮: 新增, 导入, 导出',
+          '表格列: SKU, 客户代码, 产品名称, 状态',
+          '操作: 查看, 编辑, 删除'
+        ];
+
+        // 自动填充到"页面交互说明"章节
+        const interactionSection = prdDocument.sections.find(s => s.title.includes('交互'));
+        if (interactionSection && !interactionSection.content) {
+          interactionSection.content = `原型图识别结果:\n\n${mockElements.join('\n')}`;
+          renderSectionEditor();
+          updatePreview();
+          toast('原型图解析完成,已自动填充到交互说明');
+        }
+      }, 1000);
+    }
+
+    function renderPrototypes() {
+      const container = document.getElementById('prototypeImages');
+      const gallery = document.getElementById('prototypeGallery');
+
+      if (prdDocument.prototypes.length === 0) {
+        gallery.classList.add('hidden');
+        return;
+      }
+
+      gallery.classList.remove('hidden');
+      document.getElementById('prototypeCount').textContent = prdDocument.prototypes.length;
+
+      container.innerHTML = prdDocument.prototypes.map((proto, idx) => `
+        <div class="relative group">
+          <img src="${proto.data}" alt="${proto.name}" class="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 cursor-pointer" onclick="viewPrototypeFullscreen('${proto.data}', '${proto.name}')">
+          <button class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition" onclick="removePrototype(${idx})">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+          <div class="text-xs text-gray-600 mt-1 truncate">${proto.name}</div>
+        </div>
+      `).join('');
+    }
+
+    function viewPrototypeFullscreen(data, name) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="max-w-6xl max-h-screen p-4">
+          <div class="bg-white rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b flex items-center justify-between">
+              <span class="font-semibold">${name}</span>
+              <button onclick="this.closest('.fixed').remove()" class="text-gray-600 hover:text-gray-800">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div class="p-4">
+              <img src="${data}" alt="${name}" class="max-w-full max-h-[80vh] mx-auto">
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+
+    function removePrototype(idx) {
+      if (confirm('确认删除该原型图吗?')) {
+        prdDocument.prototypes.splice(idx, 1);
+        renderPrototypes();
+        toast('已删除');
+      }
+    }
+
+    function clearPrototypes() {
+      if (confirm('确认清空所有原型图吗?')) {
+        prdDocument.prototypes = [];
+        renderPrototypes();
+        toast('已清空');
+      }
+    }
+
+    // ==================== 保存和导出 ====================
+    // JSON文件存储函数
+    const API_BASE = 'http://localhost:3001';
+
+    async function saveDraftToJSON() {
+      updatePreview();
+      try {
+        const res = await fetch(`${API_BASE}/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prdDocument)
+        });
+        const result = await res.json();
+        if (result.success) {
+          toast(`草稿已保存: ${result.filename}`);
+        } else {
+          toast('保存失败');
+        }
+      } catch (e) {
+        toast('保存失败，请确保服务器已启动');
+        console.error(e);
+      }
+    }
+
+    function loadDraftFromJSON() {
+      document.getElementById('jsonDraftInput').click();
+    }
+
+    function handleJSONDraftLoad(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          prdDocument = parsed;
+          if (!prdDocument.prototypes) prdDocument.prototypes = [];
+          renderSectionEditor();
+          renderPrototypes();
+          updatePreview();
+          toast('草稿加载成功');
+        } catch (err) {
+          toast('JSON文件解析失败');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function toggleExportMenu() {
+      const menu = document.getElementById('exportMenu');
+      menu.classList.toggle('hidden');
+
+      // 点击外部关闭菜单
+      if (!menu.classList.contains('hidden')) {
+        setTimeout(() => {
+          document.addEventListener('click', function closeMenu(e) {
+            if (!e.target.closest('#exportMenu') && !e.target.closest('button')) {
+              menu.classList.add('hidden');
+              document.removeEventListener('click', closeMenu);
+            }
+          });
+        }, 100);
+      }
+    }
+
+    function exportPRD(format = 'markdown') {
+      updatePreview();
+      toggleExportMenu();
+
+      const filename = `${prdDocument.module || 'PRD'}-${prdDocument.version || 'V1.0'}`;
+
+      switch(format) {
+        case 'markdown':
+          exportMarkdown(filename);
+          break;
+        case 'word':
+          exportWord(filename);
+          break;
+        case 'html':
+          exportHTML(filename);
+          break;
+      }
+    }
+
+    function exportMarkdown(filename) {
+      let markdown = `# ${prdDocument.module} - PRD\n\n`;
+      markdown += `| 项目 | 内容 |\n|------|------|\n`;
+      markdown += `| 产品名称 | ${prdDocument.product} |\n`;
+      markdown += `| 版本号 | ${prdDocument.version} |\n`;
+      markdown += `| 创建日期 | ${prdDocument.date} |\n`;
+      markdown += `| 产品经理 | ${prdDocument.pm} |\n`;
+      markdown += `| 审核人 | ${prdDocument.reviewer} |\n\n`;
+
+      // 原型图
+      if (prdDocument.prototypes.length > 0) {
+        markdown += `## 原型图\n\n`;
+        prdDocument.prototypes.forEach((proto, idx) => {
+          markdown += `![原型图${idx + 1}](${proto.data})\n\n`;
+        });
+      }
+
+      prdDocument.sections.forEach(section => {
+        markdown += `## ${section.title}\n\n`;
+        markdown += `${section.content || section.placeholder}\n\n`;
+      });
+
+      const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+      downloadFile(blob, `${filename}.md`);
+      toast('Markdown文档已导出');
+    }
+
+    async function exportWord(filename) {
+      // 检查库是否加载
+      if (typeof docx === 'undefined') {
+        toast('Word导出库加载中,请稍后重试...');
+        console.error('docx library not loaded');
+        return;
+      }
+
+      try {
+        toast('正在生成Word文档,请稍候...');
+
+        const { Document, Paragraph, Table, TableCell, TableRow, HeadingLevel, AlignmentType, WidthType, BorderStyle } = docx;
+
+        const children = [];
+
+        // 标题
+        children.push(
+          new Paragraph({
+            text: `${prdDocument.module || 'PRD文档'} - PRD`,
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 400 }
+          })
+        );
+
+        // 文档信息表格
+        const infoRows = [
+          ['产品名称', prdDocument.product || '-'],
+          ['版本号', prdDocument.version || '-'],
+          ['创建日期', prdDocument.date || '-'],
+          ['产品经理', prdDocument.pm || '-'],
+          ['审核人', prdDocument.reviewer || '-']
+        ];
+
+        const infoTable = new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: infoRows.map(([label, value]) =>
+            new TableRow({
+              children: [
+                new TableCell({
+                  children: [new Paragraph({ text: label })],
+                  width: { size: 30, type: WidthType.PERCENTAGE }
+                }),
+                new TableCell({
+                  children: [new Paragraph({ text: value })],
+                  width: { size: 70, type: WidthType.PERCENTAGE }
+                })
+              ]
+            })
+          )
+        });
+
+        children.push(infoTable);
+        children.push(new Paragraph({ text: '', spacing: { after: 300 } }));
+
+        // 原型图说明(如果有)
+        if (prdDocument.prototypes.length > 0) {
+          children.push(
+            new Paragraph({
+              text: '原型图',
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 300, after: 200 }
+            })
+          );
+          children.push(
+            new Paragraph({
+              text: `本文档包含 ${prdDocument.prototypes.length} 张原型图,请查看对应章节。`,
+              spacing: { after: 300 }
+            })
+          );
+        }
+
+        // 各章节
+        prdDocument.sections.forEach(section => {
+          children.push(
+            new Paragraph({
+              text: section.title,
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 300, after: 200 }
+            })
+          );
+
+          const content = section.content || section.placeholder;
+          const lines = content.split('\n');
+
+          lines.forEach(line => {
+            if (line.trim()) {
+              children.push(new Paragraph({
+                text: line,
+                spacing: { after: 100 }
+              }));
+            }
+          });
+
+          children.push(new Paragraph({ text: '', spacing: { after: 200 } }));
+        });
+
+        // 生成文档
+        const doc = new Document({
+          sections: [{
+            properties: {
+              page: {
+                margin: {
+                  top: 1440,
+                  right: 1440,
+                  bottom: 1440,
+                  left: 1440
+                }
+              }
+            },
+            children: children
+          }]
+        });
+
+        // 导出为Blob
+        const blob = await docx.Packer.toBlob(doc);
+
+        // 下载文件
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast('Word文档已成功导出!');
+      } catch (error) {
+        console.error('Word导出失败:', error);
+        console.error('错误详情:', error.message, error.stack);
+        toast('Word导出失败: ' + error.message);
+
+        // 如果Word导出失败,提示用户使用HTML格式
+        setTimeout(() => {
+          if (confirm('Word导出失败,是否改用HTML格式导出?')) {
+            exportHTML(filename);
+          }
+        }, 1500);
+      }
+    }
+
+    function exportHTML(filename) {
+      let html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${prdDocument.module} - PRD</title>
+  <style>
+    body { font-family: "PingFang SC", "Microsoft Yahei", sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.8; }
+    h1 { text-align: center; color: #333; border-bottom: 3px solid #333; padding-bottom: 10px; }
+    h2 { color: #2563eb; margin-top: 30px; border-left: 4px solid #2563eb; padding-left: 12px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    table th, table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    table th { background: #f9fafb; font-weight: 600; }
+    .prototype-img { max-width: 100%; margin: 10px 0; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>${prdDocument.module} - PRD</h1>
+
+  <table>
+    <tr><th>产品名称</th><td>${prdDocument.product || '-'}</td></tr>
+    <tr><th>版本号</th><td>${prdDocument.version || '-'}</td></tr>
+    <tr><th>创建日期</th><td>${prdDocument.date || '-'}</td></tr>
+    <tr><th>产品经理</th><td>${prdDocument.pm || '-'}</td></tr>
+    <tr><th>审核人</th><td>${prdDocument.reviewer || '-'}</td></tr>
+  </table>`;
+
+      // 原型图
+      if (prdDocument.prototypes.length > 0) {
+        html += `<h2>原型图</h2>`;
+        prdDocument.prototypes.forEach((proto, idx) => {
+          html += `<img src="${proto.data}" alt="原型图${idx + 1}" class="prototype-img">`;
+        });
+      }
+
+      // 章节
+      prdDocument.sections.forEach(section => {
+        html += `<h2>${section.title}</h2>`;
+        html += `<p>${(section.content || section.placeholder).replace(/\n/g, '<br>')}</p>`;
+      });
+
+      html += `
+  <hr style="margin-top: 40px; border: none; border-top: 1px solid #ddd;">
+  <p style="text-align: center; color: #999; font-size: 12px;">生成时间: ${new Date().toLocaleString('zh-CN')}</p>
+</body>
+</html>`;
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      downloadFile(blob, `${filename}.html`);
+      toast('HTML文档已导出');
+    }
+
+    function downloadFile(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function togglePreviewMode() {
+      const preview = document.getElementById('prdPreview');
+      if (preview.classList.contains('max-h-[600px]')) {
+        preview.classList.remove('max-h-[600px]');
+        preview.classList.add('max-h-screen');
+      } else {
+        preview.classList.remove('max-h-screen');
+        preview.classList.add('max-h-[600px]');
+      }
+    }
+
+    // ==================== 工具函数 ====================
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('opacity-0');
+      t.classList.add('opacity-100');
+      setTimeout(() => {
+        t.classList.remove('opacity-100');
+        t.classList.add('opacity-0');
+      }, 2000);
+    }
+
+    // ==================== AI智能助手功能 ====================
+    let currentEditingSectionIdx = null;
+
+    function openAIAssistant(sectionIdx) {
+      currentEditingSectionIdx = sectionIdx;
+      const section = prdDocument.sections[sectionIdx];
+
+      document.getElementById('aiSidebarTitle').textContent = `AI助手 - ${section.title}`;
+      document.getElementById('aiSidebar').classList.add('open');
+      document.getElementById('aiOverlay').classList.add('show');
+
+      // 根据章节类型加载对应的AI工具
+      loadAITools(section);
+    }
+
+    function closeAIAssistant() {
+      document.getElementById('aiSidebar').classList.remove('open');
+      document.getElementById('aiOverlay').classList.remove('show');
+      currentEditingSectionIdx = null;
+    }
+
+    function loadAITools(section) {
+      const container = document.getElementById('aiToolsContainer');
+      const sectionTitle = section.title.toLowerCase();
+
+      let tools = '';
+
+      // 根据章节类型提供不同的AI工具
+      if (sectionTitle.includes('背景') || sectionTitle.includes('目标')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="ai-tool-card bg-white rounded-lg p-4" onclick="generateBackground()">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <i class="fa-solid fa-lightbulb text-blue-600"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold text-gray-800">生成需求背景</div>
+                  <div class="text-xs text-gray-500">基于关键词智能生成背景描述</div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <label class="text-sm font-medium text-gray-700 mb-2 block">输入关键信息</label>
+              <input type="text" id="aiBackgroundKeywords" class="w-full border rounded-lg px-3 py-2 text-sm mb-2" placeholder="例如: 批量导入、效率低、Excel">
+              <button class="btn btn-primary w-full" onclick="generateBackgroundContent()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>生成内容
+              </button>
+            </div>
+            <div id="aiBackgroundResult" class="hidden"></div>
+          </div>
+        `;
+      } else if (sectionTitle.includes('用户') || sectionTitle.includes('角色') || sectionTitle.includes('场景')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-800 mb-3">生成用户故事</h4>
+              <div class="space-y-3">
+                <input type="text" id="aiUserRole" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="用户角色 (例如: 仓库管理员)">
+                <input type="text" id="aiUserAction" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="用户操作 (例如: 批量导入产品信息)">
+                <input type="text" id="aiUserBenefit" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="期望收益 (例如: 提升录入效率)">
+                <button class="btn btn-primary w-full" onclick="generateUserStoryContent()">
+                  <i class="fa-solid fa-user-tag"></i>生成用户故事
+                </button>
+              </div>
+            </div>
+            <div id="aiUserStoryResult" class="hidden"></div>
+          </div>
+        `;
+      } else if (sectionTitle.includes('功能') || sectionTitle.includes('需求')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-800 mb-3">功能拆解助手</h4>
+              <textarea id="aiFeatureInput" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm mb-2" placeholder="输入高层需求描述..."></textarea>
+              <button class="btn btn-primary w-full" onclick="decomposeFeatureContent()">
+                <i class="fa-solid fa-sitemap"></i>拆解功能点
+              </button>
+            </div>
+            <div id="aiFeatureResult" class="hidden"></div>
+          </div>
+        `;
+      } else if (sectionTitle.includes('交互') || sectionTitle.includes('流程')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="ai-tool-card bg-white rounded-lg p-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <i class="fa-solid fa-diagram-project text-green-600"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold text-gray-800">生成交互流程</div>
+                  <div class="text-xs text-gray-500">自动生成标准交互流程描述</div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <button class="btn btn-primary w-full" onclick="generateInteractionFlow()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>生成标准流程
+              </button>
+            </div>
+            <div id="aiInteractionResult" class="hidden"></div>
+          </div>
+        `;
+      } else if (sectionTitle.includes('字段') || sectionTitle.includes('数据')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-800 mb-3">数据字典生成器</h4>
+              <textarea id="aiFieldInput" rows="5" class="w-full border rounded-lg px-3 py-2 text-sm mb-2" placeholder="输入字段列表,每行一个:&#10;产品SKU&#10;产品名称&#10;库存数量"></textarea>
+              <button class="btn btn-primary w-full" onclick="generateDataDictContent()">
+                <i class="fa-solid fa-table"></i>生成数据字典
+              </button>
+            </div>
+            <div id="aiFieldResult" class="hidden"></div>
+          </div>
+        `;
+      } else if (sectionTitle.includes('异常') || sectionTitle.includes('规则')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-800 mb-3">异常场景生成器</h4>
+              <textarea id="aiExceptionInput" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm mb-2" placeholder="描述功能场景..."></textarea>
+              <button class="btn btn-primary w-full" onclick="generateExceptionContent()">
+                <i class="fa-solid fa-shield-halved"></i>生成异常场景
+              </button>
+            </div>
+            <div id="aiExceptionResult" class="hidden"></div>
+          </div>
+        `;
+      } else if (sectionTitle.includes('验收')) {
+        tools = `
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-800 mb-3">验收标准生成器</h4>
+              <textarea id="aiAcceptanceInput" rows="5" class="w-full border rounded-lg px-3 py-2 text-sm mb-2" placeholder="输入功能列表,每行一个功能点"></textarea>
+              <button class="btn btn-primary w-full" onclick="generateAcceptanceContent()">
+                <i class="fa-solid fa-clipboard-check"></i>生成验收标准
+              </button>
+            </div>
+            <div id="aiAcceptanceResult" class="hidden"></div>
+          </div>
+        `;
+      } else {
+        // 默认工具
+        tools = `
+          <div class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+              <h4 class="font-semibold text-gray-800 mb-3">内容生成助手</h4>
+              <textarea id="aiGenericInput" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm mb-2" placeholder="描述你需要的内容..."></textarea>
+              <button class="btn btn-primary w-full" onclick="generateGenericContent()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>生成内容
+              </button>
+            </div>
+            <div id="aiGenericResult" class="hidden"></div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = tools;
+    }
+
+    // AI生成函数 - 需求背景
+    function generateBackgroundContent() {
+      const keywords = document.getElementById('aiBackgroundKeywords').value.trim();
+      if (!keywords) {
+        toast('请输入关键信息');
+        return;
+      }
+
+      const result = `**背景:**
+当前${keywords.split(',')[0] || keywords}功能存在以下问题:
+• 操作效率低,需要人工逐条录入
+• 容易出现录入错误
+• 数据量大时耗时较长
+
+**目标:**
+• 支持${keywords}批量处理,提升操作效率
+• 减少人工录入错误率
+• 缩短数据处理时间至原来的1/10
+
+**预期收益:**
+• 工作效率提升 80%
+• 错误率降低 90%
+• 用户满意度提升`;
+
+      displayAIResult('aiBackgroundResult', result);
+    }
+
+    // AI生成函数 - 用户故事
+    function generateUserStoryContent() {
+      const role = document.getElementById('aiUserRole').value.trim();
+      const action = document.getElementById('aiUserAction').value.trim();
+      const benefit = document.getElementById('aiUserBenefit').value.trim();
+
+      if (!role || !action || !benefit) {
+        toast('请填写所有字段');
+        return;
+      }
+
+      const result = `**用户故事:**
+作为${role},我希望能够${action},以便${benefit}。
+
+**使用场景:**
+场景1: ${role}需要${action}时,通过该功能快速完成操作
+场景2: 批量处理数据时,一次性导入多条记录
+场景3: 需要修改大量数据时,通过批量操作提升效率`;
+
+      displayAIResult('aiUserStoryResult', result);
+    }
+
+    // AI生成函数 - 功能拆解
+    function decomposeFeatureContent() {
+      const input = document.getElementById('aiFeatureInput').value.trim();
+      if (!input) {
+        toast('请输入需求描述');
+        return;
+      }
+
+      const result = `**P0 (必须有):**
+• 页面入口:在列表页添加功能入口按钮
+• 文件上传:支持拖拽或点击上传文件
+• 格式校验:验证文件格式和大小
+• 数据解析:读取文件内容并解析
+
+**P1 (重要):**
+• 数据预览:解析后展示数据预览
+• 字段映射:自动或手动映射字段
+• 数据校验:检查必填项和数据格式
+• 错误提示:标注错误数据
+• 批量保存:确认后批量保存
+
+**P2 (优化项):**
+• 模板下载:提供标准模板
+• 历史记录:记录操作历史
+• 进度显示:显示处理进度
+• 导入报告:生成统计报告`;
+
+      displayAIResult('aiFeatureResult', result);
+    }
+
+    // AI生成函数 - 交互流程
+    function generateInteractionFlow() {
+      const result = `**页面结构:**
+• 顶部:操作按钮区(导入、导出、刷新)
+• 中部:数据展示区(表格)
+• 底部:分页控件
+
+**交互流程:**
+1. 用户点击"批量导入"按钮
+2. 弹出文件上传弹窗
+3. 用户选择/拖拽文件上传
+4. 系统校验文件格式
+5. 解析文件内容并展示预览
+6. 用户确认或修改数据
+7. 点击"确认导入"
+8. 系统执行导入操作
+9. 展示导入结果
+
+**状态变化:**
+• 默认状态:展示数据列表
+• 上传中:显示加载动画
+• 预览状态:展示可编辑的预览表格
+• 导入中:显示进度条
+• 完成状态:显示成功提示
+
+**异常处理:**
+• 文件格式错误:提示支持的格式
+• 文件过大:提示大小限制
+• 数据校验失败:标红错误项
+• 导入失败:提示错误信息并支持重试`;
+
+      displayAIResult('aiInteractionResult', result);
+    }
+
+    // AI生成函数 - 数据字典
+    function generateDataDictContent() {
+      const input = document.getElementById('aiFieldInput').value.trim();
+      if (!input) {
+        toast('请输入字段列表');
+        return;
+      }
+
+      const fields = input.split('\n').filter(f => f.trim());
+      const typeMap = {
+        'SKU': 'String', '编码': 'String', '名称': 'String',
+        '数量': 'Integer', '价格': 'Decimal', '金额': 'Decimal',
+        '时间': 'DateTime', '日期': 'DateTime', '状态': 'Enum',
+        '是否': 'Boolean', '备注': 'Text'
+      };
+
+      const getFieldType = (name) => {
+        for (const [key, type] of Object.entries(typeMap)) {
+          if (name.includes(key)) return type;
+        }
+        return 'String';
+      };
+
+      let result = '| 字段名 | 类型 | 长度 | 必填 | 校验规则 | 说明 |\n';
+      result += '|--------|------|------|------|----------|------|\n';
+
+      fields.forEach(field => {
+        const type = getFieldType(field);
+        const length = type === 'String' ? '50' : '-';
+        result += `| ${field} | ${type} | ${length} | 是 | 非空 | ${field}字段 |\n`;
+      });
+
+      displayAIResult('aiFieldResult', result, true);
+    }
+
+    // AI生成函数 - 异常场景
+    function generateExceptionContent() {
+      const input = document.getElementById('aiExceptionInput').value.trim();
+      if (!input) {
+        toast('请输入功能场景');
+        return;
+      }
+
+      const result = `**文件异常:**
+• 文件格式不正确(非Excel文件)
+• 文件大小超过限制(>10MB)
+• 文件损坏无法解析
+• 文件为空或无有效数据
+
+**数据异常:**
+• 必填字段缺失
+• 数据格式错误(如日期、数字格式)
+• 数据重复(主键冲突)
+• 数据超出允许范围
+• 字段长度超限
+
+**系统异常:**
+• 网络中断导致上传失败
+• 数据库连接失败
+• 服务器处理超时
+• 存储空间不足
+
+**权限异常:**
+• 用户无操作权限
+• 用户无访问模块权限
+• Session过期需重新登录`;
+
+      displayAIResult('aiExceptionResult', result);
+    }
+
+    // AI生成函数 - 验收标准
+    function generateAcceptanceContent() {
+      const input = document.getElementById('aiAcceptanceInput').value.trim();
+      if (!input) {
+        toast('请输入功能列表');
+        return;
+      }
+
+      const features = input.split('\n').filter(f => f.trim());
+      let result = '**功能验收:**\n';
+      features.forEach((feature, idx) => {
+        const cleanFeature = feature.replace(/^\d+\.\s*/, '');
+        result += `${idx + 1}. ${cleanFeature}\n`;
+        result += `   ✓ 功能正常执行\n`;
+        result += `   ✓ 异常情况有提示\n`;
+        result += `   ✓ 边界值测试通过\n\n`;
+      });
+
+      result += `**性能验收:**\n`;
+      result += `• 页面加载时间 < 2秒\n`;
+      result += `• 操作响应时间 < 3秒\n`;
+      result += `• 批量处理支持至少1000条数据\n\n`;
+
+      result += `**体验验收:**\n`;
+      result += `• 界面布局合理,操作流畅\n`;
+      result += `• 提示信息清晰易懂\n`;
+      result += `• 支持常用快捷操作`;
+
+      displayAIResult('aiAcceptanceResult', result);
+    }
+
+    // AI生成函数 - 通用内容
+    function generateGenericContent() {
+      const input = document.getElementById('aiGenericInput').value.trim();
+      if (!input) {
+        toast('请输入内容描述');
+        return;
+      }
+
+      const result = `基于您的需求"${input}",建议内容如下:
+
+• 明确需求的具体场景和目标
+• 列出关键功能点和优先级
+• 说明预期的用户价值
+• 补充必要的技术约束条件
+
+请根据实际情况调整和完善以上内容。`;
+
+      displayAIResult('aiGenericResult', result);
+    }
+
+    // 显示AI生成结果
+    function displayAIResult(resultId, content, isTable = false) {
+      const resultDiv = document.getElementById(resultId);
+
+      if (isTable) {
+        resultDiv.innerHTML = `
+          <div class="bg-white border rounded-lg p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold text-green-600">✓ 生成成功</span>
+              <button class="btn btn-sm" onclick="fillAIContent(\`${content.replace(/`/g, '\\`')}\`)">
+                <i class="fa-solid fa-arrow-down"></i>填充到章节
+              </button>
+            </div>
+            <div class="text-sm bg-gray-50 p-3 rounded overflow-x-auto">
+              <pre class="whitespace-pre-wrap text-xs">${content}</pre>
+            </div>
+          </div>
+        `;
+      } else {
+        resultDiv.innerHTML = `
+          <div class="bg-white border rounded-lg p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm font-semibold text-green-600">✓ 生成成功</span>
+              <button class="btn btn-sm" onclick="fillAIContent(\`${content.replace(/`/g, '\\`').replace(/\n/g, '\\n')}\`)">
+                <i class="fa-solid fa-arrow-down"></i>填充到章节
+              </button>
+            </div>
+            <div class="text-sm text-gray-700 whitespace-pre-wrap">${content}</div>
+          </div>
+        `;
+      }
+
+      resultDiv.classList.remove('hidden');
+      toast('内容生成成功');
+    }
+
+    // 将AI生成的内容填充到当前编辑的章节
+    function fillAIContent(content) {
+      if (currentEditingSectionIdx === null) {
+        toast('未找到目标章节');
+        return;
+      }
+
+      const section = prdDocument.sections[currentEditingSectionIdx];
+      const sectionTitle = section.title.toLowerCase();
+
+      // 数据字段章节特殊处理
+      if (sectionTitle.includes('字段') || sectionTitle.includes('数据')) {
+        // 解析AI生成的内容，合并到现有字段
+        const existingFields = parseFieldsFromContent(section.content);
+        const newFields = parseFieldsFromContent(content);
+        // 如果现有只有一个空行，则替换；否则追加
+        const hasContent = existingFields.length > 1 || (existingFields.length === 1 && existingFields[0].name);
+        const mergedFields = hasContent ? [...existingFields, ...newFields] : newFields;
+        section.content = fieldsToMarkdown(mergedFields);
+        renderSectionEditor();
+        updatePreview();
+        closeAIAssistant();
+        toast('内容已填充到章节');
+        return;
+      }
+
+      // 结构化章节处理
+      if (sectionTitle.includes('背景') || sectionTitle.includes('目标')) {
+        section.content = content;
+        renderSectionEditor();
+        updatePreview();
+        closeAIAssistant();
+        toast('内容已填充到章节');
+        return;
+      }
+
+      const textarea = document.getElementById(`section-${currentEditingSectionIdx}`);
+      if (textarea) {
+        const currentContent = textarea.value.trim();
+        textarea.value = currentContent ? currentContent + '\n\n' + content : content;
+        prdDocument.sections[currentEditingSectionIdx].content = textarea.value;
+        updatePreview();
+        closeAIAssistant();
+        toast('内容已填充到章节');
+      }
+    }
+
+    // 初始化AI服务
+    initAIService();
+
+    // ==================== 返回首页函数 ====================
+    function goToHome() {
+      // 检查是否在 iframe 中
+      if (window.self !== window.top) {
+        // 在 iframe 中，发送消息给父页面关闭弹窗
+        window.parent.postMessage({ type: 'CLOSE_FEATURE_MODAL' }, '*');
+        // 延迟导航，让父页面有时间关闭弹窗
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 100);
+      } else {
+        // 不在 iframe 中，直接导航
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>
