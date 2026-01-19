@@ -342,13 +342,12 @@
                 <select id="modalBillType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" required>
                   <option value="">请选择账单类型</option>
                   <option value="出库+快递(YC)">出库+快递(YC)</option>
+                  <option value="出库+快递(TMS)">出库+快递(TMS)</option>
                   <option value="仓储费">仓储费</option>
+                  <option value="快递赔付">快递赔付</option>
                   <option value="库内赔付(错发)">库内赔付(错发)</option>
                   <option value="库内赔付(丢件)">库内赔付(丢件)</option>
                   <option value="库内赔付(其他)">库内赔付(其他)</option>
-                  <option value="其他">其他</option>
-                  <option value="充值">充值</option>
-                  <option value="费用调整">费用调整</option>
                 </select>
               </div>
             </div>
@@ -414,6 +413,15 @@
                   <input type="date" id="modalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
                   <input type="date" id="modalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
                 </div>
+              </div>
+              <div id="conditionChannel">
+                <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
+                <select id="modalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                  <option value="" selected>全部</option>
+                  <option value="FEDEX_MPS">FEDEX_MPS</option>
+                  <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                  <option value="UPS_GROUND">UPS_GROUND</option>
+                </select>
               </div>
               <div id="conditionShippingMethod">
                 <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
@@ -805,6 +813,7 @@
       document.getElementById('modalVoyagePeriod').value = '';
       document.getElementById('modalBillType').value = '';
       document.getElementById('modalCustomerCode').value = '';
+      document.getElementById('modalChannel').value = '';
       document.getElementById('modalShippingMethod').value = '';
       initWarehouseAll();
       document.getElementById('modalCreateStartDate').value = '';
@@ -828,9 +837,17 @@
           headers: ['客户代码', '仓库', '订单号', '参考号', '快递单号', '运输方式', '出库费', '快递费', '合计', '币种'],
           fields: ['customerCode', 'warehouse', 'orderNo', 'refNo', 'trackingNo', 'shippingMethod', 'outboundFee', 'expressFee', 'total', 'currency']
         },
+        '出库+快递(TMS)': {
+          headers: ['客户代码', '仓库', '订单号', '参考号', '快递单号', '渠道', '出库费', '快递费', '合计', '币种'],
+          fields: ['customerCode', 'warehouse', 'orderNo', 'refNo', 'trackingNo', 'channel', 'outboundFee', 'expressFee', 'total', 'currency']
+        },
         '仓储费': {
           headers: ['客户代码', '仓库', 'SKU', '数量', '单价', '金额', '币种', '备注'],
           fields: ['customerCode', 'warehouse', 'sku', 'quantity', 'unitPrice', 'amount', 'currency', 'remark']
+        },
+        '快递赔付': {
+          headers: ['客户代码', '仓库', '订单号', '赔付金额', '币种', '赔付原因', '备注'],
+          fields: ['customerCode', 'warehouse', 'orderNo', 'compensationAmount', 'currency', 'reason', 'remark']
         },
         '库内赔付(错发)': {
           headers: ['客户代码', '仓库', '订单号', '赔付金额', '币种', '赔付原因', '备注'],
@@ -904,32 +921,46 @@
     // 根据账单类型更新检索条件显示
     function updateSearchConditions() {
       const billType = document.getElementById('modalBillType').value;
+      const isTMS = billType === '出库+快递(TMS)';
       const isStorageFee = billType === '仓储费';
-      const isCompensationFee = billType.includes('库内赔付');
+      const isCompensationFee = billType.includes('赔付'); // 包括快递赔付和库内赔付
       const isRechargeOrAdjust = billType === '充值' || billType === '费用调整';
       
       // 获取所有检索条件元素
       const customerCodeEl = document.getElementById('conditionCustomerCode');
       const warehouseEl = document.getElementById('conditionWarehouse');
+      const channelEl = document.getElementById('conditionChannel');
       const settlementDateEl = document.getElementById('conditionSettlementDate');
       const compensationTimeEl = document.getElementById('conditionCompensationTime');
       const shippingMethodEl = document.getElementById('conditionShippingMethod');
       const createTimeEl = document.getElementById('conditionCreateTime');
       const outboundTimeEl = document.getElementById('conditionOutboundTime');
       
-      if (isStorageFee) {
+      if (isTMS) {
+        // 出库+快递(TMS)显示：客户代码、渠道、创建时间、出库时间（基础信息的账单月份和航期已包含）
+        customerCodeEl.style.display = 'block';
+        warehouseEl.style.display = 'none';
+        channelEl.style.display = 'block';
+        settlementDateEl.style.display = 'none';
+        compensationTimeEl.style.display = 'none';
+        shippingMethodEl.style.display = 'none';
+        createTimeEl.style.display = 'block';
+        outboundTimeEl.style.display = 'block';
+      } else if (isStorageFee) {
         // 仓储费只显示仓库和结算日期
         customerCodeEl.style.display = 'none';
         warehouseEl.style.display = 'block';
+        channelEl.style.display = 'none';
         settlementDateEl.style.display = 'block';
         compensationTimeEl.style.display = 'none';
         shippingMethodEl.style.display = 'none';
         createTimeEl.style.display = 'none';
         outboundTimeEl.style.display = 'none';
       } else if (isCompensationFee) {
-        // 库内赔付只显示仓库和赔付时间
-        customerCodeEl.style.display = 'none';
-        warehouseEl.style.display = 'block';
+        // 所有赔付类型只显示客户代码和赔付时间
+        customerCodeEl.style.display = 'block';
+        warehouseEl.style.display = 'none';
+        channelEl.style.display = 'none';
         settlementDateEl.style.display = 'none';
         compensationTimeEl.style.display = 'block';
         shippingMethodEl.style.display = 'none';
@@ -939,15 +970,17 @@
         // 充值和费用调整只显示仓库和创建时间
         customerCodeEl.style.display = 'none';
         warehouseEl.style.display = 'block';
+        channelEl.style.display = 'none';
         settlementDateEl.style.display = 'none';
         compensationTimeEl.style.display = 'none';
         shippingMethodEl.style.display = 'none';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'none';
       } else {
-        // 其他类型显示所有条件（除了赔付时间）
+        // 其他类型显示所有条件（除了赔付时间和渠道）
         customerCodeEl.style.display = 'block';
         warehouseEl.style.display = 'block';
+        channelEl.style.display = 'none';
         settlementDateEl.style.display = 'block';
         compensationTimeEl.style.display = 'none';
         shippingMethodEl.style.display = 'block';
@@ -974,11 +1007,23 @@
         { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-20250115-002', refNo: 'REF-002', trackingNo: 'TRK-002', shippingMethod: '快速快递', outboundFee: 18.00, expressFee: 12.50, total: 30.50, currency: 'USD' },
           { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-20250115-003', refNo: 'REF-003', trackingNo: 'TRK-003', shippingMethod: '标准快递', outboundFee: 12.30, expressFee: 7.80, total: 20.10, currency: 'USD' }
         ];
+      } else if (billType === '出库+快递(TMS)') {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', orderNo: 'ORD-20250115-011', refNo: 'REF-011', trackingNo: 'TMS-TRK-001', channel: 'FEDEX_MPS', outboundFee: 16.50, expressFee: 9.20, total: 25.70, currency: 'USD' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-20250115-012', refNo: 'REF-012', trackingNo: 'TMS-TRK-002', channel: 'FEDEX_HOME_GROUND', outboundFee: 19.00, expressFee: 13.50, total: 32.50, currency: 'USD' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-20250115-013', refNo: 'REF-013', trackingNo: 'TMS-TRK-003', channel: 'UPS_GROUND', outboundFee: 14.30, expressFee: 8.80, total: 23.10, currency: 'USD' }
+        ];
       } else if (billType === '仓储费') {
         mockData = [
           { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', sku: 'SKU001', quantity: 100, unitPrice: 0.5, amount: 50.00, currency: 'USD', remark: '仓储费用' },
           { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', sku: 'SKU002', quantity: 200, unitPrice: 0.3, amount: 60.00, currency: 'USD', remark: '仓储费用' },
           { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', sku: 'SKU003', quantity: 150, unitPrice: 0.4, amount: 60.00, currency: 'USD', remark: '仓储费用' }
+        ];
+      } else if (billType === '快递赔付') {
+        mockData = [
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', orderNo: 'ORD-KD-001', compensationAmount: 45.00, currency: 'USD', reason: '快递丢失', remark: '快递赔付说明' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-KD-002', compensationAmount: 35.00, currency: 'USD', reason: '快递延误', remark: '快递赔付说明' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-KD-003', compensationAmount: 50.00, currency: 'USD', reason: '快递破损', remark: '快递赔付说明' }
         ];
       } else if (billType.includes('库内赔付')) {
         mockData = [
