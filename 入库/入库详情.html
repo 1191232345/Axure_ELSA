@@ -485,6 +485,17 @@
               </div>
             </div>
             
+            <!-- 按钮区域 -->
+            <div class="flex items-center justify-end space-x-3 pt-2">
+              <button id="reset-logs-btn" class="btn-default">
+                <i class="fa fa-redo mr-2"></i>重置
+              </button>
+              <button id="search-logs-btn" class="btn-primary">
+                <i class="fa fa-search mr-2"></i>搜索
+              </button>
+            </div>
+          </div>
+            
           <!-- 操作日志表格 -->
           <div class="table-container">
             <table>
@@ -583,6 +594,8 @@
       const operatorInput = document.getElementById('log-operator');
       const timeStartInput = document.getElementById('log-time-start');
       const timeEndInput = document.getElementById('log-time-end');
+      const searchBtn = document.getElementById('search-logs-btn');
+      const resetBtn = document.getElementById('reset-logs-btn');
       const logTable = document.querySelector('#tab-logs table');
       const logRows = logTable ? logTable.querySelectorAll('tbody tr') : [];
       
@@ -664,45 +677,57 @@
         });
       }
       
-      // 绑定所有查询事件
-      if (searchInput) {
-        searchInput.addEventListener('input', filterLogs);
+      // 重置函数
+      function resetLogs() {
+        // 重置所有查询条件
+        if (searchInput) searchInput.value = '';
+        if (operatorInput) operatorInput.value = '';
+        if (timeStartInput) timeStartInput.value = '';
+        if (timeEndInput) timeEndInput.value = '';
+        
+        // 显示所有行，但隐藏"未执行"的日志记录
+        logRows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells.length >= 3) {
+            const content = cells[2].textContent.toLowerCase();
+            // 隐藏未执行的环节
+            if (content.includes('取消订单')) {
+              row.style.display = 'none';
+            } else {
+              row.style.display = '';
+            }
+          } else {
+            row.style.display = '';
+          }
+        });
       }
-      if (operatorInput) {
-        operatorInput.addEventListener('input', filterLogs);
+      
+      // 绑定搜索按钮事件
+      if (searchBtn) {
+        searchBtn.addEventListener('click', filterLogs);
       }
-      if (timeStartInput) {
-        timeStartInput.addEventListener('change', filterLogs);
+      
+      // 绑定重置按钮事件
+      if (resetBtn) {
+        resetBtn.addEventListener('click', resetLogs);
       }
-      if (timeEndInput) {
-        timeEndInput.addEventListener('change', filterLogs);
-      }
+      
+      // 支持回车键触发搜索
+      [searchInput, operatorInput, timeStartInput, timeEndInput].forEach(input => {
+        if (input) {
+          input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              filterLogs();
+            }
+          });
+        }
+      });
       
       // 刷新按钮功能
       const refreshBtn = document.getElementById('refresh-logs');
       if (refreshBtn) {
         refreshBtn.addEventListener('click', function() {
-          // 重置所有查询条件
-          if (searchInput) searchInput.value = '';
-          if (operatorInput) operatorInput.value = '';
-          if (timeStartInput) timeStartInput.value = '';
-          if (timeEndInput) timeEndInput.value = '';
-          
-          // 显示所有行，但隐藏"未执行"的日志记录
-          logRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 3) {
-              const content = cells[2].textContent.toLowerCase();
-              // 隐藏未执行的环节
-              if (content.includes('取消订单')) {
-                row.style.display = 'none';
-              } else {
-                row.style.display = '';
-              }
-            } else {
-              row.style.display = '';
-            }
-          });
+          resetLogs();
           
           // 添加旋转动画
           const icon = refreshBtn.querySelector('i');

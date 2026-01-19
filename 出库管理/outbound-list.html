@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELSA-出库列表</title>
+  <!-- 引入外部资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary:disabled {
+        @apply opacity-50 cursor-not-allowed bg-gray-50 text-gray-400;
+      }
+      .btn-success {
+        @apply bg-success text-white px-4 py-2 rounded-lg transition-all hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-success/50 focus:ring-offset-2;
+      }
+      .input-primary {
+        @apply w-full px-4 py-2.5 h-11 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .checkbox-primary {
+        @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/30;
+      }
+      .select-primary {
+        @apply px-4 py-2.5 h-11 rounded-lg border border-border bg-white text-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all cursor-pointer w-full;
+      }
+      .search-row {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3;
+      }
+      .search-row-actions {
+        @apply flex items-end gap-2 md:col-span-2 lg:col-span-4;
+      }
+      .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1.5;
+      }
+      .search-field {
+        @apply w-full;
+      }
+      .search-field-combined {
+        @apply w-full flex gap-2;
+      }
+      .tab-item {
+        @apply px-4 py-3 text-sm font-medium border-b-2 cursor-pointer transition-all whitespace-nowrap;
+      }
+      .tab-item.active {
+        @apply border-primary text-primary;
+      }
+      .tab-item.inactive {
+        @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-neutral-100 text-neutral-800 min-h-screen">
+  <!-- 顶部导航栏 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-semibold">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-1">
+            <a href="../../portal.html" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors">首页</a>
+            <a href="#" class="px-3 py-2 text-sm bg-primary/80 border-b-2 border-white">出库管理</a>
+          </nav>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">zsw</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 二级导航 -->
+    <div class="bg-[#3686da] border-t border-white/10">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center h-10 overflow-x-auto whitespace-nowrap">
+          <a href="outbound-list.html" class="px-3 py-2 text-xs text-white bg-white/10 mr-1 rounded">出库列表</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- 面包屑导航 -->
+    <!-- <nav class="text-sm mb-4">
+      <a href="../../portal.html" class="text-primary hover:text-primary-light">首页</a> &gt;
+      <a href="#" class="text-primary hover:text-primary-light">出库管理</a> &gt;
+      <span class="text-gray-500">出库列表</span>
+    </nav> -->
+
+    <!-- 页面标题 -->
+    <!-- <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-semibold text-gray-800">出库列表</h1>
+    </div> -->
+
+    <!-- 搜索筛选区域 -->
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+      <!-- 第一行筛选条件 -->
+      <div class="search-row">
+        <div>
+          <label class="form-label">仓库代码</label>
+          <select id="warehouseCode" class="select-primary">
+            <option value="">请选择仓库代码</option>
+            <option value="CA008">CA008</option>
+            <option value="CA005">CA005</option>
+            <option value="NJ006">NJ006</option>
+            <option value="GA006">GA006</option>
+            <option value="DE001">DE001</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">拣货类型</label>
+          <select id="pickingType" class="select-primary">
+            <option value="">请选择拣货类型</option>
+            <option value="一单一件">一单一件</option>
+            <option value="一单多件">一单多件</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">客户代码</label>
+          <select id="customerCode" class="select-primary">
+            <option value="">请选择客户代码</option>
+            <option value="CUST001">CUST001</option>
+            <option value="CUST002">CUST002</option>
+            <option value="CUST003">CUST003</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">SKU</label>
+          <div class="search-field-combined">
+            <select class="select-primary" style="min-width: 90px; max-width: 90px; flex-shrink: 0;">
+              <option value="exact">精确查询</option>
+              <option value="fuzzy">模糊查询</option>
+            </select>
+            <input type="text" id="sku" class="input-primary flex-1 min-w-0" placeholder="请输入SKU">
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二行筛选条件 -->
+      <div class="search-row">
+        <div>
+          <label class="form-label">配送渠道</label>
+          <select id="deliveryChannel" class="select-primary">
+            <option value="">请选择配送渠道</option>
+            <option value="发现快递">发现快递</option>
+            <option value="FedEx">FedEx</option>
+            <option value="UPS">UPS</option>
+            <option value="DHL">DHL</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">出库单号</label>
+          <div class="search-field-combined">
+            <select class="select-primary" style="min-width: 90px; max-width: 90px; flex-shrink: 0;">
+              <option value="exact">精确查询</option>
+              <option value="fuzzy">模糊查询</option>
+            </select>
+            <input type="text" id="outboundOrderNo" class="input-primary flex-1 min-w-0" placeholder="请输入出库单号">
+          </div>
+        </div>
+        <div>
+          <label class="form-label">参考号</label>
+          <div class="search-field-combined">
+            <select class="select-primary" style="min-width: 90px; max-width: 90px; flex-shrink: 0;">
+              <option value="exact">精确查询</option>
+              <option value="fuzzy">模糊查询</option>
+            </select>
+            <input type="text" id="referenceNo" class="input-primary flex-1 min-w-0" placeholder="请输入参考号">
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三行筛选条件和操作按钮 -->
+      <div class="search-row">
+        <div>
+          <label class="form-label">跟踪号</label>
+          <input type="text" id="trackingNo" class="input-primary" placeholder="请输入跟踪号">
+        </div>
+        <div class="search-row-actions">
+          <button id="resetBtn" class="btn-secondary">
+            <i class="fa fa-refresh mr-1"></i> 重置
+          </button>
+          <button id="searchBtn" class="btn-primary">
+            <i class="fa fa-search mr-1"></i> 搜索
+          </button>
+          <button id="expandBtn" class="btn-secondary">
+            <i class="fa fa-chevron-up mr-1"></i> 展开
+          </button>
+        </div>
+      </div>
+
+      <!-- 展开区域（默认隐藏） -->
+      <div id="expandArea" class="hidden mt-3 pt-3 border-t border-gray-200">
+        <!-- 展开的筛选条件 -->
+        <div class="search-row">
+          <div>
+            <label class="form-label">创建时间</label>
+            <div class="flex gap-2 items-center">
+              <input type="date" id="createTimeStart" class="input-primary flex-1">
+              <span class="text-gray-500 text-sm whitespace-nowrap">至</span>
+              <input type="date" id="createTimeEnd" class="input-primary flex-1">
+            </div>
+          </div>
+          <div>
+            <label class="form-label">隐藏已出库</label>
+            <select id="hideOutbound" class="select-primary">
+              <option value="">请选择隐藏已出库</option>
+              <option value="yes">是</option>
+              <option value="no">否</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作按钮和数据表格区域 -->
+    <div class="bg-white rounded shadow-card p-6 mb-6">
+      <!-- 操作按钮 -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex space-x-3">
+          <button id="batchCheckoutBtn" class="btn-success" disabled>
+            <i class="fa fa-check-square-o mr-1"></i> 批量签出
+          </button>
+          <!-- <button id="oneClickCheckoutBtn" class="btn-success">
+            <i class="fa fa-bolt mr-1"></i> 一键签出
+          </button> -->
+        </div>
+        <div class="flex space-x-3">
+          <!-- <button id="exportCostBtn" class="btn-secondary">
+            <i class="fa fa-download mr-1"></i> 费用明细导出
+          </button>
+          <button id="downloadProofBtn" class="btn-secondary" disabled>
+            <i class="fa fa-download mr-1"></i> 下载发货证明
+          </button> -->
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                <input type="checkbox" id="selectAll" class="checkbox-primary">
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">单号</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">仓库</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">SKU及数量</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">拣货类型</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">配送渠道</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">物流产品</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">创建时间</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">创建人</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">操作</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody" class="divide-y divide-gray-200">
+            <!-- 数据将通过JavaScript动态生成 -->
+            <tr>
+              <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+                <i class="fa fa-inbox text-4xl mb-2 block"></i>
+                暂无数据
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 分页 -->
+      <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-gray-600">
+          共 <span id="totalCount" class="font-medium">0</span> 条记录
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="prevPage" class="btn-secondary px-3 py-1" disabled>
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <div class="flex items-center gap-1">
+            <span class="text-sm text-gray-600">第</span>
+            <input type="number" id="currentPage" value="1" min="1" class="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm">
+            <span class="text-sm text-gray-600">页 / 共 <span id="totalPages">1</span> 页</span>
+          </div>
+          <button id="nextPage" class="btn-secondary px-3 py-1" disabled>
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 确认签出弹窗 -->
+  <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">确认签出</h3>
+        <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <p id="modalMessage" class="text-gray-600 mb-6"></p>
+        <div class="flex justify-end gap-3">
+          <button id="cancelModalBtn" class="btn-secondary">取消</button>
+          <button id="confirmCheckoutBtn" class="btn-success">确认签出</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 模拟数据
+    let tableData = [
+      {
+        id: '1',
+        orderNo: 'DEMO-20861712-CLUVKFYDRRPE',
+        referenceNo: '10697569084571564',
+        trackingNo: '774961396080',
+        warehouse: 'DE001',
+        skuInfo: '4242NAD x1',
+        status: '待拣货',
+        actualStatus: '待拣货',
+        pickingType: '一单一件',
+        deliveryChannel: '发现快递',
+        logisticsProduct: 'FEDEX_HOME_GROUND',
+        createTime: '2024-01-15 10:30:00',
+        creator: 'zsw',
+        checked: false
+      },
+      {
+        id: '2',
+        orderNo: 'DEMO-20861713-ABCDEFGHIJKL',
+        referenceNo: '10697569084571565',
+        trackingNo: '774961396081',
+        warehouse: 'CA008',
+        skuInfo: '4242NAD x2, 4243NAD x1',
+        status: '待揽收',
+        actualStatus: '待揽收',
+        pickingType: '一单多件',
+        deliveryChannel: 'FedEx',
+        logisticsProduct: 'FEDEX_EXPRESS',
+        createTime: '2024-01-15 11:20:00',
+        creator: 'admin',
+        checked: false
+      },
+      {
+        id: '3',
+        orderNo: 'DEMO-20861714-MNOPQRSTUVWX',
+        referenceNo: '10697569084571566',
+        trackingNo: '774961396082',
+        warehouse: 'NJ006',
+        skuInfo: '4244NAD x3',
+        status: '已出库',
+        actualStatus: '已出库',
+        pickingType: '一单一件',
+        deliveryChannel: 'UPS',
+        logisticsProduct: 'UPS_GROUND',
+        createTime: '2024-01-14 14:00:00',
+        creator: 'user1',
+        checked: false
+      }
+    ];
+
+    // 过滤掉已出库的数据
+    let filteredData = tableData.filter(item => item.actualStatus !== '已出库');
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let selectedItems = new Set();
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      initEventListeners();
+      renderTable();
+      updateButtonStates();
+    });
+
+    // 初始化事件监听
+    function initEventListeners() {
+      // 搜索按钮
+      document.getElementById('searchBtn').addEventListener('click', handleSearch);
+      
+      // 重置按钮
+      document.getElementById('resetBtn').addEventListener('click', handleReset);
+      
+      // 展开/收起按钮
+      document.getElementById('expandBtn').addEventListener('click', toggleExpand);
+      
+      // 全选复选框
+      const selectAll = document.getElementById('selectAll');
+      if (selectAll) {
+        selectAll.addEventListener('change', function() {
+          const checked = this.checked;
+          document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
+            cb.checked = checked;
+            const rowId = cb.dataset.id;
+            if (checked) {
+              selectedItems.add(rowId);
+            } else {
+              selectedItems.delete(rowId);
+            }
+          });
+          updateButtonStates();
+        });
+      }
+
+      // 批量签出
+      const batchCheckoutBtn = document.getElementById('batchCheckoutBtn');
+      if (batchCheckoutBtn) {
+        batchCheckoutBtn.addEventListener('click', handleBatchCheckout);
+      }
+      
+      // 一键签出
+      const oneClickCheckoutBtn = document.getElementById('oneClickCheckoutBtn');
+      if (oneClickCheckoutBtn) {
+        oneClickCheckoutBtn.addEventListener('click', handleOneClickCheckout);
+      }
+      
+      // 费用明细导出
+      const exportCostBtn = document.getElementById('exportCostBtn');
+      if (exportCostBtn) {
+        exportCostBtn.addEventListener('click', handleExportCost);
+      }
+      
+      // 下载发货证明
+      const downloadProofBtn = document.getElementById('downloadProofBtn');
+      if (downloadProofBtn) {
+        downloadProofBtn.addEventListener('click', handleDownloadProof);
+      }
+
+      // 分页
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const currentPageInput = document.getElementById('currentPage');
+      
+      if (prevPage) {
+        prevPage.addEventListener('click', () => changePage(currentPage - 1));
+      }
+      if (nextPage) {
+        nextPage.addEventListener('click', () => changePage(currentPage + 1));
+      }
+      if (currentPageInput) {
+        currentPageInput.addEventListener('change', function() {
+          const page = parseInt(this.value);
+          if (page >= 1 && page <= getTotalPages()) {
+            changePage(page);
+          }
+        });
+      }
+
+      // 弹窗关闭
+      document.getElementById('closeModal').addEventListener('click', closeModal);
+      document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+      document.getElementById('confirmCheckoutBtn').addEventListener('click', confirmCheckout);
+    }
+
+    // 搜索处理
+    function handleSearch() {
+      const filters = {
+        warehouseCode: document.getElementById('warehouseCode').value,
+        pickingType: document.getElementById('pickingType').value,
+        customerCode: document.getElementById('customerCode').value,
+        sku: document.getElementById('sku').value,
+        deliveryChannel: document.getElementById('deliveryChannel').value,
+        outboundOrderNo: document.getElementById('outboundOrderNo').value,
+        referenceNo: document.getElementById('referenceNo').value,
+        createTimeStart: document.getElementById('createTimeStart').value,
+        createTimeEnd: document.getElementById('createTimeEnd').value,
+        trackingNo: document.getElementById('trackingNo').value,
+        hideOutbound: document.getElementById('hideOutbound').value
+      };
+
+      filteredData = tableData.filter(item => {
+        // 过滤掉已出库的数据
+        if (item.actualStatus === '已出库') return false;
+        
+        if (filters.warehouseCode && item.warehouse !== filters.warehouseCode) return false;
+        if (filters.pickingType && item.pickingType !== filters.pickingType) return false;
+        if (filters.deliveryChannel && item.deliveryChannel !== filters.deliveryChannel) return false;
+        if (filters.outboundOrderNo && !item.orderNo.includes(filters.outboundOrderNo)) return false;
+        if (filters.referenceNo && !item.referenceNo.includes(filters.referenceNo)) return false;
+        if (filters.trackingNo && !item.trackingNo.includes(filters.trackingNo)) return false;
+        return true;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    // 重置处理
+    function handleReset() {
+      document.getElementById('warehouseCode').value = '';
+      document.getElementById('pickingType').value = '';
+      document.getElementById('customerCode').value = '';
+      document.getElementById('sku').value = '';
+      document.getElementById('deliveryChannel').value = '';
+      document.getElementById('outboundOrderNo').value = '';
+      document.getElementById('referenceNo').value = '';
+      document.getElementById('trackingNo').value = '';
+      document.getElementById('createTimeStart').value = '';
+      document.getElementById('createTimeEnd').value = '';
+      document.getElementById('hideOutbound').value = '';
+      
+      // 过滤掉已出库的数据
+      filteredData = tableData.filter(item => item.actualStatus !== '已出库');
+      currentPage = 1;
+      renderTable();
+    }
+
+    // 展开/收起
+    function toggleExpand() {
+      const expandArea = document.getElementById('expandArea');
+      const expandBtn = document.getElementById('expandBtn');
+      const isHidden = expandArea.classList.contains('hidden');
+      
+      if (isHidden) {
+        expandArea.classList.remove('hidden');
+        expandBtn.innerHTML = '<i class="fa fa-chevron-down mr-1"></i> 收起';
+      } else {
+        expandArea.classList.add('hidden');
+        expandBtn.innerHTML = '<i class="fa fa-chevron-up mr-1"></i> 展开';
+      }
+    }
+
+
+    // 渲染表格
+    function renderTable() {
+      const tbody = document.getElementById('dataTableBody');
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = filteredData.slice(startIndex, endIndex);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              暂无数据
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = pageData.map(item => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3">
+              <input type="checkbox" class="checkbox-primary row-checkbox" data-id="${item.id}" ${item.checked ? 'checked' : ''}>
+            </td>
+            <td class="px-4 py-3 text-sm">
+              <div class="text-gray-800 font-medium">${item.orderNo}</div>
+              <div class="text-gray-500 text-xs mt-1">参考号: ${item.referenceNo}</div>
+              <div class="text-gray-500 text-xs">跟踪号: ${item.trackingNo}</div>
+            </td>
+            <td class="px-4 py-3 text-sm">${item.warehouse}</td>
+            <td class="px-4 py-3 text-sm">${item.skuInfo}</td>
+            <td class="px-4 py-3 text-sm">${item.pickingType}</td>
+            <td class="px-4 py-3 text-sm">${item.deliveryChannel}</td>
+            <td class="px-4 py-3 text-sm">${item.logisticsProduct}</td>
+            <td class="px-4 py-3 text-sm">${item.createTime}</td>
+            <td class="px-4 py-3 text-sm">${item.creator}</td>
+            <td class="px-4 py-3 text-sm">
+              <div class="flex items-center gap-2">
+                ${item.actualStatus !== '已出库' && item.actualStatus !== '已取消' && item.actualStatus !== '已送达' ? `
+                  <button class="text-success hover:text-success/80 checkout-row-btn font-medium" data-id="${item.id}" title="签出">
+                    <i class="fa fa-check mr-1"></i>签出
+                  </button>
+                ` : `
+                  <span class="text-gray-400 text-xs">已签出</span>
+                `}
+                <a href="outbound.html?orderNo=${item.orderNo}" class="text-primary hover:text-primary-light" title="查看详情">
+                  <i class="fa fa-eye"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        // 绑定行复选框事件
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+          cb.addEventListener('change', function() {
+            const rowId = this.dataset.id;
+            if (this.checked) {
+              selectedItems.add(rowId);
+            } else {
+              selectedItems.delete(rowId);
+            }
+            updateSelectAllState();
+            updateButtonStates();
+          });
+        });
+
+        // 绑定单行签出按钮
+        document.querySelectorAll('.checkout-row-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const rowId = this.dataset.id;
+            showCheckoutModal('single', [rowId]);
+          });
+        });
+      }
+
+      // 更新分页信息
+      updatePagination();
+      updateSelectAllState();
+    }
+
+
+    // 更新全选状态
+    function updateSelectAllState() {
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+      const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+      const selectAll = document.getElementById('selectAll');
+      if (selectAll) {
+        selectAll.checked = checkboxes.length > 0 && checkedCount === checkboxes.length;
+      }
+    }
+
+    // 更新按钮状态
+    function updateButtonStates() {
+      const hasSelection = selectedItems.size > 0;
+      const batchCheckoutBtn = document.getElementById('batchCheckoutBtn');
+      const downloadProofBtn = document.getElementById('downloadProofBtn');
+      
+      if (batchCheckoutBtn) {
+        batchCheckoutBtn.disabled = !hasSelection;
+      }
+      if (downloadProofBtn) {
+        downloadProofBtn.disabled = !hasSelection;
+      }
+    }
+
+    // 更新分页信息
+    function updatePagination() {
+      const total = filteredData.length;
+      const totalPages = getTotalPages();
+      
+      const totalCount = document.getElementById('totalCount');
+      const totalPagesEl = document.getElementById('totalPages');
+      const currentPageInput = document.getElementById('currentPage');
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      
+      if (totalCount) totalCount.textContent = total;
+      if (totalPagesEl) totalPagesEl.textContent = totalPages;
+      if (currentPageInput) currentPageInput.value = currentPage;
+      if (prevPage) prevPage.disabled = currentPage <= 1;
+      if (nextPage) nextPage.disabled = currentPage >= totalPages;
+    }
+
+    function getTotalPages() {
+      return Math.ceil(filteredData.length / itemsPerPage) || 1;
+    }
+
+    function changePage(page) {
+      const totalPages = getTotalPages();
+      if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        renderTable();
+      }
+    }
+
+    // 批量签出
+    function handleBatchCheckout() {
+      if (selectedItems.size === 0) {
+        alert('请至少选择一条记录进行签出');
+        return;
+      }
+      showCheckoutModal('batch', Array.from(selectedItems));
+    }
+
+    // 一键签出
+    function handleOneClickCheckout() {
+      // 获取当前筛选条件下所有可签出的记录（排除已出库和已取消）
+      const checkoutableItems = filteredData
+        .filter(item => item.actualStatus !== '已出库' && item.actualStatus !== '已取消' && item.actualStatus !== '已送达')
+        .map(item => item.id);
+      
+      if (checkoutableItems.length === 0) {
+        alert('当前没有可签出的记录');
+        return;
+      }
+      
+      showCheckoutModal('oneClick', checkoutableItems);
+    }
+
+    // 显示签出确认弹窗
+    function showCheckoutModal(type, itemIds) {
+      const modal = document.getElementById('checkoutModal');
+      const modalMessage = document.getElementById('modalMessage');
+      
+      let message = '';
+      if (type === 'single') {
+        message = `确定要签出选中的 1 条记录吗？`;
+      } else if (type === 'batch') {
+        message = `确定要签出选中的 ${itemIds.length} 条记录吗？`;
+      } else if (type === 'oneClick') {
+        message = `确定要一键签出当前筛选条件下的 ${itemIds.length} 条记录吗？`;
+      }
+      
+      modalMessage.textContent = message;
+      modal.dataset.type = type;
+      modal.dataset.itemIds = JSON.stringify(itemIds);
+      modal.classList.remove('hidden');
+    }
+
+    // 关闭弹窗
+    function closeModal() {
+      document.getElementById('checkoutModal').classList.add('hidden');
+    }
+
+    // 确认签出
+    function confirmCheckout() {
+      const modal = document.getElementById('checkoutModal');
+      const type = modal.dataset.type;
+      const itemIds = JSON.parse(modal.dataset.itemIds);
+      
+      // 执行签出操作
+      itemIds.forEach(id => {
+        const item = tableData.find(d => d.id === id);
+        if (item && item.actualStatus !== '已出库' && item.actualStatus !== '已取消' && item.actualStatus !== '已送达') {
+          item.actualStatus = '已出库';
+          item.status = '已出库';
+        }
+      });
+
+      // 清除选中状态
+      selectedItems.clear();
+      
+      // 刷新表格
+      handleSearch();
+      
+      // 关闭弹窗
+      closeModal();
+      
+      // 显示成功提示
+      alert(`成功签出 ${itemIds.length} 条记录`);
+    }
+
+    // 费用明细导出
+    function handleExportCost() {
+      alert('费用明细导出功能开发中...');
+    }
+
+    // 下载发货证明
+    function handleDownloadProof() {
+      if (selectedItems.size === 0) {
+        alert('请至少选择一条记录');
+        return;
+      }
+      alert(`正在下载 ${selectedItems.size} 条记录的发货证明...`);
+    }
+  </script>
+</body>
+</html>
