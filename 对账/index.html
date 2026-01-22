@@ -250,10 +250,10 @@
           <i class="fa fa-download"></i>
           <span>费用获取</span>
         </button>
-        <button id="btnBatchSubmit" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
+        <!-- <button id="btnBatchSubmit" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
           <i class="fa fa-check-square mr-2"></i>
           <span>批量提交</span>
-        </button>
+        </button> -->
         <button id="btnExport" class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-success/90 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2">
           <i class="fa fa-download mr-2"></i>
           <span>导出账单</span>
@@ -348,6 +348,8 @@
                   <option value="库内赔付(错发)">库内赔付(错发)</option>
                   <option value="库内赔付(丢件)">库内赔付(丢件)</option>
                   <option value="库内赔付(其他)">库内赔付(其他)</option>
+                  <option value="充值">充值</option>
+                  <option value="费用调整">费用调整</option>
                 </select>
               </div>
             </div>
@@ -362,39 +364,53 @@
             <div class="space-y-3">
               <div id="conditionCustomerCode">
                 <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
-                <select id="modalCustomerCode" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                  <option value="" selected>全部</option>
-                  <option value="ZJJS">ZJJS</option>
-                  <option value="ZJHW">ZJHW</option>
-                  <option value="ZJWL">ZJWL</option>
-                </select>
-              </div>
-              <div id="conditionWarehouse">
-                <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
                 <div class="relative">
-                  <div id="modalWarehouseDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleWarehouseDropdown()">
-                    <span id="modalWarehouseText" class="text-gray-700">请选择仓库</span>
+                  <div id="modalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleCustomerCodeDropdown()">
+                    <span id="modalCustomerCodeText" class="text-gray-700">全部</span>
                     <i class="fa fa-chevron-down text-gray-400"></i>
                   </div>
-                  <div id="modalWarehouseOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  <div id="modalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouse" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                      <input type="checkbox" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                      <span>ZJJS</span>
+                    </label>
+                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                      <input type="checkbox" name="modalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                      <span>ZJHW</span>
+                    </label>
+                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                      <input type="checkbox" name="modalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                      <span>ZJWL</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div id="conditionWarehouseCode">
+                <label class="block text-sm font-medium text-gray-700 mb-1">仓库代码</label>
+                <div class="relative">
+                  <div id="modalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleWarehouseCodeDropdown()">
+                    <span id="modalWarehouseCodeText" class="text-gray-700">全部</span>
+                    <i class="fa fa-chevron-down text-gray-400"></i>
+                  </div>
+                  <div id="modalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                      <input type="checkbox" name="modalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
                       <span>CA008</span>
                     </label>
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouse" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                      <input type="checkbox" name="modalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
                       <span>CA009</span>
                     </label>
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouse" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                      <input type="checkbox" name="modalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
                       <span>CA010</span>
                     </label>
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouse" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                      <input type="checkbox" name="modalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
                       <span>CA011</span>
                     </label>
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouse" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateWarehouseText()">
+                      <input type="checkbox" name="modalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
                       <span>CA012</span>
                     </label>
                   </div>
@@ -657,8 +673,8 @@
         document.getElementById('feeModal').classList.remove('hidden');
         document.getElementById('feeModal').classList.add('flex');
         // 初始化客户代码和仓库为全部
-        document.getElementById('modalCustomerCode').value = '';
-        initWarehouseAll();
+        initCustomerCodeAll();
+        initWarehouseCodeAll();
         // 如果已选择账单类型，更新表头和检索条件
         const billType = document.getElementById('modalBillType').value;
         if (billType) {
@@ -756,8 +772,8 @@
       // 导出功能
       document.getElementById('btnExport').addEventListener('click', exportData);
       
-      // 批量提交功能
-      document.getElementById('btnBatchSubmit').addEventListener('click', batchSubmitBills);
+      // 批量提交功能（已隐藏）
+      // document.getElementById('btnBatchSubmit').addEventListener('click', batchSubmitBills);
 
       // 初始化
       renderTable();
@@ -777,17 +793,84 @@
       document.getElementById('detailModal').classList.remove('flex');
     }
 
-    // 切换仓库下拉框
-    function toggleWarehouseDropdown() {
-      const options = document.getElementById('modalWarehouseOptions');
+    // 切换客户代码下拉框
+    function toggleCustomerCodeDropdown() {
+      const options = document.getElementById('modalCustomerCodeOptions');
       options.classList.toggle('hidden');
     }
 
-    // 更新仓库文本
+    // 切换仓库代码下拉框
+    function toggleWarehouseCodeDropdown() {
+      const options = document.getElementById('modalWarehouseCodeOptions');
+      options.classList.toggle('hidden');
+    }
+
+    // 切换仓库下拉框 (旧版本 - 已弃用)
+    function toggleWarehouseDropdown() {
+      const options = document.getElementById('modalWarehouseOptions');
+      if (options) options.classList.toggle('hidden');
+    }
+
+    // 切换客户搜索下拉框 (旧版本 - 已弃用)
+    function toggleCustomerSearchDropdown() {
+      const options = document.getElementById('modalCustomerSearchOptions');
+      if (options) options.classList.toggle('hidden');
+    }
+
+    // 更新客户代码文本
+    function updateCustomerCodeText() {
+      const checkboxes = document.querySelectorAll('input[name="modalCustomerCode"]:checked');
+      const allCheckboxes = document.querySelectorAll('input[name="modalCustomerCode"]');
+      const text = document.getElementById('modalCustomerCodeText');
+      if (checkboxes.length === 0) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === allCheckboxes.length) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === 1) {
+        text.textContent = checkboxes[0].value;
+      } else {
+        text.textContent = `已选择 ${checkboxes.length} 个客户`;
+      }
+    }
+    
+    // 初始化客户代码为全部选中
+    function initCustomerCodeAll() {
+      document.querySelectorAll('input[name="modalCustomerCode"]').forEach(cb => {
+        cb.checked = true;
+      });
+      updateCustomerCodeText();
+    }
+
+    // 更新仓库代码文本
+    function updateWarehouseCodeText() {
+      const checkboxes = document.querySelectorAll('input[name="modalWarehouseCode"]:checked');
+      const allCheckboxes = document.querySelectorAll('input[name="modalWarehouseCode"]');
+      const text = document.getElementById('modalWarehouseCodeText');
+      if (checkboxes.length === 0) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === allCheckboxes.length) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === 1) {
+        text.textContent = checkboxes[0].value;
+      } else {
+        text.textContent = `已选择 ${checkboxes.length} 个仓库`;
+      }
+    }
+    
+    // 初始化仓库代码为全部选中
+    function initWarehouseCodeAll() {
+      document.querySelectorAll('input[name="modalWarehouseCode"]').forEach(cb => {
+        cb.checked = true;
+      });
+      updateWarehouseCodeText();
+    }
+
+    // 旧版本函数 - 保留兼容性
     function updateWarehouseText() {
       const checkboxes = document.querySelectorAll('input[name="modalWarehouse"]:checked');
       const allCheckboxes = document.querySelectorAll('input[name="modalWarehouse"]');
       const text = document.getElementById('modalWarehouseText');
+      if (!text) return;
       if (checkboxes.length === 0) {
         text.textContent = '请选择仓库';
       } else if (checkboxes.length === allCheckboxes.length) {
@@ -799,7 +882,7 @@
       }
     }
     
-    // 初始化仓库为全部选中
+    // 旧版本函数 - 保留兼容性
     function initWarehouseAll() {
       document.querySelectorAll('input[name="modalWarehouse"]').forEach(cb => {
         cb.checked = true;
@@ -807,15 +890,40 @@
       updateWarehouseText();
     }
 
+    // 旧版本函数 - 保留兼容性
+    function updateCustomerSearchText() {
+      const checkboxes = document.querySelectorAll('input[name="modalCustomerSearch"]:checked');
+      const allCheckboxes = document.querySelectorAll('input[name="modalCustomerSearch"]');
+      const text = document.getElementById('modalCustomerSearchText');
+      if (!text) return;
+      if (checkboxes.length === 0) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === allCheckboxes.length) {
+        text.textContent = '全部';
+      } else if (checkboxes.length === 1) {
+        text.textContent = checkboxes[0].value;
+      } else {
+        text.textContent = `已选择 ${checkboxes.length} 个客户`;
+      }
+    }
+    
+    // 旧版本函数 - 保留兼容性
+    function initCustomerSearchAll() {
+      document.querySelectorAll('input[name="modalCustomerSearch"]').forEach(cb => {
+        cb.checked = false;
+      });
+      updateCustomerSearchText();
+    }
+
     // 重置弹窗表单
     function resetModalForm() {
       document.getElementById('modalBillMonth').value = '';
       document.getElementById('modalVoyagePeriod').value = '';
       document.getElementById('modalBillType').value = '';
-      document.getElementById('modalCustomerCode').value = '';
+      initCustomerCodeAll();
+      initWarehouseCodeAll();
       document.getElementById('modalChannel').value = '';
       document.getElementById('modalShippingMethod').value = '';
-      initWarehouseAll();
       document.getElementById('modalCreateStartDate').value = '';
       document.getElementById('modalCreateEndDate').value = '';
       document.getElementById('modalOutboundStartDate').value = '';
@@ -866,12 +974,12 @@
           fields: ['customerCode', 'warehouse', 'feeItem', 'amount', 'currency', 'remark']
         },
         '充值': {
-          headers: ['订单号', '客户代码', '仓库', '销售', '客服', '费用类型', '金额', '币种', '付款日期', '实际付款人', '交易号', '备注'],
-          fields: ['orderNo', 'customerCode', 'warehouse', 'sales', 'customerService', 'feeType', 'amount', 'currency', 'paymentDate', 'actualPayer', 'transactionNo', 'remark']
+          headers: ['仓库代码', '客户名称', '流水号', '交易号', '汇款方式', '实际汇款人', '汇款金额', '汇率', '折算金额', '到账金额', '币种'],
+          fields: ['warehouseCode', 'customerName', 'serialNo', 'transactionNo', 'paymentMethod', 'actualPayer', 'remittanceAmount', 'exchangeRate', 'convertedAmount', 'arrivedAmount', 'currency']
         },
         '费用调整': {
-          headers: ['订单号', '客户代码', '仓库', '销售', '客服', '费用类型', '应收状态', '金额', '币种'],
-          fields: ['orderNo', 'customerCode', 'warehouse', 'sales', 'customerService', 'feeType', 'receivableStatus', 'amount', 'currency']
+          headers: ['客户代码', '仓库代码', '订单号', '费用类型', '金额', '币种'],
+          fields: ['customerCode', 'warehouseCode', 'orderNo', 'feeType', 'amount', 'currency']
         }
       };
       
@@ -895,7 +1003,7 @@
       
       // 根据字配置生成表头
       fieldConfig.headers.forEach((header, index) => {
-        const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
+        const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') || header.includes('汇率')
           ? 'text-right' 
           : 'text-left';
         headerHTML += `<th class="${alignClass} py-2 px-3 font-semibold text-gray-700 text-sm">${header}</th>`;
@@ -925,10 +1033,12 @@
       const isStorageFee = billType === '仓储费';
       const isCompensationFee = billType.includes('赔付'); // 包括快递赔付和库内赔付
       const isRechargeOrAdjust = billType === '充值' || billType === '费用调整';
+      const isOther = billType === '其他';
+      const isOutboundExpress = billType === '出库+快递(YC)';
       
       // 获取所有检索条件元素
       const customerCodeEl = document.getElementById('conditionCustomerCode');
-      const warehouseEl = document.getElementById('conditionWarehouse');
+      const warehouseCodeEl = document.getElementById('conditionWarehouseCode');
       const channelEl = document.getElementById('conditionChannel');
       const settlementDateEl = document.getElementById('conditionSettlementDate');
       const compensationTimeEl = document.getElementById('conditionCompensationTime');
@@ -936,56 +1046,50 @@
       const createTimeEl = document.getElementById('conditionCreateTime');
       const outboundTimeEl = document.getElementById('conditionOutboundTime');
       
+      // 默认全部隐藏
+      customerCodeEl.style.display = 'none';
+      warehouseCodeEl.style.display = 'none';
+      channelEl.style.display = 'none';
+      settlementDateEl.style.display = 'none';
+      compensationTimeEl.style.display = 'none';
+      shippingMethodEl.style.display = 'none';
+      createTimeEl.style.display = 'none';
+      outboundTimeEl.style.display = 'none';
+      
       if (isTMS) {
-        // 出库+快递(TMS)显示：客户代码、渠道、创建时间、出库时间（基础信息的账单月份和航期已包含）
+        // 出库+快递(TMS)显示：客户代码、仓库代码、渠道、创建时间、出库时间
         customerCodeEl.style.display = 'block';
-        warehouseEl.style.display = 'none';
+        warehouseCodeEl.style.display = 'block';
         channelEl.style.display = 'block';
-        settlementDateEl.style.display = 'none';
-        compensationTimeEl.style.display = 'none';
-        shippingMethodEl.style.display = 'none';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
-      } else if (isStorageFee) {
-        // 仓储费只显示仓库和结算日期
-        customerCodeEl.style.display = 'none';
-        warehouseEl.style.display = 'block';
-        channelEl.style.display = 'none';
-        settlementDateEl.style.display = 'block';
-        compensationTimeEl.style.display = 'none';
-        shippingMethodEl.style.display = 'none';
-        createTimeEl.style.display = 'none';
-        outboundTimeEl.style.display = 'none';
-      } else if (isCompensationFee) {
-        // 所有赔付类型只显示客户代码和赔付时间
+      } else if (isOutboundExpress) {
+        // 出库+快递(YC)显示：客户代码、仓库代码、运输方式、创建时间、出库时间
         customerCodeEl.style.display = 'block';
-        warehouseEl.style.display = 'none';
-        channelEl.style.display = 'none';
-        settlementDateEl.style.display = 'none';
-        compensationTimeEl.style.display = 'block';
-        shippingMethodEl.style.display = 'none';
-        createTimeEl.style.display = 'none';
-        outboundTimeEl.style.display = 'none';
-      } else if (isRechargeOrAdjust) {
-        // 充值和费用调整只显示仓库和创建时间
-        customerCodeEl.style.display = 'none';
-        warehouseEl.style.display = 'block';
-        channelEl.style.display = 'none';
-        settlementDateEl.style.display = 'none';
-        compensationTimeEl.style.display = 'none';
-        shippingMethodEl.style.display = 'none';
-        createTimeEl.style.display = 'block';
-        outboundTimeEl.style.display = 'none';
-      } else {
-        // 其他类型显示所有条件（除了赔付时间和渠道）
-        customerCodeEl.style.display = 'block';
-        warehouseEl.style.display = 'block';
-        channelEl.style.display = 'none';
-        settlementDateEl.style.display = 'block';
-        compensationTimeEl.style.display = 'none';
+        warehouseCodeEl.style.display = 'block';
         shippingMethodEl.style.display = 'block';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
+      } else if (isStorageFee) {
+        // 仓储费显示：客户代码、仓库代码、结算日期
+        customerCodeEl.style.display = 'block';
+        warehouseCodeEl.style.display = 'block';
+        settlementDateEl.style.display = 'block';
+      } else if (isCompensationFee) {
+        // 所有赔付类型显示：客户代码、仓库代码、赔付时间
+        customerCodeEl.style.display = 'block';
+        warehouseCodeEl.style.display = 'block';
+        compensationTimeEl.style.display = 'block';
+      } else if (isRechargeOrAdjust) {
+        // 充值和费用调整显示：客户代码、仓库代码、创建时间
+        customerCodeEl.style.display = 'block';
+        warehouseCodeEl.style.display = 'block';
+        createTimeEl.style.display = 'block';
+      } else if (isOther) {
+        // 其他类型显示：客户代码、仓库代码、创建时间
+        customerCodeEl.style.display = 'block';
+        warehouseCodeEl.style.display = 'block';
+        createTimeEl.style.display = 'block';
       }
     }
 
@@ -1038,13 +1142,15 @@
         ];
       } else if (billType === '充值') {
         mockData = [
-          { id: 'm1', orderNo: 'ORD-20250115-001', customerCode: 'ZJJS', warehouse: 'CA008', sales: '张三', customerService: '李四', feeType: '充值', amount: 1000.00, currency: 'USD', paymentDate: '2025-01-15', actualPayer: '客户A', transactionNo: 'TRX-001', remark: '充值说明' },
-          { id: 'm2', orderNo: 'ORD-20250115-002', customerCode: 'ZJHW', warehouse: 'CA009', sales: '王五', customerService: '赵六', feeType: '充值', amount: 2000.00, currency: 'USD', paymentDate: '2025-01-15', actualPayer: '客户B', transactionNo: 'TRX-002', remark: '充值说明' }
+          { id: 'm1', warehouseCode: 'CA008', customerName: '张三公司', serialNo: 'SN-20250119-001', transactionNo: 'TRX-20250119-001', paymentMethod: '银行转账', actualPayer: '张三', remittanceAmount: 10000.00, exchangeRate: 1.0, convertedAmount: 10000.00, arrivedAmount: 10000.00, currency: 'USD' },
+          { id: 'm2', warehouseCode: 'CA009', customerName: '李四公司', serialNo: 'SN-20250119-002', transactionNo: 'TRX-20250119-002', paymentMethod: '支付宝', actualPayer: '李四', remittanceAmount: 20000.00, exchangeRate: 0.14, convertedAmount: 2800.00, arrivedAmount: 2800.00, currency: 'USD' },
+          { id: 'm3', warehouseCode: 'CA010', customerName: '王五公司', serialNo: 'SN-20250119-003', transactionNo: 'TRX-20250119-003', paymentMethod: '微信支付', actualPayer: '王五', remittanceAmount: 15000.00, exchangeRate: 1.0, convertedAmount: 15000.00, arrivedAmount: 15000.00, currency: 'USD' }
         ];
       } else if (billType === '费用调整') {
         mockData = [
-          { id: 'm1', orderNo: 'ORD-20250115-003', customerCode: 'ZJJS', warehouse: 'CA008', sales: '张三', customerService: '李四', feeType: '费用调整', receivableStatus: '已收', amount: 50.00, currency: 'USD' },
-          { id: 'm2', orderNo: 'ORD-20250115-004', customerCode: 'ZJHW', warehouse: 'CA009', sales: '王五', customerService: '赵六', feeType: '费用调整', receivableStatus: '未收', amount: 30.00, currency: 'USD' }
+          { id: 'm1', customerCode: 'ZJJS', warehouseCode: 'CA008', orderNo: 'ORD-20250119-001', feeType: '仓储费调整', amount: 50.00, currency: 'USD' },
+          { id: 'm2', customerCode: 'ZJHW', warehouseCode: 'CA009', orderNo: 'ORD-20250119-002', feeType: '快递费调整', amount: -30.00, currency: 'USD' },
+          { id: 'm3', customerCode: 'ZJWL', warehouseCode: 'CA010', orderNo: 'ORD-20250119-003', feeType: '出库费调整', amount: 25.00, currency: 'USD' }
         ];
       }
       
@@ -1090,12 +1196,16 @@
           let alignClass = 'text-left';
           let displayValue = value;
           
-          // 处理数值字
-          if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
+          // 处理数值字段
+          if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity' || field === 'exchangeRate') {
             alignClass = 'text-right';
             if (typeof value === 'number') {
+              // 汇率显示4位小数
+              if (field === 'exchangeRate') {
+                displayValue = value.toFixed(4);
+              }
               // 费用调整的调整金额不显示$和+号
-              if (field === 'adjustAmount') {
+              else if (field === 'adjustAmount') {
                 displayValue = value.toFixed(2);
               } else {
                 displayValue = `$${value.toFixed(2)}`;
@@ -1357,7 +1467,7 @@
               </button>
               `}
               ${item.billStatus === '已作废' ? '' : `
-              <button onclick="submitBill('${item.id || item.billNo}')" class="px-3 py-1 text-success hover:bg-success/10 rounded transition-colors">
+              <button onclick="submitBill('${item.id || item.billNo}')" class="hidden px-3 py-1 text-success hover:bg-success/10 rounded transition-colors">
                 <i class="fa fa-check mr-1"></i>${item.billStatus === '已完成' ? '回退' : '提交'}
               </button>
               `}
@@ -1918,7 +2028,7 @@
         
         // 根据字配置动态生成表头
         fieldConfig.headers.forEach(header => {
-          const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') 
+          const alignClass = header.includes('费') || header.includes('金额') || header.includes('合计') || header.includes('数量') || header.includes('单价') || header.includes('汇率')
             ? 'text-right' 
             : 'text-left';
           detailHtml += `<th class="${alignClass} py-2 px-3 font-semibold text-gray-700 text-xs">${header}</th>`;
@@ -1939,12 +2049,16 @@
             let alignClass = 'text-left';
             let displayValue = value;
             
-            // 处理数值字
-            if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity') {
+            // 处理数值字段
+            if (field.includes('Fee') || field.includes('Amount') || field.includes('Price') || field === 'total' || field === 'quantity' || field === 'exchangeRate') {
               alignClass = 'text-right';
               if (typeof value === 'number') {
+                // 汇率显示4位小数
+                if (field === 'exchangeRate') {
+                  displayValue = value.toFixed(4);
+                }
                 // 费用调整的调整金额不显示$和+号
-                if (field === 'adjustAmount') {
+                else if (field === 'adjustAmount') {
                   displayValue = value.toFixed(2);
                 } else {
                   displayValue = `$${value.toFixed(2)}`;
@@ -1995,8 +2109,14 @@
     }
 
     // 暴露全局函数
+    window.toggleCustomerCodeDropdown = toggleCustomerCodeDropdown;
+    window.updateCustomerCodeText = updateCustomerCodeText;
+    window.toggleWarehouseCodeDropdown = toggleWarehouseCodeDropdown;
+    window.updateWarehouseCodeText = updateWarehouseCodeText;
     window.toggleWarehouseDropdown = toggleWarehouseDropdown;
     window.updateWarehouseText = updateWarehouseText;
+    window.toggleCustomerSearchDropdown = toggleCustomerSearchDropdown;
+    window.updateCustomerSearchText = updateCustomerSearchText;
     window.viewDetail = viewDetail;
     window.voidBill = voidBill;
     window.submitBill = submitBill;
