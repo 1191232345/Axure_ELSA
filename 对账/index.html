@@ -363,23 +363,23 @@
             </div>
             <div class="space-y-3">
               <div id="conditionCustomerCode">
-                <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">客户代码<span class="text-red-500">*</span></label>
                 <div class="relative">
                   <div id="modalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleCustomerCodeDropdown()">
-                    <span id="modalCustomerCodeText" class="text-gray-700">全部</span>
+                    <span id="modalCustomerCodeText" class="text-gray-700">请选择</span>
                     <i class="fa fa-chevron-down text-gray-400"></i>
                   </div>
                   <div id="modalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                      <input type="radio" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
                       <span>ZJJS</span>
                     </label>
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                      <input type="radio" name="modalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
                       <span>ZJHW</span>
                     </label>
                     <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                      <input type="radio" name="modalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
                       <span>ZJWL</span>
                     </label>
                   </div>
@@ -819,24 +819,19 @@
 
     // 更新客户代码文本
     function updateCustomerCodeText() {
-      const checkboxes = document.querySelectorAll('input[name="modalCustomerCode"]:checked');
-      const allCheckboxes = document.querySelectorAll('input[name="modalCustomerCode"]');
+      const radio = document.querySelector('input[name="modalCustomerCode"]:checked');
       const text = document.getElementById('modalCustomerCodeText');
-      if (checkboxes.length === 0) {
-        text.textContent = '全部';
-      } else if (checkboxes.length === allCheckboxes.length) {
-        text.textContent = '全部';
-      } else if (checkboxes.length === 1) {
-        text.textContent = checkboxes[0].value;
+      if (!radio) {
+        text.textContent = '请选择';
       } else {
-        text.textContent = `已选择 ${checkboxes.length} 个客户`;
+        text.textContent = radio.value;
       }
     }
-    
-    // 初始化客户代码为全部选中
+
+    // 初始化客户代码为未选中状态
     function initCustomerCodeAll() {
-      document.querySelectorAll('input[name="modalCustomerCode"]').forEach(cb => {
-        cb.checked = true;
+      document.querySelectorAll('input[name="modalCustomerCode"]').forEach(rb => {
+        rb.checked = false;
       });
       updateCustomerCodeText();
     }
