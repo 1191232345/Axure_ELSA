@@ -93,20 +93,23 @@
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <div class="flex items-center mb-3">
           <i class="fas fa-cube text-blue-500 mr-2"></i>
-          <h4 class="text-sm font-semibold text-blue-800">货物尺寸信息</h4>
+          <h4 class="text-sm font-semibold text-blue-800">包裹尺寸信息</h4>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="flex items-center">
             <span class="text-sm text-gray-600 mr-2">长宽高:</span>
             <span id="dimensionsDisplay" class="text-sm font-medium text-gray-900">-</span>
+            <span class="text-sm text-gray-500 ml-1">(cm³)</span>
           </div>
           <div class="flex items-center">
             <span class="text-sm text-gray-600 mr-2">体积重:</span>
             <span id="volumeWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
+            <span class="text-sm text-gray-500 ml-1">(kg)</span>
           </div>
           <div class="flex items-center">
             <span class="text-sm text-gray-600 mr-2">计费重:</span>
             <span id="chargeableWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
+            <span class="text-sm text-gray-500 ml-1">(kg)</span>
           </div>
         </div>
       </div>
@@ -304,9 +307,9 @@
       // 批量更新DOM，减少重排重绘
       const updates = {
         dimensions: hasDimensions ? dimensionsList.join(', ') : '-',
-        volumeWeight: totalVolumeWeight > 0 ? totalVolumeWeight.toFixed(2) + ' KG' : '-',
-        chargeableWeight: Math.max(totalActualWeight, totalVolumeWeight) > 0 ? 
-                          Math.max(totalActualWeight, totalVolumeWeight).toFixed(2) + ' KG' : '-'
+        volumeWeight: totalVolumeWeight > 0 ? totalVolumeWeight.toFixed(2) : '-',
+        chargeableWeight: Math.max(totalActualWeight, totalVolumeWeight) > 0 ?
+                          Math.max(totalActualWeight, totalVolumeWeight).toFixed(2) : '-'
       };
       
       dimensionsDisplay.textContent = updates.dimensions;
@@ -704,15 +707,6 @@
             <option value="个" ${fee.unit === '个' ? 'selected' : ''}>个</option>
             <option value="套" ${fee.unit === '套' ? 'selected' : ''}>套</option>
             <option value="次" ${fee.unit === '次' ? 'selected' : ''}>次</option>
-            <option value="小时" ${fee.unit === '小时' ? 'selected' : ''}>小时</option>
-            <option value="天" ${fee.unit === '天' ? 'selected' : ''}>天</option>
-            <option value="月" ${fee.unit === '月' ? 'selected' : ''}>月</option>
-            <option value="年" ${fee.unit === '年' ? 'selected' : ''}>年</option>
-            <option value="平方米" ${fee.unit === '平方米' ? 'selected' : ''}>平方米</option>
-            <option value="立方米" ${fee.unit === '立方米' ? 'selected' : ''}>立方米</option>
-            <option value="千克" ${fee.unit === '千克' ? 'selected' : ''}>千克</option>
-            <option value="吨" ${fee.unit === '吨' ? 'selected' : ''}>吨</option>
-            <option value="公里" ${fee.unit === '公里' ? 'selected' : ''}>公里</option>
           </select>
         </td>
         <td class="px-4 py-3 text-sm">
