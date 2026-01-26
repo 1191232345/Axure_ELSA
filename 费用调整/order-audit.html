@@ -120,9 +120,8 @@
             <tr>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">费用名称</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计费单位</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">单价</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">原金额</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">新金额</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">币别</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
@@ -289,13 +288,13 @@
       let totalActualWeight = 0;
       let hasDimensions = false;
       let dimensionsList = [];
-      
+
       feeData.forEach(fee => {
         if (fee.volumeWeight) {
           totalVolumeWeight += fee.volumeWeight;
         }
-        if (fee.quantity && fee.unit === 'KG') {
-          totalActualWeight += fee.quantity;
+        if (fee.unit === 'KG') {
+          totalActualWeight += fee.amount; // 使用金额作为重量参考
         }
         if (fee.dimensions) {
           hasDimensions = true;
@@ -337,9 +336,8 @@
           {
             name: '超长费',
             unit: 'KG',
-            unitPrice: 25.5,
-            quantity: 10,
             amount: 255,
+            newAmount: null,
             currency: 'USD',
             dimensions: '120x80x60',
             volumeWeight: 57.6,
@@ -348,9 +346,8 @@
           {
             name: '超重费',
             unit: '箱',
-            unitPrice: 50.0,
-            quantity: 5,
             amount: 250,
+            newAmount: null,
             currency: 'USD',
             dimensions: '100x100x100',
             volumeWeight: 100.0,
@@ -386,9 +383,8 @@
         tr.innerHTML = `
           <td class="px-4 py-3 text-sm">${fee.name}</td>
           <td class="px-4 py-3 text-sm">${fee.unit}</td>
-          <td class="px-4 py-3 text-sm">${fee.unitPrice.toFixed(2)}</td>
-          <td class="px-4 py-3 text-sm">${fee.quantity}</td>
-          <td class="px-4 py-3 text-sm font-medium text-gray-900">${fee.amount.toFixed(2)}</td>
+          <td class="px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 rounded">${fee.amount.toFixed(2)}</td>
+          <td class="px-4 py-3 text-sm font-medium text-primary bg-blue-50 rounded">${fee.newAmount ? fee.newAmount.toFixed(2) : '-'}</td>
           <td class="px-4 py-3 text-sm">${fee.currency}</td>
           <td class="px-4 py-3 text-sm">${fee.remark || '-'}</td>
           <td class="px-4 py-3 text-sm">
@@ -417,7 +413,7 @@
       const usedFeeNames = feeData.map(fee => fee.name);
       // 过滤出可用的费用选项
       const availableFeeOptions = feeNameOptions.filter(name => !usedFeeNames.includes(name));
-      
+
       const tr = document.createElement('tr');
       tr.className = 'bg-blue-50 border-l-4 border-blue-400';
       tr.dataset.mode = 'new';
@@ -426,8 +422,8 @@
           <select class="w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-field="name">
             <option value="">请选择费用名称</option>
             ${availableFeeOptions.map(name => `<option value="${name}">${name}</option>`).join('')}
-            ${usedFeeNames.length > 0 ? '<optgroup label="已使用的费用类型（不可选择）">' + 
-              usedFeeNames.map(name => `<option value="${name}" disabled>${name} (已使用)</option>`).join('') + 
+            ${usedFeeNames.length > 0 ? '<optgroup label="已使用的费用类型（不可选择）">' +
+              usedFeeNames.map(name => `<option value="${name}" disabled>${name} (已使用)</option>`).join('') +
               '</optgroup>' : ''}
           </select>
         </td>
@@ -448,13 +444,10 @@
           </select>
         </td>
         <td class="px-4 py-3 text-sm">
-          <input type="number" class="w-20 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="单价" step="0.01" min="0" data-field="unitPrice">
+          <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded-md bg-gray-50" placeholder="原金额" readonly data-field="amount">
         </td>
         <td class="px-4 py-3 text-sm">
-          <input type="number" class="w-16 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="数量" step="0.01" min="0" data-field="quantity">
-        </td>
-        <td class="px-4 py-3 text-sm">
-          <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded-md bg-gray-50" placeholder="金额" readonly data-field="amount">
+          <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="新金额" step="0.01" min="0" data-field="newAmount">
         </td>
         <td class="px-4 py-3 text-sm">
           <select class="w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-field="currency">
@@ -478,7 +471,7 @@
         </td>
       `;
       feeTableBody.appendChild(tr);
-      
+
       // 绑定新增行的事件
       bindNewRowEvents(tr);
     }
@@ -490,57 +483,44 @@
     
     // 绑定新增行事件
     function bindNewRowEvents(row) {
-      const unitPriceInput = row.querySelector('[data-field="unitPrice"]');
-      const quantityInput = row.querySelector('[data-field="quantity"]');
-      const amountInput = row.querySelector('[data-field="amount"]');
-      
-      // 自动计算金额
-      const calculateAmount = () => {
-        const unitPrice = parseFloat(unitPriceInput.value) || 0;
-        const quantity = parseFloat(quantityInput.value) || 0;
-        amountInput.value = (unitPrice * quantity).toFixed(2);
-      };
-      
-      unitPriceInput.addEventListener('input', calculateAmount);
-      quantityInput.addEventListener('input', calculateAmount);
+      const newAmountInput = row.querySelector('[data-field="newAmount"]');
+      // 不再自动计算金额，新金额由用户手动填写
     }
     
     // 保存新行
     function saveNewRow() {
       const row = document.querySelector('tr[data-mode="new"]');
       if (!row) return;
-      
+
       const name = row.querySelector('[data-field="name"]').value.trim();
       const unit = row.querySelector('[data-field="unit"]').value;
-      const unitPrice = parseFloat(row.querySelector('[data-field="unitPrice"]').value);
-      const quantity = parseFloat(row.querySelector('[data-field="quantity"]').value);
       const amount = parseFloat(row.querySelector('[data-field="amount"]').value);
+      const newAmount = parseFloat(row.querySelector('[data-field="newAmount"]').value);
       const currency = row.querySelector('[data-field="currency"]').value;
       const remark = row.querySelector('[data-field="remark"]').value.trim();
-      
-      if (!name || !unit || isNaN(unitPrice) || isNaN(quantity) || isNaN(amount)) {
+
+      if (!name || !unit || isNaN(amount) || isNaN(newAmount)) {
         showToast('请填写完整且有效的信息', 'error');
         return;
       }
-      
+
       // 检查费用类型是否已存在
       const isDuplicate = feeData.some(fee => fee.name === name);
       if (isDuplicate) {
         showToast(`费用类型"${name}"已存在，请选择其他费用类型`, 'error');
         return;
       }
-      
+
       const newFee = {
         id: Date.now().toString(),
         name,
         unit,
-        unitPrice,
-        quantity,
         amount,
+        newAmount,
         currency,
         remark
       };
-      
+
       feeData.unshift(newFee);
       saveFeeData();
       renderFeeTable();
@@ -575,34 +555,12 @@
         }
       });
       
-      // 委托处理输入变化事件
+      // 委托处理输入变化事件（删除了单价和数量的自动计算逻辑）
       container.addEventListener('input', (e) => {
-        if (e.target.classList.contains('fee-quantity')) {
-          calculateAmount(e.target);
-        } else if (e.target.classList.contains('fee-unit-price')) {
-          calculateAmount(e.target);
-        } else if (e.target.classList.contains('fee-length') || 
-                   e.target.classList.contains('fee-width') || 
+        if (e.target.classList.contains('fee-length') ||
+                   e.target.classList.contains('fee-width') ||
                    e.target.classList.contains('fee-height')) {
           calculateVolumeWeight(e.target);
-        }
-      });
-      
-      // 委托处理费用名称选择变化
-      container.addEventListener('change', (e) => {
-        if (e.target.classList.contains('fee-name-select')) {
-          const row = e.target.closest('tr');
-          if (row) {
-            const unitInput = row.querySelector('.fee-unit');
-            // 根据费用名称设置默认单位
-            if (e.target.value.includes('燃油') || e.target.value.includes('操作')) {
-              unitInput.value = '次';
-            } else if (e.target.value.includes('重量')) {
-              unitInput.value = 'KG';
-            } else {
-              unitInput.value = '件';
-            }
-          }
         }
       });
       
@@ -678,26 +636,26 @@
     function editFee(id) {
       const row = document.querySelector(`tr[data-id="${id}"]`);
       if (!row) return;
-      
+
       const fee = feeData.find(item => item.id === id);
       if (!fee) return;
-      
+
       // 获取其他费用项已使用的费用类型（排除当前编辑项）
       const usedFeeNames = feeData
         .filter(item => item.id !== id)
         .map(item => item.name);
-      
+
       // 过滤出可用的费用选项
       const availableFeeOptions = feeNameOptions.filter(name => !usedFeeNames.includes(name));
-      
+
       // 将行转换为编辑状态
       row.innerHTML = `
         <td class="px-4 py-3 text-sm">
           <select class="w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-field="name">
             <option value="">请选择费用名称</option>
             ${availableFeeOptions.map(name => `<option value="${name}" ${fee.name === name ? 'selected' : ''}>${name}</option>`).join('')}
-            ${usedFeeNames.length > 0 ? '<optgroup label="已使用的费用类型（不可选择）">' + 
-              usedFeeNames.map(name => `<option value="${name}" disabled>${name} (已使用)</option>`).join('') + 
+            ${usedFeeNames.length > 0 ? '<optgroup label="已使用的费用类型（不可选择）">' +
+              usedFeeNames.map(name => `<option value="${name}" disabled>${name} (已使用)</option>`).join('') +
               '</optgroup>' : ''}
           </select>
         </td>
@@ -709,13 +667,10 @@
           </select>
         </td>
         <td class="px-4 py-3 text-sm">
-          <input type="number" class="w-20 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="${fee.unitPrice}" data-field="unitPrice" step="0.01">
+          <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded-md bg-gray-50" value="${fee.amount}" data-field="amount" step="0.01" readonly>
         </td>
         <td class="px-4 py-3 text-sm">
-          <input type="number" class="w-16 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="${fee.quantity}" data-field="quantity" step="0.01">
-        </td>
-        <td class="px-4 py-3 text-sm font-medium text-gray-900">
-          <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="${fee.amount}" data-field="amount" step="0.01" readonly>
+          <input type="number" class="w-24 px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="${fee.newAmount ? fee.newAmount : ''}" data-field="newAmount" step="0.01" min="0">
         </td>
         <td class="px-4 py-3 text-sm">
           <select class="w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-field="currency">
@@ -738,55 +693,42 @@
           </div>
         </td>
       `;
-      
+
       // 绑定编辑行的事件
       bindEditRowEvents(row, id);
     }
     
     // 绑定编辑行的事件
     function bindEditRowEvents(row, id) {
-      const unitPriceInput = row.querySelector('input[data-field="unitPrice"]');
-      const quantityInput = row.querySelector('input[data-field="quantity"]');
-      const amountInput = row.querySelector('input[data-field="amount"]');
-      
-      // 金额计算
-      function calculateRowAmount() {
-        const unitPrice = parseFloat(unitPriceInput.value) || 0;
-        const quantity = parseFloat(quantityInput.value) || 0;
-        const amount = unitPrice * quantity;
-        amountInput.value = amount.toFixed(2);
-      }
-      
-      unitPriceInput.addEventListener('input', calculateRowAmount);
-      quantityInput.addEventListener('input', calculateRowAmount);
+      const newAmountInput = row.querySelector('[data-field="newAmount"]');
+      // 不再自动计算金额，新金额由用户手动填写
     }
     
     // 保存编辑行
     function saveEditRow(id) {
       const row = document.querySelector(`tr[data-id="${id}"]`);
       if (!row) return;
-      
+
       const name = row.querySelector('select[data-field="name"]').value.trim();
       const unit = row.querySelector('select[data-field="unit"]').value;
-      const unitPrice = parseFloat(row.querySelector('input[data-field="unitPrice"]').value);
-      const quantity = parseFloat(row.querySelector('input[data-field="quantity"]').value);
-      const amount = parseFloat(row.querySelector('input[data-field="amount"]').value);
+      const amount = parseFloat(row.querySelector('[data-field="amount"]').value);
+      const newAmount = parseFloat(row.querySelector('[data-field="newAmount"]').value);
       const currency = row.querySelector('select[data-field="currency"]').value;
       const remark = row.querySelector('input[data-field="remark"]').value.trim();
-      
+
       // 验证
-      if (!name || !unit || isNaN(unitPrice) || isNaN(quantity) || isNaN(amount)) {
+      if (!name || !unit || isNaN(amount) || isNaN(newAmount)) {
         showToast('请填写完整且有效的信息', 'error');
         return;
       }
-      
+
       // 检查费用类型是否与其他费用项重复（排除当前编辑项）
       const isDuplicate = feeData.some(fee => fee.id !== id && fee.name === name);
       if (isDuplicate) {
         showToast(`费用类型"${name}"已被其他费用项使用，请选择其他费用类型`, 'error');
         return;
       }
-      
+
       // 更新数据
       const index = feeData.findIndex(item => item.id === id);
       if (index !== -1) {
@@ -794,13 +736,12 @@
           ...feeData[index],
           name,
           unit,
-          unitPrice,
-          quantity,
           amount,
+          newAmount,
           currency,
           remark
         };
-        
+
         // 保存并重新渲染
         saveFeeData();
         renderFeeTable();
@@ -957,9 +898,8 @@
             id: Date.now().toString(),
             name: '上传费用-超长费',
             unit: 'KG',
-            unitPrice: 28.0,
-            quantity: 15,
             amount: 420,
+            newAmount: null,
             currency: 'USD',
             remark: '通过文件上传导入'
           },
@@ -967,9 +907,8 @@
             id: (Date.now() + 1).toString(),
             name: '上传费用-超重费',
             unit: '箱',
-            unitPrice: 55.0,
-            quantity: 8,
             amount: 440,
+            newAmount: null,
             currency: 'USD',
             remark: '通过文件上传导入'
           }
