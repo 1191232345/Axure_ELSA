@@ -1,231 +1,735 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>上传汇款凭证</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .input-focus {
-        @apply focus:outline-none focus:ring-1 focus:ring-blue-500;
-      }
-      .dashed-border {
-        @apply border-2 border-dashed border-gray-300 hover:border-blue-500 hover:text-blue-500 transition-colors;
-      }
-      .form-section {
-        @apply bg-gray-50 rounded-lg p-4 mb-5;
-      }
-      .section-title {
-        @apply text-sm font-medium text-gray-700 mb-3 flex items-center;
-      }
-      .section-title::before {
-        content: "";
-        @apply inline-block w-2 h-2 bg-blue-500 rounded-full mr-2;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* 顶部搜索栏 */
+        .top-bar {
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .search-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-group label {
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            outline: none;
+            width: 160px;
+        }
+
+        .search-input:focus {
+            border-color: #1890ff;
+        }
+
+        .search-select {
+            padding: 6px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn-reset, .btn-search {
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-reset {
+            background: white;
+            border: 1px solid #d9d9d9;
+            color: #333;
+        }
+
+        .btn-search {
+            background: #1890ff;
+            border: none;
+            color: white;
+        }
+
+        .btn-link {
+            color: #1890ff;
+            text-decoration: none;
+            margin-left: 8px;
+        }
+
+        /* 标签页 */
+        .tabs {
+            background: white;
+            display: flex;
+            padding: 0 20px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+        }
+
+        .tab:hover {
+            color: #1890ff;
+        }
+
+        /* 操作按钮栏 */
+        .action-bar {
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-action {
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .btn-action .icon {
+            font-size: 16px;
+        }
+
+        .btn-print {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .btn-print:hover {
+            background: #fff5f5;
+        }
+
+        /* 表格 */
+        .table-container {
+            background: white;
+            margin: 16px 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        .data-table th {
+            background: #fafafa;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .badge-blue {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .badge-default {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .badge-success {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            cursor: pointer;
+            color: #1890ff;
+            font-size: 16px;
+            padding: 4px;
+            transition: opacity 0.3s;
+        }
+
+        .icon-btn:hover {
+            opacity: 0.7;
+        }
+
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-label input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .radio-label span {
+            color: #666;
+        }
+
+        .radio-label input[type="radio"]:checked + span {
+            color: #1890ff;
+        }
+
+        /* SKU表格 */
+        .sku-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+        }
+
+        .sku-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .sku-table th,
+        .sku-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .sku-table th {
+            background: #fafafa;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .sku-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .quantity-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .quantity-input:focus {
+            border-color: #1890ff;
+        }
+
+        .full-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .full-input:focus {
+            border-color: #1890ff;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary, .btn-primary {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1px solid #d9d9d9;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-  <!-- 弹窗遮罩层 -->
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <!-- 弹窗主体 -->
-    <div class="bg-white rounded-lg w-full max-w-4xl p-5 shadow-xl">
-      <!-- 标题栏 -->
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-lg font-medium">上传汇款凭证</h2>
-        <button class="text-gray-500 hover:text-gray-700 text-lg transition-colors">×</button>
-      </div>
-
-      <!-- 表单内容区域 -->
-      <form class="space-y-5">
-        <!-- 1. 基础汇款信息（联动核心区） -->
-        <div class="form-section">
-          <h3 class="section-title">基础信息</h3>
-          <!-- 第一行：汇款方式和汇款时间 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <!-- 汇款方式 -->
-            <div>
-              <label class="block text-sm mb-1">
-                <span class="text-red-500">*</span>汇款方式
-              </label>
-              <select class="w-full px-3 py-2 border rounded text-sm input-focus" required>
-                <option value="bankTransfer">银行转账</option>
-                <option value="wireTransfer">电汇</option>
-                <option value="other">其他方式</option>
-              </select>
-            </div>
-
-            <!-- 汇款时间 -->
-            <div>
-              <label class="block text-sm mb-1">
-                <span class="text-red-500">*</span>汇款时间
-              </label>
-              <input 
-                type="date" 
-                class="w-full px-3 py-2 border rounded text-sm input-focus"
-                required
-              >
-            </div>
-          </div>
-
-          <!-- 第二行：币种和收款账号 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- 币种（联动源头） -->
-            <div>
-              <label class="block text-sm mb-1">
-                <span class="text-red-500">*</span>币种
-              </label>
-              <select id="currency" class="w-full px-3 py-2 border rounded text-sm input-focus" required>
-                <option value="">请选择币种</option>
-                <option value="CNY">人民币（CNY）</option>
-                <option value="USD">美元（USD）</option>
-                <option value="EUR">欧元（EUR）</option>
-              </select>
-            </div>
-
-            <!-- 收款账户（由币种联动） -->
-            <div>
-              <label class="block text-sm mb-1">
-                <span class="text-red-500">*</span>收款账户
-              </label>
-              <select id="receivingAccount" class="w-full px-3 py-2 border rounded text-sm input-focus" required disabled>
-                <option value="">请先选择币种</option>
-              </select>
-            </div>
-
-            <!--汇款金额 -->
-            <div> 
-              <label class="block text-sm mb-1">
-                <span class="text-red-500">*</span>汇款金额
-              </label>
-              <input 
-                type="number" 
-                step="0.01" 
-                min="0" 
-                class="w-full px-3 py-2 border rounded text-sm input-focus"
-                placeholder="请输入汇款金额"
-                required
-              >
-            </div>
-
-             <!--交易号 -->
-             <div>
-              <label class="block text-sm mb-1">
-                <span class="text-red-500">*</span>交易号
-              </label>
-              <input 
-                type="text" 
-                class="w-full px-3 py-2 border rounded text-sm input-focus"
-                placeholder="16/28/32位数字交易号"
-                required
-              >
-            </div>
-          </div>
+<body>
+    <!-- 顶部搜索栏 -->
+    <div class="top-bar">
+        <div class="search-group">
+            <label>订单号</label>
+            <input type="text" placeholder="请输入订单号" class="search-input">
         </div>
-
-
-
-        <!-- 4. 备注与附件 -->
-        <div class="form-section">
-          <h3 class="section-title">其他信息</h3>
-          <div class="space-y-4">
-            <!-- 备注 -->
-            <div>
-              <label class="block text-sm mb-1">备注</label>
-              <textarea 
-                class="w-full px-3 py-2 border rounded text-sm input-focus min-h-[80px]"
-                placeholder="请输入备注（如订单号、用途等）"
-              ></textarea>
-            </div>
-
-            <!-- 上传附件 -->
-            <div>
-              <label class="block text-sm mb-1">上传附件</label>
-              <div class="flex items-start gap-4">
-                <!-- 上传按钮 -->
-                <div class="w-20 h-20 dashed-border rounded flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <i class="fa fa-cloud-upload text-2xl mb-1"></i>
-                  <span class="text-xs">点击上传</span>
-                </div>
-                <!-- 上传说明 -->
-                <div class="flex-1">
-                  <p class="text-xs text-gray-500">
-                    仅限上传 gif、png、jpg、jpeg 格式文件 | 单个文件≤100MB | 最多上传5个文件
-                  </p>
-                </div>
-                <!-- 已选数量 -->
-                <div class="text-sm text-gray-500 self-end">0 / 5</div>
-              </div>
-            </div>
-          </div>
+        <div class="search-group">
+            <label>SKU</label>
+            <input type="text" placeholder="请输入SKU" class="search-input">
         </div>
-
-        <!-- 底部按钮区域 -->
-        <div class="flex justify-end gap-3 mt-2">
-          <button type="button" class="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors">取消</button>
-          <button type="submit" class="px-4 py-2 bg-blue-300 text-white rounded text-sm hover:bg-blue-400 transition-colors">提交</button>
+        <div class="search-group">
+            <label>柜号</label>
+            <select class="search-select">
+                <option>请选择柜</option>
+            </select>
+            <input type="text" placeholder="请输入柜号" class="search-input">
         </div>
-      </form>
+        <div class="search-group">
+            <label>参考号</label>
+            <select class="search-select">
+                <option>请选查询</option>
+            </select>
+            <input type="text" placeholder="请输入参考号" class="search-input">
+        </div>
+        <div class="search-group">
+            <button class="btn-reset">重置</button>
+            <button class="btn-search">搜索</button>
+            <a href="#" class="btn-link">收起</a>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // 预设联动数据字典（实际项目可从接口获取）
-    const linkageData = {
-      // 币种 → 收款账户映射
-      currencyToAccounts: {
-        CNY: [
-          { id: "CNY-NB001", name: "0760-宁波发现（人民币）", bank: "中国工商银行", branch: "中国工商银行宁波分行 ", account: " 622208 390100 1234567" },
-          { id: "CNY-SH002", name: "0880-上海创科（人民币）", bank: "中国农业银行", branch: "中国农业银行上海分行 ", account: " 622848 00380 12345678" }
-        ],
-        USD: [
-          { id: "USD-HK001", name: "0990-香港环球（美元）", bank: "HSBC", branch: "HSBC Hong Kong ", account: " 808-1234567-89" },
-          { id: "USD-NY002", name: "1010-纽约分行（美元）", bank: "Citibank", branch: " Citibank New York ", account: " 3629-87654321-00" }
-        ],
-        EUR: [
-          { id: "EUR-DE001", name: "1120-法兰克福（欧元）", bank: "Deutsche Bank", branch: "Deutsche Bank Frankfurt ", account: " DE89 3704 0044 0532 0130 00" }
-        ]
-      }
-    };
+    <!-- 标签页 -->
+    <div class="tabs">
+        <div class="tab active">全部</div>
+        <div class="tab">草稿</div>
+        <div class="tab">待审核</div>
+        <div class="tab">待预约</div>
+        <div class="tab">待还库尾款</div>
+        <div class="tab">待入库</div>
+        <div class="tab">待上架</div>
+        <div class="tab">入库完成</div>
+        <div class="tab">已取消</div>
+    </div>
 
-    // 获取DOM元素
-    const currencySelect = document.getElementById("currency");
-    const receivingAccountSelect = document.getElementById("receivingAccount");
+    <!-- 操作按钮栏 -->
+    <div class="action-bar">
+        <button class="btn-action">
+            <span class="icon">+</span> 新增
+        </button>
+        <button class="btn-action">
+            <span class="icon">↑</span> 导入
+        </button>
+        <button class="btn-action">
+            <span class="icon">↓</span> 导出
+        </button>
+        <button class="btn-action btn-print" id="batchPrintBtn">
+            <span class="icon">🖨</span> 批量打印
+        </button>
+    </div>
 
-    // 1. 币种选择联动收款账户
-    currencySelect.addEventListener("change", function() {
-      const selectedCurrency = this.value;
-      // 清空下游字段
-      receivingAccountSelect.innerHTML = "";
+    <!-- 表格 -->
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>订单号</th>
+                    <th>柜号</th>
+                    <th>参考号</th>
+                    <th>入库类型</th>
+                    <th>订单状态</th>
+                    <th>仓库</th>
+                    <th>仓库</th>
+                    <th>确认到货时间</th>
+                    <th>入库时间</th>
+                    <th>卸货方式</th>
+                    <th>合库地址</th>
+                    <th>销售</th>
+                    <th>订单全部</th>
+                    <th>审核状态</th>
+                    <th>备注</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox"></td>
+                    <td>201174025794643746</td>
+                    <td>-</td>
+                    <td>RVDEMO-260115-0002</td>
+                    <td><span class="badge badge-blue">暂挂</span></td>
+                    <td><span class="badge badge-default">待预约</span></td>
+                    <td><span class="badge badge-blue">美中仓群1</span></td>
+                    <td>TX002</td>
+                    <td>-</td>
+                    <td>/</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>TX002</td>
+                    <td>测试暂挂后</td>
+                    <td>-</td>
+                    <td><span class="badge badge-success">已通过</span></td>
+                    <td>RVDEMO-...</td>
+                    <td class="action-icons">
+                        <span class="icon-btn">👁</span>
+                        <span class="icon-btn">✎</span>
+                        <span class="icon-btn">×</span>
+                        <span class="icon-btn">📋</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-      if (!selectedCurrency) {
-        // 未选币种：禁用收款账户
-        receivingAccountSelect.innerHTML = '<option value="">请先选择币种</option>';
-        receivingAccountSelect.disabled = true;
-        return;
-      }
+    <!-- 批量打印弹窗 -->
+    <div class="modal" id="printModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>打印标签</h3>
+                <span class="close-btn" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- 打印类型 -->
+                <div class="form-group">
+                    <label class="form-label">打印类型</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="printType" value="box" checked>
+                            <span>箱唛</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="printType" value="product">
+                            <span>产品标</span>
+                        </label>
+                    </div>
+                </div>
 
-      // 已选币种：填充对应收款账户
-      receivingAccountSelect.disabled = false;
-      const accounts = linkageData.currencyToAccounts[selectedCurrency];
-      
-      // 添加默认选项
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent = "请选择收款账户";
-      receivingAccountSelect.appendChild(defaultOption);
+                <!-- SKU表格 -->
+                <div class="sku-table-container">
+                    <table class="sku-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllSku"></th>
+                                <th>SKU</th>
+                                <th>总件数</th>
+                                <th>总箱数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="skuTableBody">
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>EC2003RB_80</td>
+                                <td>114</td>
+                                <td><input type="number" value="114" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG021-WH</td>
+                                <td>110</td>
+                                <td><input type="number" value="110" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG121-GOK-B-XJS</td>
+                                <td>20</td>
+                                <td><input type="number" value="20" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG119-WH-XJS-N</td>
+                                <td>25</td>
+                                <td><input type="number" value="25" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG108-GOK-XJS</td>
+                                <td>20</td>
+                                <td><input type="number" value="20" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG119-BK-XJS-N</td>
+                                <td>10</td>
+                                <td><input type="number" value="10" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG114-NA-XJS</td>
+                                <td>40</td>
+                                <td><input type="number" value="40" class="quantity-input"></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" class="sku-checkbox"></td>
+                                <td>HLG021-SG</td>
+                                <td>40</td>
+                                <td><input type="number" value="40" class="quantity-input"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-      // 添加对应币种的账户选项
-        accounts.forEach(account => {
-          const option = document.createElement("option");
-          option.value = account.id;
-          // 显示银行卡号+开户行格式
-          option.textContent = account.account + "-" + account.branch;
-          receivingAccountSelect.appendChild(option);
+                <!-- 打印尺寸 -->
+                <div class="form-group">
+                    <label class="form-label">打印尺寸</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="printSize" value="70x30">
+                            <span>70 * 30</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="printSize" value="100x60" checked>
+                            <span>100 * 60</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="printSize" value="100x100">
+                            <span>100 * 100</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="printSize" value="150x100">
+                            <span>150 * 100</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="printSize" value="A4">
+                            <span>A4</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 打印方式 -->
+                <div class="form-group">
+                    <label class="form-label">打印方式</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="printMethod" value="barcode">
+                            <span>二维码</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="printMethod" value="qrcode" checked>
+                            <span>条形码</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 附加信息 -->
+                <div class="form-group">
+                    <label class="form-label">附加信息</label>
+                    <input type="text" value="Made in China" class="full-input">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary">导出PDF</button>
+                <button class="btn-secondary">按入库单分组导出</button>
+                <button class="btn-primary">打印</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全选功能
+        document.getElementById('selectAll').addEventListener('change', function(e) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
         });
-    });
-  </script>
+
+        // SKU表格全选
+        document.getElementById('selectAllSku').addEventListener('change', function(e) {
+            const checkboxes = document.querySelectorAll('.sku-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
+        });
+
+        // 打开批量打印弹窗
+        document.getElementById('batchPrintBtn').addEventListener('click', function() {
+            document.getElementById('printModal').classList.add('show');
+        });
+
+        // 关闭弹窗
+        document.getElementById('closeModal').addEventListener('click', function() {
+            document.getElementById('printModal').classList.remove('show');
+        });
+
+        // 点击弹窗外部关闭
+        document.getElementById('printModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+
+        // 打印按钮功能
+        document.querySelector('.btn-primary').addEventListener('click', function() {
+            const checkedSkus = [];
+            document.querySelectorAll('.sku-checkbox:checked').forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const sku = row.querySelector('td:nth-child(2)').textContent;
+                const quantity = row.querySelector('.quantity-input').value;
+                checkedSkus.push({ sku, quantity });
+            });
+            
+            if (checkedSkus.length === 0) {
+                alert('请选择要打印的SKU');
+                return;
+            }
+            
+            console.log('打印数据:', checkedSkus);
+            alert('开始打印...');
+            // 这里可以添加实际的打印逻辑
+        });
+
+        // 导出PDF功能
+        document.querySelectorAll('.btn-secondary')[0].addEventListener('click', function() {
+            alert('导出PDF功能');
+        });
+
+        // 按入库单分组导出
+        document.querySelectorAll('.btn-secondary')[1].addEventListener('click', function() {
+            alert('按入库单分组导出功能');
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出库详情 - 物流管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            background: white;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .back-btn:hover {
+            color: #1890ff;
+        }
+
+        .page-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 信息卡片 */
+        .info-card {
+            background: white;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        /* 信息网格 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px 24px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 附件列表 */
+        .attachment-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1890ff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .attachment-item:hover {
+            background: #e6f7ff;
+        }
+
+        .attachment-icon {
+            font-size: 16px;
+        }
+
+        .empty-text {
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Tab导航栏 */
+        .tabs {
+            background: white;
+            display: flex;
+            padding: 0 20px;
+            border-bottom: 1px solid #e8e8e8;
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+        }
+
+        .tab:hover {
+            color: #1890ff;
+        }
+
+        /* Tab内容区 */
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 0 0 4px 4px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        .data-table th {
+            background: #fafafa;
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .data-table td {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .total-row {
+            background: #fafafa;
+            font-weight: 600;
+        }
+
+        .total-row:hover {
+            background: #fafafa !important;
+        }
+
+        /* 其他信息表单 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px 24px;
+            margin-top: 16px;
+        }
+
+        .form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .form-value {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 徽章 */
+        .badge {
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .badge-blue {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .badge-green {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .badge-orange {
+            background: #fff7e6;
+            color: #faad14;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                padding: 0 12px;
+            }
+
+            .tab {
+                padding: 12px 16px;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面头部 -->
+    <div class="page-header">
+        <button class="back-btn" onclick="window.history.back()">←</button>
+        <h1 class="page-title">出库详情</h1>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 基本信息 -->
+        <div class="info-card">
+            <h2 class="card-title">基本信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">客户代码</span>
+                    <span class="info-value">DEMOdemo</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">销售平台</span>
+                    <span class="info-value">智捷ERP</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">智捷ERP</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">参考号</span>
+                    <span class="info-value">OUTXIN-251208-00001</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">物流渠道</span>
+                    <span class="info-value">USPS_PM</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">分区</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">计费重</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人地址</span>
+                    <span class="info-value">US-NJ-South Brunswick-40 Commerce Drive, Dock 9-15</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人联系方式</span>
+                    <span class="info-value">1</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">仓群代码</span>
+                    <span class="info-value">1</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">仓库</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">打包方式</span>
+                    <span class="info-value">一单多件</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 附件信息 -->
+        <div class="info-card">
+            <h2 class="card-title">附件信息</h2>
+            <div class="attachment-list">
+                <div class="attachment-item">
+                    <span class="attachment-icon">📎</span>
+                    <span>出库单.pdf</span>
+                </div>
+                <div class="attachment-item">
+                    <span class="attachment-icon">📎</span>
+                    <span>装箱清单.xlsx</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab导航栏 -->
+        <div class="tabs">
+            <div class="tab active" data-tab="product">产品信息</div>
+            <div class="tab" data-tab="other">其他信息</div>
+            <div class="tab" data-tab="cost">费用信息</div>
+            <div class="tab" data-tab="logs">日志</div>
+        </div>
+
+        <!-- Tab内容区 -->
+        <div class="tab-content active" id="tab-product">
+            <h3 class="card-title">产品信息</h3>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>产品代码/SKU</th>
+                            <th>出库件数</th>
+                            <th>自定义申报数量</th>
+                            <th>产品尺寸</th>
+                            <th>重量</th>
+                            <th>出库打包方式</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>XM-A80</td>
+                            <td>3</td>
+                            <td>-</td>
+                            <td>30CM*20CM*10CM</td>
+                            <td>6KG</td>
+                            <td>不打包</td>
+                        </tr>
+                        <tr>
+                            <td>XM-A81</td>
+                            <td>5</td>
+                            <td>-</td>
+                            <td>32CM*22CM*11CM</td>
+                            <td>8KG</td>
+                            <td>不打包</td>
+                        </tr>
+                        <tr>
+                            <td>XM-A82</td>
+                            <td>2</td>
+                            <td>-</td>
+                            <td>28CM*18CM*9CM</td>
+                            <td>4KG</td>
+                            <td>不打包</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>合计</td>
+                            <td>10</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>18KG</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-other">
+            <h3 class="card-title">其他信息</h3>
+            <div class="form-grid">
+                <div class="form-item">
+                    <span class="form-label">基准网址</span>
+                    <span class="form-value">吉</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">填写时保留框</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">票名</span>
+                    <span class="form-value">吉</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">送样至仓库号</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">平台店铺</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">买家ID</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">票法</span>
+                    <span class="form-value">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-cost">
+            <h3 class="card-title">费用信息</h3>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>费用项</th>
+                            <th>金额</th>
+                            <th>币种</th>
+                            <th>状态</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>仓储费</td>
+                            <td>$50.00</td>
+                            <td>USD</td>
+                            <td><span class="badge badge-green">已支付</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>操作费</td>
+                            <td>$30.00</td>
+                            <td>USD</td>
+                            <td><span class="badge badge-green">已支付</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>运费</td>
+                            <td>$120.00</td>
+                            <td>USD</td>
+                            <td><span class="badge badge-orange">待支付</span></td>
+                            <td>USPS_PM</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>合计</td>
+                            <td>$200.00</td>
+                            <td>USD</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-logs">
+            <h3 class="card-title">操作日志</h3>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>操作人</th>
+                            <th>操作时间</th>
+                            <th>内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>系统自动</td>
+                            <td>2025-01-23 09:00:00</td>
+                            <td>创建出库订单</td>
+                        </tr>
+                        <tr>
+                            <td>张三</td>
+                            <td>2025-01-23 09:15:00</td>
+                            <td>审核通过</td>
+                        </tr>
+                        <tr>
+                            <td>李四（仓库管理员）</td>
+                            <td>2025-01-23 10:30:00</td>
+                            <td>开始拣货</td>
+                        </tr>
+                        <tr>
+                            <td>李四（仓库管理员）</td>
+                            <td>2025-01-23 11:00:00</td>
+                            <td>拣货完成</td>
+                        </tr>
+                        <tr>
+                            <td>王五</td>
+                            <td>2025-01-23 11:30:00</td>
+                            <td>打包完成</td>
+                        </tr>
+                        <tr>
+                            <td>系统自动</td>
+                            <td>2025-01-23 14:00:00</td>
+                            <td>已发货</td>
+                        </tr>
+                        <tr>
+                            <td>系统自动</td>
+                            <td>2025-01-23 14:05:00</td>
+                            <td>生成物流单号: 1234567890</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // 移除所有active类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+
+                    // 添加active类到当前tab
+                    this.classList.add('active');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

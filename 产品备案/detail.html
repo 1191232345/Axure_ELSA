@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品详情 - 产品备案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            background: white;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .back-btn:hover {
+            color: #1890ff;
+        }
+
+        .page-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 信息卡片 */
+        .info-card {
+            background: white;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        /* 信息网格 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px 24px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* Tab导航栏 */
+        .tabs {
+            background: white;
+            display: flex;
+            padding: 0 20px;
+            border-bottom: 1px solid #e8e8e8;
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+        }
+
+        .tab:hover {
+            color: #1890ff;
+        }
+
+        /* Tab内容区 */
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 0 0 4px 4px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 图片展示区 */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .image-item {
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .image-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .image-label {
+            padding: 8px 12px;
+            background: #f5f5f5;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+        }
+
+        .empty-text {
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* 属性列表 */
+        .attribute-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .attribute-item {
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attribute-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .attribute-value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        .data-table th {
+            background: #fafafa;
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .data-table td {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        /* 徽章 */
+        .badge {
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .badge-green {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .badge-blue {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .attribute-list {
+                grid-template-columns: 1fr;
+            }
+
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面头部 -->
+    <div class="page-header">
+        <button class="back-btn" onclick="window.history.back()">←</button>
+        <h1 class="page-title">产品详情</h1>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 基础信息 -->
+        <div class="info-card">
+            <h2 class="card-title">基础信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">产品类型</span>
+                    <span class="info-value">消费电子产品 / 电子工具&其他电器 / 扩音器&外壳</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">SKU</span>
+                    <span class="info-value">12312313</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">产品中文名称</span>
+                    <span class="info-value">12</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">产品英文名称</span>
+                    <span class="info-value">12</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">自定义编码</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">长*宽*高</span>
+                    <span class="info-value">12 * 12 * 12 CM</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">体积</span>
+                    <span class="info-value">0.001728 m³</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">产品价值</span>
+                    <span class="info-value">12 美元</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">申报价值</span>
+                    <span class="info-value">12</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">币种</span>
+                    <span class="info-value">美元</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">产品净重量</span>
+                    <span class="info-value">12 KG</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">重量单位</span>
+                    <span class="info-value">KG</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">出库包装方式</span>
+                    <span class="info-value">不包装</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">不规则标记</span>
+                    <span class="info-value">标准</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">是否易碎</span>
+                    <span class="info-value">否</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">预警库存</span>
+                    <span class="info-value">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">状态</span>
+                    <span class="info-value"><span class="badge badge-green">已发布</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab导航栏 -->
+        <div class="tabs">
+            <div class="tab active" data-tab="images">产品尺寸图片</div>
+            <div class="tab" data-tab="attributes">产品属性</div>
+            <div class="tab" data-tab="logs">日志</div>
+        </div>
+
+        <!-- Tab内容区 -->
+        <div class="tab-content active" id="tab-images">
+            <h3 class="card-title">产品尺寸图片</h3>
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="https://via.placeholder.com/200x200/e8e8e8/666?text=Product+Image+1" alt="产品图片1">
+                    <div class="image-label">产品图片</div>
+                </div>
+                <div class="image-item">
+                    <img src="https://via.placeholder.com/200x200/e8e8e8/666?text=Size+Image" alt="尺寸图片">
+                    <div class="image-label">尺寸重量图片</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-attributes">
+            <h3 class="card-title">产品属性</h3>
+            <div class="attribute-list">
+                <div class="attribute-item">
+                    <span class="attribute-label">是否含电池</span>
+                    <span class="attribute-value">不含电池</span>
+                </div>
+                <div class="attribute-item">
+                    <span class="attribute-label">含电容量</span>
+                    <span class="attribute-value">-</span>
+                </div>
+                <div class="attribute-item">
+                    <span class="attribute-label">材质</span>
+                    <span class="attribute-value">塑料</span>
+                </div>
+                <div class="attribute-item">
+                    <span class="attribute-label">颜色</span>
+                    <span class="attribute-value">黑色</span>
+                </div>
+                <div class="attribute-item">
+                    <span class="attribute-label">品牌</span>
+                    <span class="attribute-value">无品牌</span>
+                </div>
+                <div class="attribute-item">
+                    <span class="attribute-label">用途</span>
+                    <span class="attribute-value">电子产品配件</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-logs">
+            <h3 class="card-title">操作日志</h3>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>操作人</th>
+                            <th>操作时间</th>
+                            <th>内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>系统自动</td>
+                            <td>2025-01-23 10:00:00</td>
+                            <td>创建产品备案</td>
+                        </tr>
+                        <tr>
+                            <td>张三</td>
+                            <td>2025-01-23 10:15:00</td>
+                            <td>修改产品尺寸：12*12*12 CM</td>
+                        </tr>
+                        <tr>
+                            <td>李四</td>
+                            <td>2025-01-23 11:30:00</td>
+                            <td>上传产品图片</td>
+                        </tr>
+                        <tr>
+                            <td>王五</td>
+                            <td>2025-01-23 14:20:00</td>
+                            <td>修改产品属性：是否含电池 - 不含电池</td>
+                        </tr>
+                        <tr>
+                            <td>管理员</td>
+                            <td>2025-01-23 15:00:00</td>
+                            <td>审核通过，状态变更为：已发布</td>
+                        </tr>
+                        <tr>
+                            <td>张三</td>
+                            <td>2025-01-23 16:10:00</td>
+                            <td>修改产品价值：12 美元</td>
+                        </tr>
+                        <tr>
+                            <td>系统自动</td>
+                            <td>2025-01-23 17:00:00</td>
+                            <td>同步产品信息到仓库系统</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+
+                    // 移除所有active类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+
+                    // 添加active类到当前tab
+                    this.classList.add('active');
+                    document.getElementById('tab-' + targetTab).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
