@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工单详情 - 物流管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* 状态提示栏 */
+        .status-bar {
+            background: #fff7e6;
+            border-left: 4px solid #faad14;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .status-icon {
+            color: #faad14;
+            font-size: 16px;
+        }
+
+        .status-text {
+            color: #333;
+            font-size: 14px;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* 左侧内容区 */
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 信息卡片 */
+        .info-card {
+            background: white;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        /* 工单信息网格 - 2列布局 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 12px;
+            align-items: start;
+        }
+
+        .info-row.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #666;
+            padding-top: 4px;
+        }
+
+        .info-value {
+            font-size: 13px;
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* 可编辑字段 */
+        .editable-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .editable-input {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .editable-input:focus {
+            border-color: #1890ff;
+        }
+
+        .editable-select {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+        }
+
+        .editable-select:focus {
+            border-color: #1890ff;
+        }
+
+        .edit-btn {
+            padding: 2px 8px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: #40a9ff;
+        }
+
+        .save-btn {
+            padding: 2px 8px;
+            background: #52c41a;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #73d13d;
+        }
+
+        .cancel-btn {
+            padding: 2px 8px;
+            background: #d9d9d9;
+            color: #333;
+            border: none;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .cancel-btn:hover {
+            background: #bfbfbf;
+        }
+
+        /* 附件列表 */
+        .attachment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .attachment-item {
+            color: #1890ff;
+            text-decoration: none;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .attachment-item:hover {
+            text-decoration: underline;
+        }
+
+        .download-icon {
+            font-size: 14px;
+        }
+
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            background: #fafafa;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .data-table td {
+            color: #333;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .link-btn {
+            color: #1890ff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .link-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* 右侧沟通记录 */
+        .right-section {
+            position: sticky;
+            top: 20px;
+        }
+
+        .chat-card {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            max-height: 900px;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .message-sender {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .message-time {
+            color: #999;
+        }
+
+        .message-content {
+            background: #f5f5f5;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #333;
+            line-height: 1.6;
+            max-width: 90%;
+        }
+
+        .message.customer .message-content {
+            background: #e6f7ff;
+        }
+
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .chat-input-hint {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .chat-input-wrapper {
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 8px 12px;
+            padding-right: 90px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+            resize: none;
+            min-height: 80px;
+        }
+
+        .chat-input:focus {
+            border-color: #1890ff;
+        }
+
+        .send-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            padding: 6px 16px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .send-btn:hover {
+            background: #40a9ff;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #999;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        /* 底部操作按钮 */
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-case-close {
+            background: #52c41a;
+            color: white;
+        }
+
+        .btn-case-close:hover {
+            background: #73d13d;
+        }
+
+        .btn-submit-approval {
+            background: #1890ff;
+            color: white;
+        }
+
+        .btn-submit-approval:hover {
+            background: #40a9ff;
+        }
+
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 24px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            border-color: #1890ff;
+        }
+
+        .form-select {
+            background: white;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .btn-save {
+            padding: 6px 16px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .btn-save:hover {
+            background: #40a9ff;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .right-section {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 状态提示栏 -->
+    <div class="status-bar">
+        <span class="status-icon">⚠</span>
+        <span class="status-text">当前工单状态【未处理】</span>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 左侧内容区 -->
+        <div class="left-section">
+            <!-- 工单信息 -->
+            <div class="info-card">
+                <h2 class="card-title">工单信息</h2>
+                <div class="info-grid">
+                    <!-- 左列 -->
+                    <div class="info-row">
+                        <div class="info-label">工单号:</div>
+                        <div class="info-value">SHKST-20251125-006</div>
+                    </div>
+
+                    <!-- 右列 -->
+                    <div class="info-row">
+                        <div class="info-label">工单类型:</div>
+                        <div class="info-value">
+                            <div class="editable-field">
+                                <span id="type-display">快递索赔-包裹未收到</span>
+                                <button class="edit-btn" onclick="openEditModal('type', '工单类型')">编辑</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">索赔金额:</div>
+                        <div class="info-value">119.99</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">赔付总额:</div>
+                        <div class="info-value">
+                            <div class="editable-field">
+                                <span id="compensation-display">0</span>
+                                <button class="edit-btn" onclick="openEditModal('compensation', '赔付总额')">编辑</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">提交时间:</div>
+                        <div class="info-value">2025-11-25 16:23:12</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">账单月:</div>
+                        <div class="info-value">
+                            <div class="editable-field">
+                                <span id="billing-month-display">2025-11</span>
+                                <button class="edit-btn" onclick="openEditModal('billing-month', '账单月')">编辑</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-row full-width">
+                        <div class="info-label">描述:</div>
+                        <div class="info-value">这是描述信息。送货地址明显不对了，这个地址是卖家的地址而不是买家的地址所以门口</div>
+                    </div>
+
+                    <div class="info-row full-width">
+                        <div class="info-label">备注:</div>
+                        <div class="info-value">-</div>
+                    </div>
+
+                    <div class="info-row full-width">
+                        <div class="info-label">附件:</div>
+                        <div class="info-value">
+                            <div class="attachment-list">
+                                <a href="#" class="attachment-item">
+                                    http://obs.elsa.one/touch-tech.com/obs-prod/1963233349036721/730.png
+                                    <span class="download-icon">↓</span>
+                                </a>
+                                <a href="#" class="attachment-item">
+                                    http://obs.elsa.one/touch-tech.com/obs-prod/1963233504163804/51.png
+                                    <span class="download-icon">↓</span>
+                                </a>
+                                <a href="#" class="attachment-item">
+                                    http://obs.elsa.one/touch-tech.com/obs-prod/1963233719426544/725.png
+                                    <span class="download-icon">↓</span>
+                                </a>
+                                <a href="#" class="attachment-item">
+                                    http://obs.elsa.one/touch-tech.com/obs-prod/1963233820230245/704.png
+                                    <span class="download-icon">↓</span>
+                                </a>
+                                <a href="#" class="attachment-item">
+                                    http://obs.elsa.one/touch-tech.com/obs-prod/1963233831491648/21.jpeg
+                                    <span class="download-icon">↓</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单信息 -->
+            <div class="info-card">
+                <h2 class="card-title">订单信息</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>跟踪号</th>
+                                <th>库存仓库</th>
+                                <th>出库单号</th>
+                                <th>SKU</th>
+                                <th>实发数量</th>
+                                <th>索赔金额</th>
+                                <th>币种</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>886256019585</td>
+                                <td></td>
+                                <td>SHKST-251121-00307</td>
+                                <td>SHKST-HKJG-YGGY...</td>
+                                <td>1</td>
+                                <td>119.99</td>
+                                <td>USD</td>
+                                <td>
+                                    <a href="#" class="link-btn">✎</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 客户信息 -->
+            <div class="info-card">
+                <h2 class="card-title">客户信息</h2>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <div class="info-label">客户:</div>
+                        <div class="info-value">上海卡斯托科技有限公司</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">联系方式:</div>
+                        <div class="info-value">69108770</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">提报人:</div>
+                        <div class="info-value">卡斯托</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">邮箱:</div>
+                        <div class="info-value">elsa@cargodiscovery.com</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧沟通记录 -->
+        <div class="right-section">
+            <div class="chat-card">
+                <div class="chat-header">沟通记录</div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message customer">
+                        <div class="message-header">
+                            <span class="message-sender">客户</span>
+                            <span class="message-time">2025-11-25 16:26:04</span>
+                        </div>
+                        <div class="message-content">
+                            买家地址是: 1335 REEF POINT AVE 看门口照片下面，照片与物流追踪信息中的送货照片明显不同。门口清楚地看起来与送货照片中的不同。The buyer's address is: 1335 Reef Point Ave. A photo of the front door is shown below. The door clearly looks different from the one in the delivery photos shown in the tracking information.
+                        </div>
+                    </div>
+                    <div class="message customer">
+                        <div class="message-header">
+                            <span class="message-sender">客户</span>
+                            <span class="message-time">2025-11-25 16:27:13</span>
+                        </div>
+                        <div class="message-content">
+                            Unable to send more pictures
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-hint">输入内容，按Ctrl+Enter发送信息。</div>
+                    <div class="chat-input-wrapper">
+                        <textarea class="chat-input" id="chatInput" placeholder="请输入消息内容..." maxlength="500"></textarea>
+                        <button class="send-btn" onclick="sendMessage()">发送</button>
+                    </div>
+                    <div class="char-count">
+                        <span id="charCount">0</span> / 500
+                    </div>
+                    <div class="chat-actions">
+                        <button class="icon-btn" title="上传图片">📷</button>
+                        <button class="icon-btn" title="上传文件">📎</button>
+                    </div>
+                </div>
+
+                <div class="card-actions">
+                    <button class="action-btn btn-case-close" onclick="closeCase()">办理结案</button>
+                    <button class="action-btn btn-submit-approval" onclick="openApprovalModal()">提交审批</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">编辑</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="typeFormGroup" style="display: none;">
+                    <label class="form-label">工单类型</label>
+                    <select class="form-select" id="typeInput">
+                        <option value="快递索赔-包裹未收到">快递索赔-包裹未收到</option>
+                        <option value="快递索赔-包裹破损">快递索赔-包裹破损</option>
+                        <option value="快递索赔-包裹丢失">快递索赔-包裹丢失</option>
+                        <option value="仓储问题">仓储问题</option>
+                        <option value="费用问题">费用问题</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group" id="billingMonthFormGroup" style="display: none;">
+                    <label class="form-label">账单月</label>
+                    <input type="month" class="form-input" id="billingMonthInput" value="2025-11">
+                </div>
+                <div class="form-group" id="compensationFormGroup" style="display: none;">
+                    <label class="form-label">赔付总额</label>
+                    <input type="number" class="form-input" id="compensationInput" value="0" step="0.01" min="0" placeholder="请输入赔付金额">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeEditModal()">取消</button>
+                <button class="btn-save" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 审批弹窗 -->
+    <div class="modal" id="approvalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">提交审批</h3>
+                <button class="close-btn" onclick="closeApprovalModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">账单月</label>
+                    <input type="month" class="form-input" id="approvalBillingMonth" value="2025-11">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeApprovalModal()">取消</button>
+                <button class="btn-save" onclick="submitApproval()">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前编辑的字段
+        let currentEditField = null;
+
+        // 打开编辑弹窗
+        function openEditModal(fieldName, fieldTitle) {
+            currentEditField = fieldName;
+            const modal = document.getElementById('editModal');
+            const modalTitle = document.getElementById('modalTitle');
+
+            modalTitle.textContent = '编辑' + fieldTitle;
+
+            // 隐藏所有表单组
+            document.getElementById('typeFormGroup').style.display = 'none';
+            document.getElementById('billingMonthFormGroup').style.display = 'none';
+            document.getElementById('compensationFormGroup').style.display = 'none';
+
+            // 显示对应的表单组并设置当前值
+            if (fieldName === 'type') {
+                const currentValue = document.getElementById('type-display').textContent;
+                document.getElementById('typeFormGroup').style.display = 'block';
+                document.getElementById('typeInput').value = currentValue;
+            } else if (fieldName === 'billing-month') {
+                const currentValue = document.getElementById('billing-month-display').textContent;
+                document.getElementById('billingMonthFormGroup').style.display = 'block';
+                document.getElementById('billingMonthInput').value = currentValue;
+            } else if (fieldName === 'compensation') {
+                const currentValue = document.getElementById('compensation-display').textContent;
+                document.getElementById('compensationFormGroup').style.display = 'block';
+                document.getElementById('compensationInput').value = currentValue;
+            }
+
+            modal.classList.add('show');
+        }
+
+        // 关闭编辑弹窗
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('show');
+            currentEditField = null;
+        }
+
+        // 保存编辑
+        function saveEdit() {
+            if (!currentEditField) return;
+
+            let newValue = '';
+
+            if (currentEditField === 'type') {
+                newValue = document.getElementById('typeInput').value;
+                document.getElementById('type-display').textContent = newValue;
+            } else if (currentEditField === 'billing-month') {
+                newValue = document.getElementById('billingMonthInput').value;
+                document.getElementById('billing-month-display').textContent = newValue;
+            } else if (currentEditField === 'compensation') {
+                newValue = document.getElementById('compensationInput').value;
+                document.getElementById('compensation-display').textContent = newValue;
+            }
+
+            console.log('保存字段:', currentEditField, '值:', newValue);
+
+            closeEditModal();
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // ESC键关闭弹窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+            }
+        });
+
+        // 字符计数
+        const chatInput = document.getElementById('chatInput');
+        const charCount = document.getElementById('charCount');
+
+        chatInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        // Ctrl+Enter发送
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 发送消息
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) {
+                alert('请输入消息内容');
+                return;
+            }
+
+            const chatMessages = document.getElementById('chatMessages');
+            const now = new Date();
+            const timeStr = now.getFullYear() + '-' +
+                          String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                          String(now.getDate()).padStart(2, '0') + ' ' +
+                          String(now.getHours()).padStart(2, '0') + ':' +
+                          String(now.getMinutes()).padStart(2, '0') + ':' +
+                          String(now.getSeconds()).padStart(2, '0');
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="message-sender">客服</span>
+                    <span class="message-time">${timeStr}</span>
+                </div>
+                <div class="message-content">${message}</div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            chatInput.value = '';
+            charCount.textContent = '0';
+        }
+
+        // 办理结案
+        function closeCase() {
+            if (confirm('确定要办理结案吗？此操作不可撤销。')) {
+                alert('工单已结案');
+            }
+        }
+
+        // 打开审批弹窗
+        function openApprovalModal() {
+            const modal = document.getElementById('approvalModal');
+            modal.classList.add('show');
+        }
+
+        // 关闭审批弹窗
+        function closeApprovalModal() {
+            const modal = document.getElementById('approvalModal');
+            modal.classList.remove('show');
+        }
+
+        // 提交审批
+        function submitApproval() {
+            const billingMonth = document.getElementById('approvalBillingMonth').value;
+            if (!billingMonth) {
+                alert('请选择账单月');
+                return;
+            }
+
+            alert(`已提交审批，账单月：${billingMonth}`);
+            closeApprovalModal();
+        }
+
+        // 点击审批弹窗外部关闭
+        document.getElementById('approvalModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeApprovalModal();
+            }
+        });
+    </script>
+</body>
+</html>

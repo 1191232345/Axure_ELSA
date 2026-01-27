@@ -138,6 +138,35 @@
             padding: 20px;
         }
 
+        /* 状态标签页 */
+        .status-tabs {
+            display: flex;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 20px;
+            background: white;
+            margin-bottom: 16px;
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .status-tab {
+            padding: 12px 20px;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .status-tab:hover {
+            color: #1890ff;
+        }
+
+        .status-tab.active {
+            color: #1890ff;
+            border-bottom-color: #1890ff;
+        }
+
         /* Tab导航栏 */
         .tabs {
             background: white;
@@ -301,6 +330,14 @@
 
     <!-- 主容器 -->
     <div class="container">
+        <!-- 状态标签页 -->
+        <div class="status-tabs">
+            <div class="status-tab active" data-status="all">全部</div>
+            <div class="status-tab" data-status="pending">待处理</div>
+            <div class="status-tab" data-status="confirm">待确认</div>
+            <div class="status-tab" data-status="pick">待拣货</div>
+        </div>
+
         <!-- 基本信息 -->
         <div class="info-card">
             <h2 class="card-title">基本信息</h2>
@@ -583,8 +620,26 @@
     </div>
 
     <script>
-        // Tab切换功能
+        // 状态标签页切换功能
         document.addEventListener('DOMContentLoaded', function() {
+            const statusTabs = document.querySelectorAll('.status-tab');
+
+            statusTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetStatus = this.getAttribute('data-status');
+
+                    // 移除所有active类
+                    statusTabs.forEach(t => t.classList.remove('active'));
+
+                    // 添加active类到当前tab
+                    this.classList.add('active');
+
+                    console.log('切换到状态:', targetStatus);
+                    // 这里可以根据状态筛选数据
+                });
+            });
+
+            // Tab切换功能
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
 
