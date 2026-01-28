@@ -74,6 +74,38 @@
             color: #1890ff;
             border-bottom-color: #1890ff;
         }
+
+        /* 操作按钮样式 */
+        .action-btn {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid;
+            background: white;
+        }
+
+        .action-btn-migrate {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .action-btn-migrate:hover {
+            background: #1890ff;
+            color: white;
+        }
+
+        .action-btn-disabled {
+            color: #d9d9d9;
+            border-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+
+        .action-btn-disabled:hover {
+            background: white;
+            color: #d9d9d9;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -201,7 +233,8 @@
         <!-- 数据表格卡片 -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <!-- 导出按钮区域 -->
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-start">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-start gap-3">
+                <button id="batchMigrate" class="px-4 py-2 bg-orange-500 text-white text-sm rounded-md hover:bg-orange-600 transition-colors">批量迁出</button>
                 <button class="px-4 py-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors">导出</button>
             </div>
 
@@ -226,6 +259,7 @@
                             <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">创建时间</th>
                             <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">出库时间</th>
                             <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">创建人</th>
+                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">操作</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -247,6 +281,9 @@
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 10:30</td>
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 14:20</td>
                             <td class="px-4 py-3 text-sm text-gray-600">张三</td>
+                            <td class="px-4 py-3">
+                                <button class="action-btn action-btn-migrate" onclick="handleSingleMigrate('OUTXIN-251208-00001', this)">迁出</button>
+                            </td>
                         </tr>
                         <tr class="table-hover">
                             <td class="px-4 py-3">
@@ -266,6 +303,9 @@
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 11:15</td>
                             <td class="px-4 py-3 text-sm text-gray-600">-</td>
                             <td class="px-4 py-3 text-sm text-gray-600">李四</td>
+                            <td class="px-4 py-3">
+                                <button class="action-btn action-btn-migrate" onclick="handleSingleMigrate('OUTXIN-251208-00002', this)">迁出</button>
+                            </td>
                         </tr>
                         <tr class="table-hover">
                             <td class="px-4 py-3">
@@ -285,6 +325,9 @@
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 09:45</td>
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 13:30</td>
                             <td class="px-4 py-3 text-sm text-gray-600">王五</td>
+                            <td class="px-4 py-3">
+                                <button class="action-btn action-btn-migrate" onclick="handleSingleMigrate('OUTXIN-251208-00003', this)">迁出</button>
+                            </td>
                         </tr>
                         <tr class="table-hover">
                             <td class="px-4 py-3">
@@ -304,6 +347,9 @@
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 12:00</td>
                             <td class="px-4 py-3 text-sm text-gray-600">-</td>
                             <td class="px-4 py-3 text-sm text-gray-600">赵六</td>
+                            <td class="px-4 py-3">
+                                <button class="action-btn action-btn-migrate" onclick="handleSingleMigrate('OUTXIN-251208-00004', this)">迁出</button>
+                            </td>
                         </tr>
                         <tr class="table-hover">
                             <td class="px-4 py-3">
@@ -323,6 +369,9 @@
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 08:30</td>
                             <td class="px-4 py-3 text-sm text-gray-600">2025-12-08 11:45</td>
                             <td class="px-4 py-3 text-sm text-gray-600">孙七</td>
+                            <td class="px-4 py-3">
+                                <button class="action-btn action-btn-migrate" onclick="handleSingleMigrate('OUTXIN-251208-00005', this)">迁出</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -349,6 +398,81 @@
     </div>
 
     <script>
+        // 获取实际状态列的索引
+        function getActualStatusIndex() {
+            const headers = document.querySelectorAll('thead th');
+            for (let i = 0; i < headers.length; i++) {
+                if (headers[i].textContent.trim() === '实际状态') {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        // 单条迁出功能
+        function handleSingleMigrate(orderNo, btnElement) {
+            const row = btnElement.closest('tr');
+            const actualStatusCell = row.cells[getActualStatusIndex()];
+
+            // 检查实际状态是否为"待打印面单"
+            if (actualStatusCell.textContent.trim() !== '待打印面单') {
+                alert('只有状态为"待打印面单"的订单才能迁出');
+                return;
+            }
+
+            if (confirm(`确定要迁出订单 ${orderNo} 吗？`)) {
+                alert(`订单 ${orderNo} 迁出成功！`);
+                // 这里可以添加实际的迁出逻辑
+            }
+        }
+
+        // 批量迁出功能
+        function handleBatchMigrate() {
+            const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+            const orderNos = [];
+            const invalidOrders = [];
+
+            if (rowCheckboxes.length === 0) {
+                alert('请至少选择一条记录');
+                return;
+            }
+
+            rowCheckboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const orderNo = row.cells[1].textContent.trim(); // 单号在第2列
+                const actualStatusCell = row.cells[getActualStatusIndex()];
+
+                if (actualStatusCell.textContent.trim() !== '待打印面单') {
+                    invalidOrders.push(orderNo);
+                } else {
+                    orderNos.push(orderNo);
+                }
+            });
+
+            if (invalidOrders.length > 0) {
+                alert(`以下订单状态不是"待打印面单"，无法迁出：\n${invalidOrders.join('\n')}`);
+                return;
+            }
+
+            if (orderNos.length === 0) {
+                alert('所选订单中没有可以迁出的记录');
+                return;
+            }
+
+            if (confirm(`确定要迁出以下 ${orderNos.length} 条订单吗？\n${orderNos.join('\n')}`)) {
+                alert(`批量迁出成功！共迁出 ${orderNos.length} 条订单`);
+                // 这里可以添加实际的批量迁出逻辑
+                // 清空选中状态
+                document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => {
+                    cb.checked = false;
+                });
+                document.querySelector('thead input[type="checkbox"]').checked = false;
+            }
+        }
+
+        // 绑定批量迁出按钮事件
+        document.getElementById('batchMigrate').addEventListener('click', handleBatchMigrate);
+
         // 状态标签页切换功能
         document.addEventListener('DOMContentLoaded', function() {
             const statusTabs = document.querySelectorAll('.status-tab');
