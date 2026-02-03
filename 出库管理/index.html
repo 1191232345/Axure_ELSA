@@ -330,12 +330,24 @@
 
     <!-- 主容器 -->
     <div class="container">
-        <!-- 状态标签页 -->
-        <div class="status-tabs">
-            <div class="status-tab active" data-status="all">全部</div>
-            <div class="status-tab" data-status="pending">待处理</div>
-            <div class="status-tab" data-status="confirm">待确认</div>
-            <div class="status-tab" data-status="pick">待拣货</div>
+
+        <!-- 单号信息 -->
+        <div class="info-card">
+            <h2 class="card-title">单号信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">出库单号</span>
+                    <span class="info-value">DEMO-00001-111111</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">参考号</span>
+                    <span class="info-value">OUTXIN-251208-00001</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">跟踪号</span>
+                    <span class="info-value">2512080001</span>
+                </div>
+            </div>
         </div>
 
         <!-- 基本信息 -->
@@ -344,19 +356,15 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">客户代码</span>
-                    <span class="info-value">DEMOdemo</span>
+                    <span class="info-value">DEMO</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">销售平台</span>
-                    <span class="info-value">智捷ERP</span>
+                    <span class="info-value">FBA</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">智捷ERP</span>
-                    <span class="info-value">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">参考号</span>
-                    <span class="info-value">OUTXIN-251208-00001</span>
+                    <span class="info-label">配送渠道</span>
+                    <span class="info-value">USPS</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">物流渠道</span>
@@ -379,16 +387,59 @@
                     <span class="info-value">1</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">仓群代码</span>
-                    <span class="info-value">1</span>
-                </div>
-                <div class="info-item">
                     <span class="info-label">仓库</span>
                     <span class="info-value">-</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">打包方式</span>
                     <span class="info-value">一单多件</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 收件人信息 -->
+        <div class="info-card">
+            <h2 class="card-title">收件人信息</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">国家</span>
+                    <span class="info-value">US</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">省/州</span>
+                    <span class="info-value">WI</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">城市</span>
+                    <span class="info-value">MADISON</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">邮编</span>
+                    <span class="info-value">53704-2494</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">邮箱</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人全称</span>
+                    <span class="info-value">Diamond Smith</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人联系方式</span>
+                    <span class="info-value">4806185343862 16</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人公司</span>
+                    <span class="info-value">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人地址1</span>
+                    <span class="info-value">US-WI-MADISON-2024 TENNYSON LN APT 222</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">收件人地址2</span>
+                    <span class="info-value">-</span>
                 </div>
             </div>
         </div>
@@ -413,6 +464,7 @@
             <div class="tab active" data-tab="product">产品信息</div>
             <div class="tab" data-tab="other">其他信息</div>
             <div class="tab" data-tab="cost">费用信息</div>
+            <div class="tab" data-tab="picking">拣货信息</div>
             <div class="tab" data-tab="logs">日志</div>
         </div>
 
@@ -473,19 +525,19 @@
             <h3 class="card-title">其他信息</h3>
             <div class="form-grid">
                 <div class="form-item">
-                    <span class="form-label">基准网址</span>
-                    <span class="form-value">吉</span>
+                    <span class="form-label">是否保险</span>
+                    <span class="form-value">否</span>
                 </div>
                 <div class="form-item">
-                    <span class="form-label">填写时保留框</span>
+                    <span class="form-label">填写投保金额</span>
                     <span class="form-value">-</span>
                 </div>
                 <div class="form-item">
-                    <span class="form-label">票名</span>
+                    <span class="form-label">签名</span>
                     <span class="form-value">吉</span>
                 </div>
                 <div class="form-item">
-                    <span class="form-label">送样至仓库号</span>
+                    <span class="form-label">选择签名服务</span>
                     <span class="form-value">-</span>
                 </div>
                 <div class="form-item">
@@ -497,7 +549,11 @@
                     <span class="form-value">-</span>
                 </div>
                 <div class="form-item">
-                    <span class="form-label">票法</span>
+                    <span class="form-label">客户备注</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">仓库备注</span>
                     <span class="form-value">-</span>
                 </div>
             </div>
@@ -548,6 +604,49 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <div class="tab-content" id="tab-picking">
+            <h3 class="card-title">拣货单基本信息</h3>
+            <div class="form-grid">
+                <div class="form-item">
+                    <span class="form-label">拣货单号</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">拣货单生成时间</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">拣货单生成人员</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">拣货人</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">出库任务码</span>
+                    <span class="form-value">-</span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">RFID</span>
+                    <span class="form-value"></span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">操作类型</span>
+                    <span class="form-value"></span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">操作人</span>
+                    <span class="form-value"></span>
+                </div>
+                <div class="form-item">
+                    <span class="form-label">操作时间</span>
+                    <span class="form-value"></span>
+                </div>
+            </div>
+            <div class="empty-text">暂无数据</div>
         </div>
 
         <div class="tab-content" id="tab-logs">
