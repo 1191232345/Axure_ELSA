@@ -115,21 +115,7 @@
       <div id="basicFilters" class="flex flex-wrap gap-4 items-center mb-3">
         <!-- 条件将通过JavaScript动态渲染 -->
         </div>
-      
-      <!-- 高级筛选条件 -->
-      <div class="border-t border-gray-200 pt-3">
-        <div class="flex items-center justify-between mb-3">
-          <button id="btnOpenAdvancedModal" class="flex items-center gap-2 text-sm text-gray-600 hover:text-primary transition-colors">
-            <i class="fa fa-filter"></i>
-            <span>高级筛选</span>
-          </button>
-        </div>
-        <!-- 已选条件标签展示区域 -->
-        <div id="selectedAdvancedFilters" class="flex flex-wrap gap-2 mb-3">
-          <!-- 已选条件将通过JavaScript动态渲染 -->
-        </div>
-      </div>
-      
+
       <!-- 操作按钮 -->
       <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
         <button id="btnFilter" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
@@ -138,108 +124,6 @@
         <button id="btnResetFilter" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
           <i class="fa fa-refresh mr-2"></i>重置
         </button>
-      </div>
-    </div>
-    
-    <!-- 高级筛选弹窗 -->
-    <div id="advancedFilterModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
-      <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 class="text-xl font-bold text-dark">高级筛选</h3>
-          <button id="closeAdvancedFilterModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-            <i class="fa fa-times text-2xl"></i>
-          </button>
-        </div>
-        <div class="flex-1 overflow-y-auto p-6">
-          <div class="space-y-4">
-            <!-- 1. 输入检索 -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-3">
-                <i class="fa fa-keyboard-o text-primary"></i>
-                <h5 class="text-sm font-semibold text-gray-700">输入检索</h5>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">账单号</label>
-                  <input type="text" id="modalFilterBillNo" placeholder="请输入账单号" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">订单号</label>
-                  <input type="text" id="modalFilterOrderNo" placeholder="请输入订单号" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">备注</label>
-                  <input type="text" id="modalFilterRemark" placeholder="请输入备注关键词" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-              </div>
-            </div>
-            
-            <!-- 2. 日期检索 -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-3">
-                <i class="fa fa-calendar text-primary"></i>
-                <h5 class="text-sm font-semibold text-gray-700">日期检索</h5>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">账单月</label>
-                  <input type="month" id="modalFilterBillMonth" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">航期</label>
-                  <input type="month" id="modalFilterVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">创建时间（开始）</label>
-                  <input type="date" id="modalFilterCreateStartDate" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">创建时间（结束）</label>
-                  <input type="date" id="modalFilterCreateEndDate" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                </div>
-              </div>
-            </div>
-            
-            <!-- 3. 下拉检索 -->
-            <div class="bg-gray-50 rounded-lg p-4">
-              <div class="flex items-center gap-2 mb-3">
-                <i class="fa fa-list text-primary"></i>
-                <h5 class="text-sm font-semibold text-gray-700">下拉检索</h5>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">创建人</label>
-                  <select id="modalFilterCreator" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                    <option value="">全部</option>
-                    <option value="系统">系统</option>
-                    <option value="管理员">管理员</option>
-                    <option value="操作员">操作员</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-600 mb-2">操作人</label>
-                  <select id="modalFilterOperator" class="w-full border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                    <option value="">全部</option>
-                    <option value="系统">系统</option>
-                    <option value="管理员">管理员</option>
-                    <option value="操作员">操作员</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-          <button id="advancedFilterCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-            取消
-          </button>
-          <button id="advancedFilterReset" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-            重置
-          </button>
-          <button id="advancedFilterSubmit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-            <i class="fa fa-check mr-2"></i>确定
-          </button>
-        </div>
       </div>
     </div>
 
@@ -340,7 +224,6 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">账单类型 <span class="text-red-500">*</span></label>
                 <select id="modalBillType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" required>
-                  <option value="">请选择账单类型</option>
                   <option value="出库+快递(YC)">出库+快递(YC)</option>
                   <option value="出库+快递(TMS)">出库+快递(TMS)</option>
                   <option value="仓储费">仓储费</option>
@@ -386,7 +269,7 @@
                 </div>
               </div>
               <div id="conditionWarehouseCode">
-                <label class="block text-sm font-medium text-gray-700 mb-1">仓库代码</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
                 <div class="relative">
                   <div id="modalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleWarehouseCodeDropdown()">
                     <span id="modalWarehouseCodeText" class="text-gray-700">全部</span>
@@ -477,7 +360,7 @@
         <div class="flex-1 flex flex-col">
           <!-- 费用列表头部 -->
           <div class="p-4 border-b border-gray-200 bg-white">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <div class="w-1 h-6 bg-primary rounded"></div>
                 <h4 class="text-lg font-semibold text-dark">费用列表</h4>
@@ -487,6 +370,14 @@
                 <i class="fa fa-info-circle mr-1"></i>
                 请先选择账单类型并搜索数据
               </div>
+            </div>
+            <!-- 出库单号搜索 -->
+            <div id="listOutboundNoSearch" class="hidden flex items-center gap-2">
+              <label class="text-sm font-medium text-gray-700">出库单号：</label>
+              <input type="text" id="modalListOutboundNo" class="w-64 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="请输入出库单号">
+              <button id="modalListSearchBtn" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                <i class="fa fa-search mr-1"></i>搜索
+              </button>
             </div>
           </div>
           
@@ -574,37 +465,15 @@
     const filterConfigDefinitions = {
       basic: [
         {
-          id: 'customerCode',
-          label: '客户代码',
-          type: 'select',
-          options: [
-            { value: '', text: '全部客户' },
-            { value: 'ZJJS', text: 'ZJJS' },
-            { value: 'ZJHW', text: 'ZJHW' },
-            { value: 'ZJWL', text: 'ZJWL' }
-          ],
-          defaultVisible: true
-        },
-        {
-          id: 'billStatus',
-          label: '账单状态',
-          type: 'select',
-          options: [
-            { value: '', text: '全部状态' },
-            { value: '已出账', text: '已出账' },
-            { value: '已作废', text: '已作废' },
-            { value: '已完成', text: '已完成' }
-          ],
-          defaultVisible: true
-        },
-        {
           id: 'billType',
           label: '类型',
           type: 'select',
           options: [
             { value: '', text: '全部类型' },
             { value: '出库+快递(YC)', text: '出库+快递(YC)' },
+            { value: '出库+快递(TMS)', text: '出库+快递(TMS)' },
             { value: '仓储费', text: '仓储费' },
+            { value: '快递赔付', text: '快递赔付' },
             { value: '库内赔付(错发)', text: '库内赔付(错发)' },
             { value: '库内赔付(丢件)', text: '库内赔付(丢件)' },
             { value: '库内赔付(其他)', text: '库内赔付(其他)' },
@@ -612,24 +481,75 @@
             { value: '充值', text: '充值' },
             { value: '费用调整', text: '费用调整' }
           ],
-          defaultVisible: true
-        }
-      ],
-      advanced: [
+          defaultVisible: true,
+          defaultValue: '出库+快递(YC)'
+        },
         {
           id: 'billMonth',
           label: '账单月',
           type: 'month',
-          category: '时间信息',
-          categoryIcon: 'fa-calendar',
           defaultVisible: true
         },
         {
           id: 'voyagePeriod',
           label: '航期',
           type: 'month',
-          category: '时间信息',
-          categoryIcon: 'fa-calendar',
+          defaultVisible: true
+        },
+        {
+          id: 'customerCode',
+          label: '客户代码',
+          type: 'select',
+          options: [
+            { value: '', text: '全部' },
+            { value: 'ZJJS', text: 'ZJJS' },
+            { value: 'ZJHW', text: 'ZJHW' },
+            { value: 'ZJWL', text: 'ZJWL' }
+          ],
+          defaultVisible: true
+        },
+        {
+          id: 'warehouseCode',
+          label: '仓库',
+          type: 'select',
+          options: [
+            { value: '', text: '全部' },
+            { value: 'CA008', text: 'CA008' },
+            { value: 'CA009', text: 'CA009' },
+            { value: 'CA010', text: 'CA010' },
+            { value: 'CA011', text: 'CA011' },
+            { value: 'CA012', text: 'CA012' }
+          ],
+          defaultVisible: true
+        },
+        {
+          id: 'operator',
+          label: '操作人',
+          type: 'select',
+          options: [
+            { value: '', text: '全部' },
+            { value: '系统', text: '系统' },
+            { value: '管理员', text: '管理员' },
+            { value: '操作员', text: '操作员' }
+          ],
+          defaultVisible: true
+        },
+        {
+          id: 'customerService',
+          label: '客服',
+          type: 'select',
+          options: [
+            { value: '', text: '全部' },
+            { value: '李四', text: '李四' },
+            { value: '钱七', text: '钱七' },
+            { value: '吴十', text: '吴十' }
+          ],
+          defaultVisible: true
+        },
+        {
+          id: 'operateTimeRange',
+          label: '操作时间',
+          type: 'daterange',
           defaultVisible: true
         }
       ]
@@ -639,13 +559,13 @@
     function renderBasicFilters() {
       const container = document.getElementById('basicFilters');
       container.innerHTML = '';
-      
+
       const visibleFilters = filterConfigDefinitions.basic.filter(f => f.defaultVisible);
-      
+
       visibleFilters.forEach(filter => {
         const div = document.createElement('div');
         div.className = 'flex items-center gap-2';
-        
+
         if (filter.type === 'select') {
           div.innerHTML = `
             <label class="text-sm font-medium text-gray-700 whitespace-nowrap">${filter.label}:</label>
@@ -653,16 +573,37 @@
               ${filter.options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('')}
             </select>
           `;
+        } else if (filter.type === 'month') {
+          div.innerHTML = `
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">${filter.label}:</label>
+            <input type="month" id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[120px]">
+          `;
+        } else if (filter.type === 'date') {
+          div.innerHTML = `
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">${filter.label}:</label>
+            <input type="date" id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[120px]">
+          `;
+        } else if (filter.type === 'daterange') {
+          div.innerHTML = `
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">${filter.label}:</label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}Start" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[120px]" placeholder="开始日期">
+              <span class="text-gray-400">-</span>
+              <input type="date" id="filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}End" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-[120px]" placeholder="结束日期">
+            </div>
+          `;
         }
-        
+
         container.appendChild(div);
+
+        // 设置默认值
+        if (filter.defaultValue) {
+          const input = document.getElementById(`filter${filter.id.charAt(0).toUpperCase() + filter.id.slice(1)}`);
+          if (input) {
+            input.value = filter.defaultValue;
+          }
+        }
       });
-    }
-    
-    // 渲染高级筛选条件（已废弃，高级筛选改为弹窗形式）
-    function renderAdvancedFilters() {
-      // 此函数已不再使用，高级筛选改为弹窗形式
-      return;
     }
     
 
@@ -707,6 +648,9 @@
       // 弹窗搜索
       document.getElementById('modalSearch').addEventListener('click', searchModalData);
       document.getElementById('modalReset').addEventListener('click', resetModalForm);
+
+      // 费用列表区域的出库单号搜索
+      document.getElementById('modalListSearchBtn').addEventListener('click', searchByOutboundNo);
       
       // 账单类型变化时更新表头和检索条件
       document.getElementById('modalBillType').addEventListener('change', function() {
@@ -753,21 +697,19 @@
       // 筛选功能
       document.getElementById('btnFilter').addEventListener('click', filterData);
       document.getElementById('btnResetFilter').addEventListener('click', resetFilter);
-      
-      // 高级筛选弹窗
-      document.getElementById('btnOpenAdvancedModal').addEventListener('click', openAdvancedFilterModal);
-      document.getElementById('closeAdvancedFilterModal').addEventListener('click', closeAdvancedFilterModal);
-      document.getElementById('advancedFilterCancel').addEventListener('click', closeAdvancedFilterModal);
-      document.getElementById('advancedFilterReset').addEventListener('click', resetAdvancedFilterModal);
-      document.getElementById('advancedFilterSubmit').addEventListener('click', submitAdvancedFilter);
-      document.getElementById('advancedFilterModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-          closeAdvancedFilterModal();
-        }
-      });
-      
+
       // 初始化检索条件
       renderBasicFilters();
+
+      // 初始化账单月为当前月份
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const currentMonth = `${year}-${month}`;
+      const billMonthInput = document.getElementById('filterBillMonth');
+      if (billMonthInput) {
+        billMonthInput.value = currentMonth;
+      }
 
       // 导出功能
       document.getElementById('btnExport').addEventListener('click', exportData);
@@ -799,7 +741,7 @@
       options.classList.toggle('hidden');
     }
 
-    // 切换仓库代码下拉框
+    // 切换仓库下拉框
     function toggleWarehouseCodeDropdown() {
       const options = document.getElementById('modalWarehouseCodeOptions');
       options.classList.toggle('hidden');
@@ -836,7 +778,7 @@
       updateCustomerCodeText();
     }
 
-    // 更新仓库代码文本
+    // 更新仓库文本
     function updateWarehouseCodeText() {
       const checkboxes = document.querySelectorAll('input[name="modalWarehouseCode"]:checked');
       const allCheckboxes = document.querySelectorAll('input[name="modalWarehouseCode"]');
@@ -852,7 +794,7 @@
       }
     }
     
-    // 初始化仓库代码为全部选中
+    // 初始化仓库为全部选中
     function initWarehouseCodeAll() {
       document.querySelectorAll('input[name="modalWarehouseCode"]').forEach(cb => {
         cb.checked = true;
@@ -937,12 +879,12 @@
     function getBillTypeFields(billType) {
       const fieldConfigs = {
         '出库+快递(YC)': {
-          headers: ['客户代码', '仓库', '订单号', '参考号', '快递单号', '运输方式', '出库费', '快递费', '合计', '币种'],
-          fields: ['customerCode', 'warehouse', 'orderNo', 'refNo', 'trackingNo', 'shippingMethod', 'outboundFee', 'expressFee', 'total', 'currency']
+          headers: ['客户代码', '仓库', '出库单号', '订单号', '参考号', '快递单号', '运输方式', '出库费', '快递费', '合计', '币种'],
+          fields: ['customerCode', 'warehouse', 'outboundNo', 'orderNo', 'refNo', 'trackingNo', 'shippingMethod', 'outboundFee', 'expressFee', 'total', 'currency']
         },
         '出库+快递(TMS)': {
-          headers: ['客户代码', '仓库', '订单号', '参考号', '快递单号', '渠道', '出库费', '快递费', '合计', '币种'],
-          fields: ['customerCode', 'warehouse', 'orderNo', 'refNo', 'trackingNo', 'channel', 'outboundFee', 'expressFee', 'total', 'currency']
+          headers: ['客户代码', '仓库', '出库单号', '订单号', '参考号', '快递单号', '渠道', '出库费', '快递费', '合计', '币种'],
+          fields: ['customerCode', 'warehouse', 'outboundNo', 'orderNo', 'refNo', 'trackingNo', 'channel', 'outboundFee', 'expressFee', 'total', 'currency']
         },
         '仓储费': {
           headers: ['客户代码', '仓库', 'SKU', '数量', '单价', '金额', '币种', '备注'],
@@ -969,11 +911,11 @@
           fields: ['customerCode', 'warehouse', 'feeItem', 'amount', 'currency', 'remark']
         },
         '充值': {
-          headers: ['仓库代码', '客户名称', '流水号', '交易号', '汇款方式', '实际汇款人', '汇款金额', '汇率', '折算金额', '到账金额', '币种'],
+          headers: ['仓库', '客户名称', '流水号', '交易号', '汇款方式', '实际汇款人', '汇款金额', '汇率', '折算金额', '到账金额', '币种'],
           fields: ['warehouseCode', 'customerName', 'serialNo', 'transactionNo', 'paymentMethod', 'actualPayer', 'remittanceAmount', 'exchangeRate', 'convertedAmount', 'arrivedAmount', 'currency']
         },
         '费用调整': {
-          headers: ['客户代码', '仓库代码', '订单号', '费用类型', '金额', '币种'],
+          headers: ['客户代码', '仓库', '订单号', '费用类型', '金额', '币种'],
           fields: ['customerCode', 'warehouseCode', 'orderNo', 'feeType', 'amount', 'currency']
         }
       };
@@ -1040,7 +982,8 @@
       const shippingMethodEl = document.getElementById('conditionShippingMethod');
       const createTimeEl = document.getElementById('conditionCreateTime');
       const outboundTimeEl = document.getElementById('conditionOutboundTime');
-      
+      const listOutboundNoSearch = document.getElementById('listOutboundNoSearch');
+
       // 默认全部隐藏
       customerCodeEl.style.display = 'none';
       warehouseCodeEl.style.display = 'none';
@@ -1050,37 +993,52 @@
       shippingMethodEl.style.display = 'none';
       createTimeEl.style.display = 'none';
       outboundTimeEl.style.display = 'none';
-      
+      listOutboundNoSearch.classList.add('hidden');
+
       if (isTMS) {
-        // 出库+快递(TMS)显示：客户代码、仓库代码、渠道、创建时间、出库时间
+        // 出库+快递(TMS)显示：客户代码、仓库、渠道、创建时间、出库时间
+        customerCodeEl.style.display = 'block';
+        warehouseCodeEl.style.display = 'block';
+        channelEl.style.display = 'block';
+        createTimeEl.style.display = 'block';
+        outboundTimeEl.style.display = 'block';
+        listOutboundNoSearch.classList.remove('hidden');
+      } else if (isOutboundExpress) {
+        // 出库+快递(YC)显示：客户代码、仓库、运输方式、创建时间、出库时间
+        customerCodeEl.style.display = 'block';
+        warehouseCodeEl.style.display = 'block';
+        shippingMethodEl.style.display = 'block';
+        createTimeEl.style.display = 'block';
+        outboundTimeEl.style.display = 'block';
+        listOutboundNoSearch.classList.remove('hidden');
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         channelEl.style.display = 'block';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
       } else if (isOutboundExpress) {
-        // 出库+快递(YC)显示：客户代码、仓库代码、运输方式、创建时间、出库时间
+        // 出库+快递(YC)显示：客户代码、仓库、运输方式、创建时间、出库时间
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         shippingMethodEl.style.display = 'block';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
       } else if (isStorageFee) {
-        // 仓储费显示：客户代码、仓库代码、结算日期
+        // 仓储费显示：客户代码、仓库、结算日期
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         settlementDateEl.style.display = 'block';
       } else if (isCompensationFee) {
-        // 所有赔付类型显示：客户代码、仓库代码
+        // 所有赔付类型显示：客户代码、仓库
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
       } else if (isRechargeOrAdjust) {
-        // 充值和费用调整显示：客户代码、仓库代码、创建时间
+        // 充值和费用调整显示：客户代码、仓库、创建时间
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         createTimeEl.style.display = 'block';
       } else if (isOther) {
-        // 其他类型显示：客户代码、仓库代码、创建时间
+        // 其他类型显示：客户代码、仓库、创建时间
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         createTimeEl.style.display = 'block';
@@ -1101,15 +1059,15 @@
       
       if (billType === '出库+快递(YC)') {
         mockData = [
-        { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', orderNo: 'ORD-20250115-001', refNo: 'REF-001', trackingNo: 'TRK-001', shippingMethod: '标准快递', outboundFee: 15.50, expressFee: 8.20, total: 23.70, currency: 'USD' },
-        { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-20250115-002', refNo: 'REF-002', trackingNo: 'TRK-002', shippingMethod: '快速快递', outboundFee: 18.00, expressFee: 12.50, total: 30.50, currency: 'USD' },
-          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-20250115-003', refNo: 'REF-003', trackingNo: 'TRK-003', shippingMethod: '标准快递', outboundFee: 12.30, expressFee: 7.80, total: 20.10, currency: 'USD' }
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', outboundNo: 'OUT-20250115-001', orderNo: 'ORD-20250115-001', refNo: 'REF-001', trackingNo: 'TRK-001', shippingMethod: '标准快递', outboundFee: 15.50, expressFee: 8.20, total: 23.70, currency: 'USD' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', outboundNo: 'OUT-20250115-002', orderNo: 'ORD-20250115-002', refNo: 'REF-002', trackingNo: 'TRK-002', shippingMethod: '快速快递', outboundFee: 18.00, expressFee: 12.50, total: 30.50, currency: 'USD' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', outboundNo: 'OUT-20250115-003', orderNo: 'ORD-20250115-003', refNo: 'REF-003', trackingNo: 'TRK-003', shippingMethod: '标准快递', outboundFee: 12.30, expressFee: 7.80, total: 20.10, currency: 'USD' }
         ];
       } else if (billType === '出库+快递(TMS)') {
         mockData = [
-          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', orderNo: 'ORD-20250115-011', refNo: 'REF-011', trackingNo: 'TMS-TRK-001', channel: 'FEDEX_MPS', outboundFee: 16.50, expressFee: 9.20, total: 25.70, currency: 'USD' },
-          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', orderNo: 'ORD-20250115-012', refNo: 'REF-012', trackingNo: 'TMS-TRK-002', channel: 'FEDEX_HOME_GROUND', outboundFee: 19.00, expressFee: 13.50, total: 32.50, currency: 'USD' },
-          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', orderNo: 'ORD-20250115-013', refNo: 'REF-013', trackingNo: 'TMS-TRK-003', channel: 'UPS_GROUND', outboundFee: 14.30, expressFee: 8.80, total: 23.10, currency: 'USD' }
+          { id: 'm1', customerCode: 'ZJJS', warehouse: 'CA008', outboundNo: 'OUT-20250115-011', orderNo: 'ORD-20250115-011', refNo: 'REF-011', trackingNo: 'TMS-TRK-001', channel: 'FEDEX_MPS', outboundFee: 16.50, expressFee: 9.20, total: 25.70, currency: 'USD' },
+          { id: 'm2', customerCode: 'ZJHW', warehouse: 'CA009', outboundNo: 'OUT-20250115-012', orderNo: 'ORD-20250115-012', refNo: 'REF-012', trackingNo: 'TMS-TRK-002', channel: 'FEDEX_HOME_GROUND', outboundFee: 19.00, expressFee: 13.50, total: 32.50, currency: 'USD' },
+          { id: 'm3', customerCode: 'ZJJS', warehouse: 'CA010', outboundNo: 'OUT-20250115-013', orderNo: 'ORD-20250115-013', refNo: 'REF-013', trackingNo: 'TMS-TRK-003', channel: 'UPS_GROUND', outboundFee: 14.30, expressFee: 8.80, total: 23.10, currency: 'USD' }
         ];
       } else if (billType === '仓储费') {
         mockData = [
@@ -1238,6 +1196,40 @@
       const checkAll = document.getElementById('modalCheckAll');
       const checkboxes = document.querySelectorAll('.modal-item-checkbox');
       checkAll.checked = checkboxes.length > 0 && checkboxes.length === modalSelectedItems.size;
+    }
+
+    // 费用列表区域按出库单号搜索
+    function searchByOutboundNo() {
+      const outboundNo = document.getElementById('modalListOutboundNo').value.trim();
+      if (!outboundNo) {
+        alert('请输入出库单号');
+        return;
+      }
+
+      const billType = document.getElementById('modalBillType').value;
+      if (billType !== '出库+快递(YC)' && billType !== '出库+快递(TMS)') {
+        alert('出库单号搜索仅适用于出库+快递账单类型');
+        return;
+      }
+
+      // 在现有数据中筛选
+      const filteredData = mockData.filter(item => {
+        return item.outboundNo && item.outboundNo.includes(outboundNo);
+      });
+
+      if (filteredData.length === 0) {
+        alert('未找到匹配的出库单号');
+        return;
+      }
+
+      // 更新表格数据
+      modalData = filteredData;
+      renderModalTable();
+
+      // 清空选中状态
+      modalSelectedItems.clear();
+      updateModalSelectedCount();
+      updateModalCheckAll();
     }
 
     // 根据客户代码获取客户信息（销售、客服）
@@ -1739,209 +1731,27 @@
       // 动态获取所有筛选输入框并重置
       const basicContainer = document.getElementById('basicFilters');
       basicContainer.querySelectorAll('select, input').forEach(el => {
-        if (el.type === 'date' || el.type === 'month') {
-          el.value = '';
-        } else {
-          el.value = '';
-        }
+        el.value = '';
       });
-      
-      const advancedContainer = document.getElementById('advancedFilters');
-      if (advancedContainer) {
-        advancedContainer.querySelectorAll('select, input').forEach(el => {
-          if (el.type === 'date' || el.type === 'month') {
-            el.value = '';
-          } else {
-            el.value = '';
-          }
-        });
+
+      // 重新设置账单月为当前月份
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const currentMonth = `${year}-${month}`;
+      const billMonthInput = document.getElementById('filterBillMonth');
+      if (billMonthInput) {
+        billMonthInput.value = currentMonth;
       }
-      
+
+      // 重新设置类型为第一个选项
+      const billTypeInput = document.getElementById('filterBillType');
+      if (billTypeInput) {
+        billTypeInput.value = '出库+快递(YC)';
+      }
+
       renderTable();
     }
-    
-    // 高级筛选相关变量
-    let selectedAdvancedFilters = [];
-    
-    // 打开高级筛选弹窗
-    function openAdvancedFilterModal() {
-      // 恢复已选的条件
-      restoreAdvancedFilterModal();
-      document.getElementById('advancedFilterModal').classList.remove('hidden');
-      document.getElementById('advancedFilterModal').classList.add('flex');
-    }
-    
-    // 关闭高级筛选弹窗
-    function closeAdvancedFilterModal() {
-      document.getElementById('advancedFilterModal').classList.add('hidden');
-      document.getElementById('advancedFilterModal').classList.remove('flex');
-    }
-    
-    // 重置高级筛选弹窗
-    function resetAdvancedFilterModal() {
-      // 重置输入检索
-      document.getElementById('modalFilterBillNo').value = '';
-      document.getElementById('modalFilterOrderNo').value = '';
-      document.getElementById('modalFilterRemark').value = '';
-      
-      // 重置日期检索
-      document.getElementById('modalFilterBillMonth').value = '';
-      document.getElementById('modalFilterVoyagePeriod').value = '';
-      document.getElementById('modalFilterCreateStartDate').value = '';
-      document.getElementById('modalFilterCreateEndDate').value = '';
-      
-      // 重置下拉检索
-      document.getElementById('modalFilterCreator').value = '';
-      document.getElementById('modalFilterOperator').value = '';
-    }
-    
-    // 恢复高级筛选弹窗状态
-    function restoreAdvancedFilterModal() {
-      resetAdvancedFilterModal();
-      
-      // 恢复已选的条件
-      selectedAdvancedFilters.forEach(filter => {
-        const input = document.getElementById(`modalFilter${filter.filter}`);
-        if (input) {
-          input.value = filter.value;
-        }
-      });
-    }
-    
-    // 提交高级筛选
-    function submitAdvancedFilter() {
-      selectedAdvancedFilters = [];
-      
-      // 1. 收集输入检索
-      const billNo = document.getElementById('modalFilterBillNo').value.trim();
-      if (billNo) {
-        selectedAdvancedFilters.push({
-          type: 'text',
-          filter: 'BillNo',
-          value: billNo,
-          label: `账单号: ${billNo}`
-        });
-      }
-      
-      const orderNo = document.getElementById('modalFilterOrderNo').value.trim();
-      if (orderNo) {
-        selectedAdvancedFilters.push({
-          type: 'text',
-          filter: 'OrderNo',
-          value: orderNo,
-          label: `订单号: ${orderNo}`
-        });
-      }
-      
-      const remark = document.getElementById('modalFilterRemark').value.trim();
-      if (remark) {
-        selectedAdvancedFilters.push({
-          type: 'text',
-          filter: 'Remark',
-          value: remark,
-          label: `备注: ${remark}`
-        });
-      }
-      
-      // 2. 收集日期检索
-      const billMonth = document.getElementById('modalFilterBillMonth').value;
-      if (billMonth) {
-        selectedAdvancedFilters.push({
-          type: 'month',
-          filter: 'BillMonth',
-          value: billMonth,
-          label: `账单月: ${billMonth}`
-        });
-      }
-      
-      const voyagePeriod = document.getElementById('modalFilterVoyagePeriod').value;
-      if (voyagePeriod) {
-        selectedAdvancedFilters.push({
-          type: 'month',
-          filter: 'VoyagePeriod',
-          value: voyagePeriod,
-          label: `航期: ${voyagePeriod}`
-        });
-      }
-      
-      const createStartDate = document.getElementById('modalFilterCreateStartDate').value;
-      if (createStartDate) {
-        selectedAdvancedFilters.push({
-          type: 'date',
-          filter: 'CreateStartDate',
-          value: createStartDate,
-          label: `创建时间开始: ${createStartDate}`
-        });
-      }
-      
-      const createEndDate = document.getElementById('modalFilterCreateEndDate').value;
-      if (createEndDate) {
-        selectedAdvancedFilters.push({
-          type: 'date',
-          filter: 'CreateEndDate',
-          value: createEndDate,
-          label: `创建时间结束: ${createEndDate}`
-        });
-      }
-      
-      // 3. 收集下拉检索
-      const creator = document.getElementById('modalFilterCreator').value;
-      if (creator) {
-        selectedAdvancedFilters.push({
-          type: 'select',
-          filter: 'Creator',
-          value: creator,
-          label: `创建人: ${creator}`
-        });
-      }
-      
-      const operator = document.getElementById('modalFilterOperator').value;
-      if (operator) {
-        selectedAdvancedFilters.push({
-          type: 'select',
-          filter: 'Operator',
-          value: operator,
-          label: `操作人: ${operator}`
-        });
-      }
-      
-      // 渲染已选条件
-      renderSelectedAdvancedFilters();
-      
-      // 关闭弹窗
-      closeAdvancedFilterModal();
-    }
-    
-    // 渲染已选的高级筛选条件
-    function renderSelectedAdvancedFilters() {
-      const container = document.getElementById('selectedAdvancedFilters');
-      container.innerHTML = '';
-      
-      if (selectedAdvancedFilters.length === 0) {
-        return;
-      }
-      
-      selectedAdvancedFilters.forEach((filter, index) => {
-        const badge = document.createElement('div');
-        badge.className = 'inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 rounded-full text-sm';
-        badge.innerHTML = `
-          <span class="text-primary">${filter.label}</span>
-          <button onclick="removeAdvancedFilter(${index})" class="text-primary hover:text-primary/80 transition-colors">
-            <i class="fa fa-times"></i>
-          </button>
-        `;
-        container.appendChild(badge);
-      });
-    }
-    
-    // 删除高级筛选条件
-    function removeAdvancedFilter(index) {
-      selectedAdvancedFilters.splice(index, 1);
-      renderSelectedAdvancedFilters();
-    }
-    
-    // 暴露全局函数
-    window.removeAdvancedFilter = removeAdvancedFilter;
 
     // 查看详情
     function viewDetail(id) {
