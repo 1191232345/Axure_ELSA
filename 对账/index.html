@@ -508,18 +508,18 @@
           ],
           defaultVisible: true
         },
-        {
-          id: 'operator',
-          label: '操作人',
-          type: 'select',
-          options: [
-            { value: '', text: '全部' },
-            { value: '系统', text: '系统' },
-            { value: '管理员', text: '管理员' },
-            { value: '操作员', text: '操作员' }
-          ],
-          defaultVisible: true
-        },
+        // {
+        //   id: 'operator',
+        //   label: '操作人',
+        //   type: 'select',
+        //   options: [
+        //     { value: '', text: '全部' },
+        //     { value: '系统', text: '系统' },
+        //     { value: '管理员', text: '管理员' },
+        //     { value: '操作员', text: '操作员' }
+        //   ],
+        //   defaultVisible: true
+        // },
         {
           id: 'customerService',
           label: '客服',
@@ -979,7 +979,9 @@
       shippingMethodEl.style.display = 'none';
       createTimeEl.style.display = 'none';
       outboundTimeEl.style.display = 'none';
-      listOutboundNoSearch.classList.add('hidden');
+      if (listOutboundNoSearch) {
+        listOutboundNoSearch.classList.add('hidden');
+      }
 
       if (isTMS) {
         // 出库+快递(TMS)显示：客户代码、仓库、渠道、创建时间、出库时间
@@ -988,7 +990,9 @@
         channelEl.style.display = 'block';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
-        listOutboundNoSearch.classList.remove('hidden');
+        if (listOutboundNoSearch) {
+          listOutboundNoSearch.classList.remove('hidden');
+        }
       } else if (isOutboundExpress) {
         // 出库+快递(YC)显示：客户代码、仓库、运输方式、创建时间、出库时间
         customerCodeEl.style.display = 'block';
@@ -996,7 +1000,9 @@
         shippingMethodEl.style.display = 'block';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
-        listOutboundNoSearch.classList.remove('hidden');
+        if (listOutboundNoSearch) {
+          listOutboundNoSearch.classList.remove('hidden');
+        }
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         channelEl.style.display = 'block';
