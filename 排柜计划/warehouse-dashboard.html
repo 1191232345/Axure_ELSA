@@ -236,32 +236,151 @@
     .current-week-cell {
       background: #eff6ff !important;
     }
+
+    /* KPI卡片样式 */
+    .kpi-item {
+      transition: all 0.3s ease;
+    }
+
+    .kpi-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-section {
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        max-height: 500px;
+        transform: translateY(0);
+      }
+    }
+
+    .info-toggle {
+      transition: transform 0.3s ease;
+    }
+
+    .info-toggle.active {
+      transform: rotate(180deg);
+    }
+
+    /* 圆形进度指示器 */
+    .circular-progress {
+      position: relative;
+      width: 50px;
+      height: 50px;
+    }
+
+    .circular-progress svg {
+      transform: rotate(-90deg);
+    }
+
+    .circular-progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* 性能评分徽章 */
+    .performance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .performance-excellent {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .performance-good {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
+    .performance-warning {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .performance-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+    }
+
+    /* 趋势箭头动画 */
+    .trend-arrow {
+      display: inline-flex;
+      align-items: center;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* KPI值对比显示 */
+    .kpi-comparison {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 0.5rem;
+    }
+
+    .kpi-value-large {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .kpi-target-small {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100">
-  <div class="min-h-screen p-4 md:p-6">
+  <div class="min-h-screen p-3 md:p-4">
     <!-- 页面标题和操作栏 -->
-    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 fade-in">
+    <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 fade-in">
       <div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+        <h1 class="text-2xl font-bold text-gray-800 mb-1 flex items-center gap-2">
           <i class="fas fa-warehouse text-blue-600"></i>
           排柜计划看板
         </h1>
-        <p class="text-sm text-gray-500">实时监控仓库集装箱到港、到仓及上架情况</p>
+        <p class="text-xs text-gray-500">实时监控仓库集装箱到港、到仓及上架情况</p>
       </div>
-      <button id="refreshBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 shadow-md">
+      <button id="refreshBtn" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 shadow-md text-sm">
         <i class="fas fa-sync-alt" id="refreshIcon"></i>
         <span>刷新数据</span>
       </button>
     </div>
 
     <!-- 筛选器区域 -->
-    <div class="bg-white rounded-xl p-4 md:p-6 card-shadow mb-6 fade-in">
-      <div class="flex flex-wrap items-center gap-4">
+    <div class="bg-white rounded-lg p-3 card-shadow mb-4 fade-in">
+      <div class="flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-2">
-          <i class="fas fa-warehouse text-blue-600"></i>
-          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">仓库代码:</label>
-          <select id="filterWarehouse" class="filter-select border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[160px] cursor-pointer">
+          <i class="fas fa-warehouse text-blue-600 text-sm"></i>
+          <label class="text-xs font-medium text-gray-700 whitespace-nowrap">仓库代码:</label>
+          <select id="filterWarehouse" class="filter-select border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[140px] cursor-pointer text-sm">
             <option value="all">所有</option>
             <option value="CA008">CA008</option>
             <option value="CA005">CA005</option>
@@ -270,23 +389,23 @@
           </select>
         </div>
         <div class="flex items-center gap-2">
-          <i class="fas fa-box text-blue-600"></i>
-          <label class="text-sm font-medium text-gray-700 whitespace-nowrap">类型:</label>
-          <select id="filterType" class="filter-select border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[160px] cursor-pointer">
+          <i class="fas fa-box text-blue-600 text-sm"></i>
+          <label class="text-xs font-medium text-gray-700 whitespace-nowrap">类型:</label>
+          <select id="filterType" class="filter-select border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 w-[140px] cursor-pointer text-sm">
             <option value="all">所有</option>
             <option value="整柜">整柜</option>
             <option value="散货">散货</option>
           </select>
         </div>
-        <button id="resetFilters" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 whitespace-nowrap">
-          <i class="fas fa-redo mr-2"></i>重置
+        <button id="resetFilters" class="px-3 py-1.5 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 whitespace-nowrap text-sm">
+          <i class="fas fa-redo mr-1"></i>重置
         </button>
       </div>
-      <div id="selectedWeekChips" class="flex flex-wrap items-center gap-2 mt-3 text-xs text-gray-600"></div>
+      <div id="selectedWeekChips" class="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-600"></div>
     </div>
 
     <!-- 统计卡片区域 -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 fade-in">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 fade-in">
       <div class="stat-card-blue rounded-xl p-4 card-shadow text-white h-full flex flex-col">
         <div class="flex items-center justify-between flex-1">
           <div>
@@ -326,187 +445,469 @@
     </div>
 
     <!-- 仓库KPI指标区域 -->
-    <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in mb-6">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <i class="fas fa-chart-bar text-blue-600"></i>
-        仓库涉及部分指标
-      </h2>
+    <div class="bg-white rounded-xl p-3 md:p-4 card-shadow fade-in mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-chart-bar text-blue-600"></i>
+          入库指标看板
+        </h2>
+        <button id="kpiSettingsBtn" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center gap-2 text-sm">
+          <i class="fas fa-cog"></i>
+          <span>设置指标</span>
+        </button>
+      </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- KPI总览统计 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-600 mb-1">达标指标</p>
+              <p class="text-xl font-bold text-green-600" id="kpiPassCount">7</p>
+            </div>
+            <i class="fas fa-check-circle text-2xl text-green-400 opacity-50"></i>
+          </div>
+        </div>
+        <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-600 mb-1">待改进</p>
+              <p class="text-xl font-bold text-yellow-600" id="kpiWarningCount">1</p>
+            </div>
+            <i class="fas fa-exclamation-triangle text-2xl text-yellow-400 opacity-50"></i>
+          </div>
+        </div>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-600 mb-1">平均达标率</p>
+              <p class="text-xl font-bold text-blue-600" id="kpiAvgRate">98.2%</p>
+            </div>
+            <i class="fas fa-chart-pie text-2xl text-blue-400 opacity-50"></i>
+          </div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-600 mb-1">总体评分</p>
+              <p class="text-xl font-bold text-purple-600" id="kpiOverallScore">A</p>
+            </div>
+            <i class="fas fa-award text-2xl text-purple-400 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- 入库管理 -->
-        <div class="border border-gray-200 rounded-lg p-4">
-          <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <i class="fas fa-sign-in-alt text-green-600"></i>
-            入库管理
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">预约确认及时性</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≥95%</span>
+        <div class="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-md font-semibold text-gray-700 flex items-center gap-2">
+              <i class="fas fa-sign-in-alt text-green-600"></i>
+              入库管理
+            </h3>
+            <button class="info-toggle text-gray-400 hover:text-gray-600 text-sm" data-target="inbound-info">
+              <i class="fas fa-info-circle"></i>
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <!-- 预约确认及时性 -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">预约确认及时性</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-arrow-up text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">97%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥95%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-check-circle text-xs"></i>
+                          超出 2%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 97%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 97%</span>
-                  <span class="badge badge-success text-xs">达标</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="8.17" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">102%</div>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">标记到仓及时性</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≥95%</span>
+            <!-- 标记到仓及时性 -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">标记到仓及时性</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-arrow-up text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">96%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥95%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-check-circle text-xs"></i>
+                          超出 1%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 96%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 96%</span>
-                  <span class="badge badge-success text-xs">达标</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="16.34" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">101%</div>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">报空及时性</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≥98%</span>
+            <!-- 报空及时性 -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">报空及时性</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-arrow-up text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">99%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥98%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-check-circle text-xs"></i>
+                          超出 1%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 99%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 99%</span>
-                  <span class="badge badge-success text-xs">达标</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="16.34" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">101%</div>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">上架及时性</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≥98%</span>
+            <!-- 上架及时性 -->
+            <div class="kpi-item bg-white border border-yellow-200 rounded-lg p-4 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">上架及时性</span>
+                    <span class="trend-arrow text-red-500">
+                      <i class="fas fa-arrow-down text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-yellow-600">94%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥98%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-warning">
+                          <i class="fas fa-exclamation-triangle text-xs"></i>
+                          低于 4%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full" style="width: 94%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 94%</span>
-                  <span class="badge badge-warning text-xs">待改进</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#f59e0b" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="49.01" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-yellow-600">96%</div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- 可折叠信息区 -->
+          <div id="inbound-info" class="info-section hidden mt-3 bg-blue-50 border border-blue-200 rounded-lg p-2">
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+              <strong>入库管理指标说明：</strong>
+            </p>
+            <ul class="text-xs text-gray-600 mt-2 space-y-1 ml-4 list-disc">
+              <li>预约确认：预约确认及时率 = 期内达成数/期内总数 × 100%</li>
+              <li>标记到仓：标记到仓及时率 = 期内达成数/期内总数 × 100%</li>
+              <li>报空：即空柜子的报空及时率指标相关ELSA系统中标记到仓日期的个工作日内完成ELSA系统报空</li>
+              <li>上架：上架及时率 = 期内达成数/期内总数 × 100%</li>
+            </ul>
           </div>
         </div>
 
         <!-- 库存库位管理 -->
-        <div class="border border-gray-200 rounded-lg p-4">
-          <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <i class="fas fa-boxes text-purple-600"></i>
-            库存库位管理
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">订单拦截率</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≤0.01%</span>
+        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-semibold text-gray-700 flex items-center gap-2">
+              <i class="fas fa-boxes text-purple-600"></i>
+              库存库位管理
+            </h3>
+            <button class="info-toggle text-gray-400 hover:text-gray-600 text-sm" data-target="inventory-info">
+              <i class="fas fa-info-circle"></i>
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <!-- 订单拦截率 (inverse metric) -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">订单拦截率</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-arrow-down text-xs"></i>
+                    </span>
+                    <span class="text-xs text-gray-500">(越低越好)</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">0.005%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≤0.01%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-star text-xs"></i>
+                          优于目标 50%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 5%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 0.005%</span>
-                  <span class="badge badge-success text-xs">达标</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="81.68" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">50%</div>
                 </div>
               </div>
             </div>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-              <p class="text-xs text-gray-600 leading-relaxed">
-                <i class="fas fa-info-circle text-blue-500 mr-1"></i>
-                订单拦截是指：
-              </p>
-              <ul class="text-xs text-gray-600 mt-2 space-y-1 ml-4">
-                <li>a. 订单下架后24小时内没有找到，导致客户拦截</li>
-                <li>b. 拣操作过程中发现货物不到，系统库存调0的数量</li>
-                <li>c. 盘点过程中盘亏，系统库存调0的数量</li>
-              </ul>
-            </div>
+          </div>
+
+          <!-- 可折叠信息区 -->
+          <div id="inventory-info" class="info-section hidden mt-3 bg-purple-50 border border-purple-200 rounded-lg p-2">
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <i class="fas fa-info-circle text-purple-500 mr-1"></i>
+              <strong>订单拦截是指：</strong>
+            </p>
+            <ul class="text-xs text-gray-600 mt-2 space-y-1 ml-4 list-disc">
+              <li>订单下架后24小时内没有找到，导致客户拦截，系统库存调0的数量</li>
+              <li>拣操作过程中发现货物不到，系统库存调0的数量</li>
+              <li>盘点过程中盘亏，系统库存调0的数量</li>
+            </ul>
           </div>
         </div>
 
         <!-- 发货管理 -->
-        <div class="border border-gray-200 rounded-lg p-4">
-          <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <i class="fas fa-shipping-fast text-blue-600"></i>
-            发货管理
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">货物出库准确率</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≥99.99%</span>
+        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-semibold text-gray-700 flex items-center gap-2">
+              <i class="fas fa-shipping-fast text-blue-600"></i>
+              发货管理
+            </h3>
+            <button class="info-toggle text-gray-400 hover:text-gray-600 text-sm" data-target="shipping-info">
+              <i class="fas fa-info-circle"></i>
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <!-- 货物出库准确率 -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">货物出库准确率</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-check text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">99.99%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥99.99%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-trophy text-xs"></i>
+                          完美达标
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 99.99%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 99.99%</span>
-                  <span class="badge badge-success text-xs">达标</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="0" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">100%</div>
                 </div>
               </div>
             </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
-              <p class="text-xs text-gray-600 leading-relaxed">
-                <i class="fas fa-check-circle text-green-500 mr-1"></i>
-                发货准确率 = 1 - 期内错发单数/期内总发单数 × 100%
-              </p>
-              <p class="text-xs text-gray-500 mt-1">
-                错发包括：相客户订单、准确出库、无错装、少发、多发
-              </p>
-            </div>
+          </div>
+
+          <!-- 可折叠信息区 -->
+          <div id="shipping-info" class="info-section hidden mt-3 bg-blue-50 border border-blue-200 rounded-lg p-2">
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+              <strong>发货准确率计算：</strong>
+            </p>
+            <p class="text-xs text-gray-600 mt-2">
+              发货准确率 = 1 - 期内错发单数/期内总发单数 × 100%
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              错发包括：相客户订单、准确出库、无错装、少发、多发
+            </p>
           </div>
         </div>
 
         <!-- 退货管理 -->
-        <div class="border border-gray-200 rounded-lg p-4">
-          <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <i class="fas fa-undo text-orange-600"></i>
-            退货管理
-          </h3>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-600">退货处理及时率</span>
-                  <span class="text-xs font-semibold text-green-600">目标 ≥90%</span>
+        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-md font-semibold text-gray-700 flex items-center gap-2">
+              <i class="fas fa-undo text-orange-600"></i>
+              退货管理
+            </h3>
+            <button class="info-toggle text-gray-400 hover:text-gray-600 text-sm" data-target="return-info">
+              <i class="fas fa-info-circle"></i>
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            <!-- 退货扫描及时率 -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">退货扫描及时率</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-arrow-up text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">91%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥90%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-check-circle text-xs"></i>
+                          超出 1%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div class="progress-bar bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full" style="width: 92%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                  <span class="text-xs text-gray-500">当前: 92%</span>
-                  <span class="badge badge-success text-xs">达标</span>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="16.34" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">101%</div>
                 </div>
               </div>
             </div>
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-3">
-              <p class="text-xs text-gray-600 leading-relaxed">
-                <i class="fas fa-clock text-orange-500 mr-1"></i>
-                退货扫描及时率 (≤7工作日) ≥90%
-              </p>
-              <p class="text-xs text-gray-500 mt-1">
-                退货处理及时率 = (期内 ≤7工作日完成扫描的退货包裹数 / 期内接收的退货包裹总数) × 100%
-              </p>
+
+            <!-- 退货处理及时率 -->
+            <div class="kpi-item bg-white border border-green-200 rounded-lg p-3 hover:shadow-lg transition-all">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-sm font-medium text-gray-700">退货处理及时率</span>
+                    <span class="trend-arrow text-green-500">
+                      <i class="fas fa-arrow-up text-xs"></i>
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="kpi-value-large text-green-600">92%</div>
+                    <div class="flex flex-col">
+                      <span class="text-xs text-gray-500">目标 ≥90%</span>
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="performance-badge performance-excellent">
+                          <i class="fas fa-check-circle text-xs"></i>
+                          超出 2%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="circular-progress">
+                  <svg width="50" height="50">
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                    <circle cx="25" cy="25" r="22" fill="none" stroke="#10b981" stroke-width="5"
+                            stroke-dasharray="163.36" stroke-dashoffset="8.17" stroke-linecap="round"/>
+                  </svg>
+                  <div class="circular-progress-text text-green-600">102%</div>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- 可折叠信息区 -->
+          <div id="return-info" class="info-section hidden mt-3 bg-orange-50 border border-orange-200 rounded-lg p-2">
+            <p class="text-xs text-gray-600 leading-relaxed">
+              <i class="fas fa-info-circle text-orange-500 mr-1"></i>
+              <strong>退货管理指标说明：</strong>
+            </p>
+            <p class="text-xs text-gray-600 mt-2">
+              退货扫描及时率 (≤7工作日) ≥90%
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+              退货处理及时率 = (期内 ≤7工作日完成扫描的退货包裹数 / 期内接收的退货包裹总数) × 100%
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI可视化图表 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <!-- KPI雷达图 -->
+        <div class="border border-gray-200 rounded-lg p-3">
+          <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <i class="fas fa-chart-area text-indigo-600"></i>
+            KPI达标情况总览
+          </h3>
+          <div class="relative" style="height: 300px;">
+            <canvas id="kpiRadarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- KPI趋势图 -->
+        <div class="border border-gray-200 rounded-lg p-4">
+          <h3 class="text-md font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <i class="fas fa-chart-line text-teal-600"></i>
+            KPI趋势分析（近7天）
+          </h3>
+          <div class="relative" style="height: 300px;">
+            <canvas id="kpiTrendChart"></canvas>
           </div>
         </div>
       </div>
@@ -514,8 +915,8 @@
 
     <!-- 主要内容区域 -->
     <!-- 表格区域：独占一行 -->
-    <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in mb-6">
-      <div class="flex items-center justify-between mb-4">
+    <div class="bg-white rounded-xl p-3 md:p-4 card-shadow fade-in mb-4">
+      <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
           <i class="fas fa-table text-blue-600"></i>
           周计划统计（当前周 ±4周）
@@ -536,10 +937,10 @@
     </div>
 
     <!-- 图表卡片区域：两行两列 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
       <!-- 折线图：近四周趋势（第一行左） -->
-      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <div class="bg-white rounded-xl p-3 md:p-4 card-shadow fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <i class="fas fa-chart-line text-blue-600"></i>
           近四周趋势分析
         </h2>
@@ -549,8 +950,8 @@
       </div>
 
       <!-- 前15客户预计到柜量（第一行右） -->
-      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <div class="bg-white rounded-xl p-3 md:p-4 card-shadow fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <i class="fas fa-users text-blue-600"></i>
           前15客户预计到柜量
         </h2>
@@ -560,8 +961,8 @@
       </div>
 
       <!-- 进度统计（第二行左） -->
-      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <div class="bg-white rounded-xl p-3 md:p-4 card-shadow fade-in">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <i class="fas fa-tasks text-blue-600"></i>
           进度统计
         </h2>
@@ -602,8 +1003,8 @@
       </div>
 
       <!-- 已到仓未上架时效情况（第二行右） -->
-      <div class="bg-white rounded-xl p-4 md:p-6 card-shadow fade-in">
-        <div class="flex items-center justify-between mb-4">
+      <div class="bg-white rounded-xl p-3 md:p-4 card-shadow fade-in">
+        <div class="flex items-center justify-between mb-3">
           <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <i class="fas fa-clock text-blue-600"></i>
             已到仓未上架时效情况
@@ -627,6 +1028,107 @@
         </div>
         <div class="relative" style="height: 350px;">
           <canvas id="agingChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI设置模态框 -->
+  <div id="kpiSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" style="display: none;">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-xl">
+        <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-cog text-blue-600"></i>
+          KPI指标设置
+        </h3>
+        <button id="closeKpiSettings" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 入库管理 -->
+          <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <h4 class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <i class="fas fa-sign-in-alt text-green-600"></i>
+              入库管理
+            </h4>
+            <div class="space-y-2">
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">预约确认及时性 (%)</label>
+                <input type="number" id="kpi_appointment" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="95" min="0" max="100" step="0.1">
+              </div>
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">标记到仓及时性 (%)</label>
+                <input type="number" id="kpi_marking" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="95" min="0" max="100" step="0.1">
+              </div>
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">报空及时性 (%)</label>
+                <input type="number" id="kpi_empty_report" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="98" min="0" max="100" step="0.1">
+              </div>
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">上架及时性 (%)</label>
+                <input type="number" id="kpi_putaway" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="98" min="0" max="100" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <!-- 库存库位管理 -->
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <h4 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <i class="fas fa-boxes text-purple-600"></i>
+              库存库位管理
+            </h4>
+            <div class="space-y-2">
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">订单拦截率 (%)</label>
+                <input type="number" id="kpi_interception" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="0.01" min="0" max="100" step="0.001">
+              </div>
+            </div>
+          </div>
+
+          <!-- 发货管理 -->
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <h4 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <i class="fas fa-shipping-fast text-blue-600"></i>
+              发货管理
+            </h4>
+            <div class="space-y-2">
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">货物出库准确率 (%)</label>
+                <input type="number" id="kpi_shipping_accuracy" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="99.99" min="0" max="100" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <!-- 退货管理 -->
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <h4 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <i class="fas fa-undo text-orange-600"></i>
+              退货管理
+            </h4>
+            <div class="space-y-2">
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">退货扫描及时率 (%)</label>
+                <input type="number" id="kpi_return_scan" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="90" min="0" max="100" step="0.1">
+              </div>
+              <div>
+                <label class="text-sm text-gray-600 block mb-1">退货处理及时率 (%)</label>
+                <input type="number" id="kpi_return_process" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="90" min="0" max="100" step="0.1">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button id="cancelKpiSettings" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            取消
+          </button>
+          <button id="saveKpiSettings" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <i class="fas fa-save mr-2"></i>
+            保存设置
+          </button>
         </div>
       </div>
     </div>
@@ -689,11 +1191,54 @@
     let lineChartInstance = null;
     let customerChartInstance = null;
     let agingChartInstance = null;
+    let kpiRadarChartInstance = null;
+    let kpiTrendChartInstance = null;
     let weekOptions = [];
     let weekLabels = [];
     let weekMeta = [];
     let selectedWeekLabels = [];
     let currentWeekLabel = '';
+
+    // KPI设置和当前值
+    let kpiSettings = {
+      appointment: { target: 95, current: 97, name: '预约确认及时性' },
+      marking: { target: 95, current: 96, name: '标记到仓及时性' },
+      empty_report: { target: 98, current: 99, name: '报空及时性' },
+      putaway: { target: 98, current: 94, name: '上架及时性' },
+      interception: { target: 0.01, current: 0.005, name: '订单拦截率', inverse: true },
+      shipping_accuracy: { target: 99.99, current: 99.99, name: '货物出库准确率' },
+      return_scan: { target: 90, current: 91, name: '退货扫描及时率' },
+      return_process: { target: 90, current: 92, name: '退货处理及时率' }
+    };
+
+    // KPI历史数据（模拟近7天）
+    let kpiHistory = {
+      dates: [],
+      appointment: [],
+      marking: [],
+      empty_report: [],
+      putaway: [],
+      shipping_accuracy: [],
+      return_process: []
+    };
+
+    // 生成模拟历史数据
+    function generateKpiHistory() {
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        kpiHistory.dates.push(`${date.getMonth() + 1}/${date.getDate()}`);
+      }
+
+      // 生成模拟数据（围绕当前值波动）
+      kpiHistory.appointment = [95, 96, 97, 96, 97, 98, 97];
+      kpiHistory.marking = [94, 95, 96, 95, 96, 97, 96];
+      kpiHistory.empty_report = [98, 99, 99, 98, 99, 99, 99];
+      kpiHistory.putaway = [92, 93, 94, 93, 94, 95, 94];
+      kpiHistory.shipping_accuracy = [99.98, 99.99, 99.99, 99.98, 99.99, 99.99, 99.99];
+      kpiHistory.return_process = [90, 91, 92, 91, 92, 93, 92];
+    }
 
     // 生成周区间（当前周为0，前推负数，后推正数）
     function getWeekRange(weekOffset = 0) {
@@ -1312,6 +1857,260 @@
       });
     }
 
+    // 初始化KPI雷达图
+    function initKpiRadarChart() {
+      const ctx = document.getElementById('kpiRadarChart').getContext('2d');
+      if (kpiRadarChartInstance) {
+        kpiRadarChartInstance.destroy();
+      }
+
+      // 计算达标率（当前值/目标值 * 100，对于inverse类型则反向计算）
+      const calculateScore = (key) => {
+        const kpi = kpiSettings[key];
+        if (kpi.inverse) {
+          // 对于订单拦截率，值越小越好
+          return kpi.current <= kpi.target ? 100 : (kpi.target / kpi.current) * 100;
+        } else {
+          return (kpi.current / kpi.target) * 100;
+        }
+      };
+
+      const scores = {
+        appointment: calculateScore('appointment'),
+        marking: calculateScore('marking'),
+        empty_report: calculateScore('empty_report'),
+        putaway: calculateScore('putaway'),
+        interception: calculateScore('interception'),
+        shipping_accuracy: calculateScore('shipping_accuracy'),
+        return_process: calculateScore('return_process')
+      };
+
+      kpiRadarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: [
+            '预约确认',
+            '标记到仓',
+            '报空',
+            '上架',
+            '订单拦截',
+            '出库准确',
+            '退货处理'
+          ],
+          datasets: [{
+            label: '达标率',
+            data: [
+              scores.appointment,
+              scores.marking,
+              scores.empty_report,
+              scores.putaway,
+              scores.interception,
+              scores.shipping_accuracy,
+              scores.return_process
+            ],
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgb(59, 130, 246)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(59, 130, 246)',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }, {
+            label: '目标线',
+            data: [100, 100, 100, 100, 100, 100, 100],
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            borderColor: 'rgb(34, 197, 94)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            pointHoverRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 110,
+              min: 0,
+              ticks: {
+                stepSize: 20,
+                font: {
+                  size: 10
+                },
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              pointLabels: {
+                font: {
+                  size: 11
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.1)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 12
+              },
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.r.toFixed(1) + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 初始化KPI趋势图
+    function initKpiTrendChart() {
+      const ctx = document.getElementById('kpiTrendChart').getContext('2d');
+      if (kpiTrendChartInstance) {
+        kpiTrendChartInstance.destroy();
+      }
+
+      kpiTrendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: kpiHistory.dates,
+          datasets: [
+            {
+              label: '预约确认',
+              data: kpiHistory.appointment,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.3,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2
+            },
+            {
+              label: '标记到仓',
+              data: kpiHistory.marking,
+              borderColor: 'rgb(16, 185, 129)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.3,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2
+            },
+            {
+              label: '报空',
+              data: kpiHistory.empty_report,
+              borderColor: 'rgb(139, 92, 246)',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              tension: 0.3,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2
+            },
+            {
+              label: '上架',
+              data: kpiHistory.putaway,
+              borderColor: 'rgb(245, 158, 11)',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              tension: 0.3,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                padding: 10,
+                font: {
+                  size: 10
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 13,
+                weight: 'bold'
+              },
+              bodyFont: {
+                size: 12
+              },
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y + '%';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 85,
+              max: 100,
+              ticks: {
+                stepSize: 5,
+                font: {
+                  size: 10
+                },
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                font: {
+                  size: 10
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
     // 更新所有图表
     function updateAllCharts() {
       renderTableHead();
@@ -1343,6 +2142,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // 初始化周选项（优先，以便图表标签使用动态周区间）
       initWeekOptions();
+      generateKpiHistory();
 
       renderTableHead();
       renderTable();
@@ -1350,6 +2150,8 @@
       initLineChart();
       initCustomerChart();
       initAgingChart();
+      initKpiRadarChart();
+      initKpiTrendChart();
       updateLastUpdateTime();
       renderWeekChips(selectedWeekLabels);
 
@@ -1371,12 +2173,98 @@
       // 绑定刷新按钮
       document.getElementById('refreshBtn').addEventListener('click', refreshData);
 
+      // 信息区折叠功能
+      document.querySelectorAll('.info-toggle').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const targetId = this.getAttribute('data-target');
+          const infoSection = document.getElementById(targetId);
+
+          if (infoSection) {
+            if (infoSection.classList.contains('hidden')) {
+              infoSection.classList.remove('hidden');
+              this.classList.add('active');
+            } else {
+              infoSection.classList.add('hidden');
+              this.classList.remove('active');
+            }
+          }
+        });
+      });
+
       // 添加键盘快捷键支持
       document.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
           e.preventDefault();
           refreshData();
         }
+      });
+
+      // KPI设置模态框事件
+      const kpiSettingsModal = document.getElementById('kpiSettingsModal');
+      const kpiSettingsBtn = document.getElementById('kpiSettingsBtn');
+      const closeKpiSettings = document.getElementById('closeKpiSettings');
+      const cancelKpiSettings = document.getElementById('cancelKpiSettings');
+      const saveKpiSettings = document.getElementById('saveKpiSettings');
+
+      // 打开模态框
+      kpiSettingsBtn.addEventListener('click', function() {
+        // 加载当前设置到输入框
+        document.getElementById('kpi_appointment').value = kpiSettings.appointment.target;
+        document.getElementById('kpi_marking').value = kpiSettings.marking.target;
+        document.getElementById('kpi_empty_report').value = kpiSettings.empty_report.target;
+        document.getElementById('kpi_putaway').value = kpiSettings.putaway.target;
+        document.getElementById('kpi_interception').value = kpiSettings.interception.target;
+        document.getElementById('kpi_shipping_accuracy').value = kpiSettings.shipping_accuracy.target;
+        document.getElementById('kpi_return_scan').value = kpiSettings.return_scan.target;
+        document.getElementById('kpi_return_process').value = kpiSettings.return_process.target;
+
+        kpiSettingsModal.style.display = 'flex';
+      });
+
+      // 关闭模态框
+      const closeModal = () => {
+        kpiSettingsModal.style.display = 'none';
+      };
+
+      closeKpiSettings.addEventListener('click', closeModal);
+      cancelKpiSettings.addEventListener('click', closeModal);
+
+      // 点击模态框外部关闭
+      kpiSettingsModal.addEventListener('click', function(e) {
+        if (e.target === kpiSettingsModal) {
+          closeModal();
+        }
+      });
+
+      // 保存设置
+      saveKpiSettings.addEventListener('click', function() {
+        // 更新设置
+        kpiSettings.appointment.target = parseFloat(document.getElementById('kpi_appointment').value);
+        kpiSettings.marking.target = parseFloat(document.getElementById('kpi_marking').value);
+        kpiSettings.empty_report.target = parseFloat(document.getElementById('kpi_empty_report').value);
+        kpiSettings.putaway.target = parseFloat(document.getElementById('kpi_putaway').value);
+        kpiSettings.interception.target = parseFloat(document.getElementById('kpi_interception').value);
+        kpiSettings.shipping_accuracy.target = parseFloat(document.getElementById('kpi_shipping_accuracy').value);
+        kpiSettings.return_scan.target = parseFloat(document.getElementById('kpi_return_scan').value);
+        kpiSettings.return_process.target = parseFloat(document.getElementById('kpi_return_process').value);
+
+        // 重新渲染图表
+        initKpiRadarChart();
+        initKpiTrendChart();
+
+        // 显示保存成功提示
+        const originalText = saveKpiSettings.innerHTML;
+        saveKpiSettings.innerHTML = '<i class="fas fa-check mr-2"></i>保存成功';
+        saveKpiSettings.classList.add('bg-green-600');
+        saveKpiSettings.classList.remove('bg-blue-600');
+
+        setTimeout(() => {
+          saveKpiSettings.innerHTML = originalText;
+          saveKpiSettings.classList.remove('bg-green-600');
+          saveKpiSettings.classList.add('bg-blue-600');
+          closeModal();
+        }, 1000);
       });
     });
   </script>
