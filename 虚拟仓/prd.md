@@ -40,21 +40,96 @@
 | 财务人员 | 负责账单结算 | 按部门导出发货账单 | 无法按部门出账单、结算困难 |
 
 ### 2.2 User Journey Map 用户旅程图
-                     
-                                入库单
-                              关联虚拟仓                       
-                                  | 
-                                  ▼
-创建部门 ➡ 创建虚拟仓 ➡ 库存调拨 ➡ 库存管理 ➡ 发货出库 ➡ 账单结算
+
+```mermaid
+graph TD
+    subgraph "用户旅程: 虚拟仓管理系统"
+        A["创建部门
+公司管理员"] --> B["创建虚拟仓
+部门运营"]
+        B --> C["入库单关联
+仓库操作员"]
+        C --> D["库存调拨
+部门运营"]
+        D --> E["库存管理
+部门运营"]
+        E --> F["发货出库
+部门运营"]
+        F --> G["账单结算
+财务人员"]
+        
+        %% 情感曲线
+        A1["开始
+需求明确"] --> B1["期待
+规划阶段"]
+        B1 --> C1["谨慎
+配置阶段"]
+        C1 --> D1["专注
+操作阶段"]
+        D1 --> E1["安心
+管理阶段"]
+        E1 --> F1["紧张
+发货阶段"]
+        F1 --> G1["轻松
+结算阶段"]
+        
+        %% 痛点
+        A2["权限设置复杂"]
+        B2["虚拟仓配置繁琐"]
+        C2["入库单关联错误"]
+        D2["调拨审批流程长"]
+        E2["库存数据不准确"]
+        F2["发货操作耗时"]
+        G2["账单数据不一致"]
+        
+        %% 机会点
+        A3["批量部门创建"]
+        B3["模板化配置"]
+        C3["自动关联入库单"]
+        D3["简化审批流程"]
+        E3["实时库存同步"]
+        F3["批量发货操作"]
+        G3["自动对账功能"]
+    end
+```
 
 ### 2.3 User Flows 用户流程
 
-**调拨流程**：发起 → 锁定库存 → 等待审批 → 确认 → 库存转移 → 完成
-                               | 
-                               ▼
-                              取消 → 释放库存 → 结束
+#### 2.3.1 调拨流程
 
-**出库流程**：选择仓库 → 选择SKU → 校验库存 → 确认发货 → 扣减库存
+```mermaid
+graph TD
+    A["发起调拨"] --> B{"是否部门内?"}
+    B -->|"是"| C["锁定库存"]
+    B -->|"否"| D["提交审批"]
+    D --> E["等待审批"]
+    E --> F{"审批结果?"}
+    F -->|"通过"| C
+    F -->|"拒绝"| G["释放库存"]
+    C --> H["库存转移"]
+    H --> I["完成"]
+    G --> J["结束"]
+    
+    %% 取消流程
+    C --> K{"是否取消?"}
+    K -->|"是"| G
+    K -->|"否"| H
+```
+
+#### 2.3.2 出库流程
+
+```mermaid
+graph TD
+    A["选择仓库"] --> B["选择SKU"]
+    B --> C["校验库存"]
+    C --> D{"库存充足?"}
+    D -->|"是"| E["确认发货"]
+    D -->|"否"| F["提示库存不足"]
+    E --> G["扣减库存"]
+    G --> H["生成出库单"]
+    H --> I["完成"]
+    F --> J["结束"]
+```
 
 ---
 
@@ -425,73 +500,25 @@
 
 ### 实体关系图 (ER图)
 
-```
-┌─────────────┐       1:N        ┌─────────────┐
-│   Company   │◄──────────────┐  │ Department  │
-├─────────────┤               │  ├─────────────┤
-│ id          │               │  │ id          │
-│ name        │               │  │ companyId   │
-│ code        │               │  │ name        │
-└─────────────┘               │  │ code        │
-                              │  └─────────────┘
-                              │         │
-                              │         │ 1:N
-                              │         ▼
-                              │  ┌──────────────────────┐
-                              │  │ VirtualWarehouse     │
-                              │  ├──────────────────────┤
-                              │  │ id                   │
-                              │  │ companyId            │
-                              │  │ departmentId (NULL)  │
-                              │  │ name                 │
-                              │  │ type                 │
-                              │  │ physicalWarehouseId  │
-                              │  └──────────────────────┘
-                              │                  │
-                              │                  │ 1:N
-                              │                  ▼
-                              │      ┌───────────────┐
-                              │      │  Inventory    │
-                              │      ├───────────────┤
-                              │      │ id            │
-                              │      │ virtualWarehouseId │
-                              │      │ skuId         │
-                              │      │ locationId    │
-                              │      │ quantity      │
-                              │      │ lockedQuantity│
-                              │      │ availableQuantity │
-                              │      └───────────────┘
-                              │                  │
-                              │                  │
-                              │                  │
-                   1:N        │                  │ 1:N
-┌────────────────┐◄───────────┘                  └───────────►┌───────────────────┐
-│ TransferOrder  │                                             │ ShipmentRecord    │
-├────────────────┤                                             ├───────────────────┤
-│ id             │                                             │ id                │
-│ orderNo        │                                             │ shipmentNo        │
-│ fromVirtualWarehouseId │                                    │ departmentId      │
-│ toVirtualWarehouseId   │                                    │ virtualWarehouseId│
-│ skuId          │                                             │ skuId             │
-│ quantity       │                                             │ quantity          │
-│ status         │                                             │ fee               │
-└────────────────┘                                             │ shippedAt         │
-                                                              └───────────────────┘
-                                                                       │
-                                                                       │
-                                                                       │ 1:N
-                                                                       ▼
-                                                               ┌────────────┐
-                                                               │    Bill    │
-                                                               ├────────────┤
-                                                               │ id         │
-                                                               │ billNo     │
-                                                               │ departmentId│
-                                                               │ periodStart│
-                                                               │ periodEnd  │
-                                                               │ totalFee   │
-                                                               │ status     │
-                                                               └────────────┘
+```mermaid
+graph TD
+    subgraph "实体关系图"
+        Company["公司
+Company"] --> Department["部门
+Department"]
+        Department --> VirtualWarehouse["虚拟仓
+VirtualWarehouse"]
+        VirtualWarehouse --> Inventory["库存
+Inventory"]
+        VirtualWarehouse --> TransferOrder["调拨单
+TransferOrder"]
+        VirtualWarehouse --> ShipmentRecord["出库单
+ShipmentRecord"]
+        Department --> ShipmentRecord
+        Department --> Bill["账单
+Bill"]
+        ShipmentRecord --> Bill
+    end
 ```
 
 ### 关系说明

@@ -218,7 +218,32 @@
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Markdown 解析库 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <!-- Mermaid 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // 初始化Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+        
+        // 配置Marked
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid">${code}</div>`;
+            }
+            return `<pre><code class="language-${language}">${code}</code></pre>`;
+        };
+        
+        marked.setOptions({
+            renderer: renderer,
+            breaks: true,
+            gfm: true
+        });
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -642,6 +667,9 @@
                                 <div class="animate-pulse">
                                     <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
                                     <p class="text-lg text-gray-500">正在加载PRD文档...</p>
+                                    <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载PRD
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -3705,74 +3733,83 @@
         let prdLoaded = false;
 
 
-        async function loadPRD() {
+        function loadPRD() {
             if (prdLoaded) return;
             
+            console.log('开始加载PRD...');
             const prdContentDiv = document.getElementById('prd-content');
+            
+            // 确保marked已经初始化
+            if (typeof marked === 'undefined') {
+                console.error('Marked库未加载');
+                prdContentDiv.innerHTML = 
+                    '<div class="text-center py-8">' +
+                    '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
+                    '<p class="text-red-500 mb-4">错误: Marked库未加载</p>' +
+                    '</div>';
+                return;
+            }
             
             // 使用XMLHttpRequest加载PRD文件
             const xhr = new XMLHttpRequest();
             xhr.open('GET', 'prd.md', true);
             xhr.onreadystatechange = function() {
+                console.log('Ready state:', xhr.readyState, 'Status:', xhr.status);
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         const markdown = xhr.responseText;
+                        console.log('PRD内容长度:', markdown.length);
                         
-                        marked.setOptions({
-                            breaks: true,
-                            gfm: true
-                        });
-                        
-                        const html = marked.parse(markdown);
-                        prdContentDiv.innerHTML = html;
-                        
-                        // 生成目录导航
-                        generateTOC();
-                        
-                        prdLoaded = true;
+                        try {
+                            const html = marked.parse(markdown);
+                            console.log('Markdown解析结果类型:', typeof html);
+                            console.log('Markdown解析结果预览:', html.substring(0, 100) + '...');
+                            prdContentDiv.innerHTML = html;
+                            
+                            // 生成目录导航
+                            generateTOC();
+                            
+                            // 重新初始化Mermaid图表
+                            if (window.mermaid) {
+                                window.mermaid.init(undefined, '.mermaid');
+                            }
+                            
+                            prdLoaded = true;
+                            console.log('PRD加载完成');
+                        } catch (error) {
+                            console.error('Markdown解析错误:', error);
+                            prdContentDiv.innerHTML = 
+                                '<div class="text-center py-8">' +
+                                '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
+                                '<p class="text-red-500 mb-4">解析失败: ' + error.message + '</p>' +
+                                '</div>';
+                        }
                     } else {
                         // 加载失败，显示错误信息
+                        console.error('PRD加载失败:', xhr.status);
                         prdContentDiv.innerHTML = 
                             '<div class="text-center py-8">' +
                             '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
                             '<p class="text-red-500 mb-4">加载失败: HTTP ' + xhr.status + '</p>' +
-                            '<div class="text-left bg-gray-100 p-4 rounded text-sm">' +
-                            '<p class="font-semibold mb-2">诊断信息:</p>' +
-                            '<p>当前页面URL: ' + window.location.href + '</p>' +
-                            '<p>请确保:</p>' +
-                            '<ul class="list-disc ml-5 mt-2">' +
-                            '<li>通过HTTP服务器访问页面 (如: http://localhost:8080/index-original.html)</li>' +
-                            '<li>prd.md文件存在于同一目录</li>' +
-                            '<li>浏览器允许跨域请求</li>' +
-                            '</ul>' +
-                            '<button onclick="location.reload()" class="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-light">' +
-                            '<i class="fa fa-refresh mr-2"></i>刷新页面' +
+                            '<button onclick="loadPRD()" class="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-light">' +
+                            '<i class="fa fa-refresh mr-2"></i>重试' +
                             '</button>' +
-                            '</div>' +
                             '</div>';
                     }
                 }
             };
             xhr.onerror = function() {
+                console.error('PRD加载网络错误');
                 prdContentDiv.innerHTML = 
                     '<div class="text-center py-8">' +
                     '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
                     '<p class="text-red-500 mb-4">加载失败: 网络错误</p>' +
-                    '<div class="text-left bg-gray-100 p-4 rounded text-sm">' +
-                    '<p class="font-semibold mb-2">诊断信息:</p>' +
-                    '<p>当前页面URL: ' + window.location.href + '</p>' +
-                    '<p>请确保:</p>' +
-                    '<ul class="list-disc ml-5 mt-2">' +
-                    '<li>通过HTTP服务器访问页面 (如: http://localhost:8080/index-original.html)</li>' +
-                    '<li>prd.md文件存在于同一目录</li>' +
-                    '<li>浏览器允许跨域请求</li>' +
-                    '</ul>' +
-                    '<button onclick="location.reload()" class="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-light">' +
-                    '<i class="fa fa-refresh mr-2"></i>刷新页面' +
+                    '<button onclick="loadPRD()" class="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-light">' +
+                    '<i class="fa fa-refresh mr-2"></i>重试' +
                     '</button>' +
-                    '</div>' +
                     '</div>';
             };
+            console.log('发送PRD请求...');
             xhr.send();
         }
         
@@ -3797,6 +3834,7 @@
         }
         
         function switchMainTab(tab) {
+            console.log('switchMainTab called with tab:', tab);
             var header = document.querySelector('header');
             var prototypeTabBtn = document.getElementById('tab-prototype');
             var prdTabBtn = document.getElementById('tab-prd');
@@ -3809,13 +3847,14 @@
                 prdTabBtn.className = 'tab';
                 mainPrototype.style.display = 'block';
                 mainPrd.style.display = 'none';
+                console.log('Switched to prototype tab');
             } else {
                 header.style.display = 'none';
                 prdTabBtn.className = 'tab active';
                 prototypeTabBtn.className = 'tab';
                 mainPrd.style.display = 'block';
                 mainPrototype.style.display = 'none';
-                
+                console.log('Switched to PRD tab, calling loadPRD()');
                 loadPRD();
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
