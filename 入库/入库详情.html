@@ -622,12 +622,237 @@
         <!-- 打托信息标签页 -->
         <div id="tab-pallet" class="tab-content hidden">
           <div class="info-card-enhanced p-6">
-            <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-              <i class="fa fa-pallet empty-state-icon"></i>打托信息
-            </h2>
-            <div class="empty-state">
-              <i class="fa fa-pallet empty-state-icon"></i>
-              <p class="empty-state-text">暂无打托信息</p>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fa fa-pallet mr-2 text-primary"></i>打托信息
+              </h2>
+              <button class="btn-primary flex items-center">
+                <i class="fa fa-download mr-2"></i>导出
+              </button>
+            </div>
+
+            <!-- 打托统计信息 -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+              <div class="flex flex-wrap gap-6">
+                <div class="flex items-center">
+                  <span class="text-gray-600 mr-2">托盘:</span>
+                  <span class="font-semibold text-gray-800">46</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="text-gray-600 mr-2">SKU数量:</span>
+                  <span class="font-semibold text-gray-800">8</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="text-gray-600 mr-2">RFID数量:</span>
+                  <span class="font-semibold text-gray-800">334</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 打托表格 -->
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>产品名称</th>
+                    <th>箱子尺寸</th>
+                    <th>总件数</th>
+                    <th>异常数量</th>
+                    <th>打托数</th>
+                    <th>打托件数</th>
+                    <th>上架数量</th>
+                    <th>自定义编码</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>FS000111A-00203</td>
+                    <td>沙发</td>
+                    <td>91CM × 77CM × 37CM</td>
+                    <td>135</td>
+                    <td>0</td>
+                    <td>23</td>
+                    <td>135</td>
+                    <td>135</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111F-00203</td>
+                    <td>沙发</td>
+                    <td>91CM × 75CM × 31CM</td>
+                    <td>37</td>
+                    <td>0</td>
+                    <td>6</td>
+                    <td>37</td>
+                    <td>37</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111C-00203</td>
+                    <td>沙发</td>
+                    <td>77CM × 58CM × 19CM</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>7</td>
+                    <td>7</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111H-00203</td>
+                    <td>沙发</td>
+                    <td>77CM × 58.5CM ×  33CM</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>7</td>
+                    <td>7</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111H-00203</td>
+                    <td>沙发</td>
+                    <td>91CM × 58.5CM × 33CM</td>
+                    <td>7</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>7</td>
+                    <td>7</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111B-00203</td>
+                    <td>沙发</td>
+                    <td>91CM × 77CM × 19CM</td>
+                    <td>51</td>
+                    <td>0</td>
+                    <td>5</td>
+                    <td>51</td>
+                    <td>51</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111D-00203</td>
+                    <td>沙发</td>
+                    <td>91CM × 58CM × 17CM</td>
+                    <td>35</td>
+                    <td>0</td>
+                    <td>2</td>
+                    <td>35</td>
+                    <td>35</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>FS000111G-00203</td>
+                    <td>沙发</td>
+                    <td>92.5CM × 58.5CM × 45CM</td>
+                    <td>62</td>
+                    <td>0</td>
+                    <td>8</td>
+                    <td>62</td>
+                    <td>62</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 托盘信息展示区域 -->
+            <div class="mt-8">
+              <h3 class="text-md font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fa fa-cubes mr-2 text-primary"></i>托盘信息
+              </h3>
+              
+              <!-- 托盘列表 -->
+              <div class="space-y-4">
+                <!-- 托盘1 -->
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <!-- 第一层：托盘信息 -->
+                  <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50" onclick="togglePalletImages('pallet1')">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <div class="font-semibold text-gray-800 text-lg">第1托</div>
+                    </div>
+                    <div class="ml-4">
+                      <i id="pallet1-icon" class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                    </div>
+                  </div>
+                  
+                  <!-- 第二层：展示图片（默认折叠） -->
+                  <div id="pallet1-images" class="p-4 border-t border-gray-200 hidden">
+                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
+                    <div class="flex flex-wrap gap-4">
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20with%20boxes&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20top%20view&image_size=square" alt="托盘俯视图" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20side%20view&image_size=square" alt="托盘侧视图" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 托盘2 -->
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <!-- 第一层：托盘信息 -->
+                  <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50" onclick="togglePalletImages('pallet2')">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <div class="font-semibold text-gray-800 text-lg">第2托</div>
+                    </div>
+                    <div class="ml-4">
+                      <i id="pallet2-icon" class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                    </div>
+                  </div>
+                  
+                  <!-- 第二层：展示图片（默认折叠） -->
+                  <div id="pallet2-images" class="p-4 border-t border-gray-200 hidden">
+                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
+                    <div class="flex flex-wrap gap-4">
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20with%20boxes%202&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20top%20view%202&image_size=square" alt="托盘俯视图" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20side%20view%202&image_size=square" alt="托盘侧视图" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 托盘3 -->
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  <!-- 第一层：托盘信息 -->
+                  <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50" onclick="togglePalletImages('pallet3')">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                      <div class="font-semibold text-gray-800 text-lg">第3托</div>
+                    </div>
+                    <div class="ml-4">
+                      <i id="pallet3-icon" class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+                    </div>
+                  </div>
+                  
+                  <!-- 第二层：展示图片（默认折叠） -->
+                  <div id="pallet3-images" class="p-4 border-t border-gray-200 hidden">
+                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
+                    <div class="flex flex-wrap gap-4">
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20with%20boxes%203&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20top%20view%203&image_size=square" alt="托盘俯视图" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20pallet%20side%20view%203&image_size=square" alt="托盘侧视图" class="w-full h-full object-cover rounded-lg">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -819,6 +1044,20 @@
       }
     }
     
+    // 切换托盘图片显示/隐藏
+    function togglePalletImages(palletId) {
+      const imagesContainer = document.getElementById(`${palletId}-images`);
+      const icon = document.getElementById(`${palletId}-icon`);
+      
+      if (imagesContainer.classList.contains('hidden')) {
+        imagesContainer.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        imagesContainer.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
     // 页面加载完成后初始化
     document.addEventListener('DOMContentLoaded', function() {
       initTabs();
