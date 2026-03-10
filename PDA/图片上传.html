@@ -125,21 +125,6 @@
                 const palletContainer = document.createElement('div');
                 palletContainer.className = 'single-pallet-section';
                 palletContainer.innerHTML = `
-                    <div style="margin-bottom: 16px;">
-                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                            <span style="font-size: 14px; color: #333; margin-right: 12px;">是否混拖:</span>
-                            <label style="display: flex; align-items: center; cursor: pointer;">
-                                <input type="radio" name="mixed${i}" value="yes" style="margin-right: 6px;"> 是
-                            </label>
-                            <label style="display: flex; align-items: center; cursor: pointer; margin-left: 16px;">
-                                <input type="radio" name="mixed${i}" value="no" checked style="margin-right: 6px;"> 否
-                            </label>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <span style="font-size: 14px; color: #333; margin-right: 12px;">总件数:</span>
-                            <input type="number" min="1" placeholder="请输入件数" style="flex: 1; padding: 8px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 14px;">
-                        </div>
-                    </div>
                     <h3 class="pallet-photo-title">* 托盘 ${i} 缠膜照片 (最多10张)</h3>
                     <div class="pallet-photo-grid" id="pallet${i}FilmPhotos">
                         <div class="pallet-photo-item">
@@ -156,6 +141,21 @@
                                 <input type="file" accept="image/*" style="display: none;" onchange="previewImage(this, 'pallet${i}TrayPhotos')">
                                 <div class="camera-icon" onclick="this.parentElement.querySelector('input[type=file]').click()">📷</div>
                             </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <span style="font-size: 14px; color: #333; margin-right: 12px;">是否混拖:</span>
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="radio" name="mixed${i}" value="yes" style="margin-right: 6px;"> 是
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; margin-left: 16px;">
+                                <input type="radio" name="mixed${i}" value="no" checked style="margin-right: 6px;"> 否
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size: 14px; color: #333; margin-right: 12px;">总件数:</span>
+                            <input type="number" min="1" placeholder="请输入件数" style="flex: 1; padding: 8px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 14px;">
                         </div>
                     </div>
                 `;

@@ -666,9 +666,23 @@
                 <h3 class="text-md font-semibold text-gray-800 flex items-center">
                   <i class="fa fa-box-open mr-2 text-primary"></i>拆托信息
                 </h3>
-                <button class="btn-primary flex items-center">
-                  <i class="fa fa-download mr-2"></i>导出
-                </button>
+                <div class="relative">
+                  <button class="btn-primary flex items-center" onclick="toggleExportMenu('unpalletExportMenu')">
+                    <i class="fa fa-download mr-2"></i>导出
+                    <i class="fa fa-chevron-down ml-2"></i>
+                  </button>
+                  <div id="unpalletExportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg" onclick="exportUnpalletData('all')">
+                      <i class="fa fa-file mr-2"></i>导出全部
+                    </button>
+                    <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100" onclick="exportUnpalletData('film')">
+                      <i class="fa fa-film mr-2"></i>导出缠膜照片
+                    </button>
+                    <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg" onclick="exportUnpalletData('tray')">
+                      <i class="fa fa-inbox mr-2"></i>导出托盘照片
+                    </button>
+                  </div>
+                </div>
               </div>
               
               <!-- 拆托详情展示区域 -->
@@ -688,13 +702,16 @@
                   
                   <!-- 第二层：展示图片（默认折叠） -->
                   <div id="unpallet1-images" class="p-4 border-t border-gray-200 hidden">
-                    <div class="text-sm text-gray-600 mb-3">拆托图片</div>
-                    <div class="flex flex-wrap gap-4">
+                    <div class="text-sm text-gray-600 mb-3">缠膜照片</div>
+                    <div class="flex flex-wrap gap-4 mb-4" id="unpallet1-film-images">
                       <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletizing%20process&image_size=square" alt="拆托图片" class="w-full h-full object-cover rounded-lg">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletizing%20process&image_size=square" alt="缠膜照片" class="w-full h-full object-cover rounded-lg">
                       </div>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
+                    <div class="flex flex-wrap gap-4" id="unpallet1-tray-images">
                       <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletized%20boxes&image_size=square" alt="拆托后图片" class="w-full h-full object-cover rounded-lg">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletized%20boxes&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
                       </div>
                     </div>
                   </div>
@@ -715,13 +732,16 @@
                   
                   <!-- 第二层：展示图片（默认折叠） -->
                   <div id="unpallet2-images" class="p-4 border-t border-gray-200 hidden">
-                    <div class="text-sm text-gray-600 mb-3">拆托图片</div>
-                    <div class="flex flex-wrap gap-4">
+                    <div class="text-sm text-gray-600 mb-3">缠膜照片</div>
+                    <div class="flex flex-wrap gap-4 mb-4" id="unpallet2-film-images">
                       <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletizing%20process%202&image_size=square" alt="拆托图片" class="w-full h-full object-cover rounded-lg">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletizing%20process%202&image_size=square" alt="缠膜照片" class="w-full h-full object-cover rounded-lg">
                       </div>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
+                    <div class="flex flex-wrap gap-4" id="unpallet2-tray-images">
                       <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletized%20boxes%202&image_size=square" alt="拆托后图片" class="w-full h-full object-cover rounded-lg">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletized%20boxes%202&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
                       </div>
                     </div>
                   </div>
@@ -1071,6 +1091,106 @@
         imagesContainer.classList.add('hidden');
         icon.classList.remove('rotate-180');
       }
+    }
+
+    // 切换导出下拉菜单
+    function toggleExportMenu(menuId) {
+      const menu = document.getElementById(menuId);
+      if (menu.classList.contains('hidden')) {
+        menu.classList.remove('hidden');
+      } else {
+        menu.classList.add('hidden');
+      }
+    }
+
+    // 点击其他地方关闭下拉菜单
+    document.addEventListener('click', function(event) {
+      const menus = document.querySelectorAll('[id$="ExportMenu"]');
+      menus.forEach(menu => {
+        if (!menu.contains(event.target) && !event.target.closest('button')) {
+          menu.classList.add('hidden');
+        }
+      });
+    });
+
+    // 导出拆托数据
+    function exportUnpalletData(type) {
+      const palletCount = 2;
+      let exportData = [];
+      let exportTypeName = '';
+      
+      for (let i = 1; i <= palletCount; i++) {
+        let filmImages = [];
+        let trayImages = [];
+        
+        const filmContainer = document.getElementById(`unpallet${i}-film-images`);
+        const trayContainer = document.getElementById(`unpallet${i}-tray-images`);
+        
+        if (filmContainer) {
+          const filmImgs = filmContainer.querySelectorAll('img');
+          filmImgs.forEach(img => {
+            filmImages.push({
+              src: img.src,
+              alt: img.alt
+            });
+          });
+        }
+        
+        if (trayContainer) {
+          const trayImgs = trayContainer.querySelectorAll('img');
+          trayImgs.forEach(img => {
+            trayImages.push({
+              src: img.src,
+              alt: img.alt
+            });
+          });
+        }
+        
+        const palletInfo = {
+          palletNumber: i,
+          filmImages: filmImages,
+          trayImages: trayImages
+        };
+        
+        if (type === 'all') {
+          exportTypeName = '全部';
+          exportData.push(palletInfo);
+        } else if (type === 'film') {
+          exportTypeName = '缠膜照片';
+          exportData.push({
+            palletNumber: i,
+            filmImages: filmImages
+          });
+        } else if (type === 'tray') {
+          exportTypeName = '托盘照片';
+          exportData.push({
+            palletNumber: i,
+            trayImages: trayImages
+          });
+        }
+      }
+      
+      console.log('导出类型:', exportTypeName);
+      console.log('导出数据:', exportData);
+      
+      // 模拟导出提示
+      let message = `正在导出${exportTypeName}...`;
+      if (type === 'all') {
+        const totalFilm = exportData.reduce((sum, p) => sum + p.filmImages.length, 0);
+        const totalTray = exportData.reduce((sum, p) => sum + p.trayImages.length, 0);
+        message += `\n缠膜照片: ${totalFilm}张\n托盘图片: ${totalTray}张`;
+      } else if (type === 'film') {
+        const totalFilm = exportData.reduce((sum, p) => sum + p.filmImages.length, 0);
+        message += `\n共 ${totalFilm} 张缠膜照片`;
+      } else if (type === 'tray') {
+        const totalTray = exportData.reduce((sum, p) => sum + p.trayImages.length, 0);
+        message += `\n共 ${totalTray} 张托盘图片`;
+      }
+      
+      alert(message + '\n\n（实际项目中此处会触发文件下载）');
+      
+      // 关闭下拉菜单
+      document.getElementById('unpalletExportMenu').classList.add('hidden');
     }
 
     // 页面加载完成后初始化
