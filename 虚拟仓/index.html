@@ -209,6 +209,107 @@
             padding-left: 2rem;
             font-size: 0.8rem;
         }
+        
+        /* Mermaid图表放大预览样式 */
+        .mermaid {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+        .mermaid:hover {
+            transform: scale(1.02);
+        }
+        
+        /* 放大预览模态框 */
+        .mermaid-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .mermaid-modal.active {
+            display: flex;
+        }
+        .mermaid-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 95%;
+            max-height: 95%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalZoomIn 0.3s ease-out;
+        }
+        @keyframes modalZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .mermaid-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #374151;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .mermaid-modal-close:hover {
+            background: #e5e7eb;
+            transform: rotate(90deg);
+        }
+        .mermaid-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 20px;
+            padding-right: 50px;
+        }
+        .mermaid-modal-svg {
+            min-width: 800px;
+        }
+        .mermaid-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: rgba(42, 59, 125, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .mermaid-container {
+            position: relative;
+            display: inline-block;
+        }
+        .mermaid-container:hover .mermaid-hint {
+            opacity: 1;
+        }
     </style>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -233,7 +334,10 @@
         const renderer = new marked.Renderer();
         renderer.code = function(code, language) {
             if (language === 'mermaid') {
-                return `<div class="mermaid">${code}</div>`;
+                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+                    <div class="mermaid">${code}</div>
+                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+                </div>`;
             }
             return `<pre><code class="language-${language}">${code}</code></pre>`;
         };
@@ -678,6 +782,20 @@
             </div>
         </div>
     </main>
+    
+    <!-- Mermaid图表放大预览模态框 -->
+    <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+        <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+            <button class="mermaid-modal-close" onclick="closeMermaidModal()">
+                <i class="fa fa-times"></i>
+            </button>
+            <div class="mermaid-modal-title">
+                <i class="fa fa-sitemap mr-2"></i>流程图预览
+            </div>
+            <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+        </div>
+    </div>
+    
     <!-- 原型页面 -->
     <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
         <div class="container mx-auto px-2 py-6">
@@ -3728,6 +3846,52 @@
             alert('账单生成成功');
             closeModal('bill-modal');
         }
+
+        // Mermaid图表放大预览功能
+        let currentMermaidCode = '';
+        
+        function openMermaidModal(container) {
+            const mermaidDiv = container.querySelector('.mermaid');
+            if (!mermaidDiv) return;
+            
+            // 获取mermaid代码
+            currentMermaidCode = mermaidDiv.getAttribute('data-processed') === 'true' 
+                ? mermaidDiv.innerHTML 
+                : mermaidDiv.textContent;
+            
+            const modal = document.getElementById('mermaidModal');
+            const modalContent = document.getElementById('mermaidModalContent');
+            
+            // 复制图表内容到模态框
+            modalContent.innerHTML = mermaidDiv.innerHTML;
+            
+            // 显示模态框
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 重新渲染mermaid图表
+            if (window.mermaid) {
+                mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
+            }
+        }
+        
+        function closeMermaidModal(event) {
+            // 如果点击的是模态框背景或关闭按钮，则关闭
+            if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
+                return;
+            }
+            
+            const modal = document.getElementById('mermaidModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMermaidModal();
+            }
+        });
 
         // 加载并渲染 Markdown PRD
         let prdLoaded = false;
