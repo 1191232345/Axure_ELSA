@@ -783,8 +783,6 @@
                             </a>
                             <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="inventory">库存管理</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="batch-inventory">批次库存</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="inventory-flow">库存流水</a>
                             </div>
                         </div>
                     </nav>
@@ -1844,405 +1842,6 @@
                 </div>
             </div>
 
-            <div id="page-batch-inventory" class="page">
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div class="form-group">
-                            <label for="batch-inventory-warehouse">仓库</label>
-                            <select id="batch-inventory-warehouse" class="form-select">
-                                <option value="DEMO">DEMO</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="batch-inventory-virtual-warehouse">虚拟仓</label>
-                            <select id="batch-inventory-virtual-warehouse" class="form-select">
-                                <option value="">请选择</option>
-                                <option value="NBFX002">NBFX渠道仓A</option>
-                                <option value="NBFX003">NBFX渠道仓B</option>
-                                <option value="NBFX004">NBFX渠道仓C</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="batch-inventory-inbound-order">入库单</label>
-                            <input type="text" id="batch-inventory-inbound-order" class="form-input" placeholder="请输入">
-                        </div>
-                        <div class="form-group">
-                            <label for="batch-inventory-sku">SKU</label>
-                            <div class="flex">
-                                <select class="form-select w-24">
-                                    <option value="exact">精确查询</option>
-                                </select>
-                                <input type="text" id="batch-inventory-sku" class="form-input ml-2" placeholder="ADADAD">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="batch-inventory-age">库龄</label>
-                            <input type="text" id="batch-inventory-age" class="form-input" placeholder="请输入">
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button class="erp-btn erp-btn-secondary">
-                            重置
-                        </button>
-                        <button class="erp-btn erp-btn-primary">
-                            搜索
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex justify-start gap-3 mb-4">
-                    <button class="erp-btn erp-btn-secondary">
-                        <i class="fa fa-download mr-1.5"></i> 导出
-                    </button>
-                </div>
-
-                <div class="bg-white rounded shadow-card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">
-                                        仓库
-                                    </th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">虚拟仓</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">SKU</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">产品名称</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">批次-可用库存</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">批次-待出库库存</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">编码</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">上架时间</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">库龄</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-neutral-100" id="batch-inventory-list">
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">7</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：196560153373727165
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2025-08-27</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">194</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：19653735115370830
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2025-09-09</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">181</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：19837830519827217
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2025-10-15</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">145</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：198730341764950594
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2025-10-15</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">145</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：196537985151573522
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2025-10-26</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">135</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓C</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">12</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：20250959522317610
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2025-12-28</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">71</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓C</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：204362479696834615
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-01-06</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">62</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓C</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">4</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：203978758539001
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-01-06</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">62</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓C</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：203842473733877739
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-01-06</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">62</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓C</td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        参考号：<br>
-                                        入库单：203113561879142912
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-01-14</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">54</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="flex justify-between items-center p-4 border-t border-gray-100">
-                        <div class="text-sm text-gray-600">
-                            共13条
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <select class="form-select w-24">
-                                <option value="10">10条/页</option>
-                                <option value="20">20条/页</option>
-                                <option value="50">50条/页</option>
-                            </select>
-                            <div class="flex items-center gap-1">
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center" disabled>
-                                    <i class="fa fa-chevron-left"></i>
-                                </button>
-                                <button class="erp-btn erp-btn-primary w-8 h-8 flex items-center justify-center">
-                                    1
-                                </button>
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center">
-                                    2
-                                </button>
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center">
-                                    <i class="fa fa-chevron-right"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <span class="text-sm text-gray-600">前往</span>
-                                <input type="number" class="form-input w-16 text-center" value="1" min="1" max="2">
-                                <span class="text-sm text-gray-600">页</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="page-inventory-flow" class="page">
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div class="form-group">
-                            <label for="inventory-flow-warehouse">仓库</label>
-                            <select id="inventory-flow-warehouse" class="form-select">
-                                <option value="DEMO">DEMO</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="inventory-flow-warehouse">虚拟仓</label>
-                            <select id="inventory-flow-warehouse" class="form-select">
-                                <option value="DEMO">DEMO</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="inventory-flow-operation-type">操作类型</label>
-                            <select id="inventory-flow-operation-type" class="form-select">
-                                <option value="">请选择</option>
-                                <option value="inbound">入库</option>
-                                <option value="outbound">出库</option>
-                                <option value="transfer">调拨</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="inventory-flow-order-no">单号</label>
-                            <input type="text" id="inventory-flow-order-no" class="form-input" placeholder="请输入">
-                        </div>
-                        <div class="form-group">
-                            <label for="inventory-flow-sku">SKU</label>
-                            <input type="text" id="inventory-flow-sku" class="form-input" placeholder="请输入">
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-2 mt-4">
-                        <button class="erp-btn erp-btn-secondary">
-                            重置
-                        </button>
-                        <button class="erp-btn erp-btn-primary">
-                            搜索
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex justify-start gap-3 mb-4">
-                    <button class="erp-btn erp-btn-secondary">
-                        <i class="fa fa-download mr-1.5"></i> 导出
-                    </button>
-                </div>
-
-                <div class="bg-white rounded shadow-card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">
-                                        序号
-                                    </th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">仓库</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">虚拟仓</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">可用数量</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">单号</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">操作类型</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">SKU</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-neutral-100" id="inventory-flow-list">
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        操作前：20<br>
-                                        操作后：0
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">196504173260890291</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <span class="status-badge bg-green-100 text-green-800">入库-存储</span>
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">TESTSKU</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        操作前：0<br>
-                                        操作后：0
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">196508672080236800</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <span class="status-badge bg-green-100 text-green-800">入库-存储</span>
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">00001-1</td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        操作前：1<br>
-                                        操作后：0
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">196508683830233259</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <span class="status-badge bg-red-100 text-red-800">出库-一件代发</span>
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">00001-1</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="flex justify-between items-center p-4 border-t border-gray-100">
-                        <div class="text-sm text-gray-600">
-                            共36条
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <select class="form-select w-24">
-                                <option value="10">10条/页</option>
-                                <option value="20">20条/页</option>
-                                <option value="50">50条/页</option>
-                            </select>
-                            <div class="flex items-center gap-1">
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center" disabled>
-                                    <i class="fa fa-chevron-left"></i>
-                                </button>
-                                <button class="erp-btn erp-btn-primary w-8 h-8 flex items-center justify-center">
-                                    1
-                                </button>
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center">
-                                    2
-                                </button>
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center">
-                                    3
-                                </button>
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center">
-                                    4
-                                </button>
-                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center">
-                                    <i class="fa fa-chevron-right"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <span class="text-sm text-gray-600">前往</span>
-                                <input type="number" class="form-input w-16 text-center" value="1" min="1" max="4">
-                                <span class="text-sm text-gray-600">页</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div id="page-transfer" class="page">
                 <div class="bg-white rounded shadow-card p-4 mb-4">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -2300,6 +1899,8 @@
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">调出仓库</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">调入仓库</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">调拨数量</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">仓储费迁移</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">仓储费承担方</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">状态</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">创建时间</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">操作人</th>
@@ -2315,6 +1916,10 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX主仓</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">100</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <span class="text-green-600">是</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-green-100 text-green-800">已完成</span>
                                     </td>
@@ -2334,6 +1939,10 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">50</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <span class="text-gray-500">否</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-yellow-100 text-yellow-800">待处理</span>
                                     </td>
@@ -2353,6 +1962,10 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">50</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <span class="text-gray-500">否</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-yellow-100 text-red-800">已驳回</span>
                                     </td>
@@ -2371,6 +1984,10 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">50</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <span class="text-gray-500">否</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-yellow-100 text-gray-800">已取消</span>
                                     </td>
@@ -2429,6 +2046,18 @@
                                             <td class="px-3 py-2 text-gray-600">顶部搜索框</td>
                                             <td class="px-3 py-2 text-gray-600">transfer.transfer_no</td>
                                             <td class="px-3 py-2 text-gray-600">模糊匹配</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓储费迁移</td>
+                                            <td class="px-3 py-2 text-gray-600">列表展示列</td>
+                                            <td class="px-3 py-2 text-gray-600">transfer.migrate_storage_fee</td>
+                                            <td class="px-3 py-2 text-gray-600">是/否显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓储费承担方</td>
+                                            <td class="px-3 py-2 text-gray-600">列表展示列</td>
+                                            <td class="px-3 py-2 text-gray-600">根据migrate_storage_fee计算</td>
+                                            <td class="px-3 py-2 text-gray-600">显示仓库名称</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -2489,8 +2118,9 @@
                                             <td class="px-3 py-2 text-gray-600">无</td>
                                             <td class="px-3 py-2 text-gray-600">
                                                 1、选择调出/调入仓库，填写SKU/数量<br>
-                                                2、点击提交，校验数据并提交<br>
-                                                3、提交后锁定库存
+                                                2、选择是否同步迁移仓储费<br>
+                                                3、点击提交，校验数据并提交<br>
+                                                4、提交后锁定库存
                                             </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
@@ -2583,6 +2213,18 @@
                                             <td class="px-3 py-2 text-gray-600">数字</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓储费迁移</td>
+                                            <td class="px-3 py-2 text-gray-600">transfer.migrate_storage_fee</td>
+                                            <td class="px-3 py-2 text-gray-600">勾选=1，不勾选=0</td>
+                                            <td class="px-3 py-2 text-gray-600">复选框显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓储费承担方</td>
+                                            <td class="px-3 py-2 text-gray-600">根据migrate_storage_fee计算</td>
+                                            <td class="px-3 py-2 text-gray-600">勾选时=转入仓，不勾选时=调出仓</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">状态</td>
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">pending=待处理, approved=已审批, completed=已完成, rejected=已拒绝</td>
@@ -2650,6 +2292,12 @@
                                             <td class="px-3 py-2 text-gray-600">数字输入框</td>
                                             <td class="px-3 py-2 text-gray-600">是</td>
                                             <td class="px-3 py-2 text-gray-600">输入正整数，不能超过剩余库存</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓储费迁移</td>
+                                            <td class="px-3 py-2 text-gray-600">复选框</td>
+                                            <td class="px-3 py-2 text-gray-600">否</td>
+                                            <td class="px-3 py-2 text-gray-600">勾选后，调拨SKU的整月仓储费由转入仓承担；不勾选时，仓储费按天计算，调出仓承担调拨前的仓储费</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">备注</td>
@@ -3424,6 +3072,16 @@
                     <input type="number" id="transfer-quantity" class="form-input" placeholder="请输入调拨数量" min="1">
                 </div>
                 <div class="form-group">
+                    <label>仓储费迁移</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="transfer-migrate-storage-fee" class="mr-2">
+                        <span class="text-sm text-gray-600">同步迁移整月仓储费</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        勾选后，调拨SKU的整月仓储费由转入仓承担；不勾选时，仓储费按天计算，调出仓承担调拨前的仓储费
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="transfer-note">备注</label>
                     <textarea id="transfer-note" class="form-input" rows="3" placeholder="请输入备注"></textarea>
                 </div>
@@ -3931,6 +3589,7 @@
             const to = document.getElementById('transfer-to').value;
             const sku = document.getElementById('transfer-sku').value;
             const quantity = document.getElementById('transfer-quantity').value;
+            const migrateStorageFee = document.getElementById('transfer-migrate-storage-fee').checked;
             
             if (!from || !to || !sku || !quantity) {
                 alert('请填写所有必填字段');
@@ -3942,8 +3601,20 @@
                 return;
             }
             
+            // 计算仓储费承担方
+            const storageFeePayer = migrateStorageFee ? to : from;
+            
             // 模拟保存
-            alert('调拨单创建成功');
+            console.log('调拨信息:', {
+                from: from,
+                to: to,
+                sku: sku,
+                quantity: quantity,
+                migrateStorageFee: migrateStorageFee,
+                storageFeePayer: storageFeePayer
+            });
+            
+            alert('调拨单创建成功\n仓储费承担方: ' + (migrateStorageFee ? '转入仓' : '调出仓'));
             closeModal('transfer-modal');
         }
 
