@@ -393,7 +393,8 @@
         mermaid.initialize({
             startOnLoad: true,
             theme: 'default',
-            securityLevel: 'loose'
+            securityLevel: 'loose',
+            logLevel: 3
         });
         
         // 配置Marked
@@ -412,6 +413,13 @@
             renderer: renderer,
             breaks: true,
             gfm: true
+        });
+
+        // 页面加载完成后重新渲染Mermaid图表
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+            }, 100);
         });
     </script>
     <script>
@@ -3254,6 +3262,12 @@
     <script>
         // 页面切换
         document.addEventListener('DOMContentLoaded', function() {
+            // 确保组织机构页面默认显示
+            const organizationPage = document.getElementById('page-organization');
+            if (organizationPage) {
+                organizationPage.classList.add('active');
+            }
+            
             // 为所有带有 data-page 属性的菜单项添加点击事件
             document.querySelectorAll('[data-page]').forEach(function(link) {
                 link.addEventListener('click', function(e) {
@@ -3269,9 +3283,25 @@
                     const targetPage = document.getElementById('page-' + page);
                     if (targetPage) {
                         targetPage.classList.add('active');
+                        
+                        // 重新渲染该页面中的Mermaid图表
+                        setTimeout(function() {
+                            const mermaidElements = targetPage.querySelectorAll('.mermaid');
+                            if (mermaidElements.length > 0) {
+                                mermaid.init(undefined, mermaidElements);
+                            }
+                        }, 50);
                     }
                 });
             });
+            
+            // 初始化组织机构页面中的Mermaid图表
+            setTimeout(function() {
+                const mermaidElements = organizationPage.querySelectorAll('.mermaid');
+                if (mermaidElements.length > 0) {
+                    mermaid.init(undefined, mermaidElements);
+                }
+            }, 100);
         });
 
         // 模态框操作
@@ -3433,6 +3463,30 @@
             } else {
                 content.classList.add('hidden');
                 if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // 切换PRD流程图展开/收起
+        function togglePrdFlow(module) {
+            const content = document.getElementById(module + '-flow-content');
+            const icon = document.getElementById(module + '-flow-icon');
+            
+            if (content) {
+                if (content.classList.contains('hidden')) {
+                    content.classList.remove('hidden');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
+                    
+                    // 重新渲染Mermaid图表
+                    setTimeout(function() {
+                        const mermaidElements = content.querySelectorAll('.mermaid');
+                        if (mermaidElements.length > 0) {
+                            mermaid.init(undefined, mermaidElements);
+                        }
+                    }, 50);
+                } else {
+                    content.classList.add('hidden');
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                }
             }
         }
 
@@ -3777,7 +3831,13 @@
                             
                             // 重新初始化Mermaid图表
                             if (window.mermaid) {
-                                window.mermaid.init(undefined, '.mermaid');
+                                setTimeout(function() {
+                                    const mermaidElements = prdContentDiv.querySelectorAll('.mermaid');
+                                    if (mermaidElements.length > 0) {
+                                        console.log('找到Mermaid图表数量:', mermaidElements.length);
+                                        mermaid.init(undefined, mermaidElements);
+                                    }
+                                }, 100);
                             }
                             
                             prdLoaded = true;
