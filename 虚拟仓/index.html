@@ -721,15 +721,6 @@
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="inventory-flow">库存流水</a>
                             </div>
                         </div>
-                        <div class="relative group">
-                            <a href="#" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
-                                对账管理
-                                <i class="fa fa-angle-down ml-1 text-xs"></i>
-                            </a>
-                            <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="bill">账单管理</a>
-                            </div>
-                        </div>
                     </nav>
                 </div>
 
@@ -854,6 +845,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(1, 'NBFX', '')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(1, 'NBFX')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(1, 'NBFX')">删除</button>
                                     </td>
                                 </tr>
@@ -870,6 +862,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(11, '运营部1', '1')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(11, '运营部1')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(11, '运营部1')">删除</button>
                                     </td>
                                 </tr>
@@ -881,6 +874,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(111, '运营组1', '11')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(111, '运营组1')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(111, '运营组1')">删除</button>
                                     </td>
                                 </tr>
@@ -891,6 +885,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-04 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(112, '运营组2', '11')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(112, '运营组2')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(112, '运营组2')">删除</button>
                                     </td>
                                 </tr>
@@ -901,6 +896,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-05 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(113, '运营组3', '11')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(113, '运营组3')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(113, '运营组3')">删除</button>
                                     </td>
                                 </tr>
@@ -917,6 +913,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-06 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(12, '运营部2', '1')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(12, '运营部2')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(12, '运营部2')">删除</button>
                                     </td>
                                 </tr>
@@ -928,6 +925,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-07 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(121, '运营组1', '12')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(121, '运营组1')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(121, '运营组1')">删除</button>
                                     </td>
                                 </tr>
@@ -938,6 +936,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-08 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(122, '运营组2', '12')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(122, '运营组2')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(122, '运营组2')">删除</button>
                                     </td>
                                 </tr>
@@ -948,6 +947,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-09 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(123, '运营组3', '12')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(123, '运营组3')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(123, '运营组3')">删除</button>
                                     </td>
                                 </tr>
@@ -964,6 +964,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-10 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(13, '运营部3', '1')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(13, '运营部3')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(13, '运营部3')">删除</button>
                                     </td>
                                 </tr>
@@ -975,6 +976,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-11 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(131, '运营组1', '13')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(131, '运营组1')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(131, '运营组1')">删除</button>
                                     </td>
                                 </tr>
@@ -985,6 +987,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-12 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(132, '运营组2', '13')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(132, '运营组2')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(132, '运营组2')">删除</button>
                                     </td>
                                 </tr>
@@ -995,6 +998,7 @@
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-13 14:00:00</td>
                                     <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(133, '运营组3', '13')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(133, '运营组3')">关联用户</button>
                                         <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(133, '运营组3')">删除</button>
                                     </td>
                                 </tr>
@@ -1033,7 +1037,7 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">部门树加载</td>
                                             <td class="px-3 py-2 text-gray-600">页面加载时默认展示部门树形结构</td>
-                                            <td class="px-3 py-2 text-gray-600">部门表(department)</td>
+                                            <td class="px-3 py-2 text-gray-600">系统菜单</td>
                                             <td class="px-3 py-2 text-gray-600">一级部门→二级部门→三级部门，按层级缩进展示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
@@ -1111,6 +1115,13 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">编辑</td>
                                             <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">打开编辑用户弹窗，填充当前数据</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">填写表单后提交，刷新部门树</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">关联用户</td>
+                                            <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
                                             <td class="px-3 py-2 text-gray-600">打开编辑部门弹窗，填充当前数据</td>
                                             <td class="px-3 py-2 text-gray-600">无</td>
                                             <td class="px-3 py-2 text-gray-600">填写表单后提交，更新部门树</td>
@@ -1137,7 +1148,7 @@
                         <!-- 属性取值逻辑 -->
                         <div class="p-4">
                             <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
                             </h4>
                             <div class="overflow-x-auto">
                                 <table class="min-w-full text-sm border border-gray-200 rounded">
@@ -1152,27 +1163,99 @@
                                     <tbody class="divide-y divide-gray-100">
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">部门名称</td>
-                                            <td class="px-3 py-2 text-gray-600">department.name</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">直接取值</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">上级部门</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、来源：组织树<br>
+                                                2、默认值 = 公司
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">部门编码</td>
-                                            <td class="px-3 py-2 text-gray-600">department.code</td>
-                                            <td class="px-3 py-2 text-gray-600">自动生成，格式：父编码-序号</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">格式：父编码-序号</td>
                                             <td class="px-3 py-2 text-gray-600">NBFX-01-01</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">关联虚拟仓</td>
-                                            <td class="px-3 py-2 text-gray-600">warehouse表count</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">统计该部门关联的关联虚拟仓</td>
                                             <td class="px-3 py-2 text-gray-600">数字</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">创建时间</td>
-                                            <td class="px-3 py-2 text-gray-600">department.create_time</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">新增提交时间</td>
                                             <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 属性取值逻辑（弹窗） -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（新增部门）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">部门名称</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">上级部门</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、来源：组织树<br>
+                                                2、默认值 = 公司
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                         <!-- 属性取值逻辑（弹窗） -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（关联用户）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">用户来源</td>
+                                            <td class="px-3 py-2 text-gray-600">系统管理 - 客户管理</td>
+                                            <td class="px-3 py-2 text-gray-600">/</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1367,7 +1450,7 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">初始化页面</td>
                                             <td class="px-3 py-2 text-gray-600">页面加载时展示所有虚拟仓名称</td>
-                                            <td class="px-3 py-2 text-gray-600">warehouse表</td>
+                                            <td class="px-3 py-2 text-gray-600">系统菜单</td>
                                             <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
                                             <td class="px-3 py-2 text-gray-600">
                                                 1、默认展示授权账号，所在部门的仓库<br>
@@ -1472,42 +1555,42 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">虚拟仓名称</td>
                                             <td class="px-3 py-2 text-gray-600">定义的仓库名称</td>
-                                            <td class="px-3 py-2 text-gray-600">warehouse.name</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">新增弹窗取值</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">仓库类型</td>
                                             <td class="px-3 py-2 text-gray-600">定义的仓库类型</td>
-                                            <td class="px-3 py-2 text-gray-600">warehouse.type</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
                                             <td class="px-3 py-2 text-gray-600">新增弹窗取值</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">所属部门</td>
                                             <td class="px-3 py-2 text-gray-600">定义的部门名称</td>
-                                            <td class="px-3 py-2 text-gray-600">department.name</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
                                             <td class="px-3 py-2 text-gray-600">新增弹窗取值</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">关联仓库</td>
                                             <td class="px-3 py-2 text-gray-600">关联的实体仓名称</td>
-                                            <td class="px-3 py-2 text-gray-600">warehouse.entity_warehouse_id</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
                                             <td class="px-3 py-2 text-gray-600">新增弹窗取值</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">仓库编码</td>
                                             <td class="px-3 py-2 text-gray-600">定义的仓库编码</td>
-                                            <td class="px-3 py-2 text-gray-600">warehouse_code</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">系统定义，默认由客户代码+仓库类型+序号组成</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">创建时间</td>
                                             <td class="px-3 py-2 text-gray-600">定义的创建时间</td>
-                                            <td class="px-3 py-2 text-gray-600">created_at</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">记录提交的时间</td>
                                             <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td>
                                         </tr>
@@ -2266,7 +2349,7 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调拨单列表</td>
                                             <td class="px-3 py-2 text-gray-600">页面加载展示所有调拨单</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer表</td>
+                                            <td class="px-3 py-2 text-gray-600">系统菜单</td>
                                             <td class="px-3 py-2 text-gray-600">按创建时间倒序</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
@@ -2405,37 +2488,37 @@
                                     <tbody class="divide-y divide-gray-100">
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调拨单号</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer.transfer_no</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">自动生成，格式：TRANSFER+时间戳</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调出仓库</td>
-                                            <td class="px-3 py-2 text-gray-600">from_warehouse.name</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
                                             <td class="px-3 py-2 text-gray-600">通过from_warehouse_id关联</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调入仓库</td>
-                                            <td class="px-3 py-2 text-gray-600">to_warehouse.name</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
                                             <td class="px-3 py-2 text-gray-600">通过to_warehouse_id关联</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">SKU</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer.sku</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">直接取值</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调拨数量</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer.quantity</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">直接取值</td>
                                             <td class="px-3 py-2 text-gray-600">数字</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">状态</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer.status</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">pending=待处理, approved=已审批, completed=已完成, rejected=已拒绝</td>
                                             <td class="px-3 py-2 text-gray-600">彩色标签</td>
                                         </tr>
@@ -2710,6 +2793,7 @@
                         <div class="form-group">
                             <label for="new-shipment-warehouse-location"><span class="required">*</span> 仓库类型</label>
                             <select id="new-shipment-warehouse-location" class="form-select">
+                                <option value="DE001">主仓</option>
                                 <option value="DE001">部门仓</option>
                                 <option value="DE002">渠道仓</option>
                                 <option value="DE003">备货仓</option>
@@ -2765,7 +2849,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-4 flex justify-end">
+                    <div class="mt-4 flex justify-center>
                         <button class="erp-btn erp-btn-secondary">
                             <i class="fa fa-plus mr-1.5"></i> 添加产品
                         </button>
@@ -2979,7 +3063,8 @@
                                         <td class="px-3 py-2 text-gray-600">是</td>
                                         <td class="px-3 py-2 text-gray-600">
                                             1、根据仓库类型，筛选仓库<br>
-                                            2、仅展示授权账号可查询的仓库
+                                            2、仅展示授权账号可查询的仓库<br>
+                                            3、根据仓库类型，展示不同的仓库
                                         </td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
@@ -3009,109 +3094,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="page-bill" class="page">
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="text-xs text-neutral-600 mr-2">账单编号</label>
-                            <div class="relative flex-1 sm:w-64">
-                                <input type="text" placeholder="请输入账单编号..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="text-xs text-neutral-600 mr-2">部门</label>
-                            <div class="relative flex-1 sm:w-40">
-                                <select class="w-full pl-3 pr-8 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none appearance-none bg-white">
-                                    <option value="">全部</option>
-                                    <option value="1">NBFX</option>
-                                    <option value="11">运营部1</option>
-                                    <option value="12">运营部2</option>
-                                    <option value="13">运营部3</option>
-                                </select>
-                                <i class="fa fa-angle-down absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
-                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none">
-                                <i class="fa fa-refresh mr-1.5"></i> 重置
-                            </button>
-                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none">
-                                <i class="fa fa-search mr-1.5"></i> 搜索
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="flex justify-start gap-3">
-                        <button class="erp-btn erp-btn-primary" onclick="openModal('bill-modal')">
-                            <i class="fa fa-plus mr-1.5"></i> 生成账单
-                        </button>
-                        <button class="erp-btn erp-btn-secondary">
-                            <i class="fa fa-upload mr-1.5"></i> 导出
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded shadow-card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
-                            <thead class="bg-primary/10">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">
-                                        <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
-                                    </th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">账单编号</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">账单周期</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">总金额</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">状态</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">创建时间</th>
-                                    <th class="px-4 py-3 text-center text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-neutral-100" id="bill-list">
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">BILL001</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">运营部1</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 至 2026-02-29</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">¥10,000.00</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <span class="status-badge bg-green-100 text-green-800">已结算</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-03-01</td>
-                                    <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
-                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2">查看</button>
-                                        <button class="table-btn text-danger hover:bg-danger/10">删除</button>
-                                    </td>
-                                </tr>
-                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">BILL002</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">运营部2</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 至 2026-02-29</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">¥8,500.00</td>
-                                    <td class="px-4 py-3 whitespace-nowrap">
-                                        <span class="status-badge bg-yellow-100 text-yellow-800">待结算</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-03-01</td>
-                                    <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
-                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2">查看</button>
-                                        <button class="table-btn text-danger hover:bg-danger/10">删除</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -3426,37 +3408,121 @@
         </div>
     </div>
 
-    <!-- 生成账单模态框 -->
-    <div id="bill-modal" class="modal-overlay">
+    <!-- 关联用户模态框 -->
+    <div id="user-management-modal" class="modal-overlay">
+        <div class="modal-content" style="width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">关联用户 - <span id="current-department-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('user-management-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center w-full sm:w-64">
+                        <label class="text-xs text-neutral-600 mr-2">用户搜索</label>
+                        <div class="relative flex-1">
+                            <input type="text" placeholder="请输入用户名或工号..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="user-search-input">
+                            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <button class="erp-btn erp-btn-primary ml-4" onclick="addUserToDepartment()">
+                        <i class="fa fa-plus mr-1.5"></i> 添加用户
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+                        <thead class="bg-primary/10">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded" id="select-all-users">
+                                </th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">用户姓名</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">工号</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">职位</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">手机号码</th>
+                                <th class="px-4 py-3 text-center text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-neutral-100" id="user-list">
+                            <!-- 示例用户数据 -->
+                            <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded user-checkbox">
+                                </td>
+                                <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">张三</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">EMP001</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">经理</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">13800138001</td>
+                                <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
+                                    <button class="table-btn text-danger hover:bg-danger/10" onclick="removeUserFromDepartment('EMP001', '张三')">移除</button>
+                                </td>
+                            </tr>
+                            <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded user-checkbox">
+                                </td>
+                                <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">李四</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">EMP002</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">主管</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">13800138002</td>
+                                <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
+                                    <button class="table-btn text-danger hover:bg-danger/10" onclick="removeUserFromDepartment('EMP002', '李四')">移除</button>
+                                </td>
+                            </tr>
+                            <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded user-checkbox">
+                                </td>
+                                <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">王五</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">EMP003</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">员工</td>
+                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">13800138003</td>
+                                <td class="px-4 py-3 text-center whitespace-nowrap sticky right-0 bg-white z-10">
+                                    <button class="table-btn text-danger hover:bg-danger/10" onclick="removeUserFromDepartment('EMP003', '王五')">移除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('user-management-modal')">关闭</button>
+                <button class="erp-btn erp-btn-danger" onclick="removeSelectedUsers()">批量移除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加用户到部门模态框 -->
+    <div id="add-user-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">生成账单</h3>
-                <button class="close-btn" onclick="closeModal('bill-modal')">
+                <h3 class="modal-title">添加用户</h3>
+                <button class="close-btn" onclick="closeModal('add-user-modal')">
                     <i class="fa fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="bill-department"><span class="required">*</span> 部门</label>
-                    <select id="bill-department" class="form-select">
-                        <option value="1">NBFX</option>
-                        <option value="11">运营部1</option>
-                        <option value="12">运营部2</option>
-                        <option value="13">运营部3</option>
-                    </select>
+                    <label for="add-user-name"><span class="required">*</span> 用户名</label>
+                    <input type="text" id="add-user-name" class="form-input" placeholder="请输入用户名">
                 </div>
                 <div class="form-group">
-                    <label for="bill-start-date"><span class="required">*</span> 开始日期</label>
-                    <input type="date" id="bill-start-date" class="form-input">
+                    <label for="add-user-id"><span class="required">*</span> 工号</label>
+                    <input type="text" id="add-user-id" class="form-input" placeholder="请输入工号">
                 </div>
                 <div class="form-group">
-                    <label for="bill-end-date"><span class="required">*</span> 结束日期</label>
-                    <input type="date" id="bill-end-date" class="form-input">
+                    <label for="add-user-position">职位</label>
+                    <input type="text" id="add-user-position" class="form-input" placeholder="请输入职位">
+                </div>
+                <div class="form-group">
+                    <label for="add-user-phone">手机号码</label>
+                    <input type="tel" id="add-user-phone" class="form-input" placeholder="请输入手机号码">
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="close-btn" onclick="closeModal('bill-modal')">取消</button>
-                <button class="erp-btn erp-btn-primary" onclick="generateBill()">生成</button>
+                <button class="close-btn" onclick="closeModal('add-user-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveAddUser()">添加</button>
             </div>
         </div>
     </div>
@@ -3570,6 +3636,66 @@
                     if (button) button.className = 'fa fa-chevron-right';
                 }
             });
+        }
+
+        // 用户关联管理
+        let currentDepartmentId = '';
+        
+        function manageUsers(departmentId, departmentName) {
+            currentDepartmentId = departmentId;
+            document.getElementById('current-department-name').textContent = departmentName;
+            openModal('user-management-modal');
+        }
+        
+        function addUserToDepartment() {
+            // 清空表单
+            document.getElementById('add-user-name').value = '';
+            document.getElementById('add-user-id').value = '';
+            document.getElementById('add-user-position').value = '';
+            document.getElementById('add-user-phone').value = '';
+            openModal('add-user-modal');
+        }
+        
+        function saveAddUser() {
+            const name = document.getElementById('add-user-name').value;
+            const userId = document.getElementById('add-user-id').value;
+            const position = document.getElementById('add-user-position').value;
+            const phone = document.getElementById('add-user-phone').value;
+            
+            if (!name || !userId) {
+                alert('请填写用户名和工号');
+                return;
+            }
+            
+            // 模拟添加用户
+            alert('用户添加成功');
+            closeModal('add-user-modal');
+            
+            // 这里可以添加代码来更新用户列表
+        }
+        
+        function removeUserFromDepartment(userId, userName) {
+            if (confirm('确定要从部门中移除用户 ' + userName + ' 吗？')) {
+                // 模拟移除用户
+                alert('用户移除成功');
+                
+                // 这里可以添加代码来更新用户列表
+            }
+        }
+        
+        function removeSelectedUsers() {
+            const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('请选择要移除的用户');
+                return;
+            }
+            
+            if (confirm('确定要批量移除选中的 ' + selectedCheckboxes.length + ' 个用户吗？')) {
+                // 模拟批量移除用户
+                alert('用户批量移除成功');
+                
+                // 这里可以添加代码来更新用户列表
+            }
         }
 
         // 切换PRD逻辑说明展开/收起
@@ -3824,27 +3950,6 @@
             // 模拟保存
             alert('出库单创建成功');
             showShipmentList();
-        }
-
-        // 对账管理
-        function generateBill() {
-            const department = document.getElementById('bill-department').value;
-            const startDate = document.getElementById('bill-start-date').value;
-            const endDate = document.getElementById('bill-end-date').value;
-            
-            if (!department || !startDate || !endDate) {
-                alert('请填写所有必填字段');
-                return;
-            }
-            
-            if (new Date(startDate) > new Date(endDate)) {
-                alert('开始日期不能晚于结束日期');
-                return;
-            }
-            
-            // 模拟生成
-            alert('账单生成成功');
-            closeModal('bill-modal');
         }
 
         // Mermaid图表放大预览功能
