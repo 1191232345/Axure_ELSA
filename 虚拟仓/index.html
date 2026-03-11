@@ -203,11 +203,77 @@
             color: #2a3b7d;
         }
         .toc-level-2 {
-            padding-left: 1rem;
+            padding-left: 0;
+            font-weight: 500;
+            position: relative;
+        }
+        .toc-level-2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #2a3b7d;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .toc-level-2:hover::before,
+        .toc-level-2.active::before {
+            opacity: 1;
         }
         .toc-level-3 {
-            padding-left: 2rem;
+            padding-left: 1.5rem;
             font-size: 0.8rem;
+            color: #64748b;
+            position: relative;
+        }
+        .toc-level-3::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 12px;
+            width: 4px;
+            height: 4px;
+            background: #94a3b8;
+            border-radius: 50%;
+        }
+        
+        /* 折叠功能样式 */
+        .toc-item {
+            position: relative;
+        }
+        .toc-toggle {
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: transform 0.2s ease;
+        }
+        .toc-toggle:hover {
+            color: #2a3b7d;
+        }
+        .toc-toggle.collapsed {
+            transform: translateY(-50%) rotate(-90deg);
+        }
+        .toc-children {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .toc-children.collapsed {
+            max-height: 0;
         }
         
         /* Mermaid图表放大预览样式 */
@@ -4090,16 +4156,56 @@
             if (!tocNav || headings.length === 0) return;
             
             let tocHTML = '';
+            let currentH2 = null;
+            let h2Index = 0;
+            
             headings.forEach((heading, index) => {
                 const id = 'heading-' + index;
                 heading.id = id;
                 const level = heading.tagName.toLowerCase();
-                const levelClass = level === 'h2' ? 'toc-level-2' : 'toc-level-3';
-                const icon = level === 'h2' ? 'fa fa-folder' : 'fa fa-file-text-o';
-                tocHTML += `<a href="#${id}" class="${levelClass}"><i class="${icon} mr-2"></i>${heading.textContent}</a>`;
+                
+                if (level === 'h2') {
+                    // 关闭之前的h2子项
+                    if (currentH2) {
+                        tocHTML += '</div></div>';
+                    }
+                    
+                    h2Index++;
+                    currentH2 = heading.textContent;
+                    tocHTML += `
+                        <div class="toc-item">
+                            <button class="toc-toggle" onclick="toggleTOC(${h2Index})">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
+                            <a href="#${id}" class="toc-level-2"><i class="fa fa-folder mr-2"></i>${heading.textContent}</a>
+                            <div class="toc-children" id="toc-children-${h2Index}">
+                    `;
+                } else if (level === 'h3' && currentH2) {
+                    tocHTML += `
+                        <a href="#${id}" class="toc-level-3"><i class="fa fa-file-text-o mr-2"></i>${heading.textContent}</a>
+                    `;
+                }
             });
             
+            // 关闭最后一个h2子项
+            if (currentH2) {
+                tocHTML += '</div></div>';
+            }
+            
             tocNav.innerHTML = tocHTML;
+        }
+        
+        function toggleTOC(index) {
+            const children = document.getElementById(`toc-children-${index}`);
+            const toggle = children.previousElementSibling;
+            
+            if (children.classList.contains('collapsed')) {
+                children.classList.remove('collapsed');
+                toggle.classList.remove('collapsed');
+            } else {
+                children.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+            }
         }
         
         function switchMainTab(tab) {
