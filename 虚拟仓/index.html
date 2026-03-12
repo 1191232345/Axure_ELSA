@@ -755,6 +755,7 @@
     <div class="tabs fixed bottom-8 right-8 z-40">
         <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
         <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+        <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
     </div>
     <header class="bg-primary text-white shadow-header sticky top-0 z-50">
         <div class="container mx-auto px-2 sm:px-3 lg:px-4">
@@ -858,6 +859,39 @@
             <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
         </div>
     </div>
+    
+    <!-- 测试用例内容 - 从 Markdown 加载 -->
+    <main id="main-testcases" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <!-- 左侧目录 -->
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="testcases-toc-nav"></div>
+                    </div>
+                </aside>
+                <!-- 右侧内容 -->
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="testcases-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载测试用例文档...</p>
+                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>重新加载
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
     
     <!-- 原型页面 -->
     <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
@@ -3791,7 +3825,9 @@
 
         // 加载并渲染 Markdown PRD
         let prdLoaded = false;
-
+        
+        // 加载并渲染 Markdown 测试用例
+        let testCasesLoaded = false;
 
         function loadPRD() {
             if (prdLoaded) return;
@@ -3879,6 +3915,147 @@
             xhr.send();
         }
         
+        function loadTestCases() {
+            if (testCasesLoaded) return;
+            
+            console.log('开始加载测试用例...');
+            const testCasesContentDiv = document.getElementById('testcases-content');
+            
+            // 确保marked已经初始化
+            if (typeof marked === 'undefined') {
+                console.error('Marked库未加载');
+                testCasesContentDiv.innerHTML = 
+                    '<div class="text-center py-8">' +
+                    '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
+                    '<p class="text-red-500 mb-4">错误: Marked库未加载</p>' +
+                    '</div>';
+                return;
+            }
+            
+            // 使用XMLHttpRequest加载测试用例文件
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'test-cases.md', true);
+            xhr.onreadystatechange = function() {
+                console.log('Ready state:', xhr.readyState, 'Status:', xhr.status);
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const markdown = xhr.responseText;
+                        console.log('测试用例内容长度:', markdown.length);
+                        
+                        try {
+                            const html = marked.parse(markdown);
+                            console.log('Markdown解析结果类型:', typeof html);
+                            console.log('Markdown解析结果预览:', html.substring(0, 100) + '...');
+                            testCasesContentDiv.innerHTML = html;
+                            
+                            // 生成测试用例目录导航
+                            generateTestCasesTOC();
+                            
+                            // 重新初始化Mermaid图表
+                            if (window.mermaid) {
+                                setTimeout(function() {
+                                    const mermaidElements = testCasesContentDiv.querySelectorAll('.mermaid');
+                                    if (mermaidElements.length > 0) {
+                                        console.log('找到Mermaid图表数量:', mermaidElements.length);
+                                        mermaid.init(undefined, mermaidElements);
+                                    }
+                                }, 100);
+                            }
+                            
+                            testCasesLoaded = true;
+                            console.log('测试用例加载完成');
+                        } catch (error) {
+                            console.error('Markdown解析错误:', error);
+                            testCasesContentDiv.innerHTML = 
+                                '<div class="text-center py-8">' +
+                                '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
+                                '<p class="text-red-500 mb-4">解析错误: ' + error.message + '</p>' +
+                                '</div>';
+                        }
+                    } else {
+                        console.error('加载失败:', xhr.status);
+                        testCasesContentDiv.innerHTML = 
+                            '<div class="text-center py-8">' +
+                            '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
+                            '<p class="text-red-500 mb-4">加载失败: HTTP ' + xhr.status + '</p>' +
+                            '<button onclick="loadTestCases()" class="mt-4 px-4 py-2 bg-primary text-white rounded">重试</button>' +
+                            '</div>';
+                    }
+                }
+            };
+            xhr.onerror = function() {
+                console.error('网络错误');
+                testCasesContentDiv.innerHTML = 
+                    '<div class="text-center py-8">' +
+                    '<i class="fa fa-exclamation-triangle text-2xl text-red-500 mb-4"></i>' +
+                    '<p class="text-red-500 mb-4">网络错误，无法加载测试用例文件</p>' +
+                    '<button onclick="loadTestCases()" class="mt-4 px-4 py-2 bg-primary text-white rounded">重试</button>' +
+                    '</div>';
+            };
+            console.log('发送测试用例请求...');
+            xhr.send();
+        }
+        
+        function generateTestCasesTOC() {
+            const content = document.getElementById('testcases-content');
+            const headings = content.querySelectorAll('h2, h3');
+            const tocNav = document.getElementById('testcases-toc-nav');
+            
+            if (!tocNav || headings.length === 0) return;
+            
+            let tocHTML = '';
+            let currentH2 = null;
+            let h2Index = 0;
+            
+            headings.forEach((heading, index) => {
+                const id = 'test-heading-' + index;
+                heading.id = id;
+                const level = heading.tagName.toLowerCase();
+                
+                if (level === 'h2') {
+                    // 关闭之前的h2子项
+                    if (currentH2) {
+                        tocHTML += '</div></div>';
+                    }
+                    
+                    h2Index++;
+                    currentH2 = heading.textContent;
+                    tocHTML += `
+                        <div class="toc-item">
+                            <button class="toc-toggle" onclick="toggleTestCasesTOC(${h2Index})">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
+                            <a href="#${id}" class="toc-level-2"><i class="fa fa-folder mr-2"></i>${heading.textContent}</a>
+                            <div class="toc-children" id="test-toc-children-${h2Index}">
+                    `;
+                } else if (level === 'h3' && currentH2) {
+                    tocHTML += `
+                        <a href="#${id}" class="toc-level-3"><i class="fa fa-file-text-o mr-2"></i>${heading.textContent}</a>
+                    `;
+                }
+            });
+            
+            // 关闭最后一个h2子项
+            if (currentH2) {
+                tocHTML += '</div></div>';
+            }
+            
+            tocNav.innerHTML = tocHTML;
+        }
+        
+        function toggleTestCasesTOC(index) {
+            const children = document.getElementById(`test-toc-children-${index}`);
+            const toggle = children.previousElementSibling;
+            
+            if (children.classList.contains('collapsed')) {
+                children.classList.remove('collapsed');
+                toggle.classList.remove('collapsed');
+            } else {
+                children.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+            }
+        }
+        
         function generateTOC() {
             const content = document.getElementById('prd-content');
             const headings = content.querySelectorAll('h2, h3');
@@ -3944,24 +4121,38 @@
             var header = document.querySelector('header');
             var prototypeTabBtn = document.getElementById('tab-prototype');
             var prdTabBtn = document.getElementById('tab-prd');
+            var testCasesTabBtn = document.getElementById('tab-testcases');
             var mainPrototype = document.getElementById('main-prototype');
             var mainPrd = document.getElementById('main-prd');
+            var mainTestCases = document.getElementById('main-testcases');
+            
+            // 重置所有标签按钮状态
+            prototypeTabBtn.className = 'tab';
+            prdTabBtn.className = 'tab';
+            testCasesTabBtn.className = 'tab';
+            
+            // 隐藏所有主内容
+            mainPrototype.style.display = 'none';
+            mainPrd.style.display = 'none';
+            mainTestCases.style.display = 'none';
             
             if (tab === 'prototype') {
                 header.style.display = 'block';
                 prototypeTabBtn.className = 'tab active';
-                prdTabBtn.className = 'tab';
                 mainPrototype.style.display = 'block';
-                mainPrd.style.display = 'none';
                 console.log('Switched to prototype tab');
-            } else {
+            } else if (tab === 'prd') {
                 header.style.display = 'none';
                 prdTabBtn.className = 'tab active';
-                prototypeTabBtn.className = 'tab';
                 mainPrd.style.display = 'block';
-                mainPrototype.style.display = 'none';
                 console.log('Switched to PRD tab, calling loadPRD()');
                 loadPRD();
+            } else if (tab === 'testcases') {
+                header.style.display = 'none';
+                testCasesTabBtn.className = 'tab active';
+                mainTestCases.style.display = 'block';
+                console.log('Switched to test cases tab, calling loadTestCases()');
+                loadTestCases();
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
