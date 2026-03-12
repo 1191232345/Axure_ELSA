@@ -756,6 +756,7 @@
         <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
         <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
         <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+
     </div>
     <header class="bg-primary text-white shadow-header sticky top-0 z-50">
         <div class="container mx-auto px-2 sm:px-3 lg:px-4">
@@ -892,6 +893,8 @@
             </div>
         </div>
     </main>
+    
+
     
     <!-- 原型页面 -->
     <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
@@ -1421,7 +1424,7 @@
                                         <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
                                     </th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">虚拟仓名称</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联仓库</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联实体库</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">仓库类型</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">所属部门</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">仓库编码</th>
@@ -1434,40 +1437,40 @@
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
                                     </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">/</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">/</td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">DE001</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DE001</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-purple-100 text-purple-800">主仓</span>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DE001</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">/</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-02 14:00:00</td>
                                 </tr>
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
                                     </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">/</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">/</td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">CA001</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">CA001</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-purple-100 text-purple-800">主仓</span>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">CA001</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">/</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-02 14:00:00</td>
                                 </tr>
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
                                     </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">/</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">/</td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">CA002</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">CA002</td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <span class="status-badge bg-purple-100 text-purple-800">主仓</span>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">CA002</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">/</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-02 14:00:00</td>
                                 </tr>
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
                                     <td class="px-4 py-3 whitespace-nowrap">
@@ -3075,19 +3078,36 @@
                     <label for="transfer-from"><span class="required">*</span> 调出仓库</label>
                     <select id="transfer-from" class="form-select" onchange="updateTransferStock()">
                         <option value="">请选择调出仓库</option>
-                        <option value="NBFX">NBFX主仓</option>
-                        <option value="NBFX002">NBFX渠道仓A</option>
-                        <option value="NBFX003">NBFX渠道仓B</option>
-                        <option value="NBFX004">NBFX渠道仓C</option>
+                        <optgroup label="主仓">
+                            <option value="NBFX">NBFX主仓</option>
+                        </optgroup>
+                        <optgroup label="渠道仓">
+                            <option value="NBFX002">NBFX渠道仓A</option>
+                            <option value="NBFX003">NBFX渠道仓B</option>
+                            <option value="NBFX004">NBFX渠道仓C</option>
+                        </optgroup>
+                        <optgroup label="备货仓">
+                            <option value="STOCK001">备货仓1</option>
+                            <option value="STOCK002">备货仓2</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="transfer-to"><span class="required">*</span> 调入仓库</label>
                     <select id="transfer-to" class="form-select">
-                        <option value="NBFX">NBFX主仓</option>
-                        <option value="NBFX002">NBFX渠道仓A</option>
-                        <option value="NBFX003">NBFX渠道仓B</option>
-                        <option value="NBFX004">NBFX渠道仓C</option>
+                        <option value="">请选择调入仓库</option>
+                        <optgroup label="主仓">
+                            <option value="NBFX">NBFX主仓</option>
+                        </optgroup>
+                        <optgroup label="渠道仓">
+                            <option value="NBFX002">NBFX渠道仓A</option>
+                            <option value="NBFX003">NBFX渠道仓B</option>
+                            <option value="NBFX004">NBFX渠道仓C</option>
+                        </optgroup>
+                        <optgroup label="备货仓">
+                            <option value="STOCK001">备货仓1</option>
+                            <option value="STOCK002">备货仓2</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="form-group">
@@ -3288,6 +3308,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- 上传文档模态框 -->
+
 
     <script>
         // 页面切换
@@ -3660,7 +3683,12 @@
                 'NBFX': { 'SKU001': 1000, 'SKU002': 800, 'SKU003': 500, 'SKU004': 1200, 'SKU005': 600 },
                 'NBFX002': { 'SKU001': 300, 'SKU002': 200, 'SKU003': 150, 'SKU004': 400, 'SKU005': 250 },
                 'NBFX003': { 'SKU001': 250, 'SKU002': 180, 'SKU003': 300, 'SKU004': 350, 'SKU005': 200 },
-                'NBFX004': { 'SKU001': 400, 'SKU002': 350, 'SKU003': 280, 'SKU004': 500, 'SKU005': 320 }
+                'NBFX004': { 'SKU001': 400, 'SKU002': 350, 'SKU003': 280, 'SKU004': 500, 'SKU005': 320 },
+                'DEPT001': { 'SKU001': 150, 'SKU002': 120, 'SKU003': 80, 'SKU004': 200, 'SKU005': 100 },
+                'DEPT002': { 'SKU001': 120, 'SKU002': 100, 'SKU003': 70, 'SKU004': 180, 'SKU005': 90 },
+                'DEPT003': { 'SKU001': 100, 'SKU002': 80, 'SKU003': 60, 'SKU004': 150, 'SKU005': 80 },
+                'STOCK001': { 'SKU001': 2000, 'SKU002': 1500, 'SKU003': 1000, 'SKU004': 2500, 'SKU005': 1200 },
+                'STOCK002': { 'SKU001': 1800, 'SKU002': 1300, 'SKU003': 900, 'SKU004': 2200, 'SKU005': 1100 }
             };
             
             const stock = stockMap[from]?.[sku] ?? 0;
@@ -4152,6 +4180,10 @@
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+        
+
+        
+
     </script>
 </body>
 </html>
