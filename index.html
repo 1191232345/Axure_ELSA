@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海外仓报价中心系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-primary': '#2a3b7d',
+            'brand-secondary': '#36CFC9',
+            'brand-accent': '#722ED1',
+            'brand-success': '#00B42A',
+            'brand-warning': '#FF7D00',
+            'brand-error': '#F53F3F',
+            'bg-main': '#F9FAFB',
+            'bg-card': '#FFFFFF',
+            'text-primary': '#1D2129',
+            'text-secondary': '#374151',
+            'text-tertiary': '#6B7280',
+            'border-default': '#E5E7EB',
+          },
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', 'sans-serif'],
+            'mono': ['Monaco', 'Menlo', 'monospace'],
+          },
+          spacing: {
+            '4': '4px',
+            '8': '8px',
+            '12': '12px',
+            '16': '16px',
+            '24': '24px',
+            '32': '32px',
+            '48': '48px',
+          },
+          borderRadius: {
+            'large': '16px',
+            'medium': '12px',
+            'small': '8px',
+            'mini': '4px',
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .diagonal-divider {
+        position: relative;
+      }
+      .diagonal-divider::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(135deg, transparent 50%, #1E40AF 50%);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(30, 64, 175, 0.1);
+      }
+    }
+  </style>
+</head>
+<body class="font-sans bg-bg-main text-text-primary">
+  <!-- 登录页面 -->
+  <div id="login-page" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-primary to-brand-secondary p-4">
+    <div class="w-full max-w-md bg-white rounded-medium shadow-xl overflow-hidden">
+      <div class="p-8">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-brand-primary mb-2">海外仓报价中心</h1>
+          <p class="text-text-tertiary">登录系统管理报价</p>
+        </div>
+        <form>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-text-tertiary mb-1" for="email">邮箱</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <i class="fa fa-envelope text-text-tertiary"></i>
+              </span>
+              <input type="email" id="email" class="w-full h-10 pl-10 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" placeholder="请输入邮箱">
+            </div>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-text-tertiary mb-1" for="password">密码</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <i class="fa fa-lock text-text-tertiary"></i>
+              </span>
+              <input type="password" id="password" class="w-full h-10 pl-10 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" placeholder="请输入密码">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-brand-primary hover:bg-brand-primary/80 text-white font-medium h-10 px-4 rounded-medium transition-colors duration-300">
+            登录
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主应用界面 -->
+  <div id="app" class="hidden min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 bg-brand-primary border-b border-border-default sticky top-0 z-10">
+      <div class="max-w-[1280px] mx-auto h-full flex items-center justify-between px-4">
+        <!-- Logo/系统名称 -->
+        <div class="flex items-center">
+          <h1 class="text-lg font-bold text-white">海外仓报价中心</h1>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <nav class="flex items-center gap-2">
+          <a href="#dashboard" class="px-3 py-2 text-white font-medium border-b-2 border-brand-secondary">
+            仪表盘
+          </a>
+          <a href="#price-cards" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            价卡管理
+          </a>
+          <a href="#discounts" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            折扣设置
+          </a>
+          <a href="#quotes" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报价生成
+          </a>
+          <a href="#reports" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报表分析
+          </a>
+        </nav>
+        
+        <!-- 用户信息 -->
+        <div class="flex items-center gap-3">
+          <button class="text-white/90 hover:text-white relative">
+            <i class="fa fa-bell"></i>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-brand-warning rounded-full flex items-center justify-center text-white text-xs">3</span>
+          </button>
+          <button class="text-white/90 hover:text-white">
+            <i class="fa fa-cog"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fa fa-user text-white"></i>
+            </div>
+            <div class="text-white">
+              <p class="text-sm font-medium">管理员</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-[1280px] mx-auto p-4">
+
+        <!-- 仪表盘内容 -->
+        <div class="p-4">
+          <!-- 统计卡片 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600">总价卡数</h3>
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i class="fa fa-table text-primary"></i>
+                </div>
+              </div>
+              <p class="text-2xl font-montserrat font-bold">24</p>
+              <p class="text-xs text-green-600 flex items-center mt-2">
+                <i class="fa fa-arrow-up mr-1"></i> 12% 较上月
+              </p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600">活跃客户</h3>
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                  <i class="fa fa-users text-secondary"></i>
+                </div>
+              </div>
+              <p class="text-2xl font-montserrat font-bold">156</p>
+              <p class="text-xs text-green-600 flex items-center mt-2">
+                <i class="fa fa-arrow-up mr-1"></i> 8% 较上月
+              </p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600">本月报价</h3>
+                <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                  <i class="fa fa-file-text text-accent"></i>
+                </div>
+              </div>
+              <p class="text-2xl font-montserrat font-bold">78</p>
+              <p class="text-xs text-red-600 flex items-center mt-2">
+                <i class="fa fa-arrow-down mr-1"></i> 3% 较上月
+              </p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-medium text-gray-600">报价准确率</h3>
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i class="fa fa-check-circle text-primary"></i>
+                </div>
+              </div>
+              <p class="text-2xl font-montserrat font-bold">99.2%</p>
+              <p class="text-xs text-green-600 flex items-center mt-2">
+                <i class="fa fa-arrow-up mr-1"></i> 1.5% 较上月
+              </p>
+            </div>
+          </div>
+
+          <!-- 图表区域 -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+              <h3 class="text-lg font-montserrat font-semibold mb-4">报价趋势</h3>
+              <div class="h-64 bg-gray-50 rounded-md flex items-center justify-center">
+                <p class="text-gray-400">图表区域</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-montserrat font-semibold mb-4">客户类型分布</h3>
+              <div class="h-64 bg-gray-50 rounded-md flex items-center justify-center">
+                <p class="text-gray-400">饼图区域</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 最近报价 -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-montserrat font-semibold">最近报价</h3>
+              <a href="#quotes" class="text-sm text-primary hover:underline">查看全部</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 font-medium text-gray-600">客户名称</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-600">报价金额</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-600">状态</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-600">创建时间</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-600">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="py-3 px-4">ABC贸易公司</td>
+                    <td class="py-3 px-4">$12,500</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">已确认</span>
+                    </td>
+                    <td class="py-3 px-4">2024-01-15</td>
+                    <td class="py-3 px-4">
+                      <button class="text-primary hover:text-primary/80 mr-3">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="py-3 px-4">XYZ物流公司</td>
+                    <td class="py-3 px-4">$8,750</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">待确认</span>
+                    </td>
+                    <td class="py-3 px-4">2024-01-14</td>
+                    <td class="py-3 px-4">
+                      <button class="text-primary hover:text-primary/80 mr-3">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="py-3 px-4">123电商平台</td>
+                    <td class="py-3 px-4">$15,200</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">处理中</span>
+                    </td>
+                    <td class="py-3 px-4">2024-01-13</td>
+                    <td class="py-3 px-4">
+                      <button class="text-primary hover:text-primary/80 mr-3">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- 价卡管理页面 -->
+  <div id="price-cards-page" class="hidden min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 bg-brand-primary border-b border-border-default sticky top-0 z-10">
+      <div class="max-w-[1280px] mx-auto h-full flex items-center justify-between px-4">
+        <!-- Logo/系统名称 -->
+        <div class="flex items-center">
+          <h1 class="text-lg font-bold text-white">海外仓报价中心</h1>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <nav class="flex items-center gap-2">
+          <a href="#dashboard" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            仪表盘
+          </a>
+          <a href="#price-cards" class="px-3 py-2 text-white font-medium border-b-2 border-brand-secondary">
+            价卡管理
+          </a>
+          <a href="#discounts" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            折扣设置
+          </a>
+          <a href="#quotes" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报价生成
+          </a>
+          <a href="#reports" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报表分析
+          </a>
+        </nav>
+        
+        <!-- 用户信息 -->
+        <div class="flex items-center gap-3">
+          <button class="text-white/90 hover:text-white relative">
+            <i class="fa fa-bell"></i>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-brand-warning rounded-full flex items-center justify-center text-white text-xs">3</span>
+          </button>
+          <button class="text-white/90 hover:text-white">
+            <i class="fa fa-cog"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fa fa-user text-white"></i>
+            </div>
+            <div class="text-white">
+              <p class="text-sm font-medium">管理员</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-[1280px] mx-auto p-4">
+        <!-- 页面标题和操作按钮 -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-text-primary">价卡管理</h2>
+          <button class="bg-brand-primary hover:bg-brand-primary/80 text-white font-medium h-10 px-6 rounded-medium transition-colors duration-300 flex items-center gap-2">
+            <i class="fa fa-plus"></i>
+            <span>新增价卡</span>
+          </button>
+        </div>
+
+        <!-- 价卡管理内容 -->
+        <div>
+          <!-- 搜索和筛选 -->
+          <div class="bg-white rounded-medium shadow-sm p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">搜索价卡</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i class="fa fa-search text-text-tertiary"></i>
+                  </span>
+                  <input type="text" class="w-full h-8 pl-10 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" placeholder="输入价卡名称">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">服务类型</label>
+                <select class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary">
+                  <option value="">全部</option>
+                  <option value="storage">仓储服务</option>
+                  <option value="operation">操作服务</option>
+                  <option value="delivery">配送服务</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">状态</label>
+                <select class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary">
+                  <option value="">全部</option>
+                  <option value="active">生效中</option>
+                  <option value="inactive">已过期</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 价卡列表 -->
+          <div class="bg-white rounded-medium shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-gradient-to-r from-brand-primary to-brand-secondary text-white">
+                    <th class="text-left py-3 px-4 font-medium">价卡名称</th>
+                    <th class="text-left py-3 px-4 font-medium">服务类型</th>
+                    <th class="text-left py-3 px-4 font-medium">生效时间</th>
+                    <th class="text-left py-3 px-4 font-medium">过期时间</th>
+                    <th class="text-left py-3 px-4 font-medium">状态</th>
+                    <th class="text-left py-3 px-4 font-medium">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-border-default hover:bg-bg-main">
+                    <td class="py-3 px-4 font-medium">标准仓储价卡</td>
+                    <td class="py-3 px-4">仓储服务</td>
+                    <td class="py-3 px-4">2024-01-01</td>
+                    <td class="py-3 px-4">2024-12-31</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 text-xs rounded-full bg-brand-success/10 text-brand-success">生效中</span>
+                    </td>
+                    <td class="py-3 px-4">
+                      <button class="text-brand-primary hover:text-brand-primary/80 mr-3">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button class="text-text-secondary hover:text-text-primary mr-3">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="text-brand-error hover:text-brand-error/80">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-border-default hover:bg-bg-main bg-bg-main">
+                    <td class="py-3 px-4 font-medium">操作服务价卡</td>
+                    <td class="py-3 px-4">操作服务</td>
+                    <td class="py-3 px-4">2024-01-01</td>
+                    <td class="py-3 px-4">2024-12-31</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 text-xs rounded-full bg-brand-success/10 text-brand-success">生效中</span>
+                    </td>
+                    <td class="py-3 px-4">
+                      <button class="text-brand-primary hover:text-brand-primary/80 mr-3">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button class="text-text-secondary hover:text-text-primary mr-3">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="text-brand-error hover:text-brand-error/80">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-border-default hover:bg-bg-main">
+                    <td class="py-3 px-4 font-medium">配送服务价卡</td>
+                    <td class="py-3 px-4">配送服务</td>
+                    <td class="py-3 px-4">2024-01-01</td>
+                    <td class="py-3 px-4">2024-12-31</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2 py-1 text-xs rounded-full bg-brand-success/10 text-brand-success">生效中</span>
+                    </td>
+                    <td class="py-3 px-4">
+                      <button class="text-brand-primary hover:text-brand-primary/80 mr-3">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                      <button class="text-text-secondary hover:text-text-primary mr-3">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="text-brand-error hover:text-brand-error/80">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- 分页 -->
+            <div class="p-4 border-t border-border-default flex items-center justify-between">
+              <p class="text-sm text-text-tertiary">显示 1-3 条，共 12 条</p>
+              <div class="flex items-center gap-2">
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-tertiary hover:bg-bg-main">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small bg-brand-primary text-white">1</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-secondary hover:bg-bg-main">2</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-secondary hover:bg-bg-main">3</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-tertiary hover:bg-bg-main">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- 底部标签栏 -->
+    <div class="fixed bottom-4 right-4 flex rounded-medium overflow-hidden shadow-lg bg-gradient-to-r from-brand-primary to-brand-secondary">
+      <button class="px-4 py-2 bg-white text-brand-primary font-medium">
+        原型
+      </button>
+      <button class="px-4 py-2 bg-transparent text-white font-medium hover:bg-white/20 transition-colors duration-300">
+        PRD
+      </button>
+      <button class="px-4 py-2 bg-transparent text-white font-medium hover:bg-white/20 transition-colors duration-300">
+        测试用例
+      </button>
+    </div>
+  </div>
+
+  <!-- 折扣设置页面 -->
+  <div id="discounts-page" class="hidden min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 bg-brand-primary border-b border-border-default sticky top-0 z-10">
+      <div class="max-w-[1280px] mx-auto h-full flex items-center justify-between px-4">
+        <!-- Logo/系统名称 -->
+        <div class="flex items-center">
+          <h1 class="text-lg font-bold text-white">海外仓报价中心</h1>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <nav class="flex items-center gap-2">
+          <a href="#dashboard" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            仪表盘
+          </a>
+          <a href="#price-cards" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            价卡管理
+          </a>
+          <a href="#discounts" class="px-3 py-2 text-white font-medium border-b-2 border-brand-secondary">
+            折扣设置
+          </a>
+          <a href="#quotes" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报价生成
+          </a>
+          <a href="#reports" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报表分析
+          </a>
+        </nav>
+        
+        <!-- 用户信息 -->
+        <div class="flex items-center gap-3">
+          <button class="text-white/90 hover:text-white relative">
+            <i class="fa fa-bell"></i>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-brand-warning rounded-full flex items-center justify-center text-white text-xs">3</span>
+          </button>
+          <button class="text-white/90 hover:text-white">
+            <i class="fa fa-cog"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fa fa-user text-white"></i>
+            </div>
+            <div class="text-white">
+              <p class="text-sm font-medium">管理员</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-[1280px] mx-auto p-4">
+        <!-- 页面标题和操作按钮 -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-text-primary">折扣设置</h2>
+          <button class="bg-brand-primary hover:bg-brand-primary/80 text-white font-medium h-10 px-6 rounded-medium transition-colors duration-300 flex items-center gap-2">
+            <i class="fa fa-plus"></i>
+            <span>新增折扣规则</span>
+          </button>
+        </div>
+
+        <!-- 折扣设置内容 -->
+        <div>
+          <!-- 客户等级管理 -->
+          <div class="bg-white rounded-medium shadow-sm p-4 mb-6">
+            <h3 class="text-lg font-semibold mb-4 text-text-primary">客户等级管理</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="border border-border-default rounded-medium p-4 hover:bg-bg-main transition-colors duration-300">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-medium text-text-primary">普通客户</h4>
+                  <span class="px-2 py-1 text-xs rounded-full bg-bg-main text-text-tertiary">默认</span>
+                </div>
+                <p class="text-sm text-text-tertiary mb-3">适用于新注册客户</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-text-primary">折扣率: 0%</span>
+                  <button class="text-brand-primary hover:text-brand-primary/80">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="border border-border-default rounded-medium p-4 hover:bg-bg-main transition-colors duration-300">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-medium text-text-primary">银卡客户</h4>
+                  <span class="px-2 py-1 text-xs rounded-full bg-bg-main text-text-tertiary">需设置</span>
+                </div>
+                <p class="text-sm text-text-tertiary mb-3">适用于月交易额 ≥ $10,000 的客户</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-text-primary">折扣率: 5%</span>
+                  <button class="text-brand-primary hover:text-brand-primary/80">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="border border-border-default rounded-medium p-4 hover:bg-bg-main transition-colors duration-300">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-medium text-text-primary">金卡客户</h4>
+                  <span class="px-2 py-1 text-xs rounded-full bg-bg-main text-text-tertiary">需设置</span>
+                </div>
+                <p class="text-sm text-text-tertiary mb-3">适用于月交易额 ≥ $50,000 的客户</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-text-primary">折扣率: 10%</span>
+                  <button class="text-brand-primary hover:text-brand-primary/80">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 折扣规则列表 -->
+          <div class="bg-white rounded-medium shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-gradient-to-r from-brand-primary to-brand-secondary text-white">
+                    <th class="text-left py-3 px-4 font-medium">规则名称</th>
+                    <th class="text-left py-3 px-4 font-medium">适用客户</th>
+                    <th class="text-left py-3 px-4 font-medium">服务类型</th>
+                    <th class="text-left py-3 px-4 font-medium">折扣率</th>
+                    <th class="text-left py-3 px-4 font-medium">生效时间</th>
+                    <th class="text-left py-3 px-4 font-medium">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-border-default hover:bg-bg-main">
+                    <td class="py-3 px-4 font-medium">银卡客户折扣</td>
+                    <td class="py-3 px-4">银卡客户</td>
+                    <td class="py-3 px-4">全部服务</td>
+                    <td class="py-3 px-4">5%</td>
+                    <td class="py-3 px-4">2024-01-01</td>
+                    <td class="py-3 px-4">
+                      <button class="text-brand-primary hover:text-brand-primary/80 mr-3">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="text-brand-error hover:text-brand-error/80">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-border-default hover:bg-bg-main bg-bg-main">
+                    <td class="py-3 px-4 font-medium">金卡客户折扣</td>
+                    <td class="py-3 px-4">金卡客户</td>
+                    <td class="py-3 px-4">全部服务</td>
+                    <td class="py-3 px-4">10%</td>
+                    <td class="py-3 px-4">2024-01-01</td>
+                    <td class="py-3 px-4">
+                      <button class="text-brand-primary hover:text-brand-primary/80 mr-3">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="text-brand-error hover:text-brand-error/80">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-border-default hover:bg-bg-main">
+                    <td class="py-3 px-4 font-medium">仓储服务折扣</td>
+                    <td class="py-3 px-4">所有客户</td>
+                    <td class="py-3 px-4">仓储服务</td>
+                    <td class="py-3 px-4">3%</td>
+                    <td class="py-3 px-4">2024-01-01</td>
+                    <td class="py-3 px-4">
+                      <button class="text-brand-primary hover:text-brand-primary/80 mr-3">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button class="text-brand-error hover:text-brand-error/80">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- 分页 -->
+            <div class="p-4 border-t border-border-default flex items-center justify-between">
+              <p class="text-sm text-text-tertiary">显示 1-3 条，共 8 条</p>
+              <div class="flex items-center gap-2">
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-tertiary hover:bg-bg-main">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small bg-brand-primary text-white">1</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-secondary hover:bg-bg-main">2</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-secondary hover:bg-bg-main">3</button>
+                <button class="w-8 h-8 flex items-center justify-center rounded-small border border-border-default text-text-tertiary hover:bg-bg-main">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- 底部标签栏 -->
+    <div class="fixed bottom-4 right-4 flex rounded-medium overflow-hidden shadow-lg bg-gradient-to-r from-brand-primary to-brand-secondary">
+      <button class="px-4 py-2 bg-white text-brand-primary font-medium">
+        原型
+      </button>
+      <button class="px-4 py-2 bg-transparent text-white font-medium hover:bg-white/20 transition-colors duration-300">
+        PRD
+      </button>
+      <button class="px-4 py-2 bg-transparent text-white font-medium hover:bg-white/20 transition-colors duration-300">
+        测试用例
+      </button>
+    </div>
+  </div>
+
+  <!-- 报价生成页面 -->
+  <div id="quotes-page" class="hidden min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="h-14 bg-brand-primary border-b border-border-default sticky top-0 z-10">
+      <div class="max-w-[1280px] mx-auto h-full flex items-center justify-between px-4">
+        <!-- Logo/系统名称 -->
+        <div class="flex items-center">
+          <h1 class="text-lg font-bold text-white">海外仓报价中心</h1>
+        </div>
+        
+        <!-- 导航菜单 -->
+        <nav class="flex items-center gap-2">
+          <a href="#dashboard" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            仪表盘
+          </a>
+          <a href="#price-cards" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            价卡管理
+          </a>
+          <a href="#discounts" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            折扣设置
+          </a>
+          <a href="#quotes" class="px-3 py-2 text-white font-medium border-b-2 border-brand-secondary">
+            报价生成
+          </a>
+          <a href="#reports" class="px-3 py-2 text-white/90 hover:text-white transition-colors">
+            报表分析
+          </a>
+        </nav>
+        
+        <!-- 用户信息 -->
+        <div class="flex items-center gap-3">
+          <button class="text-white/90 hover:text-white relative">
+            <i class="fa fa-bell"></i>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-brand-warning rounded-full flex items-center justify-center text-white text-xs">3</span>
+          </button>
+          <button class="text-white/90 hover:text-white">
+            <i class="fa fa-cog"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+              <i class="fa fa-user text-white"></i>
+            </div>
+            <div class="text-white">
+              <p class="text-sm font-medium">管理员</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="max-w-[1280px] mx-auto p-4">
+        <!-- 页面标题和操作按钮 -->
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-text-primary">报价生成</h2>
+          <div class="flex items-center gap-3">
+            <button class="bg-white border border-border-default text-text-primary font-medium h-10 px-6 rounded-medium transition-colors duration-300 flex items-center gap-2">
+              <i class="fa fa-save"></i>
+              <span>保存草稿</span>
+            </button>
+            <button class="bg-brand-warning hover:bg-brand-warning/80 text-white font-medium h-10 px-6 rounded-medium transition-colors duration-300 flex items-center gap-2">
+              <i class="fa fa-file-text"></i>
+              <span>生成报价</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 报价生成内容 -->
+        <div>
+          <!-- 客户选择和基本信息 -->
+          <div class="bg-white rounded-medium shadow-sm p-4 mb-6">
+            <h3 class="text-lg font-semibold mb-4 text-text-primary">客户信息</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">客户名称</label>
+                <select class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary">
+                  <option value="">选择客户</option>
+                  <option value="1">ABC贸易公司</option>
+                  <option value="2">XYZ物流公司</option>
+                  <option value="3">123电商平台</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">客户等级</label>
+                <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium bg-bg-main" value="银卡客户" disabled>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">联系人</label>
+                <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" placeholder="输入联系人姓名">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-tertiary mb-1">联系电话</label>
+                <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" placeholder="输入联系电话">
+              </div>
+            </div>
+          </div>
+
+          <!-- 服务选择和价格 -->
+          <div class="bg-white rounded-medium shadow-sm p-4 mb-6">
+            <h3 class="text-lg font-semibold mb-4 text-text-primary">服务选择</h3>
+            <div class="space-y-4">
+              <!-- 仓储服务 -->
+              <div class="border border-border-default rounded-medium p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-medium text-text-primary">仓储服务</h4>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-text-tertiary">基础价格: $5.00/天/立方米</span>
+                    <span class="px-2 py-1 text-xs rounded-full bg-brand-success/10 text-brand-success">折扣: 5%</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">仓储体积 (立方米)</label>
+                    <input type="number" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" value="100">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">仓储天数</label>
+                    <input type="number" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" value="30">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">小计</label>
+                    <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium bg-bg-main" value="$14,250.00" disabled>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 操作服务 -->
+              <div class="border border-border-default rounded-medium p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-medium text-text-primary">操作服务</h4>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-text-tertiary">基础价格: $2.50/件</span>
+                    <span class="px-2 py-1 text-xs rounded-full bg-brand-success/10 text-brand-success">折扣: 5%</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">操作数量 (件)</label>
+                    <input type="number" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" value="5000">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">操作类型</label>
+                    <select class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary">
+                      <option value="pick">拣货</option>
+                      <option value="pack">打包</option>
+                      <option value="both">拣货+打包</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">小计</label>
+                    <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium bg-bg-main" value="$11,875.00" disabled>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 配送服务 -->
+              <div class="border border-border-default rounded-medium p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-medium text-text-primary">配送服务</h4>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-text-tertiary">基础价格: $15.00/件</span>
+                    <span class="px-2 py-1 text-xs rounded-full bg-brand-success/10 text-brand-success">折扣: 5%</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">配送数量 (件)</label>
+                    <input type="number" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" value="1000">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">配送区域</label>
+                    <select class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary">
+                      <option value="local">本地</option>
+                      <option value="national">全国</option>
+                      <option value="international">国际</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-tertiary mb-1">小计</label>
+                    <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium bg-bg-main" value="$14,250.00" disabled>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 报价汇总 -->
+          <div class="bg-white rounded-medium shadow-sm p-4">
+            <h3 class="text-lg font-semibold mb-4 text-text-primary">报价汇总</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-text-tertiary">仓储服务</span>
+                  <span class="text-text-secondary">$14,250.00</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-text-tertiary">操作服务</span>
+                  <span class="text-text-secondary">$11,875.00</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-text-tertiary">配送服务</span>
+                  <span class="text-text-secondary">$14,250.00</span>
+                </div>
+                <div class="border-t border-border-default pt-2 mt-2 flex items-center justify-between font-medium">
+                  <span class="text-text-primary">总计</span>
+                  <span class="text-2xl font-bold text-brand-primary">$40,375.00</span>
+                </div>
+              </div>
+              <div>
+                <div class="border border-border-default rounded-medium p-4">
+                  <h4 class="font-medium mb-3 text-text-primary">报价信息</h4>
+                  <div class="space-y-2">
+                    <div>
+                      <label class="block text-sm font-medium text-text-tertiary mb-1">报价编号</label>
+                      <input type="text" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" value="QT-2024-0001">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-text-tertiary mb-1">报价有效期</label>
+                      <input type="date" class="w-full h-8 pl-3 pr-3 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" value="2024-02-15">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-text-tertiary mb-1">备注</label>
+                      <textarea class="w-full pl-3 pr-3 py-2 border border-border-default rounded-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/50 focus:border-brand-primary" rows="3" placeholder="输入备注信息"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end gap-4">
+              <button class="border border-border-default hover:bg-bg-main text-text-secondary font-medium h-10 px-6 rounded-medium transition-colors duration-300">
+                保存草稿
+              </button>
+              <button class="bg-brand-warning hover:bg-brand-warning/80 text-white font-medium h-10 px-6 rounded-medium transition-colors duration-300">
+                生成报价
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <!-- 底部标签栏 -->
+    <div class="fixed bottom-4 right-4 flex rounded-medium overflow-hidden shadow-lg bg-gradient-to-r from-brand-primary to-brand-secondary">
+      <button class="px-4 py-2 bg-white text-brand-primary font-medium">
+        原型
+      </button>
+      <button class="px-4 py-2 bg-transparent text-white font-medium hover:bg-white/20 transition-colors duration-300">
+        PRD
+      </button>
+      <button class="px-4 py-2 bg-transparent text-white font-medium hover:bg-white/20 transition-colors duration-300">
+        测试用例
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 简单的页面切换逻辑
+    document.addEventListener('DOMContentLoaded', function() {
+      // 模拟登录
+      const loginForm = document.querySelector('form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          document.getElementById('login-page').classList.add('hidden');
+          document.getElementById('app').classList.remove('hidden');
+        });
+      }
+
+      // 导航切换
+      const navLinks = document.querySelectorAll('nav a');
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = this.getAttribute('href').substring(1);
+          
+          // 隐藏所有页面
+          document.getElementById('app').classList.add('hidden');
+          document.getElementById('price-cards-page').classList.add('hidden');
+          document.getElementById('discounts-page').classList.add('hidden');
+          document.getElementById('quotes-page').classList.add('hidden');
+          
+          // 显示目标页面
+          if (target === 'dashboard') {
+            document.getElementById('app').classList.remove('hidden');
+          } else if (target === 'price-cards') {
+            document.getElementById('price-cards-page').classList.remove('hidden');
+          } else if (target === 'discounts') {
+            document.getElementById('discounts-page').classList.remove('hidden');
+          } else if (target === 'quotes') {
+            document.getElementById('quotes-page').classList.remove('hidden');
+          }
+          
+          // 更新导航状态
+          navLinks.forEach(navLink => {
+            navLink.classList.remove('bg-primary/30', 'font-medium');
+            navLink.classList.add('hover:bg-primary/20', 'text-white/90');
+          });
+          this.classList.add('bg-primary/30', 'font-medium');
+          this.classList.remove('hover:bg-primary/20', 'text-white/90');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

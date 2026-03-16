@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .main-content { display: none; }
+        .main-content.active { display: block; }
+        .tab-btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .tab-btn.active { background: #2a3b7d; color: white; }
+        .tab-btn:not(.active) { background: #f3f4f6; color: #374151; }
+        .tab-btn:hover { opacity: 0.9; }
+        
+        /* PRD Markdown 渲染样式 */
+        .prose { 
+            color: #374151; 
+            line-height: 1.8; 
+            font-size: 0.95rem;
+            max-width: 100%;
+        }
+        .prose h1 { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 3px solid #2a3b7d;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .prose h2 { 
+            font-size: 1.4rem; 
+            font-weight: 600; 
+            color: #2a3b7d; 
+            margin: 2.5rem 0 1.2rem; 
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            border-left: 4px solid #2a3b7d;
+            border-radius: 0 8px 8px 0;
+        }
+        .prose h3 { 
+            font-size: 1.15rem; 
+            font-weight: 600; 
+            color: #475569; 
+            margin: 2rem 0 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .prose h4 { 
+            font-size: 1rem; 
+            font-weight: 600; 
+            color: #2a3b7d; 
+            margin: 1.5rem 0 0.5rem; 
+        }
+        .prose p { margin-bottom: 1rem; color: #4b5563; }
+        .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
+        .prose li { margin-bottom: 0.5rem; color: #4b5563; }
+        .prose li::marker { color: #2a3b7d; }
+        
+        /* 增强表格样式 */
+        .prose table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin: 1.5rem 0; 
+            font-size: 0.85rem; 
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .prose th { 
+            padding: 0.875rem 1rem; 
+            background: linear-gradient(135deg, #2a3b7d 0%, #4f46e5 100%);
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            white-space: nowrap;
+        }
+        .prose th:first-child { border-top-left-radius: 12px; }
+        .prose th:last-child { border-top-right-radius: 12px; }
+        .prose td { 
+            padding: 0.75rem 1rem; 
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+        .prose tr:last-child td { border-bottom: none; }
+        .prose tr:nth-child(even) td { background: #f9fafb; }
+        .prose tr:hover td { background: #f0f4ff; }
+        .prose tr:hover { background-color: #f0f4ff; }
+        
+        /* 代码块样式 */
+        .prose pre { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            padding: 1.25rem; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+            border: 1px solid #334155;
+            overflow-x: auto; 
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .prose code { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #dc2626;
+            padding: 0.2rem 0.4rem; 
+            border-radius: 4px; 
+            font-size: 0.875em;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        .prose pre code { 
+            background: none; 
+            padding: 0; 
+            color: #e2e8f0;
+        }
+        .prose blockquote { 
+            border-left: 4px solid #2a3b7d; 
+            padding: 1rem 1.5rem; 
+            margin: 1.5rem 0; 
+            color: #64748b;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        .prose strong { 
+            color: #1e293b; 
+            font-weight: 700;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+        }
+        .prose a { 
+            color: #2a3b7d; 
+            text-decoration: none;
+            border-bottom: 1px solid #2a3b7d;
+            transition: all 0.2s;
+        }
+        .prose a:hover { 
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+        
+        /* 标签样式 */
+        .prose .badge { 
+            display: inline-block; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 9999px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            margin: 0.125rem;
+        }
+        .prose .badge-p0 { 
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+        .prose .badge-p1 { 
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        
+        /* 分隔线 */
+        .prose hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #2a3b7d, transparent);
+            margin: 2.5rem 0;
+        }
+        
+        /* 目录导航样式 */
+        .toc {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .toc-title {
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #2a3b7d;
+        }
+        .toc a {
+            display: block;
+            padding: 0.375rem 0.5rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .toc a:hover {
+            background: #f0f4ff;
+            color: #2a3b7d;
+        }
+        .toc-level-2 {
+            padding-left: 0;
+            font-weight: 500;
+            position: relative;
+        }
+        .toc-level-2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #2a3b7d;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .toc-level-2:hover::before,
+        .toc-level-2.active::before {
+            opacity: 1;
+        }
+        .toc-level-3 {
+            padding-left: 1.5rem;
+            font-size: 0.8rem;
+            color: #64748b;
+            position: relative;
+        }
+        .toc-level-3::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 12px;
+            width: 4px;
+            height: 4px;
+            background: #94a3b8;
+            border-radius: 50%;
+        }
+        
+        /* 折叠功能样式 */
+        .toc-item {
+            position: relative;
+        }
+        .toc-toggle {
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: transform 0.2s ease;
+        }
+        .toc-toggle:hover {
+            color: #2a3b7d;
+        }
+        .toc-toggle.collapsed {
+            transform: translateY(-50%) rotate(-90deg);
+        }
+        .toc-children {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .toc-children.collapsed {
+            max-height: 0;
+        }
+        
+        /* Mermaid图表放大预览样式 */
+        .mermaid {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+        .mermaid:hover {
+            transform: scale(1.02);
+        }
+        
+        /* 放大预览模态框 */
+        .mermaid-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .mermaid-modal.active {
+            display: flex;
+        }
+        .mermaid-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 95%;
+            max-height: 95%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalZoomIn 0.3s ease-out;
+        }
+        @keyframes modalZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .mermaid-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #374151;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .mermaid-modal-close:hover {
+            background: #e5e7eb;
+            transform: rotate(90deg);
+        }
+        .mermaid-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 20px;
+            padding-right: 50px;
+        }
+        .mermaid-modal-svg {
+            min-width: 800px;
+        }
+        .mermaid-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: rgba(42, 59, 125, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .mermaid-container {
+            position: relative;
+            display: inline-block;
+        }
+        .mermaid-container:hover .mermaid-hint {
+            opacity: 1;
+        }
+    </style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海外仓报价中心系统 - 报价模块</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Markdown 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <!-- Mermaid 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // 初始化Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3
+        });
+        
+        // 配置Marked
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+                    <div class="mermaid">${code}</div>
+                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+                </div>`;
+            }
+            return `<pre><code class="language-${language}">${code}</code></pre>`;
+        };
+        
+        marked.setOptions({
+            renderer: renderer,
+            breaks: true,
+            gfm: true
+        });
+
+        // 页面加载完成后重新渲染Mermaid图表
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+            }, 100);
+        });
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2a3b7d',
+                        'primary-light': '#3a4ca7',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        dark: '#1D2129',
+                        'light-bg': '#FFFFFF',
+                        'card-bg': '#FFFFFF',
+                        border: '#E5E7EB'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+                        'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    },
+                    transitionTimingFunction: {
+                        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)'
+                    }
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .text-shadow-sm {
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+            }
+            .btn-secondary {
+                @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+            }
+            .btn-danger {
+                @apply bg-white text-danger border border-danger/20 px-4 py-2 rounded-lg transition-all hover:bg-danger/5 focus:outline-none focus:ring-2 focus:ring-danger/30 focus:ring-offset-2;
+            }
+            .input-primary {
+                @apply w-full px-4 py-2.5 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+            }
+            .form-label {
+                @apply block text-sm font-medium text-gray-700 mb-1;
+            }
+            .checkbox-primary {
+                @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/30;
+            }
+            .scroll-smooth {
+                scroll-behavior: smooth;
+            }
+            .scale-fade-in {
+                animation: scaleFadeIn 0.3s ease-out forwards;
+            }
+            @keyframes scaleFadeIn {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+            .scale-fade-out {
+                animation: scaleFadeOut 0.2s ease-in forwards;
+            }
+            @keyframes scaleFadeOut {
+                0% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+            }
+            .table-hover-row:hover {
+                background-color: #f9fafb;
+            }
+            .status-badge {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                border-radius: 9999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 500;
+            }
+            .table-btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+                border: none;
+                cursor: pointer;
+            }
+            .table-btn:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .erp-btn {
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+                transition: all 0.2s ease;
+                border: 1px solid transparent;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                text-decoration: none;
+            }
+            .erp-btn:hover {
+                opacity: 0.9;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .erp-btn:active {
+                transform: translateY(0);
+            }
+            .erp-btn-primary {
+                background-color: #2a3b7d;
+                color: white;
+                border-color: #2a3b7d;
+            }
+            .erp-btn-primary:hover {
+                background-color: #3a4ca7;
+                border-color: #3a4ca7;
+            }
+            .erp-btn-secondary {
+                background-color: white;
+                color: #525252;
+                border-color: #d4d4d4;
+            }
+            .erp-btn-secondary:hover {
+                border-color: #a3a3a3;
+                color: #262626;
+            }
+            .erp-btn-warning {
+                background-color: #FF7D00;
+                color: white;
+                border-color: #FF7D00;
+            }
+            .erp-btn-warning:hover {
+                background-color: #ff952e;
+                border-color: #ff952e;
+            }
+            .erp-btn-danger {
+                background-color: #F53F3F;
+                color: white;
+                border-color: #F53F3F;
+            }
+            .erp-btn-danger:hover {
+                background-color: #ff5c5c;
+                border-color: #ff5c5c;
+            }
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 50;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .modal-overlay.show {
+                opacity: 1;
+                visibility: visible;
+            }
+            .modal-content {
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                width: 90%;
+                max-width: 600px;
+                max-height: 80vh;
+                overflow-y: auto;
+                transform: translateY(-20px);
+                transition: transform 0.3s ease;
+            }
+            .modal-overlay.show .modal-content {
+                transform: translateY(0);
+            }
+            .modal-header {
+                padding: 1rem;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .modal-body {
+                padding: 1rem;
+            }
+            .modal-footer {
+                padding: 1rem;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 min-h-screen">
+    <!-- 标签切换按钮 -->
+    <div class="fixed bottom-8 right-8 z-40 flex gap-2 shadow-lg rounded-lg overflow-hidden">
+        <button id="tab-prototype" class="tab-btn active px-6 py-2" onclick="switchTab('prototype')">
+            <i class="fa fa-th-large mr-2"></i>原型
+        </button>
+        <button id="tab-prd" class="tab-btn px-6 py-2" onclick="switchTab('prd')">
+            <i class="fa fa-file-text mr-2"></i>PRD
+        </button>
+        <button id="tab-testcases" class="tab-btn px-6 py-2" onclick="switchTab('testcases')">
+            <i class="fa fa-check-square-o mr-2"></i>测试用例
+        </button>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold">海外仓报价中心系统</span>
+                    </div>
+                    <nav class="hidden md:ml-6 md:flex space-x-8">
+                        <a href="#" class="text-white hover:text-secondary border-b-2 border-secondary px-1 pt-1 text-sm font-medium">
+                            仪表盘
+                        </a>
+                        <a href="#" class="text-white hover:text-secondary border-b-2 border-secondary px-1 pt-1 text-sm font-medium">
+                            价卡管理
+                        </a>
+                        <a href="#" class="text-white hover:text-secondary border-b-2 border-secondary px-1 pt-1 text-sm font-medium">
+                            折扣设置
+                        </a>
+                        <a href="#" class="text-white hover:text-secondary border-b-2 border-secondary px-1 pt-1 text-sm font-medium">
+                            报价生成
+                        </a>
+                        <a href="#" class="text-white hover:text-secondary border-b-2 border-transparent px-1 pt-1 text-sm font-medium">
+                            报表分析
+                        </a>
+                    </nav>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <button class="relative p-1 rounded-full text-white hover:bg-primary-light focus:outline-none">
+                            <span class="sr-only">查看通知</span>
+                            <i class="fa fa-bell"></i>
+                            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-secondary"></span>
+                        </button>
+                    </div>
+                    <div class="ml-3 relative">
+                        <div>
+                            <button class="max-w-xs bg-primary-light rounded-full flex items-center text-sm focus:outline-none" id="user-menu-button">
+                                <span class="sr-only">打开用户菜单</span>
+                                <span class="text-white mr-2">管理员</span>
+                                <i class="fa fa-user-circle-o text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PRD内容 -->
+    <main id="main-prd" class="main-content p-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h1 class="text-2xl font-bold text-primary mb-6">海外仓报价中心系统 - 报价模块 PRD</h1>
+                <div class="prose" id="prd-content">
+                    <!-- PRD内容将通过JavaScript加载 -->
+                    <div class="text-center py-20">
+                        <i class="fa fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="text-gray-500">加载PRD文档中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 测试用例内容 -->
+    <main id="main-testcases" class="main-content p-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h1 class="text-2xl font-bold text-primary mb-6">海外仓报价中心系统 - 报价模块测试用例</h1>
+                <div class="prose" id="testcases-content">
+                    <!-- 测试用例内容将通过JavaScript加载 -->
+                    <div class="text-center py-20">
+                        <i class="fa fa-spinner fa-spin text-4xl text-primary mb-4"></i>
+                        <p class="text-gray-500">加载测试用例文档中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 原型页面 -->
+    <main id="main-prototype" class="main-content active p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- 模块导航 -->
+            <div class="bg-white rounded-xl shadow-card p-4 mb-6">
+                <div class="flex flex-wrap gap-2">
+                    <button class="module-nav-btn active px-4 py-2 rounded-lg bg-primary text-white" onclick="switchModule('price-card')">
+                        <i class="fa fa-credit-card mr-2"></i>价卡管理
+                    </button>
+                    <button class="module-nav-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="switchModule('discount')">
+                        <i class="fa fa-percent mr-2"></i>折扣设置
+                    </button>
+                    <button class="module-nav-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200" onclick="switchModule('quote')">
+                        <i class="fa fa-file-text mr-2"></i>报价生成
+                    </button>
+                </div>
+            </div>
+
+            <!-- 价卡管理模块 -->
+            <div id="module-price-card" class="module-content">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-primary">价卡管理</h2>
+                        <button class="btn-primary" onclick="openAddModal()">
+                            <i class="fa fa-plus mr-2"></i>新增价卡
+                        </button>
+                    </div>
+                    
+                    <!-- 搜索和筛选 -->
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <input type="text" id="search-input" placeholder="搜索价卡..." class="input-primary pl-10">
+                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <select id="filter-select" class="input-primary">
+                                <option value="all">全部状态</option>
+                                <option value="active">生效中</option>
+                                <option value="inactive">已过期</option>
+                            </select>
+                            <select id="sort-select" class="input-primary">
+                                <option value="id">ID排序</option>
+                                <option value="name">名称排序</option>
+                                <option value="date">日期排序</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 表格 -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-primary text-white">
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">
+                                        <input type="checkbox" id="select-all" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">ID</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">价卡名称</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">服务类型</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">生效时间</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">过期时间</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">状态</th>
+                                    <th class="px-6 py-3 text-left text-sm font-semibold">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-table-body">
+                                <!-- 表格数据将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    <div class="flex items-center justify-between mt-6">
+                        <div class="text-sm text-gray-500">
+                            显示 <span id="showing-count">1-10</span> 条，共 <span id="total-count">100</span> 条
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary" onclick="changePage(1)" disabled id="first-page">
+                                <i class="fa fa-angle-double-left"></i>
+                            </button>
+                            <button class="btn-secondary" onclick="changePage(page - 1)" disabled id="prev-page">
+                                <i class="fa fa-angle-left"></i>
+                            </button>
+                            <div id="page-buttons" class="flex gap-1">
+                                <!-- 页码按钮将通过JavaScript动态生成 -->
+                            </div>
+                            <button class="btn-secondary" onclick="changePage(page + 1)" id="next-page">
+                                <i class="fa fa-angle-right"></i>
+                            </button>
+                            <button class="btn-secondary" onclick="changePage(totalPages)" id="last-page">
+                                <i class="fa fa-angle-double-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 折扣设置模块 -->
+            <div id="module-discount" class="module-content hidden">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-primary">折扣设置</h2>
+                        <button class="btn-primary">
+                            <i class="fa fa-plus mr-2"></i>新增折扣规则
+                        </button>
+                    </div>
+                    
+                    <!-- 客户等级卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-card-hover transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">普通客户</h3>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">基础</span>
+                            </div>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-primary">0%</p>
+                                <p class="text-gray-500 text-sm">折扣率</p>
+                            </div>
+                            <p class="text-gray-600 text-sm">适用于新注册客户</p>
+                            <button class="mt-4 w-full btn-secondary">
+                                <i class="fa fa-edit mr-2"></i>编辑
+                            </button>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-card-hover transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">银卡客户</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">中级</span>
+                            </div>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-primary">5%</p>
+                                <p class="text-gray-500 text-sm">折扣率</p>
+                            </div>
+                            <p class="text-gray-600 text-sm">适用于月交易额 ≥ $10,000</p>
+                            <button class="mt-4 w-full btn-secondary">
+                                <i class="fa fa-edit mr-2"></i>编辑
+                            </button>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-card-hover transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">金卡客户</h3>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">高级</span>
+                            </div>
+                            <div class="mb-4">
+                                <p class="text-3xl font-bold text-primary">10%</p>
+                                <p class="text-gray-500 text-sm">折扣率</p>
+                            </div>
+                            <p class="text-gray-600 text-sm">适用于月交易额 ≥ $50,000</p>
+                            <button class="mt-4 w-full btn-secondary">
+                                <i class="fa fa-edit mr-2"></i>编辑
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 折扣规则表格 -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th class="px-6 py-3 bg-primary text-left text-xs font-medium text-white uppercase tracking-wider">
+                                        规则名称
+                                    </th>
+                                    <th class="px-6 py-3 bg-primary text-left text-xs font-medium text-white uppercase tracking-wider">
+                                        适用客户
+                                    </th>
+                                    <th class="px-6 py-3 bg-primary text-left text-xs font-medium text-white uppercase tracking-wider">
+                                        服务类型
+                                    </th>
+                                    <th class="px-6 py-3 bg-primary text-left text-xs font-medium text-white uppercase tracking-wider">
+                                        折扣率
+                                    </th>
+                                    <th class="px-6 py-3 bg-primary text-left text-xs font-medium text-white uppercase tracking-wider">
+                                        生效时间
+                                    </th>
+                                    <th class="px-6 py-3 bg-primary text-right text-xs font-medium text-white uppercase tracking-wider">
+                                        操作
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="table-hover-row">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">银卡客户折扣</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">银卡客户</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">全部服务</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">5%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">2024-01-01</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-primary hover:text-primary-light mr-3">
+                                            <i class="fa fa-edit"></i> 编辑
+                                        </button>
+                                        <button class="text-danger hover:text-danger/80">
+                                            <i class="fa fa-trash"></i> 删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">金卡客户折扣</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">金卡客户</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">全部服务</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">10%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">2024-01-01</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-primary hover:text-primary-light mr-3">
+                                            <i class="fa fa-edit"></i> 编辑
+                                        </button>
+                                        <button class="text-danger hover:text-danger/80">
+                                            <i class="fa fa-trash"></i> 删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">仓储服务折扣</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">所有客户</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">仓储服务</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">3%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">2024-01-01</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button class="text-primary hover:text-primary-light mr-3">
+                                            <i class="fa fa-edit"></i> 编辑
+                                        </button>
+                                        <button class="text-danger hover:text-danger/80">
+                                            <i class="fa fa-trash"></i> 删除
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 报价生成模块 -->
+            <div id="module-quote" class="module-content hidden">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h2 class="text-xl font-bold text-primary mb-6">报价生成</h2>
+                    
+                    <!-- 客户信息 -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">客户信息</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">客户名称</label>
+                                <select class="input-primary">
+                                    <option>选择客户</option>
+                                    <option>ABC贸易公司</option>
+                                    <option>XYZ物流公司</option>
+                                    <option>123电商平台</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">客户等级</label>
+                                <select class="input-primary" disabled>
+                                    <option>银卡客户</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">联系人</label>
+                                <input type="text" placeholder="输入联系人姓名" class="input-primary">
+                            </div>
+                            <div>
+                                <label class="form-label">联系电话</label>
+                                <input type="tel" placeholder="输入联系电话" class="input-primary">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 服务选择 -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">服务选择</h3>
+                        
+                        <!-- 仓储服务 -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-gray-900 mb-3">仓储服务</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="form-label">仓储体积 (立方米)</label>
+                                    <input type="number" value="100" class="input-primary">
+                                </div>
+                                <div>
+                                    <label class="form-label">仓储天数</label>
+                                    <input type="number" value="30" class="input-primary">
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="form-label">小计</label>
+                                    <div class="input-primary bg-gray-50 text-right">$14,250.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作服务 -->
+                        <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-gray-900 mb-3">操作服务</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="form-label">操作数量 (件)</label>
+                                    <input type="number" value="5000" class="input-primary">
+                                </div>
+                                <div>
+                                    <label class="form-label">操作类型</label>
+                                    <select class="input-primary">
+                                        <option>拣货</option>
+                                        <option>打包</option>
+                                        <option>拣货+打包</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="form-label">小计</label>
+                                    <div class="input-primary bg-gray-50 text-right">$11,875.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 配送服务 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-900 mb-3">配送服务</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="form-label">配送数量 (件)</label>
+                                    <input type="number" value="1000" class="input-primary">
+                                </div>
+                                <div>
+                                    <label class="form-label">配送区域</label>
+                                    <select class="input-primary">
+                                        <option>本地</option>
+                                        <option>全国</option>
+                                        <option>国际</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <label class="form-label">小计</label>
+                                    <div class="input-primary bg-gray-50 text-right">$14,250.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 报价汇总 -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">报价汇总</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-600">仓储服务</span>
+                                    <span class="font-medium">$14,250.00</span>
+                                </div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-gray-600">操作服务</span>
+                                    <span class="font-medium">$11,875.00</span>
+                                </div>
+                                <div class="flex justify-between mb-4">
+                                    <span class="text-gray-600">配送服务</span>
+                                    <span class="font-medium">$14,250.00</span>
+                                </div>
+                                <div class="border-t border-gray-200 pt-4">
+                                    <div class="flex justify-between">
+                                        <span class="text-lg font-bold text-primary">总计</span>
+                                        <span class="text-2xl font-bold text-primary">$40,375.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="mb-4">
+                                    <label class="form-label">报价编号</label>
+                                    <input type="text" value="QT-2024-0001" class="input-primary" disabled>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">报价有效期</label>
+                                    <input type="date" value="2024-02-15" class="input-primary">
+                                </div>
+                                <div>
+                                    <label class="form-label">备注</label>
+                                    <textarea class="input-primary h-24" placeholder="输入备注信息"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end gap-4">
+                            <button class="btn-secondary">
+                                <i class="fa fa-save mr-2"></i>保存草稿
+                            </button>
+                            <button class="btn-primary bg-warning hover:bg-warning/90">
+                                <i class="fa fa-file-text mr-2"></i>生成报价
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mermaid图表放大预览模态框 -->
+    <div class="mermaid-modal" id="mermaidModal">
+        <div class="mermaid-modal-content">
+            <button class="mermaid-modal-close" onclick="closeMermaidModal()">&times;</button>
+            <h3 class="mermaid-modal-title">图表预览</h3>
+            <div id="mermaidModalContent"></div>
+        </div>
+    </div>
+    
+    <!-- 新增/编辑模态框 -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="edit-modal">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-primary" id="modal-title">新增价卡</h2>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeEditModal()">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="record-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="form-label">价卡名称</label>
+                        <input type="text" id="record-name" class="input-primary" required>
+                    </div>
+                    <div>
+                        <label class="form-label">服务类型</label>
+                        <select id="record-service-type" class="input-primary" required>
+                            <option value="仓储服务">仓储服务</option>
+                            <option value="操作服务">操作服务</option>
+                            <option value="配送服务">配送服务</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">生效时间</label>
+                        <input type="date" id="record-start-date" class="input-primary" required>
+                    </div>
+                    <div>
+                        <label class="form-label">过期时间</label>
+                        <input type="date" id="record-end-date" class="input-primary" required>
+                    </div>
+                    <div>
+                        <label class="form-label">状态</label>
+                        <select id="record-status" class="input-primary" required>
+                            <option value="active">生效中</option>
+                            <option value="inactive">已过期</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="form-label">描述</label>
+                        <textarea id="record-description" class="input-primary h-24" required></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-3 justify-end">
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">取消</button>
+                    <button type="submit" class="btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 确认删除模态框 -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="delete-modal">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-danger/10 text-danger mb-4">
+                    <i class="fa fa-trash-o text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">确认删除</h2>
+                <p class="text-gray-500 mt-2">确定要删除选中的价卡吗？此操作不可撤销。</p>
+            </div>
+            <div class="flex gap-3 justify-center">
+                <button class="btn-secondary" onclick="closeDeleteModal()">取消</button>
+                <button class="btn-danger" onclick="confirmDelete()">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签切换功能
+        function switchTab(tab) {
+            // 隐藏所有内容
+            document.querySelectorAll('.main-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的内容
+            document.getElementById(`main-${tab}`).classList.add('active');
+            
+            // 激活选中的标签按钮
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            // 如果切换到PRD或测试用例标签，加载对应内容
+            if (tab === 'prd') {
+                loadPRD();
+            } else if (tab === 'testcases') {
+                loadTestCases();
+            }
+        }
+        
+        // 加载PRD内容
+        function loadPRD() {
+            const prdContent = document.getElementById('prd-content');
+            prdContent.innerHTML = '<div class="text-center py-20"><i class="fa fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-500">加载PRD文档中...</p></div>';
+            
+            // 模拟加载PRD文件
+            fetch('prd.md')
+                .then(response => response.text())
+                .then(text => {
+                    prdContent.innerHTML = marked.parse(text);
+                    // 重新渲染Mermaid图表
+                    setTimeout(() => {
+                        mermaid.init(undefined, prdContent.querySelectorAll('.mermaid'));
+                    }, 100);
+                })
+                .catch(error => {
+                    prdContent.innerHTML = '<div class="text-center py-20"><i class="fa fa-exclamation-triangle text-4xl text-danger mb-4"></i><p class="text-gray-500">加载PRD文档失败</p></div>';
+                    console.error('Failed to load PRD:', error);
+                });
+        }
+        
+        // 加载测试用例内容
+        function loadTestCases() {
+            const testcasesContent = document.getElementById('testcases-content');
+            testcasesContent.innerHTML = '<div class="text-center py-20"><i class="fa fa-spinner fa-spin text-4xl text-primary mb-4"></i><p class="text-gray-500">加载测试用例文档中...</p></div>';
+            
+            // 模拟加载测试用例文件
+            fetch('test-cases.md')
+                .then(response => response.text())
+                .then(text => {
+                    testcasesContent.innerHTML = marked.parse(text);
+                    // 重新渲染Mermaid图表
+                    setTimeout(() => {
+                        mermaid.init(undefined, testcasesContent.querySelectorAll('.mermaid'));
+                    }, 100);
+                })
+                .catch(error => {
+                    testcasesContent.innerHTML = '<div class="text-center py-20"><i class="fa fa-exclamation-triangle text-4xl text-danger mb-4"></i><p class="text-gray-500">加载测试用例文档失败</p></div>';
+                    console.error('Failed to load test cases:', error);
+                });
+        }
+        
+        // 打开Mermaid图表放大预览
+        function openMermaidModal(element) {
+            const mermaidCode = element.querySelector('.mermaid').innerHTML;
+            const modal = document.getElementById('mermaidModal');
+            const modalContent = document.getElementById('mermaidModalContent');
+            
+            modalContent.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
+            modal.classList.add('active');
+            
+            // 渲染Mermaid图表
+            setTimeout(() => {
+                mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
+            }, 100);
+        }
+        
+        // 关闭Mermaid图表放大预览
+        function closeMermaidModal() {
+            const modal = document.getElementById('mermaidModal');
+            modal.classList.remove('active');
+        }
+        
+        // 全局变量
+        let data = [];
+        let filteredData = [];
+        let page = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let selectedIds = [];
+        
+        // 模拟数据
+        function generateMockData() {
+            const mockData = [];
+            const serviceTypes = ['仓储服务', '操作服务', '配送服务'];
+            for (let i = 1; i <= 50; i++) {
+                const startDate = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+                const endDate = new Date(startDate);
+                endDate.setFullYear(endDate.getFullYear() + 1);
+                
+                mockData.push({
+                    id: i,
+                    name: `价卡 ${i}`,
+                    serviceType: serviceTypes[Math.floor(Math.random() * serviceTypes.length)],
+                    startDate: startDate.toLocaleDateString('zh-CN'),
+                    endDate: endDate.toLocaleDateString('zh-CN'),
+                    status: i % 2 === 0 ? 'active' : 'inactive',
+                    description: `这是价卡 ${i} 的描述信息，包含详细的服务内容和价格说明。`
+                });
+            }
+            return mockData;
+        }
+        
+        // 初始化数据
+        function initData() {
+            data = generateMockData();
+            filteredData = [...data];
+            renderTable();
+            renderPagination();
+        }
+        
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('data-table-body');
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            tbody.innerHTML = '';
+            
+            if (pageData.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="8" class="px-6 py-10 text-center text-gray-500">暂无数据</td>`;
+                tbody.appendChild(emptyRow);
+                return;
+            }
+            
+            pageData.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                
+                const statusBadge = item.status === 'active' 
+                    ? '<span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">生效中</span>'
+                    : '<span class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">已过期</span>';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <input type="checkbox" class="record-checkbox rounded border-gray-300 text-primary focus:ring-primary" data-id="${item.id}">
+                    </td>
+                    <td class="px-6 py-4">${item.id}</td>
+                    <td class="px-6 py-4 font-medium">${item.name}</td>
+                    <td class="px-6 py-4">${item.serviceType}</td>
+                    <td class="px-6 py-4">${item.startDate}</td>
+                    <td class="px-6 py-4">${item.endDate}</td>
+                    <td class="px-6 py-4">${statusBadge}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <button class="text-primary hover:text-primary-light" onclick="editRecord(${item.id})"><i class="fa fa-edit"></i></button>
+                            <button class="text-danger hover:text-danger/80" onclick="deleteRecord(${item.id})"><i class="fa fa-trash"></i></button>
+                            <button class="text-gray-600 hover:text-gray-800" onclick="viewRecord(${item.id})"><i class="fa fa-eye"></i></button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // 绑定复选框事件
+            bindCheckboxEvents();
+        }
+        
+        // 绑定复选框事件
+        function bindCheckboxEvents() {
+            // 全选复选框
+            const selectAllCheckbox = document.getElementById('select-all');
+            selectAllCheckbox.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.record-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateSelectedIds();
+            });
+            
+            // 单个复选框
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectedIds();
+                    // 更新全选状态
+                    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                    selectAllCheckbox.checked = allChecked;
+                });
+            });
+        }
+        
+        // 更新选中的ID
+        function updateSelectedIds() {
+            const checkboxes = document.querySelectorAll('.record-checkbox:checked');
+            selectedIds = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+        }
+        
+        // 渲染分页
+        function renderPagination() {
+            totalPages = Math.ceil(filteredData.length / pageSize);
+            const pageButtons = document.getElementById('page-buttons');
+            const showingCount = document.getElementById('showing-count');
+            const totalCount = document.getElementById('total-count');
+            
+            // 更新显示信息
+            const start = (page - 1) * pageSize + 1;
+            const end = Math.min(page * pageSize, filteredData.length);
+            showingCount.textContent = `${start}-${end}`;
+            totalCount.textContent = filteredData.length;
+            
+            // 渲染页码按钮
+            pageButtons.innerHTML = '';
+            
+            // 显示最多5个页码按钮
+            let startPage = Math.max(1, page - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.className = `px-3 py-1 rounded ${i === page ? 'bg-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-100'}`;
+                button.textContent = i;
+                button.addEventListener('click', () => changePage(i));
+                pageButtons.appendChild(button);
+            }
+            
+            // 更新分页按钮状态
+            document.getElementById('first-page').disabled = page === 1;
+            document.getElementById('prev-page').disabled = page === 1;
+            document.getElementById('next-page').disabled = page === totalPages;
+            document.getElementById('last-page').disabled = page === totalPages;
+        }
+        
+        // 切换页码
+        function changePage(newPage) {
+            if (newPage < 1 || newPage > totalPages) return;
+            page = newPage;
+            renderTable();
+            renderPagination();
+        }
+        
+        // 模块切换功能
+        function switchModule(module) {
+            // 隐藏所有模块内容
+            document.querySelectorAll('.module-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // 移除所有导航按钮的激活状态
+            document.querySelectorAll('.module-nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            // 显示选中的模块内容
+            document.getElementById(`module-${module}`).classList.remove('hidden');
+            
+            // 激活选中的导航按钮
+            event.currentTarget.classList.add('active', 'bg-primary', 'text-white');
+            event.currentTarget.classList.remove('bg-gray-100', 'text-gray-700');
+        }
+        
+        // 搜索和筛选
+        function initSearchAndFilter() {
+            const searchInput = document.getElementById('search-input');
+            const filterSelect = document.getElementById('filter-select');
+            const sortSelect = document.getElementById('sort-select');
+            
+            searchInput.addEventListener('input', applyFilters);
+            filterSelect.addEventListener('change', applyFilters);
+            sortSelect.addEventListener('change', applyFilters);
+        }
+        
+        // 应用筛选
+        function applyFilters() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const filterValue = document.getElementById('filter-select').value;
+            const sortValue = document.getElementById('sort-select').value;
+            
+            // 筛选
+            filteredData = data.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchInput) || 
+                                     item.description.toLowerCase().includes(searchInput) ||
+                                     item.serviceType.toLowerCase().includes(searchInput);
+                const matchesFilter = filterValue === 'all' || item.status === filterValue;
+                return matchesSearch && matchesFilter;
+            });
+            
+            // 排序
+            filteredData.sort((a, b) => {
+                switch (sortValue) {
+                    case 'id':
+                        return a.id - b.id;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'date':
+                        return new Date(b.startDate) - new Date(a.startDate);
+                    default:
+                        return 0;
+                }
+            });
+            
+            page = 1;
+            renderTable();
+            renderPagination();
+        }
+        
+        // 打开新增模态框
+        function openAddModal() {
+            document.getElementById('modal-title').textContent = '新增价卡';
+            document.getElementById('record-id').value = '';
+            document.getElementById('record-name').value = '';
+            document.getElementById('record-service-type').value = '仓储服务';
+            document.getElementById('record-start-date').value = new Date().toISOString().split('T')[0];
+            const endDate = new Date();
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            document.getElementById('record-end-date').value = endDate.toISOString().split('T')[0];
+            document.getElementById('record-status').value = 'active';
+            document.getElementById('record-description').value = '';
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+        
+        // 编辑记录
+        function editRecord(id) {
+            const record = data.find(item => item.id === id);
+            if (record) {
+                document.getElementById('modal-title').textContent = '编辑价卡';
+                document.getElementById('record-id').value = record.id;
+                document.getElementById('record-name').value = record.name;
+                document.getElementById('record-service-type').value = record.serviceType;
+                document.getElementById('record-start-date').value = record.startDate;
+                document.getElementById('record-end-date').value = record.endDate;
+                document.getElementById('record-status').value = record.status;
+                document.getElementById('record-description').value = record.description;
+                document.getElementById('edit-modal').classList.remove('hidden');
+            }
+        }
+        
+        // 查看记录
+        function viewRecord(id) {
+            const record = data.find(item => item.id === id);
+            if (record) {
+                alert(`查看价卡：\nID: ${record.id}\n名称: ${record.name}\n服务类型: ${record.serviceType}\n生效时间: ${record.startDate}\n过期时间: ${record.endDate}\n状态: ${record.status === 'active' ? '生效中' : '已过期'}\n描述: ${record.description}`);
+            }
+        }
+        
+        // 删除记录
+        function deleteRecord(id) {
+            selectedIds = [id];
+            document.getElementById('delete-modal').classList.remove('hidden');
+        }
+        
+        // 关闭编辑模态框
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+        
+        // 关闭删除模态框
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+        }
+        
+        // 确认删除
+        function confirmDelete() {
+            data = data.filter(item => !selectedIds.includes(item.id));
+            applyFilters();
+            closeDeleteModal();
+            showToast('删除成功');
+        }
+        
+        // 保存记录
+        function saveRecord() {
+            const id = document.getElementById('record-id').value;
+            const name = document.getElementById('record-name').value;
+            const serviceType = document.getElementById('record-service-type').value;
+            const startDate = document.getElementById('record-start-date').value;
+            const endDate = document.getElementById('record-end-date').value;
+            const status = document.getElementById('record-status').value;
+            const description = document.getElementById('record-description').value;
+            
+            if (!name || !description) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+            
+            if (id) {
+                // 编辑
+                const index = data.findIndex(item => item.id === parseInt(id));
+                if (index !== -1) {
+                    data[index] = {
+                        ...data[index],
+                        name,
+                        serviceType,
+                        startDate,
+                        endDate,
+                        status,
+                        description
+                    };
+                    showToast('更新成功');
+                }
+            } else {
+                // 新增
+                const newId = Math.max(...data.map(item => item.id), 0) + 1;
+                data.push({
+                    id: newId,
+                    name,
+                    serviceType,
+                    startDate,
+                    endDate,
+                    status,
+                    description
+                });
+                showToast('创建成功');
+            }
+            
+            applyFilters();
+            closeEditModal();
+        }
+        
+        // 显示提示
+        function showToast(message, type = 'success') {
+            // 创建提示元素
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+            toast.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(toast);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // 初始化表单提交
+        function initForm() {
+            const form = document.getElementById('edit-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveRecord();
+            });
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认显示原型标签
+            switchTab('prototype');
+            initData();
+            initSearchAndFilter();
+            initForm();
+        });
+    </script>
+</body>
+</html>
