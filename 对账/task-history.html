@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务历史 - 对账系统</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+      max-height: 95vh;
+    }
+    .card-shadow {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .table-row-hover:hover {
+      background-color: #f9fafb;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+          E
+        </div>
+        <h1 class="text-xl font-bold text-gray-800">ELSA</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-gray-600">欢迎，管理员</span>
+        <button class="text-gray-600 hover:text-gray-800 transition-colors">
+          <i class="fa fa-cog text-xl"></i>
+        </button>
+        <button class="text-gray-600 hover:text-gray-800 transition-colors">
+          <i class="fa fa-bell text-xl"></i>
+        </button>
+        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+          <i class="fa fa-user text-gray-600"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区域 -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- 筛选条件区域 -->
+    <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold text-gray-700">检索条件</h3>
+      </div>
+      
+      <!-- 基础筛选条件 -->
+      <div class="flex flex-wrap gap-4 items-center mb-4">
+        <div class="w-full md:w-auto md:flex-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">任务类型</label>
+          <select id="taskTypeFilter" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all">
+            <option value="">全部</option>
+            <option value="fee_get">批量添加（单客户）</option>
+            <option value="batch_fee_get">批量添加（多客户）</option>
+            <option value="batch_fee_get">批量获取明细</option>
+          </select>
+        </div>
+        <div class="w-full md:w-auto md:flex-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">任务状态</label>
+          <select id="taskStatusFilter" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all">
+            <option value="">全部</option>
+            <option value="success">成功</option>
+            <option value="failed">失败</option>
+            <option value="processing">处理中</option>
+          </select>
+        </div>
+        <div class="w-full md:w-auto md:flex-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">操作人</label>
+          <input type="text" id="taskOperator" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all" placeholder="请输入操作人">
+        </div>
+        <div class="w-full md:w-auto md:flex-1">
+          <label class="block text-sm font-medium text-gray-700 mb-1">操作时间</label>
+          <div class="flex gap-2">
+            <input type="date" id="taskStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all" placeholder="开始日期">
+            <input type="date" id="taskEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all" placeholder="结束日期">
+          </div>
+        </div>
+        <div class="w-full md:w-auto md:flex items-end">
+          <button id="taskSearch" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all flex items-center gap-2">
+            <i class="fa fa-search"></i>
+            <span>查询</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 任务历史表格 -->
+    <div class="bg-white rounded-xl card-shadow mb-6 overflow-hidden">
+      <div class="p-4 border-b border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-700">任务历史记录</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table id="taskDataTable" class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200 bg-gray-50">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">任务ID</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">任务类型</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">状态</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">操作人</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">开始时间</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">结束时间</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">备注</th>
+            </tr>
+          </thead>
+          <tbody id="taskDataTableBody">
+            <!-- 数据将通过JavaScript动态渲染 -->
+          </tbody>
+        </table>
+      </div>
+      <div id="taskEmpty" class="py-16 text-center">
+        <i class="fa fa-history text-4xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">暂无任务历史记录</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // 任务历史数据
+    let taskHistoryData = [];
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化任务历史数据
+      initTaskHistoryData();
+      
+      // 绑定查询按钮事件
+      document.getElementById('taskSearch').addEventListener('click', searchTasks);
+    });
+
+    // 初始化任务历史数据
+    function initTaskHistoryData() {
+      // 模拟任务历史数据
+      taskHistoryData = [
+        {
+          id: 'TASK202603200001',
+          type: 'fee_get',
+          status: 'success',
+          operator: '系统',
+          startTime: '2026-03-20 10:00:00',
+          endTime: '2026-03-20 10:02:30',
+          remark: '成功查询 50 条费用数据'
+        },
+        {
+          id: 'TASK202603200002',
+          type: 'batch_fee_get',
+          status: 'success',
+          operator: '系统',
+          startTime: '2026-03-20 09:30:00',
+          endTime: '2026-03-20 09:35:45',
+          remark: '成功添加 100 条费用记录'
+        },
+        {
+          id: 'TASK202603190001',
+          type: 'export_bill',
+          status: 'success',
+          operator: '管理员',
+          startTime: '2026-03-19 16:00:00',
+          endTime: '2026-03-19 16:01:20',
+          remark: '导出账单数据'
+        }
+      ];
+      
+      // 渲染任务历史表格
+      renderTaskHistoryTable();
+    }
+
+    // 渲染任务历史表格
+    function renderTaskHistoryTable() {
+      const tbody = document.getElementById('taskDataTableBody');
+      const emptyState = document.getElementById('taskEmpty');
+      
+      if (taskHistoryData.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      tbody.innerHTML = '';
+      
+      taskHistoryData.forEach(task => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 table-row-hover';
+        
+        // 获取任务类型文本
+        let taskTypeText = '批量获取明细';
+        if (task.type === 'fee_get') {
+          taskTypeText = '批量添加（单客户）';
+        } else if (task.type === 'batch_fee_get') {
+          taskTypeText = '批量添加（多客户）';
+        } else if (task.type === 'export_bill') {
+          taskTypeText = '导出账单';
+        } else if (task.type === 'export_detail') {
+          taskTypeText = '导出明细';
+        }
+        
+        // 获取状态文本和样式
+        let statusText = '处理中';
+        let statusClass = 'bg-blue-100 text-blue-800';
+        
+        if (task.status === 'success') {
+          statusText = '成功';
+          statusClass = 'bg-green-100 text-green-800';
+        } else if (task.status === 'failed') {
+          statusText = '失败';
+          statusClass = 'bg-red-100 text-red-800';
+        }
+        
+        tr.innerHTML = `
+          <td class="py-3 px-4">${task.id}</td>
+          <td class="py-3 px-4">${taskTypeText}</td>
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+              ${statusText}
+            </span>
+          </td>
+          <td class="py-3 px-4">${task.operator}</td>
+          <td class="py-3 px-4">${task.startTime}</td>
+          <td class="py-3 px-4">${task.endTime}</td>
+          <td class="py-3 px-4">${task.remark || ''}</td>
+        `;
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 搜索任务
+    function searchTasks() {
+      const taskType = document.getElementById('taskTypeFilter').value;
+      const taskStatus = document.getElementById('taskStatusFilter').value;
+      const operator = document.getElementById('taskOperator').value;
+      const startDate = document.getElementById('taskStartDate').value;
+      const endDate = document.getElementById('taskEndDate').value;
+      
+      // 模拟搜索逻辑
+      setTimeout(() => {
+        // 这里可以添加实际的搜索逻辑
+        alert('搜索功能已触发，实际项目中会调用API进行搜索');
+      }, 500);
+    }
+  </script>
+</body>
+</html>
