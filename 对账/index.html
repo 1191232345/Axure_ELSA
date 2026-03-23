@@ -150,6 +150,16 @@
           <i class="fa fa-download mr-2"></i>
           <span>导出明细</span>
         </button>
+
+      </div>
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <!-- 原有的按钮区域 -->
+        </div>
+        <div id="totalAmount" class="text-right">
+          <span class="text-gray-700 font-medium">金额合计：</span>
+          <span class="text-success font-semibold text-lg">$0.00</span>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table id="reconciliationTable" class="w-full">
@@ -195,6 +205,9 @@
     </div>
   </main>
 
+  <!-- 任务历史弹窗 -->
+
+
   <!-- 费用获取弹窗 -->
   <div id="feeModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
     <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
@@ -209,25 +222,25 @@
       <!-- 弹窗内容 -->
       <div class="flex-1 overflow-hidden flex">
         <!-- 左侧筛选条件 -->
-        <div class="w-80 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
+        <div class="w-96 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
           <!-- 1. 基础信息区域 -->
-          <div class="bg-white rounded-lg p-4 mb-4 border border-gray-200">
-            <div class="flex items-center gap-2 mb-3">
+          <div class="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
               <div class="w-1 h-5 bg-primary rounded"></div>
               <h4 class="font-semibold text-dark">基础信息</h4>
             </div>
-            <div class="space-y-3">
+            <div class="grid grid-cols-1 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">账单月<span class="text-red-500">*</span></label>
-                <input type="month" id="modalBillMonth" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <input type="month" id="modalBillMonth" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">航期<span class="text-red-500">*</span></label>
-                <input type="month" id="modalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <input type="month" id="modalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">账单类型 <span class="text-red-500">*</span></label>
-                <select id="modalBillType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" required>
+                <select id="modalBillType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" required>
                   <option value="出库+快递(YC)">出库+快递(YC)</option>
                   <option value="出库+快递(TMS)">出库+快递(TMS)</option>
                   <option value="仓储费">仓储费</option>
@@ -243,118 +256,167 @@
           </div>
 
           <!-- 2. 检索条件区域 -->
-          <div class="bg-white rounded-lg p-4 border border-gray-200">
-            <div class="flex items-center gap-2 mb-3">
+          <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
               <div class="w-1 h-5 bg-primary rounded"></div>
               <h4 class="font-semibold text-dark">检索条件</h4>
             </div>
+            
+            <!-- 折叠面板 -->
             <div class="space-y-3">
-              <div id="conditionCustomerCode">
-                <label class="block text-sm font-medium text-gray-700 mb-1">客户代码<span class="text-red-500">*</span></label>
-                <div class="relative">
-                  <div id="modalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleCustomerCodeDropdown()">
-                    <span id="modalCustomerCodeText" class="text-gray-700">请选择</span>
-                    <i class="fa fa-chevron-down text-gray-400"></i>
+              <!-- 基本信息折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('basicInfo')">
+                  <span class="text-sm font-medium text-gray-700">基本信息</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="basicInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="basicInfoContent">
+                  <div id="conditionCustomerCode" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">客户代码<span class="text-red-500">*</span></label>
+                    <div class="relative">
+                      <div id="modalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="modalCustomerCodeText" class="text-gray-700">请选择</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="modalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                          <span>ZJJS</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="modalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                          <span>ZJHW</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="modalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                          <span>ZJWL</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                  <div id="modalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
-                      <span>ZJJS</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="modalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
-                      <span>ZJHW</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="modalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
-                      <span>ZJWL</span>
-                    </label>
+                  <div id="conditionWarehouseCode">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
+                    <div class="relative">
+                      <div id="modalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="modalWarehouseCodeText" class="text-gray-700">全部</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="modalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA008</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA009</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA010</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA011</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA012</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div id="conditionWarehouseCode">
-                <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
-                <div class="relative">
-                  <div id="modalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleWarehouseCodeDropdown()">
-                    <span id="modalWarehouseCodeText" class="text-gray-700">全部</span>
-                    <i class="fa fa-chevron-down text-gray-400"></i>
+              
+              <!-- 时间条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('timeInfo')">
+                  <span class="text-sm font-medium text-gray-700">时间条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="timeInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="timeInfoContent">
+                  <div id="conditionCreateTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">创建时间<span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
                   </div>
-                  <div id="modalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
-                      <span>CA008</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
-                      <span>CA009</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
-                      <span>CA010</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
-                      <span>CA011</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="modalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
-                      <span>CA012</span>
-                    </label>
+                  <div id="conditionSettlementDate" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionCompensationTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionOutboundTime">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalOutboundEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div id="conditionSettlementDate">
-                <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
-                <div class="space-y-2">
-                  <input type="date" id="modalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="modalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
-                </div>
-              </div>
-              <div id="conditionCompensationTime">
-                <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
-                <div class="space-y-2">
-                  <input type="date" id="modalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="modalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
-                </div>
-              </div>
-              <div id="conditionChannel">
-                <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
-                <select id="modalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                  <option value="" selected>全部</option>
-                  <option value="FEDEX_MPS">FEDEX_MPS</option>
-                  <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
-                  <option value="UPS_GROUND">UPS_GROUND</option>
-                </select>
-              </div>
-              <div id="conditionShippingMethod">
-                <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
-                <select id="modalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                  <option value="" selected>全部</option>
-                  <option value="FEDEX_MPS">FEDEX_MPS</option>
-                  <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
-                </select>
-              </div>
-              <div id="conditionCreateTime">
-                <label class="block text-sm font-medium text-gray-700 mb-1">创建时间<span class="text-red-500">*</span></label>
-                <div class="space-y-2">
-                  <input type="date" id="modalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="modalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
-                </div>
-              </div>
-              <div id="conditionOutboundTime">
-                <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
-                <div class="space-y-2">
-                  <input type="date" id="modalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="modalOutboundEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+              
+              <!-- 其他条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('otherInfo')">
+                  <span class="text-sm font-medium text-gray-700">其他条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="otherInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="otherInfoContent">
+                  <div id="conditionChannel" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
+                    <select id="modalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                      <option value="UPS_GROUND">UPS_GROUND</option>
+                    </select>
+                  </div>
+                  <div id="conditionShippingMethod">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
+                    <select id="modalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
+            
+            <!-- 操作按钮 -->
             <div class="flex gap-2 mt-4">
-              <button id="modalReset" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors bg-white text-sm">
+              <button id="modalReset" class="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors bg-white text-sm font-medium shadow-sm">
                 <i class="fa fa-refresh mr-1"></i>重置
               </button>
-              <button id="modalSearch" class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
-                <i class="fa fa-search mr-1"></i>搜索
+              <button id="modalSearch" class="flex-1 px-3 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium shadow-sm">
+                <i class="fa fa-search mr-1"></i>获取数据
               </button>
             </div>
           </div>
@@ -370,19 +432,274 @@
                 <h4 class="text-lg font-semibold text-dark">费用列表</h4>
                 <span class="text-sm text-gray-500 ml-2">已选 <span id="modalSelectedCount" class="font-semibold text-primary">0</span> 条</span>
               </div>
-              <div class="text-sm text-gray-500">
-                <i class="fa fa-info-circle mr-1"></i>
-                请先选择账单类型并搜索数据
+              <div class="flex items-center gap-4">
+                <div class="text-sm text-gray-500">
+                  <i class="fa fa-info-circle mr-1"></i>
+                  请先选择账单类型并搜索数据
+                </div>
+                <div class="text-sm font-semibold">
+                  金额合计：<span id="modalTotalAmount" class="text-success">$0.00</span>
+                </div>
               </div>
             </div>
-            <!-- 出库单号搜索 -->
-            <!-- <div id="listOutboundNoSearch" class="hidden flex items-center gap-2">
-              <label class="text-sm font-medium text-gray-700">出库单号：</label>
-              <input type="text" id="modalListOutboundNo" class="w-64 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="请输入出库单号">
-              <button id="modalListSearchBtn" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                <i class="fa fa-search mr-1"></i>搜索
-              </button>
-            </div> -->
+            
+            <!-- 检索条件区域 - 出库+快递(YC) -->
+            <div id="listSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <!-- 第一行：基础条件 -->
+              <div class="flex flex-wrap gap-2 items-end mb-2">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">仓库</label>
+                  <div class="relative">
+                    <div id="listWarehouseDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listWarehouseText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listWarehouseOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA008" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA008</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA009" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA009</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA010" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA010</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA011" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA011</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA012" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA012</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">下单时间</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="listOrderStartDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                    <input type="date" id="listOrderEndDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 第二行：高级条件 -->
+              <div class="flex flex-wrap gap-2 items-end">
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">参考号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="referenceNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="referenceNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listReferenceNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="参考号">
+                      </div>
+                    </div>
+                    <div id="referenceNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('referenceNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('referenceNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">出库单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="outboundNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="outboundNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listOutboundNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="出库单号">
+                      </div>
+                    </div>
+                    <div id="outboundNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('outboundNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('outboundNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">快递单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="expressNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="expressNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listExpressNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="快递单号">
+                      </div>
+                    </div>
+                    <div id="expressNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('expressNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('expressNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 赔付类型 -->
+            <div id="listCompensationSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="flex flex-wrap gap-2 items-end">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listCompensationCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listCompensationCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listCompensationCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">工单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="workOrderSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="workOrderSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listWorkOrderNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="工单号">
+                      </div>
+                    </div>
+                    <div id="workOrderSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateWorkOrderSearchType('模糊搜索')">模糊搜索</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateWorkOrderSearchType('精确搜索')">精确搜索</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listCompensationSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-gray-90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 仓储费 -->
+            <div id="listStorageFeeSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="flex flex-wrap gap-2 items-end">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listStorageCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listStorageCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listStorageCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">仓储订单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="storageOrderNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="storageOrderNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listStorageOrderNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="仓储订单号">
+                      </div>
+                    </div>
+                    <div id="storageOrderNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateStorageOrderNoSearchType('模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateStorageOrderNoSearchType('精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">计费日期</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="listStorageStartDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                    <input type="date" id="listStorageEndDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listStorageFeeSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-gray-90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- 费用列表内容 -->
@@ -438,25 +755,25 @@
       <!-- 弹窗内容 -->
       <div class="flex-1 overflow-hidden flex">
         <!-- 左侧筛选条件 -->
-        <div class="w-80 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
+        <div class="w-96 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
           <!-- 1. 基础信息区域 -->
-          <div class="bg-white rounded-lg p-4 mb-4 border border-gray-200">
-            <div class="flex items-center gap-2 mb-3">
+          <div class="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
               <div class="w-1 h-5 bg-primary rounded"></div>
               <h4 class="font-semibold text-dark">基础信息</h4>
             </div>
-            <div class="space-y-3">
+            <div class="grid grid-cols-1 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">账单月<span class="text-red-500">*</span></label>
-                <input type="month" id="batchModalBillMonth" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <input type="month" id="batchModalBillMonth" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">航期<span class="text-red-500">*</span></label>
-                <input type="month" id="batchModalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
+                <input type="month" id="batchModalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">费用类型 <span class="text-red-500">*</span></label>
-                <select id="batchModalFeeType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" required>
+                <select id="batchModalFeeType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" required>
                   <option value="" selected>全部</option>
                   <option value="出库+快递(YC)">出库+快递(YC)</option>
                   <option value="出库+快递(TMS)">出库+快递(TMS)</option>
@@ -473,122 +790,171 @@
           </div>
 
           <!-- 2. 检索条件区域 -->
-          <div class="bg-white rounded-lg p-4 border border-gray-200">
-            <div class="flex items-center gap-2 mb-3">
+          <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
               <div class="w-1 h-5 bg-primary rounded"></div>
               <h4 class="font-semibold text-dark">检索条件</h4>
             </div>
+            
+            <!-- 折叠面板 -->
             <div class="space-y-3">
-              <div id="batchConditionCustomerCode">
-                <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
-                <div class="relative">
-                  <div id="batchModalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleBatchCustomerCodeDropdown()">
-                    <span id="batchModalCustomerCodeText" class="text-gray-700">全部</span>
-                    <i class="fa fa-chevron-down text-gray-400"></i>
+              <!-- 基本信息折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('batchBasicInfo')">
+                  <span class="text-sm font-medium text-gray-700">基本信息</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="batchBasicInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="batchBasicInfoContent">
+                  <div id="batchConditionCustomerCode" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
+                    <div class="relative">
+                      <div id="batchModalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="batchModalCustomerCodeText" class="text-gray-700">全部</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="batchModalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>全部</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>ZJJS</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>ZJHW</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>ZJWL</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
-                  <div id="batchModalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="batchModalCustomerCode" value="" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
-                      <span>全部</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="batchModalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
-                      <span>ZJJS</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="batchModalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
-                      <span>ZJHW</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="radio" name="batchModalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
-                      <span>ZJWL</span>
-                    </label>
+                  <div id="batchConditionWarehouseCode">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
+                    <div class="relative">
+                      <div id="batchModalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="batchModalWarehouseCodeText" class="text-gray-700">全部</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="batchModalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA008</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA009</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA010</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA011</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA012</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div id="batchConditionWarehouseCode">
-                <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
-                <div class="relative">
-                  <div id="batchModalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white" onclick="toggleBatchWarehouseCodeDropdown()">
-                    <span id="batchModalWarehouseCodeText" class="text-gray-700">全部</span>
-                    <i class="fa fa-chevron-down text-gray-400"></i>
+              
+              <!-- 时间条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('batchTimeInfo')">
+                  <span class="text-sm font-medium text-gray-700">时间条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="batchTimeInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="batchTimeInfoContent">
+                  <div id="batchConditionCreateTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">创建时间<span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
                   </div>
-                  <div id="batchModalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="batchModalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
-                      <span>CA008</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="batchModalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
-                      <span>CA009</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="batchModalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
-                      <span>CA010</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="batchModalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
-                      <span>CA011</span>
-                    </label>
-                    <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
-                      <input type="checkbox" name="batchModalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
-                      <span>CA012</span>
-                    </label>
+                  <div id="batchConditionSettlementDate" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionCompensationTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionOutboundTime">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalOutboundEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div id="batchConditionSettlementDate">
-                <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
-                <div class="space-y-2">
-                  <input type="date" id="batchModalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="batchModalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
-                </div>
-              </div>
-              <div id="batchConditionCompensationTime">
-                <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
-                <div class="space-y-2">
-                  <input type="date" id="batchModalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="batchModalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
-                </div>
-              </div>
-              <div id="batchConditionChannel">
-                <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
-                <select id="batchModalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                  <option value="" selected>全部</option>
-                  <option value="FEDEX_MPS">FEDEX_MPS</option>
-                  <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
-                  <option value="UPS_GROUND">UPS_GROUND</option>
-                </select>
-              </div>
-              <div id="batchConditionShippingMethod">
-                <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
-                <select id="batchModalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white">
-                  <option value="" selected>全部</option>
-                  <option value="FEDEX_MPS">FEDEX_MPS</option>
-                  <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
-                </select>
-              </div>
-              <div id="batchConditionCreateTime">
-                <label class="block text-sm font-medium text-gray-700 mb-1">创建时间<span class="text-red-500">*</span></label>
-                <div class="space-y-2">
-                  <input type="date" id="batchModalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="batchModalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
-                </div>
-              </div>
-              <div id="batchConditionOutboundTime">
-                <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
-                <div class="space-y-2">
-                  <input type="date" id="batchModalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
-                  <input type="date" id="batchModalOutboundEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+              
+              <!-- 其他条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('batchOtherInfo')">
+                  <span class="text-sm font-medium text-gray-700">其他条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="batchOtherInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="batchOtherInfoContent">
+                  <div id="batchConditionChannel" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
+                    <select id="batchModalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                      <option value="UPS_GROUND">UPS_GROUND</option>
+                    </select>
+                  </div>
+                  <div id="batchConditionShippingMethod">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
+                    <select id="batchModalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
+            
+            <!-- 操作按钮 -->
             <div class="flex gap-2 mt-4">
-              <button id="batchModalReset" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors bg-white text-sm">
+              <button id="batchModalReset" class="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors bg-white text-sm font-medium shadow-sm">
                 <i class="fa fa-refresh mr-1"></i>重置
               </button>
-              <button id="batchModalSearch" class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm">
-                <i class="fa fa-search mr-1"></i>搜索
+              <button id="batchModalSearch" class="flex-1 px-3 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium shadow-sm">
+                <i class="fa fa-search mr-1"></i>获取费用
               </button>
             </div>
           </div>
@@ -604,9 +970,14 @@
                 <h4 class="text-lg font-semibold text-dark">费用列表</h4>
                 <span class="text-sm text-gray-500 ml-2">已选 <span id="batchModalSelectedCount" class="font-semibold text-primary">0</span> 条</span>
               </div>
-              <div class="text-sm text-gray-500">
-                <i class="fa fa-info-circle mr-1"></i>
-                请先选择费用类型并搜索数据
+              <div class="flex items-center gap-4">
+                <div class="text-sm text-gray-500">
+                  <i class="fa fa-info-circle mr-1"></i>
+                  请先选择费用类型并搜索数据
+                </div>
+                <div class="text-sm font-semibold">
+                  金额合计：<span id="batchModalTotalAmount" class="text-success">$0.00</span>
+                </div>
               </div>
             </div>
           </div>
@@ -721,6 +1092,7 @@
     let reconciliationData = [];
     let modalData = [];
     let batchModalData = [];
+    let batchModalDataLoaded = false;
     let currentPage = 1;
     const itemsPerPage = 10;
     let selectedItems = new Set();
@@ -890,6 +1262,12 @@
         initBatchWarehouseCodeAll();
         // 打开弹窗时更新检索条件显示
         updateBatchSearchConditions();
+        
+        // 如果数据已加载，直接显示
+        if (batchModalDataLoaded && batchModalData.length > 0) {
+          renderBatchModalTable();
+          updateBatchModalPagination();
+        }
       });
 
       // 关闭费用获取弹窗
@@ -1217,6 +1595,10 @@
       document.getElementById('batchModalCompensationStartDate').value = '';
       document.getElementById('batchModalCompensationEndDate').value = '';
       document.getElementById('batchModalDataTableBody').innerHTML = '';
+      batchModalData = [];
+      batchModalTotalItems = 0;
+      batchModalCurrentPage = 1;
+      batchModalDataLoaded = false;
       batchModalSelectedItems.clear();
       updateBatchModalSelectedCount();
       updateBatchSearchConditions(); // 重置后更新检索条件显示
@@ -1355,23 +1737,23 @@
       
       const feeType = document.getElementById('batchModalFeeType').value;
       
-      // 显示加载状态
-      const loadingModal = document.createElement('div');
-      loadingModal.id = 'batchModalSearchLoading';
-      loadingModal.className = 'fixed inset-0 z-50 flex items-center justify-center modal-overlay';
-      loadingModal.innerHTML = `
-        <div class="bg-white rounded-lg p-6 w-80">
-          <div class="flex flex-col items-center">
-            <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-gray-600">正在搜索数据，请稍候...</p>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(loadingModal);
-      
       isSearching = true;
       
-      // 模拟网络延迟和数据处理
+      // 生成任务ID
+      const taskId = `TASK${new Date().getTime()}`;
+      
+
+      
+      // 显示处理开始提示
+      showNotification('查询任务已开始，系统正在异步处理数据');
+      
+      // 清除未使用的taskId变量
+      taskId;
+      
+      // 关闭批量获取明细弹窗
+      closeBatchFeeModal();
+      
+      // 模拟异步查询处理
       setTimeout(() => {
         // 生成模拟数据
         let mockData = [];
@@ -1453,21 +1835,21 @@
           mockData.push(item);
         }
         
-        // 保存数据
+        // 保存数据到全局变量，以便下次打开弹窗时显示
         batchModalData = mockData;
         batchModalTotalItems = mockData.length;
         batchModalCurrentPage = 1;
         
-        // 渲染表格
-        renderBatchModalTable();
+        // 标记数据已加载
+        batchModalDataLoaded = true;
         
-        // 显示分页控件
-        updateBatchModalPagination();
-        
-        // 隐藏加载状态
-        loadingModal.remove();
         isSearching = false;
-      }, 1000); // 模拟1秒的加载时间
+        
+        // 显示处理完成提示
+        showNotification('查询任务已完成，您可以重新打开批量获取费用弹窗查看结果');
+        
+
+      }, 3000); // 模拟处理时间
     }
 
     // 显示加载状态
@@ -1602,15 +1984,8 @@
       const selectedData = batchModalData.filter(item => batchModalSelectedItems.has(item.id));
       const dataToAdd = selectedData.length > 0 ? selectedData : batchModalData;
       
-      // 数据量较大时的处理策略
-      if (dataToAdd.length > 50) {
-        if (!confirm(`您选择了 ${dataToAdd.length} 条记录，处理可能需要较长时间。是否继续？`)) {
-          return;
-        }
-      }
-      
       // 显示提交确认对话框
-      if (!confirm(`确定要添加 ${dataToAdd.length} 条费用记录吗？`)) {
+      if (!confirm(`确定要批量获取 ${dataToAdd.length} 条费用记录吗？`)) {
         return;
       }
       
@@ -1622,25 +1997,43 @@
       loadingModal.id = 'batchModalLoading';
       loadingModal.className = 'fixed inset-0 z-50 flex items-center justify-center modal-overlay';
       loadingModal.innerHTML = `
-        <div class="bg-white rounded-lg p-6 w-80">
+        <div class="bg-white rounded-lg p-6 w-96">
           <div class="flex flex-col items-center">
             <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-gray-600">正在处理数据，请稍候...</p>
+            <p class="text-gray-600 font-medium mb-2">批量获取费用任务已开始</p>
+            <p class="text-gray-500 text-sm text-center mb-4">系统正在异步处理数据，请稍后回来查看任务状态</p>
+            <p class="text-gray-400 text-xs text-center">您可以在「任务历史」中查看处理进度</p>
           </div>
         </div>
       `;
       document.body.appendChild(loadingModal);
       
-      // 模拟添加数据
-      setTimeout(() => {
-        isBatchTaskRunning = false;
-        loadingModal.remove();
-        closeBatchFeeModal();
-        showNotification('费用记录已成功添加，请稍后查看');
-        console.log('批量获取费用任务执行完成');
-      }, 2000); // 模拟2秒的处理时间
-    }
+      // 生成任务ID
+      const taskId = `TASK${new Date().getTime()}`;
+      
 
+      
+      // 模拟异步查询处理
+      setTimeout(() => {
+        // 模拟处理过程中的状态更新
+        setTimeout(() => {
+          // 模拟任务完成
+          isBatchTaskRunning = false;
+          loadingModal.remove();
+          closeBatchFeeModal();
+          
+          // 显示完成通知
+          showNotification('批量获取费用任务已提交，正在处理中');
+          
+          // 清除未使用的taskId变量
+          taskId;
+          console.log('批量获取费用任务执行完成');
+          
+
+        }, 3000); // 模拟更长的处理时间
+      }, 1000); // 立即显示提示后关闭加载框
+    }
+    
     // 显示通知
     function showNotification(message) {
       // 创建通知元素
@@ -1808,6 +2201,9 @@
       const createTimeEl = document.getElementById('conditionCreateTime');
       const outboundTimeEl = document.getElementById('conditionOutboundTime');
       const listOutboundNoSearch = document.getElementById('listOutboundNoSearch');
+      const listSearchConditions = document.getElementById('listSearchConditions');
+      const listCompensationSearchConditions = document.getElementById('listCompensationSearchConditions');
+      const listStorageFeeSearchConditions = document.getElementById('listStorageFeeSearchConditions');
 
       // 默认全部隐藏
       customerCodeEl.style.display = 'none';
@@ -1820,6 +2216,15 @@
       outboundTimeEl.style.display = 'none';
       if (listOutboundNoSearch) {
         listOutboundNoSearch.classList.add('hidden');
+      }
+      if (listSearchConditions) {
+        listSearchConditions.classList.add('hidden');
+      }
+      if (listCompensationSearchConditions) {
+        listCompensationSearchConditions.classList.add('hidden');
+      }
+      if (listStorageFeeSearchConditions) {
+        listStorageFeeSearchConditions.classList.add('hidden');
       }
 
       if (isTMS) {
@@ -1839,30 +2244,42 @@
         shippingMethodEl.style.display = 'block';
         createTimeEl.style.display = 'block';
         outboundTimeEl.style.display = 'block';
-        if (listOutboundNoSearch) {
-          listOutboundNoSearch.classList.remove('hidden');
+        if (listSearchConditions) {
+          listSearchConditions.classList.remove('hidden');
         }
-        customerCodeEl.style.display = 'block';
-        warehouseCodeEl.style.display = 'block';
-        channelEl.style.display = 'block';
-        createTimeEl.style.display = 'block';
-        outboundTimeEl.style.display = 'block';
-      } else if (isOutboundExpress) {
-        // 出库+快递(YC)显示：客户代码、仓库、运输方式、创建时间、出库时间
-        customerCodeEl.style.display = 'block';
-        warehouseCodeEl.style.display = 'block';
-        shippingMethodEl.style.display = 'block';
-        createTimeEl.style.display = 'block';
-        outboundTimeEl.style.display = 'block';
+        if (listOutboundNoSearch) {
+          listOutboundNoSearch.classList.add('hidden');
+        }
       } else if (isStorageFee) {
         // 仓储费显示：客户代码、仓库、结算日期
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
         settlementDateEl.style.display = 'block';
+        if (listStorageFeeSearchConditions) {
+          listStorageFeeSearchConditions.classList.remove('hidden');
+        }
+        if (listSearchConditions) {
+          listSearchConditions.classList.add('hidden');
+        }
+        if (listCompensationSearchConditions) {
+          listCompensationSearchConditions.classList.add('hidden');
+        }
+        if (listOutboundNoSearch) {
+          listOutboundNoSearch.classList.add('hidden');
+        }
       } else if (isCompensationFee) {
         // 所有赔付类型显示：客户代码、仓库
         customerCodeEl.style.display = 'block';
         warehouseCodeEl.style.display = 'block';
+        if (listCompensationSearchConditions) {
+          listCompensationSearchConditions.classList.remove('hidden');
+        }
+        if (listSearchConditions) {
+          listSearchConditions.classList.add('hidden');
+        }
+        if (listOutboundNoSearch) {
+          listOutboundNoSearch.classList.add('hidden');
+        }
       } else if (isRechargeOrAdjust) {
         // 充值和费用调整显示：客户代码、仓库、创建时间
         customerCodeEl.style.display = 'block';
@@ -1960,9 +2377,13 @@
             </td>
           </tr>
         `;
+        // 重置合计金额
+        document.getElementById('modalTotalAmount').textContent = '$0.00';
         return;
       }
 
+      let totalAmount = 0;
+      
       modalData.forEach(item => {
         const tr = document.createElement('tr');
         tr.className = 'table-row-hover border-b border-gray-100';
@@ -1993,6 +2414,11 @@
               } else {
                 displayValue = `$${value.toFixed(2)}`;
               }
+              
+              // 计算合计金额
+              if (field === 'total' || field === 'amount' || field === 'compensationAmount' || field === 'arrivedAmount' || field === 'adjustAmount') {
+                totalAmount += Math.abs(value);
+              }
             }
           }
           
@@ -2002,6 +2428,9 @@
         tr.innerHTML = rowHTML;
         tbody.appendChild(tr);
       });
+      
+      // 更新合计金额
+      document.getElementById('modalTotalAmount').textContent = `$${totalAmount.toFixed(2)}`;
 
       // 绑定复选框事件
       document.querySelectorAll('.modal-item-checkbox').forEach(cb => {
@@ -2084,24 +2513,29 @@
       };
     }
 
+    // 任务执行状态
+    let isTaskRunning = false;
+
     // 提交弹窗数据
     function submitModalData() {
+      if (isTaskRunning) {
+        alert('任务正在执行中，请勿重复操作');
+        return;
+      }
+      
       // 如果没有勾选任何项，默认提交全部数据；如果勾选了，只提交勾选的项
       let selectedData;
       if (modalSelectedItems.size === 0) {
         // 未勾选任何项，提交全部数据
         if (modalData.length === 0) {
           alert('没有可提交的数据，请先搜索数据');
-        return;
+          return;
         }
         selectedData = modalData;
       } else {
         // 只提交勾选的项
         selectedData = modalData.filter(item => modalSelectedItems.has(item.id));
       }
-      
-      // 将费用明细数据转换为账单数据（按客户代码和账单月份分组汇总）
-      const billMap = new Map();
       
       // 获取账单类型
       const billType = document.getElementById('modalBillType').value;
@@ -2110,106 +2544,149 @@
         return;
       }
       
-      // 记录本次提交中已生成的账单号，用于流水号计算
-      const generatedBillNos = [];
-      
-      // 生成账单号函数：客户代码+年月日+3位流水号
-      function generateBillNo(customerCode) {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const dateStr = `${year}${month}${day}`;
-        const billNoPrefix = `${customerCode}${dateStr}`;
-        
-        // 查找当天该客户代码已存在的账单数量（包括已保存的和本次生成的）
-        const existingBills = reconciliationData.filter(bill => {
-          if (!bill.billNo) return false;
-          return bill.billNo.startsWith(billNoPrefix);
-        });
-        
-        // 统计本次提交中已生成的相同前缀的账单号数量
-        const currentSessionBills = generatedBillNos.filter(billNo => 
-          billNo.startsWith(billNoPrefix)
-        );
-        
-        // 计算流水号（从001开始）
-        const totalCount = existingBills.length + currentSessionBills.length;
-        const sequence = String(totalCount + 1).padStart(3, '0');
-        
-        const billNo = `${customerCode}${dateStr}${sequence}`;
-        generatedBillNos.push(billNo);
-        
-        return billNo;
+      // 数据量较大时的处理策略
+      if (selectedData.length > 50) {
+        if (!confirm(`您选择了 ${selectedData.length} 条记录，处理可能需要较长时间。是否继续？`)) {
+          return;
+        }
       }
       
-      selectedData.forEach(item => {
-        const billMonth = document.getElementById('modalBillMonth').value || new Date().toISOString().slice(0, 7);
-        const key = `${item.customerCode}_${billMonth}_${billType}`;
+      // 显示提交确认对话框
+      if (!confirm(`确定要添加 ${selectedData.length} 条费用记录吗？`)) {
+        return;
+      }
+      
+      // 设置任务执行状态为运行中
+      isTaskRunning = true;
+      
+      // 显示加载状态
+      const loadingModal = document.createElement('div');
+      loadingModal.id = 'modalLoading';
+      loadingModal.className = 'fixed inset-0 z-50 flex items-center justify-center modal-overlay';
+      loadingModal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 w-80">
+          <div class="flex flex-col items-center">
+            <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-600">正在处理数据，请稍候...</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(loadingModal);
+      
+      // 模拟异步操作
+      setTimeout(() => {
+        // 将费用明细数据转换为账单数据（按客户代码和账单月份分组汇总）
+        const billMap = new Map();
         
-        if (!billMap.has(key)) {
-          const billNo = generateBillNo(item.customerCode);
-          const voyagePeriod = document.getElementById('modalVoyagePeriod').value || '';
+        // 记录本次提交中已生成的账单号，用于流水号计算
+        const generatedBillNos = [];
+        
+        // 生成账单号函数：客户代码+年月日+3位流水号
+        function generateBillNo(customerCode) {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const dateStr = `${year}${month}${day}`;
+          const billNoPrefix = `${customerCode}${dateStr}`;
           
-          // 根据客户代码自动填充销售、客服信息
-          const customerInfo = getCustomerInfo(item.customerCode);
-          
-          const currentTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
-          billMap.set(key, {
-            id: billNo,
-            billNo: billNo,
-            billMonth: billMonth,
-            voyagePeriod: voyagePeriod,
-            customerCode: item.customerCode,
-            sales: customerInfo.sales,
-            customerService: customerInfo.customerService,
-            billType: billType,
-            billAmount: 0,
-            billStatus: '已出账',
-            creator: '系统',
-            createTime: currentTime,
-            createUser: '系统',
-            voidUser: '',
-            voidTime: '',
-            submitUser: '',
-            submitTime: '',
-            billRemark: '',
-            details: []
+          // 查找当天该客户代码已存在的账单数量（包括已保存的和本次生成的）
+          const existingBills = reconciliationData.filter(bill => {
+            if (!bill.billNo) return false;
+            return bill.billNo.startsWith(billNoPrefix);
           });
+          
+          // 统计本次提交中已生成的相同前缀的账单号数量
+          const currentSessionBills = generatedBillNos.filter(billNo => 
+            billNo.startsWith(billNoPrefix)
+          );
+          
+          // 计算流水号（从001开始）
+          const totalCount = existingBills.length + currentSessionBills.length;
+          const sequence = String(totalCount + 1).padStart(3, '0');
+          
+          const billNo = `${customerCode}${dateStr}${sequence}`;
+          generatedBillNos.push(billNo);
+          
+          return billNo;
         }
         
-        const bill = billMap.get(key);
-        // 根据账单类型获取金额字
-        let amount = 0;
-        if (item.total !== undefined) {
-          amount = item.total;
-        } else if (item.amount !== undefined) {
-          amount = item.amount;
-        } else if (item.compensationAmount !== undefined) {
-          amount = item.compensationAmount;
-        } else if (item.rechargeAmount !== undefined) {
-          amount = item.rechargeAmount;
-        } else if (item.adjustAmount !== undefined) {
-          amount = Math.abs(item.adjustAmount);
-        }
-        bill.billAmount += amount;
+        selectedData.forEach(item => {
+          const billMonth = document.getElementById('modalBillMonth').value || new Date().toISOString().slice(0, 7);
+          const key = `${item.customerCode}_${billMonth}_${billType}`;
+          
+          if (!billMap.has(key)) {
+            const billNo = generateBillNo(item.customerCode);
+            const voyagePeriod = document.getElementById('modalVoyagePeriod').value || '';
+            
+            // 根据客户代码自动填充销售、客服信息
+            const customerInfo = getCustomerInfo(item.customerCode);
+            
+            const currentTime = new Date().toISOString().replace('T', ' ').slice(0, 19);
+            billMap.set(key, {
+              id: billNo,
+              billNo: billNo,
+              billMonth: billMonth,
+              voyagePeriod: voyagePeriod,
+              customerCode: item.customerCode,
+              sales: customerInfo.sales,
+              customerService: customerInfo.customerService,
+              billType: billType,
+              billAmount: 0,
+              billStatus: '已出账',
+              creator: '系统',
+              createTime: currentTime,
+              createUser: '系统',
+              voidUser: '',
+              voidTime: '',
+              submitUser: '',
+              submitTime: '',
+              billRemark: '',
+              details: []
+            });
+          }
+          
+          const bill = billMap.get(key);
+          // 根据账单类型获取金额字段
+          let amount = 0;
+          if (item.total !== undefined) {
+            amount = item.total;
+          } else if (item.amount !== undefined) {
+            amount = item.amount;
+          } else if (item.compensationAmount !== undefined) {
+            amount = item.compensationAmount;
+          } else if (item.rechargeAmount !== undefined) {
+            amount = item.rechargeAmount;
+          } else if (item.adjustAmount !== undefined) {
+            amount = Math.abs(item.adjustAmount);
+          }
+          bill.billAmount += amount;
+          
+          // 为明细添加状态字段，默认为"已出账"
+          const detailWithStatus = {
+            ...item,
+            detailStatus: '已出账'
+          };
+          bill.details.push(detailWithStatus);
+        });
         
-        // 为明细添加状态字，默认为"已出账"
-        const detailWithStatus = {
-          ...item,
-          detailStatus: '已出账'
-        };
-        bill.details.push(detailWithStatus);
-      });
-      
-      // 将汇总后的账单数据添加到列表
-      const newBills = Array.from(billMap.values());
-      reconciliationData = [...reconciliationData, ...newBills];
-      
-      alert(`成功添加 ${newBills.length} 条账单数据，共包含 ${selectedData.length} 条明细`);
-      closeFeeModal();
-      renderTable();
-      updateSummary();
+        // 将汇总后的账单数据添加到列表
+        const newBills = Array.from(billMap.values());
+        reconciliationData = [...reconciliationData, ...newBills];
+        
+        // 重新渲染表格和汇总数据
+        renderTable();
+        updateSummary();
+        
+        // 完成任务
+        isTaskRunning = false;
+        loadingModal.remove();
+        closeFeeModal();
+        showNotification('费用记录已成功添加，请稍后查看');
+        console.log('费用获取任务执行完成');
+        
+
+      }, 1500);
     }
 
     // 渲染主表格
@@ -2309,6 +2786,21 @@
       });
 
       updatePagination();
+      
+      // 计算总金额
+      const totalAmount = reconciliationData.reduce((sum, item) => {
+        return sum + parseFloat(item.billAmount || 0);
+      }, 0);
+      
+      // 更新总金额显示
+      const totalAmountElement = document.getElementById('totalAmount');
+      if (totalAmountElement) {
+        // 找到金额显示的span元素并更新内容
+        const amountSpan = totalAmountElement.querySelector('span.text-success');
+        if (amountSpan) {
+          amountSpan.textContent = `$${totalAmount.toFixed(2)}`;
+        }
+      }
     }
     
     // 获取状态标签样式
@@ -2503,7 +2995,13 @@
       if (selectedRecordsEl) selectedRecordsEl.textContent = selectedRecords;
       
       const totalAmountEl = document.getElementById('totalAmount');
-      if (totalAmountEl) totalAmountEl.textContent = `$${totalAmount.toFixed(2)}`;
+      if (totalAmountEl) {
+        // 找到金额显示的span元素并更新内容
+        const amountSpan = totalAmountEl.querySelector('span.text-success');
+        if (amountSpan) {
+          amountSpan.textContent = `$${totalAmount.toFixed(2)}`;
+        }
+      }
       
       const selectedAmountEl = document.getElementById('selectedAmount');
       if (selectedAmountEl) selectedAmountEl.textContent = `$${selectedAmount.toFixed(2)}`;
@@ -2756,5 +3254,225 @@
     window.voidBill = voidBill;
     window.submitBill = submitBill;
   </script>
-</body>
+<!-- JavaScript 代码 -->
+  <script>
+
+    
+    // 折叠面板功能
+    function toggleCollapse(id) {
+      const content = document.getElementById(id + 'Content');
+      const icon = document.getElementById(id + 'Icon');
+      
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(0deg)';
+      } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(-90deg)';
+      }
+    }
+    
+    // 费用列表客户代码更新
+    function updateListCustomerCodeText() {
+      const radio = document.querySelector('input[name="listCustomerCode"]:checked');
+      const text = document.getElementById('listCustomerCodeText');
+      if (!radio) {
+        text.textContent = '全部';
+      } else {
+        text.textContent = radio.value || '全部';
+      }
+    }
+    
+    // 费用列表仓库更新
+    function updateListWarehouseText() {
+      const radio = document.querySelector('input[name="listWarehouse"]:checked');
+      const text = document.getElementById('listWarehouseText');
+      if (!radio) {
+        text.textContent = '全部';
+      } else {
+        text.textContent = radio.value || '全部';
+      }
+    }
+    
+    // 绑定费用列表下拉框事件
+    function bindListDropdownEvents() {
+      // 客户代码下拉框
+      const listCustomerDropdown = document.getElementById('listCustomerCodeDropdown');
+      const listCustomerOptions = document.getElementById('listCustomerCodeOptions');
+      if (listCustomerDropdown && listCustomerOptions) {
+        listCustomerDropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+          listCustomerOptions.classList.toggle('hidden');
+        });
+      }
+      
+      // 仓库下拉框
+      const listWarehouseDropdown = document.getElementById('listWarehouseDropdown');
+      const listWarehouseOptions = document.getElementById('listWarehouseOptions');
+      if (listWarehouseDropdown && listWarehouseOptions) {
+        listWarehouseDropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+          listWarehouseOptions.classList.toggle('hidden');
+        });
+      }
+      
+      // 赔付类型客户代码下拉框
+      const listCompensationCustomerDropdown = document.getElementById('listCompensationCustomerCodeDropdown');
+      const listCompensationCustomerOptions = document.getElementById('listCompensationCustomerCodeOptions');
+      if (listCompensationCustomerDropdown && listCompensationCustomerOptions) {
+        listCompensationCustomerDropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+          listCompensationCustomerOptions.classList.toggle('hidden');
+        });
+      }
+      
+      // 点击其他区域关闭下拉框
+      document.addEventListener('click', function() {
+        if (listCustomerOptions) listCustomerOptions.classList.add('hidden');
+        if (listWarehouseOptions) listWarehouseOptions.classList.add('hidden');
+        if (listCompensationCustomerOptions) listCompensationCustomerOptions.classList.add('hidden');
+      });
+    }
+    
+    // 费用列表赔付类型客户代码更新
+    function updateListCompensationCustomerCodeText() {
+      const radio = document.querySelector('input[name="listCompensationCustomerCode"]:checked');
+      const text = document.getElementById('listCompensationCustomerCodeText');
+      if (!radio) {
+        text.textContent = '全部';
+      } else {
+        text.textContent = radio.value || '全部';
+      }
+    }
+    
+    // 更新工单号搜索类型
+    function updateWorkOrderSearchType(type) {
+      const text = document.getElementById('workOrderSearchTypeText');
+      const options = document.getElementById('workOrderSearchTypeOptions');
+      text.textContent = type;
+      options.classList.add('hidden');
+    }
+    
+    // 绑定工单号搜索类型下拉框事件
+    function bindWorkOrderSearchTypeEvents() {
+      const dropdown = document.getElementById('workOrderSearchTypeDropdown');
+      const options = document.getElementById('workOrderSearchTypeOptions');
+      if (dropdown && options) {
+        dropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+          options.classList.toggle('hidden');
+        });
+      }
+      
+      // 点击其他区域关闭下拉框
+      document.addEventListener('click', function() {
+        if (options) options.classList.add('hidden');
+      });
+    }
+    
+    // 更新搜索类型
+    function updateSearchType(field, type) {
+      const text = document.getElementById(field + 'SearchTypeText');
+      const options = document.getElementById(field + 'SearchTypeOptions');
+      if (text && options) {
+        text.textContent = type;
+        options.classList.add('hidden');
+      }
+    }
+    
+    // 绑定搜索类型下拉框事件
+    function bindSearchTypeEvents() {
+      const fields = ['referenceNo', 'outboundNo', 'expressNo'];
+      fields.forEach(field => {
+        const dropdown = document.getElementById(field + 'SearchTypeDropdown');
+        const options = document.getElementById(field + 'SearchTypeOptions');
+        if (dropdown && options) {
+          dropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+            options.classList.toggle('hidden');
+          });
+        }
+      });
+      
+      // 点击其他区域关闭下拉框
+      document.addEventListener('click', function() {
+        fields.forEach(field => {
+          const options = document.getElementById(field + 'SearchTypeOptions');
+          if (options) options.classList.add('hidden');
+        });
+      });
+    }
+    
+    // 更新仓储费客户代码显示文本
+    function updateListStorageCustomerCodeText() {
+      const radio = document.querySelector('input[name="listStorageCustomerCode"]:checked');
+      const textEl = document.getElementById('listStorageCustomerCodeText');
+      if (radio && textEl) {
+        textEl.textContent = radio.parentElement.querySelector('span').textContent;
+        document.getElementById('listStorageCustomerCodeOptions').classList.add('hidden');
+      }
+    }
+    
+    // 更新仓储订单号搜索类型
+    function updateStorageOrderNoSearchType(type) {
+      const text = document.getElementById('storageOrderNoSearchTypeText');
+      const options = document.getElementById('storageOrderNoSearchTypeOptions');
+      if (text && options) {
+        text.textContent = type === '模糊查询' ? '模糊' : '精确';
+        options.classList.add('hidden');
+      }
+    }
+    
+    // 绑定仓储费客户代码下拉框事件
+    function bindStorageCustomerCodeEvents() {
+      const dropdown = document.getElementById('listStorageCustomerCodeDropdown');
+      const options = document.getElementById('listStorageCustomerCodeOptions');
+      if (dropdown && options) {
+        dropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+          options.classList.toggle('hidden');
+        });
+      }
+      
+      // 点击其他区域关闭下拉框
+      document.addEventListener('click', function() {
+        if (options) options.classList.add('hidden');
+      });
+    }
+    
+    // 绑定仓储订单号搜索类型下拉框事件
+    function bindStorageOrderNoSearchTypeEvents() {
+      const dropdown = document.getElementById('storageOrderNoSearchTypeDropdown');
+      const options = document.getElementById('storageOrderNoSearchTypeOptions');
+      if (dropdown && options) {
+        dropdown.addEventListener('click', function(e) {
+          e.stopPropagation();
+          options.classList.toggle('hidden');
+        });
+      }
+      
+      // 点击其他区域关闭下拉框
+      document.addEventListener('click', function() {
+        if (options) options.classList.add('hidden');
+      });
+    }
+    
+    // 初始化绑定事件
+    document.addEventListener('DOMContentLoaded', function() {
+      bindListDropdownEvents();
+      bindWorkOrderSearchTypeEvents();
+      bindSearchTypeEvents();
+      bindStorageCustomerCodeEvents();
+      bindStorageOrderNoSearchTypeEvents();
+    });
+    
+    // 绑定函数到window对象
+    window.updateListCompensationCustomerCodeText = updateListCompensationCustomerCodeText;
+    window.updateWorkOrderSearchType = updateWorkOrderSearchType;
+    window.updateSearchType = updateSearchType;
+    window.updateListStorageCustomerCodeText = updateListStorageCustomerCodeText;
+    window.updateStorageOrderNoSearchType = updateStorageOrderNoSearchType;
+
+  </script>
+  </body>
 </html>
