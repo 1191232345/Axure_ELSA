@@ -64,8 +64,8 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">任务类型</label>
           <select id="taskTypeFilter" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all">
             <option value="">全部</option>
-            <option value="fee_get">批量添加（单客户）</option>
-            <option value="batch_fee_get">批量添加（多客户）</option>
+            <option value="fee_get">对账明细添加（单客户）</option>
+            <option value="batch_fee_get">对账明细添加（多客户）</option>
             <option value="batch_fee_get">批量获取明细</option>
           </select>
         </div>
@@ -100,9 +100,6 @@
 
     <!-- 任务历史表格 -->
     <div class="bg-white rounded-xl card-shadow mb-6 overflow-hidden">
-      <div class="p-4 border-b border-gray-200">
-        <h3 class="text-sm font-semibold text-gray-700">任务历史记录</h3>
-      </div>
       <div class="overflow-x-auto">
         <table id="taskDataTable" class="w-full">
           <thead>
@@ -152,25 +149,25 @@
           operator: '系统',
           startTime: '2026-03-20 10:00:00',
           endTime: '2026-03-20 10:02:30',
-          remark: '成功查询 50 条费用数据'
+          remark: ''
         },
         {
           id: 'TASK202603200002',
           type: 'batch_fee_get',
-          status: 'success',
+          status: 'processing',
           operator: '系统',
           startTime: '2026-03-20 09:30:00',
           endTime: '2026-03-20 09:35:45',
-          remark: '成功添加 100 条费用记录'
+          remark: ''
         },
         {
           id: 'TASK202603190001',
-          type: 'export_bill',
-          status: 'success',
+          type: 'batch_fee_get',
+          status: 'failed',
           operator: '管理员',
           startTime: '2026-03-19 16:00:00',
           endTime: '2026-03-19 16:01:20',
-          remark: '导出账单数据'
+          remark: '这是一个执行失败的原因'
         }
       ];
       
@@ -199,14 +196,10 @@
         // 获取任务类型文本
         let taskTypeText = '批量获取明细';
         if (task.type === 'fee_get') {
-          taskTypeText = '批量添加（单客户）';
+          taskTypeText = '对账明细添加（单客户）';
         } else if (task.type === 'batch_fee_get') {
-          taskTypeText = '批量添加（多客户）';
-        } else if (task.type === 'export_bill') {
-          taskTypeText = '导出账单';
-        } else if (task.type === 'export_detail') {
-          taskTypeText = '导出明细';
-        }
+          taskTypeText = '对账明细添加（多客户）';
+        } 
         
         // 获取状态文本和样式
         let statusText = '处理中';

@@ -1,0 +1,131 @@
+<div id="page-fee" class="page">
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <h1 class="text-lg font-semibold text-gray-800 flex items-center">
+            <i class="fa fa-calculator text-primary mr-3"></i>收费项管理
+        </h1>
+    </div>
+
+    <!-- 搜索卡片：只包含筛选条件和搜索/重置按钮 -->
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div class="flex items-center w-full sm:w-auto">
+                <label class="text-xs text-neutral-600 mr-2">业务类型</label>
+                <select class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                    <option value="all">全部</option>
+                    <option value="inbound">入库</option>
+                    <option value="outbound">出库</option>
+                    <option value="transfer">卡车转仓</option>
+                    <option value="return">退货</option>
+                </select>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="resetFeeSearch()">
+                    <i class="fa fa-refresh mr-1.5"></i> 重置
+                </button>
+                <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="searchFee()">
+                    <i class="fa fa-search mr-1.5"></i> 搜索
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作卡片：单独放置，包含主操作按钮 -->
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex justify-start gap-3">
+            <button class="erp-btn erp-btn-primary" onclick="switchToPage('fee-add')">
+                <i class="fa fa-plus mr-1.5"></i> 新增收费项
+            </button>
+            <button class="erp-btn erp-btn-secondary">
+                <i class="fa fa-upload mr-1.5"></i> 导出
+            </button>
+        </div>
+    </div>
+
+    <!-- 数据表格区域 -->
+    <div class="bg-white rounded shadow-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+                <thead class="bg-neutral-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium text-neutral-700">费用项名称</th>
+                        <th class="px-4 py-3 text-left font-medium text-neutral-700">业务类型</th>
+                        <th class="px-4 py-3 text-left font-medium text-neutral-700">计费单位</th>
+                        <th class="px-4 py-3 text-left font-medium text-neutral-700">价格模式</th>
+                        <th class="px-4 py-3 text-left font-medium text-neutral-700">状态</th>
+                        <th class="px-4 py-3 text-left font-medium text-neutral-700">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-neutral-200">
+                    <tr class="hover:bg-neutral-50">
+                        <td class="px-4 py-3">仓储费</td>
+                        <td class="px-4 py-3">入库</td>
+                        <td class="px-4 py-3">天</td>
+                        <td class="px-4 py-3">阶梯式</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">启用</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                <i class="fa fa-pencil"></i> 编辑
+                            </button>
+                            <button class="text-red-500 hover:text-red-700">
+                                <i class="fa fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-neutral-50">
+                        <td class="px-4 py-3">操作费</td>
+                        <td class="px-4 py-3">出库</td>
+                        <td class="px-4 py-3">件</td>
+                        <td class="px-4 py-3">阶梯式</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">启用</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                <i class="fa fa-pencil"></i> 编辑
+                            </button>
+                            <button class="text-red-500 hover:text-red-700">
+                                <i class="fa fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-neutral-50">
+                        <td class="px-4 py-3">快递费</td>
+                        <td class="px-4 py-3">出库</td>
+                        <td class="px-4 py-3">件</td>
+                        <td class="px-4 py-3">固定价格</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">启用</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <button class="text-blue-500 hover:text-blue-700 mr-3">
+                                <i class="fa fa-pencil"></i> 编辑
+                            </button>
+                            <button class="text-red-500 hover:text-red-700">
+                                <i class="fa fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- 分页区域 -->
+        <div class="p-4 border-t border-neutral-200">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-neutral-600">
+                    显示 1 至 3 条，共 3 条
+                </div>
+                <div class="flex space-x-1">
+                    <button class="px-3 py-1 border border-neutral-300 rounded hover:bg-neutral-50 disabled:opacity-50" disabled>
+                        <i class="fa fa-angle-left"></i>
+                    </button>
+                    <button class="px-3 py-1 border border-primary bg-primary text-white rounded">1</button>
+                    <button class="px-3 py-1 border border-neutral-300 rounded hover:bg-neutral-50 disabled:opacity-50" disabled>
+                        <i class="fa fa-angle-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

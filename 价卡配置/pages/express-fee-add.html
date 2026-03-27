@@ -1,0 +1,793 @@
+<div id="page-express-fee-add" class="page">
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <button onclick="switchToPage('express-fee')" class="text-gray-500 hover:text-gray-700 mr-3">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-800">新增快递费方案</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded shadow-card p-6 mb-4">
+        <form id="addExpressFeeForm">
+            <div class="mb-6">
+                <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-info-circle text-primary mr-2"></i>基本信息
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">方案名称 <span class="text-red-500">*</span></label>
+                        <input type="text" id="expressFeeName" class="form-input" placeholder="如：UPS美国本土配送">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">业务类型</label>
+                        <div class="form-input bg-gray-50 text-gray-600">快递</div>
+                        <input type="hidden" id="expressFeeBusinessType" value="express">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">适用仓库 <span class="text-red-500">*</span></label>
+                        <select id="expressFeeOriginWarehouse" class="form-select" onchange="updateOriginWarehouseConfig()">
+                            <option value="">请选择仓库</option>
+                            <option value="US-LA">DE001</option>
+                            <option value="US-NJ">MD001</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">销售产品 <span class="text-red-500">*</span></label>
+                        <select id="expressFeeServiceType" class="form-select">
+                            <option value="">请选择销售产品</option>
+                            <option value="Fedex_ground">Fedex_ground</option>
+                            <option value="FedEx_home_ground">Fedex_Home_Ground</option>
+                            <option value="ups">UPS</option>
+                            <option value="usps">USPS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">目的地国家/地区 <span class="text-red-500">*</span></label>
+                        <select id="expressFeeDestination" class="form-select" onchange="updateDestinationConfig()">
+                            <option value="US">US</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">重量单位 <span class="text-red-500">*</span></label>
+                        <select id="expressFeeWeightUnit" class="form-select">
+                            <option value="lbs">磅 (lbs)</option>
+                            <option value="kg">千克 (kg)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">币种 <span class="text-red-500">*</span></label>
+                        <select id="expressFeeCurrency" class="form-select">
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">有效期开始 <span class="text-red-500">*</span></label>
+                        <input type="date" id="expressFeeValidFrom" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">有效期结束 <span class="text-red-500">*</span></label>
+                        <input type="date" id="expressFeeValidTo" class="form-input">
+                    </div>
+                    <div class="form-group md:col-span-2 lg:col-span-3">
+                        <label class="form-label">适用客户 <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div id="expressFeeCustomerSelect" class="form-input min-h-[42px] cursor-pointer flex flex-wrap gap-2 items-center" onclick="toggleCustomerDropdown('express')">
+                                <span id="expressFeeCustomerPlaceholder" class="text-gray-400">请选择适用客户</span>
+                                <div id="expressFeeCustomerTags" class="flex flex-wrap gap-1"></div>
+                                <i class="fa fa-angle-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <div id="expressFeeCustomerDropdown" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden max-h-60 overflow-y-auto">
+                                <div class="p-2 border-b border-gray-100">
+                                    <input type="text" id="expressFeeCustomerSearch" class="form-input text-sm" placeholder="搜索客户..." oninput="filterCustomerList('express')">
+                                </div>
+                                <div id="expressFeeCustomerList" class="p-2">
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C001" data-name="客户A" onclick="selectCustomer('express', 'C001', '客户A')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户A (C001)</span>
+                                    </div>
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C002" data-name="客户B" onclick="selectCustomer('express', 'C002', '客户B')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户B (C002)</span>
+                                    </div>
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C003" data-name="客户C" onclick="selectCustomer('express', 'C003', '客户C')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户C (C003)</span>
+                                    </div>
+                                </div>
+                                <div class="p-2 border-t border-gray-100 bg-gray-50 flex justify-between">
+                                    <button type="button" class="text-sm text-primary hover:underline" onclick="selectAllCustomers('express')">全选</button>
+                                    <button type="button" class="text-sm text-gray-500 hover:underline" onclick="clearAllCustomers('express')">清空</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-cogs text-primary mr-2"></i>计费规则配置
+                </h2>
+                
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-orange-700">
+                        <i class="fa fa-lightbulb-o mr-1"></i>
+                        <strong>配置流程：</strong>①配置分区（根据目的地划分）→ ②设置计费规则（重量段或首重续重）→ ③配置附加费 → ④设置限制规则
+                    </p>
+                </div>
+
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="flex border-b border-gray-200 bg-gray-50 overflow-x-auto">
+                        <button type="button" id="tab-zone" class="flex-1 px-4 py-3 text-sm font-medium text-primary border-b-2 border-primary bg-white whitespace-nowrap" onclick="switchExpressTab('zone')">
+                            <i class="fa fa-map-marker mr-1.5"></i>分区管理
+                        </button>
+                        <button type="button" id="tab-billing" class="flex-1 px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 whitespace-nowrap" onclick="switchExpressTab('billing')">
+                            <i class="fa fa-calculator mr-1.5"></i>计费规则
+                        </button>
+                        <button type="button" id="tab-surcharge" class="flex-1 px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 whitespace-nowrap" onclick="switchExpressTab('surcharge')">
+                            <i class="fa fa-plus-circle mr-1.5"></i>附加费
+                        </button>
+                        <button type="button" id="tab-limits" class="flex-1 px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 whitespace-nowrap" onclick="switchExpressTab('limits')">
+                            <i class="fa fa-shield mr-1.5"></i>限制规则
+                        </button>
+                    </div>
+
+                    <div id="panel-zone" class="p-4">
+                        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h4 class="text-sm font-semibold text-blue-800 mb-2">
+                                <i class="fa fa-info-circle mr-1"></i>分区说明
+                            </h4>
+                            <p class="text-xs text-blue-700">
+                                根据目的地邮编范围划分配送区域，不同分区对应不同费率。偏远地区分区将自动应用偏远附加费。
+                            </p>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-800">配送分区</h3>
+                                <p class="text-xs text-gray-500 mt-1">根据目的地邮编范围划分配送区域，不同分区对应不同费率</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="erp-btn erp-btn-secondary" onclick="importZoneTemplate()">
+                                    <i class="fa fa-upload mr-1.5"></i>导入分区模板
+                                </button>
+                                <button type="button" class="erp-btn erp-btn-secondary" onclick="autoDetectRemoteAreas()">
+                                    <i class="fa fa-magic mr-1.5"></i>自动识别偏远地区
+                                </button>
+                                <button type="button" class="erp-btn erp-btn-primary" onclick="addZone()">
+                                    <i class="fa fa-plus mr-1.5"></i>新增分区
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full border border-gray-200 rounded-lg">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">分区名称</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">邮编范围</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">备注</th>
+                                        <th class="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">偏远地区</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">偏远附加费</th>
+                                        <th class="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="zoneContainer" class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-name" placeholder="如：Zone 1" value="Zone 1" onchange="updateZoneHeaders()">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-zip" placeholder="如：001-099" value="001-099">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-region" placeholder="如：东北部" value="东北部">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <label class="inline-flex items-center">
+                                                <input type="checkbox" class="zone-remote form-checkbox h-4 w-4 text-primary rounded" onchange="toggleRemoteSurcharge(this)">
+                                                <span class="ml-1 text-xs text-gray-500">偏远</span>
+                                            </label>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-gray-400 text-sm">$</span>
+                                                <input type="number" class="form-input w-full zone-remote-fee" placeholder="0.00" min="0" step="0.01" disabled>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeZoneRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-name" placeholder="如：Zone 2" value="Zone 2" onchange="updateZoneHeaders()">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-zip" placeholder="如：100-199" value="100-199">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-region" placeholder="如：中西部" value="中西部">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <label class="inline-flex items-center">
+                                                <input type="checkbox" class="zone-remote form-checkbox h-4 w-4 text-primary rounded" onchange="toggleRemoteSurcharge(this)">
+                                                <span class="ml-1 text-xs text-gray-500">偏远</span>
+                                            </label>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-gray-400 text-sm">$</span>
+                                                <input type="number" class="form-input w-full zone-remote-fee" placeholder="0.00" min="0" step="0.01" disabled>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeZoneRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 bg-red-50">
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-name" placeholder="如：Zone 3" value="Zone 3" onchange="updateZoneHeaders()">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-zip" placeholder="如：200-299" value="99500-99999">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-region" placeholder="如：南部" value="其他">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <label class="inline-flex items-center">
+                                                <input type="checkbox" class="zone-remote form-checkbox h-4 w-4 text-primary rounded" checked onchange="toggleRemoteSurcharge(this)">
+                                                <span class="ml-1 text-xs text-red-600 font-medium">偏远</span>
+                                            </label>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <span class="text-gray-400 text-sm">$</span>
+                                                <input type="number" class="form-input w-full zone-remote-fee" placeholder="0.00" min="0" step="0.01" value="15.00">
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeZoneRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-name" placeholder="如：Zone 4" value="Zone 4" onchange="updateZoneHeaders()">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-zip" placeholder="如：300-399" value="300-399">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full zone-region" placeholder="如：西部" value="西部">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <label class="inline-flex items-center">
+                                                <input type="checkbox" class="zone-remote form-checkbox h-4 w-4 text-primary rounded">
+                                                <span class="ml-1 text-xs text-gray-500">偏远</span>
+                                            </label>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeZoneRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="panel-billing" class="p-4 hidden">
+                        <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h4 class="text-sm font-semibold text-blue-800 mb-2">
+                                <i class="fa fa-info-circle mr-1"></i>计费重量说明
+                            </h4>
+                            <p class="text-xs text-blue-700 mb-2">
+                                实际计费重量 = MAX(实际重量, 体积重量)
+                            </p>
+                            <p class="text-xs text-blue-700">
+                                体积重量计算公式：长×宽×高 ÷ <span class="font-semibold">5000</span>（FedEx/UPS标准）
+                            </p>
+                        </div>
+
+                        <div id="billingModeWeightTier">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-800">重量段价格</h3>
+                                    <p class="text-xs text-gray-500 mt-1">为每个分区配置不同重量段的配送价格</p>
+                                </div>
+                                <button type="button" class="erp-btn erp-btn-primary" onclick="addWeightTier()">
+                                    <i class="fa fa-plus mr-1.5"></i>新增重量段
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-50">
+                                        <tr id="weightTierHeader">
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">重量范围</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 1</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 2</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 3</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 4</th>
+                                            <th class="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="weightTierContainer" class="divide-y divide-gray-200">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-2">
+                                                    <input type="number" class="form-input w-20 weight-start" placeholder="0" value="0" min="0">
+                                                    <span class="text-gray-500">-</span>
+                                                    <input type="number" class="form-input w-20 weight-end" placeholder="1" value="1" min="0">
+                                                    <span class="text-xs text-gray-400 weight-unit-label">lbs</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 zone-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 zone-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 zone-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 zone-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeWeightRow(this)">
+                                                    <i class="fa fa-trash-o"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="billingModeFirstAdd" class="hidden">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-800">首重续重价格</h3>
+                                    <p class="text-xs text-gray-500 mt-1">配置首重价格和续重单价，系统自动计算总运费</p>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-50">
+                                        <tr id="firstAddHeader">
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b w-40">计费项</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 1</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 2</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 3</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Zone 4</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="firstAddContainer" class="divide-y divide-gray-200">
+                                        <tr class="hover:bg-gray-50 bg-yellow-50">
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-sm font-medium text-gray-700">首重</span>
+                                                    <input type="number" class="form-input w-16 text-sm" id="firstWeight" value="1" min="0">
+                                                    <span class="text-xs text-gray-400">lbs</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 first-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 first-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 first-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 first-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-sm font-medium text-gray-700">续重</span>
+                                                    <span class="text-xs text-gray-500">每</span>
+                                                    <input type="number" class="form-input w-16 text-sm" id="addWeight" value="1" min="0">
+                                                    <span class="text-xs text-gray-400">lbs</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 add-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 add-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 add-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                                    <input type="number" class="form-input w-full pl-6 add-price" placeholder="0.00" min="0" step="0.01">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <p class="text-xs text-gray-600 mb-2">
+                                    <i class="fa fa-calculator mr-1"></i>
+                                    <strong>计费公式：</strong>运费 = 首重价格 + (实际重量 - 首重) ÷ 续重单位 × 续重单价
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    示例：首重1lbs $10，续重每1lbs $2，实际重量3.5lbs → $10 + (3.5-1)÷1×$2 = $15
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panel-surcharge" class="p-4 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-800">附加费配置</h3>
+                                <p class="text-xs text-gray-500 mt-1">配置燃油附加费、偏远附加费、增值服务等额外费用</p>
+                            </div>
+                            <button type="button" class="erp-btn erp-btn-primary" onclick="addSurcharge()">
+                                <i class="fa fa-plus mr-1.5"></i>新增附加费
+                            </button>
+                        </div>
+
+                        <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <h4 class="text-sm font-semibold text-yellow-800 mb-2">
+                                <i class="fa fa-gas-pump mr-1"></i>燃油附加费（动态费率）
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="form-group">
+                                    <label class="text-xs text-gray-600">当前燃油费率</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="fuelSurchargeRate" class="form-input w-24" placeholder="0" min="0" step="0.01" value="18.5">
+                                        <span class="text-sm text-gray-500">%</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="text-xs text-gray-600">费率生效日期</label>
+                                    <input type="date" id="fuelSurchargeDate" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label class="text-xs text-gray-600">计算基数</label>
+                                    <select id="fuelSurchargeBase" class="form-select">
+                                        <option value="transport">运费</option>
+                                        <option value="total">运费+附加费</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="text-xs text-yellow-700 mt-2">
+                                <i class="fa fa-info-circle mr-1"></i>
+                                燃油附加费 = 计算基数 × 当前燃油费率，每月根据快递公司公布的费率调整
+                            </p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full border border-gray-200 rounded-lg">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">附加费名称</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">费用类型</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">计算方式</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">金额/费率</th>
+                                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">生效条件</th>
+                                        <th class="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="surchargeContainer" class="divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full surcharge-name" placeholder="附加费名称" value="偏远地区附加费">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select class="form-select w-full surcharge-type">
+                                                <option value="remote">偏远附加费</option>
+                                                <option value="oversize">超大件附加费</option>
+                                                <option value="overweight">超重附加费</option>
+                                                <option value="signature">签收确认费</option>
+                                                <option value="insurance">保险费</option>
+                                                <option value="residential">住宅派送费</option>
+                                                <option value="saturday">周六派送费</option>
+                                                <option value="other">其他</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select class="form-select w-full surcharge-method">
+                                                <option value="fixed">固定金额</option>
+                                                <option value="percent">按运费百分比</option>
+                                                <option value="per_pound">每磅加收</option>
+                                                <option value="per_kg">每千克加收</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <input type="number" class="form-input w-full surcharge-amount" placeholder="0.00" min="0" step="0.01" value="5.50">
+                                                <span class="text-gray-500 text-sm">$</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full surcharge-condition" placeholder="生效条件" value="偏远地区邮编自动匹配">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeSurchargeRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full surcharge-name" placeholder="附加费名称" value="住宅地址派送费">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select class="form-select w-full surcharge-type">
+                                                <option value="remote">偏远附加费</option>
+                                                <option value="oversize">超大件附加费</option>
+                                                <option value="overweight">超重附加费</option>
+                                                <option value="signature">签收确认费</option>
+                                                <option value="insurance">保险费</option>
+                                                <option value="residential" selected>住宅派送费</option>
+                                                <option value="saturday">周六派送费</option>
+                                                <option value="other">其他</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select class="form-select w-full surcharge-method">
+                                                <option value="fixed" selected>固定金额</option>
+                                                <option value="percent">按运费百分比</option>
+                                                <option value="per_pound">每磅加收</option>
+                                                <option value="per_kg">每千克加收</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <input type="number" class="form-input w-full surcharge-amount" placeholder="0.00" min="0" step="0.01" value="4.50">
+                                                <span class="text-gray-500 text-sm">$</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full surcharge-condition" placeholder="生效条件" value="住宅地址自动识别">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeSurchargeRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full surcharge-name" placeholder="附加费名称" value="签收确认服务">
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select class="form-select w-full surcharge-type">
+                                                <option value="remote">偏远附加费</option>
+                                                <option value="oversize">超大件附加费</option>
+                                                <option value="overweight">超重附加费</option>
+                                                <option value="signature" selected>签收确认费</option>
+                                                <option value="insurance">保险费</option>
+                                                <option value="residential">住宅派送费</option>
+                                                <option value="saturday">周六派送费</option>
+                                                <option value="other">其他</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select class="form-select w-full surcharge-method">
+                                                <option value="fixed" selected>固定金额</option>
+                                                <option value="percent">按运费百分比</option>
+                                                <option value="per_pound">每磅加收</option>
+                                                <option value="per_kg">每千克加收</option>
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex items-center gap-1">
+                                                <input type="number" class="form-input w-full surcharge-amount" placeholder="0.00" min="0" step="0.01" value="2.50">
+                                                <span class="text-gray-500 text-sm">$</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <input type="text" class="form-input w-full surcharge-condition" placeholder="生效条件" value="客户选择签收确认">
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeSurchargeRow(this)">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="panel-limits" class="p-4 hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fa fa-balance-scale text-primary mr-2"></i>重量限制
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">最大重量限制</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="maxWeight" class="form-input w-32" placeholder="70" min="0" value="70">
+                                            <select id="maxWeightUnit" class="form-select w-20">
+                                                <option value="lbs">lbs</option>
+                                                <option value="kg">kg</option>
+                                            </select>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">超过此重量需特殊处理或拒收</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">超重处理方式</label>
+                                        <select id="overweightAction" class="form-select w-full">
+                                            <option value="reject">拒收</option>
+                                            <option value="surcharge">加收超重附加费</option>
+                                            <option value="split">建议拆分包裹</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="overweightFeeGroup">
+                                        <label class="text-xs text-gray-600">超重附加费</label>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-gray-500">每超重1lbs加收</span>
+                                            <input type="number" id="overweightFee" class="form-input w-24" placeholder="0.50" min="0" step="0.01">
+                                            <span class="text-sm text-gray-500">$</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fa fa-expand text-primary mr-2"></i>尺寸限制
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">最大边长限制</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="maxLength" class="form-input w-32" placeholder="108" min="0" value="108">
+                                            <span class="text-sm text-gray-500">英寸</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">最大围长限制 (长+2×宽+2×高)</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="maxGirth" class="form-input w-32" placeholder="165" min="0" value="165">
+                                            <span class="text-sm text-gray-500">英寸</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">超大件处理方式</label>
+                                        <select id="oversizeAction" class="form-select w-full">
+                                            <option value="reject">拒收</option>
+                                            <option value="surcharge">加收超大件附加费</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" id="oversizeFeeGroup">
+                                        <label class="text-xs text-gray-600">超大件附加费</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="oversizeFee" class="form-input w-32" placeholder="50.00" min="0" step="0.01" value="50">
+                                            <span class="text-sm text-gray-500">$</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fa fa-dollar text-primary mr-2"></i>最低收费
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">每票最低收费</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="minCharge" class="form-input w-32" placeholder="10.00" min="0" step="0.01" value="10">
+                                            <span class="text-sm text-gray-500">$</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">计算运费低于此金额时按最低收费收取</p>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">最低重量收费</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="minWeightCharge" class="form-input w-32" placeholder="1.00" min="0" step="0.01" value="1">
+                                            <span class="text-sm text-gray-500">lbs起算</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">不足此重量按此重量计费</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fa fa-cube text-primary mr-2"></i>体积重计算
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">体积重除数</label>
+                                        <select id="dimDivisor" class="form-select w-full">
+                                            <option value="5000">5000 (FedEx/UPS标准)</option>
+                                            <option value="6000">6000 (DHL标准)</option>
+                                            <option value="4000">4000 (特殊标准)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-xs text-gray-600">体积重计算规则</label>
+                                        <div class="p-3 bg-gray-50 rounded text-xs text-gray-600">
+                                            <p class="mb-1"><strong>体积重量</strong> = 长 × 宽 × 高 ÷ <span id="dimDivisorValue">5000</span></p>
+                                            <p><strong>计费重量</strong> = MAX(实际重量, 体积重量)</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="enableDimWeight" class="form-checkbox h-4 w-4 text-primary rounded" checked>
+                                            <span class="ml-2 text-sm text-gray-700">启用体积重计算</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-file-text-o text-primary mr-2"></i>备注
+                </h2>
+                <textarea id="expressFeeRemark" class="form-input w-full h-24" placeholder="请输入备注信息..."></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button type="button" class="erp-btn erp-btn-secondary" onclick="switchToPage('express-fee')">
+                    <i class="fa fa-times mr-1.5"></i>取消
+                </button>
+                <button type="button" class="erp-btn erp-btn-primary" onclick="saveExpressFee()">
+                    <i class="fa fa-save mr-1.5"></i>保存方案
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

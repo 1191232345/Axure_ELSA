@@ -3,661 +3,1390 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>业务管理</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <title>销售收支统计 - ELSA</title>
   
+  <!-- CDN 资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#1E88E5',
-            secondary: '#FF9800',
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
             danger: '#F53F3F',
-            neutral: '#F5F7FA',
-            dark: '#333647',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
           },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        }
       }
-    }
+    };
+    
+    // 初始化Mermaid
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'default',
+      securityLevel: 'loose',
+      logLevel: 3
+    });
   </script>
   
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .table-shadow {
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  <style>
+    /* 主内容区域切换 */
+    .main-content { display: none; }
+    .main-content.active { display: block; }
+    
+    /* Body 基础样式 */
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f9fafb;
+      color: #374151;
+      min-height: 100vh;
+    }
+    
+    /* 切换标签样式 - 固定在右下角 */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+      padding: 4px;
+      border-radius: 12px;
+      width: fit-content;
+      box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .tab:hover {
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    .tab.active {
+      background: white;
+      color: #2a3b7d;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      font-weight: 600;
+    }
+    
+    /* 搜索卡片 */
+    .search-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .search-card .search-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .search-card .search-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .search-card .search-label {
+      font-size: 12px;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    
+    .search-card .search-buttons {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    
+    /* 操作卡片 */
+    .action-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .action-card .action-buttons {
+      display: flex;
+      justify-content: flex-start;
+      gap: 12px;
+    }
+    
+    /* ERP 按钮样式 */
+    .erp-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    
+    .erp-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .erp-btn:active {
+      transform: translateY(0);
+    }
+    
+    .erp-btn-primary {
+      background-color: #2a3b7d;
+      color: white;
+      border-color: #2a3b7d;
+    }
+    
+    .erp-btn-primary:hover {
+      background-color: #3a4ca7;
+      border-color: #3a4ca7;
+    }
+    
+    .erp-btn-secondary {
+      background-color: white;
+      color: #525252;
+      border-color: #d4d4d4;
+    }
+    
+    .erp-btn-secondary:hover {
+      border-color: #a3a3a3;
+      color: #262626;
+    }
+    
+    .erp-btn-warning {
+      background-color: #FF7D00;
+      color: white;
+      border-color: #FF7D00;
+    }
+    
+    .erp-btn-warning:hover {
+      background-color: #ff952e;
+      border-color: #ff952e;
+    }
+    
+    .erp-btn-danger {
+      background-color: #F53F3F;
+      color: white;
+      border-color: #F53F3F;
+    }
+    
+    .erp-btn-danger:hover {
+      background-color: #ff5c5c;
+      border-color: #ff5c5c;
+    }
+    
+    .erp-btn-success {
+      background-color: #00B42A;
+      color: white;
+      border-color: #00B42A;
+    }
+    
+    .erp-btn-success:hover {
+      background-color: #00cc2e;
+      border-color: #00cc2e;
+    }
+    
+    /* 表格样式 */
+    .table-hover-row:hover {
+      background-color: #f9fafb;
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+    }
+    
+    /* 模态框样式 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal-overlay.show .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1D2129;
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid #E5E7EB;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    
+    .close-btn {
+      background-color: white;
+      color: #2a3b7d;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .close-btn:hover {
+      background-color: #f9fafb;
+    }
+    
+    /* 表单样式 */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    
+    .form-group .required {
+      color: #F53F3F;
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1D2129;
+      background-color: white;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .form-select:focus {
+      outline: none;
+      border-color: #2a3b7d;
+      box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+    }
+    
+    .form-select:disabled {
+      background-color: #f3f4f6;
+      cursor: not-allowed;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #1D2129;
+      background-color: white;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #2a3b7d;
+      box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+    }
+    
+    .form-input:disabled {
+      background-color: #f3f4f6;
+      cursor: not-allowed;
+    }
+    
+    /* PRD Markdown 渲染样式 */
+    .prose { 
+      color: #374151; 
+      line-height: 1.8; 
+      font-size: 0.95rem;
+      max-width: 100%;
+    }
+    
+    .prose h1 { 
+      font-size: 2rem; 
+      font-weight: 700; 
+      color: #1e293b; 
+      margin-bottom: 1.5rem; 
+      padding-bottom: 1rem; 
+      border-bottom: 3px solid #2a3b7d;
+      background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .prose h2 { 
+      font-size: 1.4rem; 
+      font-weight: 600; 
+      color: #2a3b7d; 
+      margin: 2.5rem 0 1.2rem; 
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+      border-left: 4px solid #2a3b7d;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .prose h3 { 
+      font-size: 1.15rem; 
+      font-weight: 600; 
+      color: #475569; 
+      margin: 2rem 0 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .prose p { margin-bottom: 1rem; color: #4b5563; }
+    .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
+    .prose li { margin-bottom: 0.5rem; color: #4b5563; }
+    .prose li::marker { color: #2a3b7d; }
+    
+    /* 增强表格样式 */
+    .prose table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0;
+      margin: 1.5rem 0; 
+      font-size: 0.85rem; 
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .prose th { 
+      padding: 0.875rem 1rem; 
+      background: linear-gradient(135deg, #2a3b7d 0%, #4f46e5 100%);
+      color: white;
+      font-weight: 600;
+      text-align: left;
+      border: none;
+      white-space: nowrap;
+    }
+    
+    .prose th:first-child { border-top-left-radius: 12px; }
+    .prose th:last-child { border-top-right-radius: 12px; }
+    
+    .prose td { 
+      padding: 0.75rem 1rem; 
+      border: none;
+      border-bottom: 1px solid #e5e7eb;
+      background: white;
+    }
+    
+    .prose tr:last-child td { border-bottom: none; }
+    .prose tr:nth-child(even) td { background: #f9fafb; }
+    .prose tr:hover td { background: #f0f4ff; }
+    
+    /* 目录导航样式 */
+    .toc {
+      position: sticky;
+      top: 100px;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .toc-title {
+      font-weight: 600;
+      color: #2a3b7d;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #2a3b7d;
+    }
+    
+    .toc a {
+      display: block;
+      padding: 0.375rem 0.5rem;
+      color: #6b7280;
+      text-decoration: none;
+      font-size: 0.875rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    
+    .toc a:hover {
+      background: #f0f4ff;
+      color: #2a3b7d;
+    }
+    
+    /* Mermaid图表放大预览样式 */
+    .mermaid {
+      cursor: zoom-in;
+      transition: transform 0.3s ease;
+    }
+    
+    .mermaid:hover {
+      transform: scale(1.02);
+    }
+    
+    .mermaid-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .mermaid-modal.active {
+      display: flex;
+    }
+    
+    .mermaid-modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 95%;
+      max-height: 95%;
+      overflow: auto;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: modalZoomIn 0.3s ease-out;
+    }
+    
+    @keyframes modalZoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
       }
-      .btn-hover {
-        @apply transition-all duration-300 hover:shadow-md hover:-translate-y-0.5;
+      to {
+        opacity: 1;
+        transform: scale(1);
       }
-      .input-focus {
-        @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
+    }
+    
+    .mermaid-modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      color: #374151;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    
+    .mermaid-modal-close:hover {
+      background: #e5e7eb;
+      transform: rotate(90deg);
+    }
+    
+    .mermaid-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      background: rgba(42, 59, 125, 0.9);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    
+    .mermaid-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .mermaid-container:hover .mermaid-hint {
+      opacity: 1;
+    }
+    
+    /* 响应式布局 */
+    @media (max-width: 768px) {
+      .search-card .search-fields {
+        flex-direction: column;
+        align-items: stretch;
       }
-      .watermark {
-        position: fixed;
-        top: 0;
-        left: 0;
+      
+      .search-card .search-field {
         width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.05;
-        background-image: repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 100px,
-          rgba(0, 0, 0, 0.03) 100px,
-          rgba(0, 0, 0, 0.03) 200px
-        );
       }
-      .watermark::before {
-        content: 'zsw';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-45deg);
-        font-size: 200px;
-        color: rgba(0, 0, 0, 0.05);
-        font-weight: bold;
-        white-space: nowrap;
+      
+      .search-card .search-buttons {
+        margin-left: 0;
+        width: 100%;
+        justify-content: stretch;
+      }
+      
+      .search-card .search-buttons .erp-btn {
+        flex: 1;
+      }
+      
+      .action-card .action-buttons {
+        flex-wrap: wrap;
       }
     }
   </style>
 </head>
-<body class="bg-gray-50 font-sans text-dark relative">
-  <!-- 水印 -->
-  <div class="watermark"></div>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+  <!-- 切换标签 - 固定在右下角 -->
+  <div class="tabs fixed bottom-8 right-8 z-40">
+    <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+    <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+    <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+  </div>
   
-  <div class="container mx-auto px-4 py-8 max-w-[1920px] relative z-10">
-    
-    <!-- 搜索筛选区域 -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div class="flex flex-wrap gap-4 items-end">
-        <!-- 月度筛选 -->
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">月度</label>
-          <div class="relative">
-            <input 
-              type="month" 
-              id="monthFilter" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus"
-              placeholder="请选择月度"
-            >
-            <i class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+  <!-- Header 导航 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-semibold">ELSA</span>
           </div>
-        </div>
-        
-        <!-- 客户代码筛选 -->
-        <div class="flex-1 min-w-[200px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
-          <div class="relative">
-            <input 
-              type="text" 
-              id="customerCodeFilter" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus pr-10"
-              placeholder="请选择客户代码"
-              list="customerCodes"
-            >
-            <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-            <datalist id="customerCodes">
-              <option value="7TH">7TH</option>
-              <option value="AJKC">AJKC</option>
-              <option value="DEMO">DEMO</option>
-            </datalist>
-          </div>
-        </div>
-        
-        <!-- 操作按钮 -->
-        <div class="flex gap-2">
-          <button id="resetBtn" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover">
-            重置
-          </button>
-          <button id="searchBtn" class="px-6 py-2 bg-primary text-white rounded-lg btn-hover">
-            搜索
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 功能按钮区域 -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div class="flex flex-wrap gap-3">
-        <button id="addBtn" class="px-4 py-2 bg-primary text-white rounded-lg btn-hover flex items-center">
-          <i class="fas fa-plus mr-2"></i>新增
-        </button>
-        <button id="importBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover flex items-center">
-          <i class="fas fa-arrow-up mr-2"></i>导入
-        </button>
-        <button id="exportBtn" class="px-4 py-2 bg-secondary text-white rounded-lg btn-hover flex items-center">
-          <i class="fas fa-arrow-down mr-2"></i>导出
-        </button>
-        <button id="batchDeleteBtn" class="px-4 py-2 bg-danger text-white rounded-lg btn-hover">
-          批量删除
-        </button>
-        <button id="detailAdjustBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 btn-hover flex items-center">
-          <i class="fas fa-arrow-up mr-2"></i>明细调整
-        </button>
-      </div>
-    </div>
-    
-    <!-- 数据表格区域 -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 table-shadow">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-4 py-3 w-12">
-                <input type="checkbox" id="selectAll" class="rounded text-primary focus:ring-primary">
-              </th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务ID</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务编号</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账单月</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户代码</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户编号</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预计开航日</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务员</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客服</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">次客服</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提单号</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支出结算单位</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收入结算单位</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">币种</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">对仓成本</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客服收入</th>
-              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
-            <!-- 表格数据将通过JS动态生成 -->
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- 分页控件 -->
-      <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200">
-        <div class="text-sm text-gray-500">
-          Total <span id="totalRecords">0</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <select id="pageSize" class="border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
-            <option value="10">10/page</option>
-            <option value="20">20/page</option>
-            <option value="50">50/page</option>
-            <option value="100">100/page</option>
-          </select>
-          <nav class="flex items-center gap-1" id="pagination">
-            <!-- 分页按钮将通过JS动态生成 -->
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                对账管理
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="reconciliation">对账明细获取</a>
+                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="sales-statistics">销售收支统计</a>
+              </div>
+            </div>
           </nav>
-          <div class="flex items-center gap-1">
-            <span class="text-sm text-gray-500">Go to</span>
-            <input type="number" id="goToPage" value="1" min="1" class="w-12 h-8 border rounded text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </header>
   
-  <!-- 查看详情弹窗 -->
-  <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative">
-      <!-- 弹窗头部 -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-        <h3 class="text-xl font-semibold text-gray-800">
-          <i class="fas fa-eye text-primary mr-2"></i>
-          查看详情
-        </h3>
-        <button id="closeViewModal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-
-      <!-- 弹窗内容 -->
-      <div class="px-6 py-4">
-        <div class="grid grid-cols-2 gap-4" id="viewContent">
-          <!-- 详情内容将通过JS动态生成 -->
+  <!-- PRD 内容区域 -->
+  <main id="main-prd" class="main-content" style="display: none;">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex gap-6">
+        <aside class="w-64 flex-shrink-0 hidden lg:block">
+          <div class="toc sticky top-4">
+            <div class="toc-title">
+              <i class="fa fa-list-alt mr-2"></i>目录导航
+            </div>
+            <div id="toc-nav"></div>
+          </div>
+        </aside>
+        <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+            <div id="prd-content" class="prose max-w-none">
+              <div class="text-center py-16">
+                <div class="animate-pulse">
+                  <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                  <p class="text-lg text-gray-500">正在加载PRD文档...</p>
+                  <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                    <i class="fa fa-refresh mr-2"></i>手动加载PRD
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- 弹窗底部 -->
-      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-2 sticky bottom-0 bg-white">
-        <button id="closeViewBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
-          关闭
-        </button>
+    </div>
+  </main>
+  
+  <!-- Mermaid 图表放大预览模态框 -->
+  <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+    <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+      <button class="mermaid-modal-close" onclick="closeMermaidModal()">
+        <i class="fa fa-times"></i>
+      </button>
+      <div class="mermaid-modal-title">
+        <i class="fa fa-sitemap mr-2"></i>流程图预览
       </div>
+      <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
     </div>
   </div>
-
-  <!-- 新增/编辑弹窗 -->
-  <div id="formModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative">
-      <!-- 弹窗头部 -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
-        <h3 id="modalTitle" class="text-xl font-semibold text-gray-800">
-          <i class="fas fa-plus text-primary mr-2"></i>
-          <span id="modalTitleText">新增业务</span>
-        </h3>
-        <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
-          <i class="fas fa-times"></i>
-        </button>
+  
+  <!-- 测试用例内容区域 -->
+  <main id="main-testcases" class="main-content" style="display: none;">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex gap-6">
+        <aside class="w-64 flex-shrink-0 hidden lg:block">
+          <div class="toc sticky top-4">
+            <div class="toc-title">
+              <i class="fa fa-list-alt mr-2"></i>目录导航
+            </div>
+            <div id="testcases-toc-nav"></div>
+          </div>
+        </aside>
+        <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+            <div id="testcases-content" class="prose max-w-none">
+              <div class="text-center py-16">
+                <div class="animate-pulse">
+                  <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                  <p class="text-lg text-gray-500">正在加载测试用例文档...</p>
+                  <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                    <i class="fa fa-refresh mr-2"></i>手动加载测试用例
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <!-- 弹窗内容 -->
-      <div class="px-6 py-4">
-        <form id="businessForm" class="space-y-4">
-          <input type="hidden" id="businessId">
-          
-          <div class="grid grid-cols-2 gap-4">
-            <!-- 业务ID -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">业务ID <span class="text-red-500">*</span></label>
-              <input 
-                type="text" 
-                id="businessIdInput" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
-                placeholder="系统自动生成"
-                readonly
-                disabled
-              >
-            </div>
-            
-            <!-- 业务编号 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">业务编号</label>
-              <input 
-                type="text" 
-                id="businessNumber" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="请输入业务编号"
-              >
-            </div>
-            
-            <!-- 账单月 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">账单月 <span class="text-red-500">*</span></label>
+    </div>
+  </main>
+  
+  <!-- 原型页面 -->
+  <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+    <div class="container mx-auto px-2 py-6">
+      <!-- 页面内容区域 -->
+      <div id="page-sales-statistics" class="page active">
+        
+        <!-- 搜索卡片：只包含筛选条件和搜索/重置按钮 -->
+        <div class="search-card">
+          <div class="search-fields">
+            <!-- 月度筛选 -->
+            <div class="search-field">
+              <label class="search-label">月度</label>
               <input 
                 type="month" 
-                id="billMonth" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                required
+                id="monthFilter" 
+                class="form-input w-48"
+                placeholder="请选择月度"
               >
             </div>
             
-            <!-- 客户代码 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">客户代码 <span class="text-red-500">*</span></label>
+            <!-- 客户代码筛选 -->
+            <div class="search-field">
+              <label class="search-label">客户代码</label>
               <input 
                 type="text" 
-                id="customerCode" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="请输入客户代码"
-                list="customerCodeList"
-                required
+                id="customerCodeFilter" 
+                class="form-input w-48"
+                placeholder="请选择客户代码"
+                list="customerCodes"
               >
-              <datalist id="customerCodeList">
+              <datalist id="customerCodes">
                 <option value="7TH">7TH</option>
                 <option value="AJKC">AJKC</option>
                 <option value="DEMO">DEMO</option>
               </datalist>
             </div>
             
-            <!-- 客户编号 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">客户编号</label>
-              <input 
-                type="text" 
-                id="customerNumber" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="请输入客户编号"
-              >
-            </div>
-            
-            <!-- 预计开航日 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">预计开航日 <span class="text-red-500">*</span></label>
-              <input 
-                type="date" 
-                id="estimatedSailingDate" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                required
-              >
-            </div>
-            
-            <!-- 业务员 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">业务员</label>
-              <select 
-                id="salesperson" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-              >
-                <option value="">请选择业务员</option>
-                <option value="甘鹏远">甘鹏远</option>
-                <option value="钱宇阳">钱宇阳</option>
-                <option value="张三">张三</option>
-                <option value="李四">李四</option>
-                <option value="王五">王五</option>
-                <option value="-">-</option>
-              </select>
-            </div>
-            
-            <!-- 客服 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">客服</label>
-              <select 
-                id="customerService" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-              >
-                <option value="">请选择客服</option>
-                <option value="客服A">客服A</option>
-                <option value="客服B">客服B</option>
-                <option value="客服C">客服C</option>
-                <option value="客服D">客服D</option>
-                <option value="-">-</option>
-              </select>
-            </div>
-            
-            <!-- 次客服 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">次客服</label>
-              <select 
-                id="secondaryCustomerService" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-              >
-                <option value="">请选择次客服</option>
-                <option value="次客服A">次客服A</option>
-                <option value="次客服B">次客服B</option>
-                <option value="次客服C">次客服C</option>
-                <option value="次客服D">次客服D</option>
-                <option value="-">-</option>
-              </select>
-            </div>
-            
-            <!-- 提单号 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">提单号</label>
-              <input 
-                type="text" 
-                id="billOfLading" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="请输入提单号"
-              >
-            </div>
-            
-            <!-- 支出结算单位 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">支出结算单位</label>
-              <input 
-                type="text" 
-                id="expenseSettlementUnit" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="请输入支出结算单位"
-              >
-            </div>
-            
-            <!-- 收入结算单位 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">收入结算单位</label>
-              <input 
-                type="text" 
-                id="revenueSettlementUnit" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="请输入收入结算单位"
-              >
-            </div>
-            
-            <!-- 项目 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">项目 <span class="text-red-500">*</span></label>
-              <select 
-                id="item" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                required
-              >
-                <option value="">请选择项目</option>
-                <option value="仓储费">仓储费</option>
-                <option value="转仓费">转仓费</option>
-                <option value="出库费">出库费</option>
-                <option value="快递费">快递费</option>
-                <option value="操作费">操作费</option>
-                <option value="其他">其他</option>
-              </select>
-            </div>
-            
-            <!-- 币种 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">币种 <span class="text-red-500">*</span></label>
-              <select 
-                id="currency" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                required
-              >
-                <option value="USD">USD</option>
-                <option value="CNY">CNY</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
-            </div>
-            
-            <!-- 对仓成本 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">对仓成本 <span class="text-red-500">*</span></label>
-              <input 
-                type="number" 
-                id="warehouseCost" 
-                step="0.001"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="0.000"
-                required
-              >
-            </div>
-            
-            <!-- 客服收入 -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">客服收入 <span class="text-red-500">*</span></label>
-              <input 
-                type="number" 
-                id="customerServiceRevenue" 
-                step="0.001"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md input-focus"
-                placeholder="0.000"
-                required
-              >
+            <!-- 搜索/重置按钮：放在搜索卡片右侧 -->
+            <div class="search-buttons">
+              <button id="resetBtn" class="erp-btn erp-btn-secondary flex items-center">
+                <i class="fa fa-refresh mr-1.5"></i> 重置
+              </button>
+              <button id="searchBtn" class="erp-btn erp-btn-primary flex items-center">
+                <i class="fa fa-search mr-1.5"></i> 搜索
+              </button>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+        
+        <!-- 操作卡片：单独放置，包含主操作按钮 -->
+        <div class="action-card">
+          <div class="action-buttons">
+            <button id="addBtn" class="erp-btn erp-btn-primary flex items-center">
+              <i class="fa fa-plus mr-1.5"></i> 新增
+            </button>
+            <button id="importBtn" class="erp-btn erp-btn-secondary flex items-center">
+              <i class="fa fa-upload mr-1.5"></i> 导入
+            </button>
+            <button id="exportBtn" class="erp-btn erp-btn-secondary flex items-center">
+              <i class="fa fa-download mr-1.5"></i> 导出
+            </button>
+            <button id="batchDeleteBtn" class="erp-btn erp-btn-danger batch-btn" disabled>
+              <i class="fa fa-trash mr-1.5"></i> 批量删除
+            </button>
+            <button id="detailAdjustBtn" class="erp-btn erp-btn-secondary flex items-center">
+              <i class="fa fa-arrow-up mr-1.5"></i> 明细调整
+            </button>
+          </div>
+        </div>
+        
+        <!-- 数据表格区域 -->
+        <div class="bg-white rounded shadow-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 w-12">
+                    <input type="checkbox" id="selectAll" class="rounded text-primary focus:ring-primary">
+                  </th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务ID</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务编号</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账单月</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户代码</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户编号</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预计开航日</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务员</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客服</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">次客服</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">提单号</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">支出结算单位</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收入结算单位</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">币种</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">对仓成本</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客服收入</th>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                <!-- 表格数据将通过JS动态生成 -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 分页控件 -->
+          <div class="px-4 py-3 flex items-center justify-between border-t border-gray-200">
+            <div class="text-sm text-gray-500">
+              Total <span id="totalRecords">0</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="pageSize" class="form-select w-24">
+                <option value="10">10/page</option>
+                <option value="20">20/page</option>
+                <option value="50">50/page</option>
+                <option value="100">100/page</option>
+              </select>
+              <nav class="flex items-center gap-1" id="pagination">
+                <!-- 分页按钮将通过JS动态生成 -->
+              </nav>
+              <div class="flex items-center gap-1">
+                <span class="text-sm text-gray-500">Go to</span>
+                <input type="number" id="goToPage" value="1" min="1" class="form-input w-12 h-8 text-center text-sm">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 逻辑说明区域 -->
+        <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+          <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('sales-statistics')">
+            <div class="flex items-center">
+              <i class="fa fa-book text-primary mr-2"></i>
+              <span class="font-semibold text-primary">逻辑说明</span>
+              <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+            </div>
+            <i class="fa fa-chevron-down text-primary transition-transform" id="sales-statistics-logic-icon"></i>
+          </div>
+          <div id="sales-statistics-logic-content" class="hidden">
+            <!-- 初始化页面（数据展示逻辑） -->
+            <div class="p-4 border-b border-gray-100">
+              <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm border border-gray-200 rounded">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">业务列表加载</td>
+                      <td class="px-3 py-2 text-gray-600">页面加载时默认展示业务明细列表</td>
+                      <td class="px-3 py-2 text-gray-600">业务明细表(business_detail)</td>
+                      <td class="px-3 py-2 text-gray-600">按创建时间倒序展示，支持分页</td>
+                      <td class="px-3 py-2 text-gray-600">默认每页10条数据</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">筛选条件默认值</td>
+                      <td class="px-3 py-2 text-gray-600">页面加载时设置筛选条件默认值</td>
+                      <td class="px-3 py-2 text-gray-600">配置项</td>
+                      <td class="px-3 py-2 text-gray-600">月度和客户代码默认为空，显示全部数据</td>
+                      <td class="px-3 py-2 text-gray-600">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-      <!-- 弹窗底部 -->
-      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-2 sticky bottom-0 bg-white">
-        <button id="cancelBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
-          取消
-        </button>
-        <button id="saveBtn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors duration-200">
-          <i class="fas fa-save mr-2"></i>保存
-        </button>
+            <!-- 检索条件 -->
+            <div class="p-4 border-b border-gray-100">
+              <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fa fa-search text-primary mr-2"></i>检索条件
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm border border-gray-200 rounded">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">月度</td>
+                      <td class="px-3 py-2 text-gray-600">日期选择器</td>
+                      <td class="px-3 py-2 text-gray-600">选择指定月份的业务数据</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">客户代码</td>
+                      <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                      <td class="px-3 py-2 text-gray-600">选择指定客户的业务数据</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 按钮逻辑 -->
+            <div class="p-4 border-b border-gray-100">
+              <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm border border-gray-200 rounded">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">新增</td>
+                      <td class="px-3 py-2 text-gray-600">操作卡片</td>
+                      <td class="px-3 py-2 text-gray-600">打开新增业务弹窗</td>
+                      <td class="px-3 py-2 text-gray-600">无</td>
+                      <td class="px-3 py-2 text-gray-600">填写表单后提交，刷新主列表</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">导入</td>
+                      <td class="px-3 py-2 text-gray-600">操作卡片</td>
+                      <td class="px-3 py-2 text-gray-600">打开导入文件弹窗</td>
+                      <td class="px-3 py-2 text-gray-600">无</td>
+                      <td class="px-3 py-2 text-gray-600">上传文件后导入数据，刷新主列表</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">导出</td>
+                      <td class="px-3 py-2 text-gray-600">操作卡片</td>
+                      <td class="px-3 py-2 text-gray-600">导出当前数据</td>
+                      <td class="px-3 py-2 text-gray-600">有数据可导出</td>
+                      <td class="px-3 py-2 text-gray-600">生成并下载导出文件</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">批量删除</td>
+                      <td class="px-3 py-2 text-gray-600">操作卡片</td>
+                      <td class="px-3 py-2 text-gray-600">删除选中的业务记录</td>
+                      <td class="px-3 py-2 text-gray-600">至少选中一条记录</td>
+                      <td class="px-3 py-2 text-gray-600">删除后刷新主列表</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">明细调整</td>
+                      <td class="px-3 py-2 text-gray-600">操作卡片</td>
+                      <td class="px-3 py-2 text-gray-600">打开明细调整弹窗</td>
+                      <td class="px-3 py-2 text-gray-600">无</td>
+                      <td class="px-3 py-2 text-gray-600">调整后提交，刷新主列表</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 属性取值逻辑 -->
+            <div class="p-4">
+              <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+              </h4>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm border border-gray-200 rounded">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">业务ID</td>
+                      <td class="px-3 py-2 text-gray-600">业务的唯一标识</td>
+                      <td class="px-3 py-2 text-gray-600">系统生成</td>
+                      <td class="px-3 py-2 text-gray-600">自动生成唯一业务ID</td>
+                      <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">业务编号</td>
+                      <td class="px-3 py-2 text-gray-600">业务的编号</td>
+                      <td class="px-3 py-2 text-gray-600">用户输入</td>
+                      <td class="px-3 py-2 text-gray-600">手动输入或系统生成</td>
+                      <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">账单月</td>
+                      <td class="px-3 py-2 text-gray-600">业务所属月份</td>
+                      <td class="px-3 py-2 text-gray-600">用户输入</td>
+                      <td class="px-3 py-2 text-gray-600">通过日期选择器选择</td>
+                      <td class="px-3 py-2 text-gray-600">YYYY-MM格式</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">客户代码</td>
+                      <td class="px-3 py-2 text-gray-600">业务所属客户</td>
+                      <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                      <td class="px-3 py-2 text-gray-600">从客户列表中选择</td>
+                      <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">对仓成本</td>
+                      <td class="px-3 py-2 text-gray-600">业务的对仓成本</td>
+                      <td class="px-3 py-2 text-gray-600">用户输入</td>
+                      <td class="px-3 py-2 text-gray-600">手动输入数值</td>
+                      <td class="px-3 py-2 text-gray-600">数字格式（保留3位小数）</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2 text-gray-800">客服收入</td>
+                      <td class="px-3 py-2 text-gray-600">业务的客服收入</td>
+                      <td class="px-3 py-2 text-gray-600">用户输入</td>
+                      <td class="px-3 py-2 text-gray-600">手动输入数值</td>
+                      <td class="px-3 py-2 text-gray-600">数字格式（保留3位小数）</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 查看详情弹窗 -->
+  <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-gray-800">业务详情</h3>
+          <button id="closeViewModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="space-y-4" id="detailContent">
+          <!-- 详情内容将通过JS动态生成 -->
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 提示消息组件 -->
-  <div id="toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 flex items-center hidden">
-    <i id="toastIcon" class="mr-2 text-xl"></i>
-    <span id="toastMessage"></span>
+  <!-- 新增/编辑弹窗 -->
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-auto relative">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-gray-800" id="editModalTitle">新增业务</h3>
+          <button id="closeEditModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <form id="editForm">
+          <input type="hidden" id="editId">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-group">
+              <label>业务编号 <span class="required">*</span></label>
+              <input type="text" id="businessNo" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label>账单月 <span class="required">*</span></label>
+              <input type="month" id="billMonth" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label>客户代码 <span class="required">*</span></label>
+              <select id="customerCode" class="form-select" required>
+                <option value="">请选择</option>
+                <option value="7TH">7TH</option>
+                <option value="AJKC">AJKC</option>
+                <option value="DEMO">DEMO</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>客户编号</label>
+              <input type="text" id="customerNo" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>预计开航日</label>
+              <input type="date" id="sailingDate" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>业务员</label>
+              <input type="text" id="salesman" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>客服</label>
+              <input type="text" id="customerService" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>次客服</label>
+              <input type="text" id="secondaryService" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>提单号</label>
+              <input type="text" id="billNo" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>支出结算单位</label>
+              <input type="text" id="expenseUnit" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>收入结算单位</label>
+              <input type="text" id="incomeUnit" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>项目</label>
+              <input type="text" id="project" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>币种</label>
+              <select id="currency" class="form-select">
+                <option value="CNY">CNY</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>对仓成本</label>
+              <input type="number" id="warehouseCost" class="form-input" step="0.001">
+            </div>
+            <div class="form-group">
+              <label>客服收入</label>
+              <input type="number" id="serviceIncome" class="form-input" step="0.001">
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" id="cancelEdit" class="erp-btn erp-btn-secondary">取消</button>
+            <button type="submit" class="erp-btn erp-btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
+  <!-- 明细调整弹窗 -->
+  <div id="detailAdjustModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto relative">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-gray-800">明细调整</h3>
+          <button id="closeDetailAdjustModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+            <p class="text-sm text-blue-800">
+              <i class="fa fa-info-circle mr-2"></i>
+              请选择需要调整的业务记录，修改对应字段后提交。
+            </p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">选择</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">业务编号</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">客户代码</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">对仓成本</th>
+                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">客服收入</th>
+                </tr>
+              </thead>
+              <tbody id="detailAdjustTableBody">
+                <!-- 动态生成 -->
+              </tbody>
+            </table>
+          </div>
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" id="cancelDetailAdjust" class="erp-btn erp-btn-secondary">取消</button>
+            <button type="button" id="saveDetailAdjust" class="erp-btn erp-btn-primary">保存调整</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入弹窗 -->
+  <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full relative">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-gray-800">导入数据</h3>
+          <button id="closeImportModal" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600 mb-4">拖拽文件到此处或点击上传</p>
+            <input type="file" id="importFile" accept=".xlsx,.xls,.csv" class="hidden">
+            <button type="button" onclick="document.getElementById('importFile').click()" class="erp-btn erp-btn-primary">
+              <i class="fa fa-folder-open mr-2"></i>选择文件
+            </button>
+          </div>
+          <div class="bg-gray-50 rounded p-4">
+            <p class="text-sm text-gray-600 mb-2"><i class="fa fa-info-circle mr-2"></i>支持格式：Excel (.xlsx, .xls) 或 CSV</p>
+            <a href="#" class="text-sm text-primary hover:underline"><i class="fa fa-download mr-1"></i>下载导入模板</a>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" id="cancelImport" class="erp-btn erp-btn-secondary">取消</button>
+          <button type="button" id="confirmImport" class="erp-btn erp-btn-primary">开始导入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
   <script>
-    // 全局变量
-    let businessData = [];
-    let filteredData = [];
+    // 模拟数据
+    let businessData = [
+      { id: 1, businessNo: 'B202403001', billMonth: '2024-03', customerCode: '7TH', customerNo: 'C001', sailingDate: '2024-03-15', salesman: '张三', customerService: '李四', secondaryService: '王五', billNo: 'BL001', expenseUnit: '单位A', incomeUnit: '单位B', project: '项目1', currency: 'CNY', warehouseCost: 1500.000, serviceIncome: 2000.000 },
+      { id: 2, businessNo: 'B202403002', billMonth: '2024-03', customerCode: 'AJKC', customerNo: 'C002', sailingDate: '2024-03-16', salesman: '赵六', customerService: '钱七', secondaryService: '孙八', billNo: 'BL002', expenseUnit: '单位C', incomeUnit: '单位D', project: '项目2', currency: 'USD', warehouseCost: 2300.500, serviceIncome: 3100.250 },
+      { id: 3, businessNo: 'B202403003', billMonth: '2024-03', customerCode: 'DEMO', customerNo: 'C003', sailingDate: '2024-03-17', salesman: '周九', customerService: '吴十', secondaryService: '郑十一', billNo: 'BL003', expenseUnit: '单位E', incomeUnit: '单位F', project: '项目3', currency: 'EUR', warehouseCost: 1800.750, serviceIncome: 2500.000 },
+      { id: 4, businessNo: 'B202403004', billMonth: '2024-03', customerCode: '7TH', customerNo: 'C004', sailingDate: '2024-03-18', salesman: '张三', customerService: '李四', secondaryService: '王五', billNo: 'BL004', expenseUnit: '单位G', incomeUnit: '单位H', project: '项目4', currency: 'CNY', warehouseCost: 3200.000, serviceIncome: 4500.500 },
+      { id: 5, businessNo: 'B202403005', billMonth: '2024-03', customerCode: 'AJKC', customerNo: 'C005', sailingDate: '2024-03-19', salesman: '赵六', customerService: '钱七', secondaryService: '孙八', billNo: 'BL005', expenseUnit: '单位I', incomeUnit: '单位J', project: '项目5', currency: 'USD', warehouseCost: 2800.250, serviceIncome: 3800.750 }
+    ];
+
+    let filteredData = [...businessData];
     let currentPage = 1;
     let pageSize = 10;
-    let currentEditId = null;
-    
-    // DOM 元素
-    const tableBody = document.getElementById('tableBody');
-    const formModal = document.getElementById('formModal');
-    const modalTitleText = document.getElementById('modalTitleText');
-    const businessForm = document.getElementById('businessForm');
-    const closeModal = document.getElementById('closeModal');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const addBtn = document.getElementById('addBtn');
-    const searchBtn = document.getElementById('searchBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const selectAll = document.getElementById('selectAll');
-    const pageSizeSelect = document.getElementById('pageSize');
-    const goToPageInput = document.getElementById('goToPage');
-    const pagination = document.getElementById('pagination');
-    const totalRecordsSpan = document.getElementById('totalRecords');
-    
-    // 初始化示例数据
-    function initSampleData() {
-      businessData = [
-        {
-          id: '251201107',
-          businessId: '251201107',
-          businessNumber: '-',
-          billMonth: '2025-08',
-          customerCode: '7TH',
-          customerNumber: '',
-          estimatedSailingDate: '2025/08/01',
-          salesperson: '甘鹏远',
-          customerService: '-',
-          secondaryCustomerService: '-',
-          billOfLading: '',
-          expenseSettlementUnit: '',
-          revenueSettlementUnit: '',
-          item: '仓储费',
-          currency: 'USD',
-          warehouseCost: 49.104,
-          customerServiceRevenue: 73.409
-        }
-      ];
-      filteredData = [...businessData];
-      renderTable();
+    let selectedIds = new Set();
+
+    // 主标签切换
+    function switchMainTab(tab) {
+      document.querySelectorAll('.main-content').forEach(function(content) {
+        content.classList.remove('active');
+        content.style.display = 'none';
+      });
+      document.querySelectorAll('.tab').forEach(function(t) {
+        t.classList.remove('active');
+      });
+      const targetContent = document.getElementById('main-' + tab);
+      if (targetContent) {
+        targetContent.classList.add('active');
+        targetContent.style.display = 'block';
+      }
+      const targetTab = document.getElementById('tab-' + tab);
+      if (targetTab) {
+        targetTab.classList.add('active');
+      }
+      if (tab === 'prd' && !prdLoaded) {
+        loadPRD();
+      } else if (tab === 'testcases' && !testCasesLoaded) {
+        loadTestCases();
+      }
     }
-    
+
+    // 切换逻辑说明展开/收起
+    function togglePrdLogic(module) {
+      const content = document.getElementById(module + '-logic-content');
+      const icon = document.getElementById(module + '-logic-icon');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    }
+
     // 渲染表格
     function renderTable() {
+      const tableBody = document.getElementById('tableBody');
       const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
+      const end = start + parseInt(pageSize);
       const pageData = filteredData.slice(start, end);
-      
+
       tableBody.innerHTML = pageData.map(item => `
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-4 py-3 whitespace-nowrap">
-            <input type="checkbox" class="row-checkbox rounded text-primary focus:ring-primary" data-id="${item.id}">
+        <tr class="table-hover-row" data-id="${item.id}">
+          <td class="px-4 py-3">
+            <input type="checkbox" class="row-checkbox rounded text-primary focus:ring-primary" value="${item.id}" ${selectedIds.has(item.id) ? 'checked' : ''}>
           </td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.businessId || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.businessNumber || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.billMonth || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerCode || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerNumber || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.estimatedSailingDate || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.salesperson || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerService || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.secondaryCustomerService || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.billOfLading || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.expenseSettlementUnit || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.revenueSettlementUnit || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.item || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.currency || '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.warehouseCost !== undefined ? item.warehouseCost.toFixed(3) : '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${item.customerServiceRevenue !== undefined ? item.customerServiceRevenue.toFixed(3) : '-'}</td>
-          <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
-            <button onclick="viewDetail('${item.id}')" class="text-primary hover:text-primary/80 mr-3" title="查看">
-              <i class="fas fa-eye"></i>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.id}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.businessNo}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.billMonth}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.customerCode}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.customerNo}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.sailingDate}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.salesman}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.customerService}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.secondaryService}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.billNo}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.expenseUnit}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.incomeUnit}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.project}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.currency}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.warehouseCost.toFixed(3)}</td>
+          <td class="px-4 py-3 text-sm text-gray-900">${item.serviceIncome.toFixed(3)}</td>
+          <td class="px-4 py-3 text-sm">
+            <button class="text-primary hover:text-primary-light mr-2 view-btn" data-id="${item.id}">
+              <i class="fa fa-eye"></i>
             </button>
-            <button onclick="openEditModal('${item.id}')" class="text-secondary hover:text-secondary/80 mr-3" title="编辑">
-              <i class="fas fa-edit"></i>
+            <button class="text-primary hover:text-primary-light mr-2 edit-btn" data-id="${item.id}">
+              <i class="fa fa-edit"></i>
             </button>
-            <button onclick="deleteItem('${item.id}')" class="text-danger hover:text-danger/80" title="删除">
-              <i class="fas fa-trash"></i>
+            <button class="text-danger hover:text-red-700 delete-btn" data-id="${item.id}">
+              <i class="fa fa-trash"></i>
             </button>
           </td>
         </tr>
       `).join('');
-      
+
+      document.getElementById('totalRecords').textContent = filteredData.length;
       renderPagination();
-      updateTotalRecords();
+      bindRowEvents();
     }
-    
+
     // 渲染分页
     function renderPagination() {
       const totalPages = Math.ceil(filteredData.length / pageSize);
-      let paginationHTML = '';
-      
-      // 上一页按钮
-      paginationHTML += `
-        <button 
-          onclick="goToPage(${currentPage - 1})" 
-          ${currentPage === 1 ? 'disabled' : ''}
-          class="px-3 py-1 border rounded-md text-sm ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-50'}">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-      `;
-      
-      // 页码按钮
-      const maxVisible = 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-      
-      if (endPage - startPage < maxVisible - 1) {
-        startPage = Math.max(1, endPage - maxVisible + 1);
-      }
-      
-      if (startPage > 1) {
-        paginationHTML += `
-          <button onclick="goToPage(1)" class="px-3 py-1 border rounded-md text-sm hover:bg-gray-50">1</button>
-        `;
-        if (startPage > 2) {
-          paginationHTML += `<span class="px-2 text-gray-500">...</span>`;
+      const pagination = document.getElementById('pagination');
+      let html = '';
+
+      // 上一页
+      html += `<button class="erp-btn erp-btn-secondary px-3 py-1 text-sm" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">
+        <i class="fa fa-chevron-left"></i>
+      </button>`;
+
+      // 页码
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          html += `<button class="erp-btn ${i === currentPage ? 'erp-btn-primary' : 'erp-btn-secondary'} px-3 py-1 text-sm" onclick="goToPage(${i})">${i}</button>`;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          html += `<span class="px-2">...</span>`;
         }
       }
-      
-      for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-          <button 
-            onclick="goToPage(${i})" 
-            class="px-3 py-1 border rounded-md text-sm ${i === currentPage ? 'bg-primary text-white' : 'hover:bg-gray-50'}">
-            ${i}
-          </button>
-        `;
-      }
-      
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-          paginationHTML += `<span class="px-2 text-gray-500">...</span>`;
-        }
-        paginationHTML += `
-          <button onclick="goToPage(${totalPages})" class="px-3 py-1 border rounded-md text-sm hover:bg-gray-50">${totalPages}</button>
-        `;
-      }
-      
-      // 下一页按钮
-      paginationHTML += `
-        <button 
-          onclick="goToPage(${currentPage + 1})" 
-          ${currentPage === totalPages ? 'disabled' : ''}
-          class="px-3 py-1 border rounded-md text-sm ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:bg-gray-50'}">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      `;
-      
-      pagination.innerHTML = paginationHTML;
-      goToPageInput.value = currentPage;
-      goToPageInput.max = totalPages;
+
+      // 下一页
+      html += `<button class="erp-btn erp-btn-secondary px-3 py-1 text-sm" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">
+        <i class="fa fa-chevron-right"></i>
+      </button>`;
+
+      pagination.innerHTML = html;
     }
-    
-    // 更新总记录数
-    function updateTotalRecords() {
-      totalRecordsSpan.textContent = filteredData.length;
-    }
-    
+
     // 跳转到指定页
     function goToPage(page) {
       const totalPages = Math.ceil(filteredData.length / pageSize);
@@ -665,280 +1394,589 @@
       currentPage = page;
       renderTable();
     }
-    
-    // 搜索功能
-    function handleSearch() {
-      const monthFilter = document.getElementById('monthFilter').value;
-      const customerCodeFilter = document.getElementById('customerCodeFilter').value;
-      
-      filteredData = businessData.filter(item => {
-        const matchMonth = !monthFilter || item.billMonth === monthFilter;
-        const matchCustomerCode = !customerCodeFilter || item.customerCode.toLowerCase().includes(customerCodeFilter.toLowerCase());
-        return matchMonth && matchCustomerCode;
+
+    // 绑定行事件
+    function bindRowEvents() {
+      // 复选框
+      document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const id = parseInt(this.value);
+          if (this.checked) {
+            selectedIds.add(id);
+          } else {
+            selectedIds.delete(id);
+          }
+          updateBatchButton();
+        });
       });
-      
+
+      // 查看按钮
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = parseInt(this.dataset.id);
+          viewDetail(id);
+        });
+      });
+
+      // 编辑按钮
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = parseInt(this.dataset.id);
+          editItem(id);
+        });
+      });
+
+      // 删除按钮
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = parseInt(this.dataset.id);
+          deleteItem(id);
+        });
+      });
+    }
+
+    // 更新批量按钮状态
+    function updateBatchButton() {
+      const batchBtn = document.getElementById('batchDeleteBtn');
+      batchBtn.disabled = selectedIds.size === 0;
+    }
+
+    // 查看详情
+    function viewDetail(id) {
+      const item = businessData.find(d => d.id === id);
+      if (!item) return;
+
+      const detailContent = document.getElementById('detailContent');
+      detailContent.innerHTML = `
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">业务ID:</span> <span class="font-medium">${item.id}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">业务编号:</span> <span class="font-medium">${item.businessNo}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">账单月:</span> <span class="font-medium">${item.billMonth}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">客户代码:</span> <span class="font-medium">${item.customerCode}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">客户编号:</span> <span class="font-medium">${item.customerNo}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">预计开航日:</span> <span class="font-medium">${item.sailingDate}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">业务员:</span> <span class="font-medium">${item.salesman}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">客服:</span> <span class="font-medium">${item.customerService}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">次客服:</span> <span class="font-medium">${item.secondaryService}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">提单号:</span> <span class="font-medium">${item.billNo}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">支出结算单位:</span> <span class="font-medium">${item.expenseUnit}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">收入结算单位:</span> <span class="font-medium">${item.incomeUnit}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">项目:</span> <span class="font-medium">${item.project}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">币种:</span> <span class="font-medium">${item.currency}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">对仓成本:</span> <span class="font-medium">${item.warehouseCost.toFixed(3)}</span></div>
+          <div class="bg-gray-50 p-3 rounded"><span class="text-gray-500">客服收入:</span> <span class="font-medium">${item.serviceIncome.toFixed(3)}</span></div>
+        </div>
+      `;
+
+      document.getElementById('viewModal').classList.remove('hidden');
+    }
+
+    // 编辑项目
+    function editItem(id) {
+      const item = businessData.find(d => d.id === id);
+      if (!item) return;
+
+      document.getElementById('editId').value = item.id;
+      document.getElementById('businessNo').value = item.businessNo;
+      document.getElementById('billMonth').value = item.billMonth;
+      document.getElementById('customerCode').value = item.customerCode;
+      document.getElementById('customerNo').value = item.customerNo;
+      document.getElementById('sailingDate').value = item.sailingDate;
+      document.getElementById('salesman').value = item.salesman;
+      document.getElementById('customerService').value = item.customerService;
+      document.getElementById('secondaryService').value = item.secondaryService;
+      document.getElementById('billNo').value = item.billNo;
+      document.getElementById('expenseUnit').value = item.expenseUnit;
+      document.getElementById('incomeUnit').value = item.incomeUnit;
+      document.getElementById('project').value = item.project;
+      document.getElementById('currency').value = item.currency;
+      document.getElementById('warehouseCost').value = item.warehouseCost;
+      document.getElementById('serviceIncome').value = item.serviceIncome;
+
+      document.getElementById('editModalTitle').textContent = '编辑业务';
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    // 删除项目
+    function deleteItem(id) {
+      if (confirm('确定要删除这条记录吗？')) {
+        businessData = businessData.filter(d => d.id !== id);
+        filteredData = [...businessData];
+        selectedIds.delete(id);
+        updateBatchButton();
+        renderTable();
+      }
+    }
+
+    // 搜索
+    function search() {
+      const month = document.getElementById('monthFilter').value;
+      const customerCode = document.getElementById('customerCodeFilter').value;
+
+      filteredData = businessData.filter(item => {
+        let match = true;
+        if (month && !item.billMonth.startsWith(month)) match = false;
+        if (customerCode && item.customerCode !== customerCode) match = false;
+        return match;
+      });
+
       currentPage = 1;
       renderTable();
     }
-    
-    // 重置搜索
-    function handleReset() {
+
+    // 重置
+    function reset() {
       document.getElementById('monthFilter').value = '';
       document.getElementById('customerCodeFilter').value = '';
       filteredData = [...businessData];
       currentPage = 1;
       renderTable();
     }
-    
-    // 打开新增弹窗
-    function openAddModal() {
-      currentEditId = null;
-      modalTitleText.textContent = '新增业务';
-      businessForm.reset();
-      document.getElementById('businessIdInput').value = '系统自动生成';
-      formModal.classList.remove('hidden');
+
+    // 全选/取消全选
+    function toggleSelectAll() {
+      const selectAll = document.getElementById('selectAll');
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+        const id = parseInt(checkbox.value);
+        if (selectAll.checked) {
+          selectedIds.add(id);
+        } else {
+          selectedIds.delete(id);
+        }
+      });
+
+      updateBatchButton();
     }
-    
-    // 打开编辑弹窗
-    function openEditModal(id) {
-      const item = businessData.find(d => d.id === id);
-      if (!item) return;
-      
-      currentEditId = id;
-      modalTitleText.textContent = '编辑业务';
-      document.getElementById('businessIdInput').value = item.businessId;
-      document.getElementById('businessNumber').value = item.businessNumber || '';
-      document.getElementById('billMonth').value = item.billMonth || '';
-      document.getElementById('customerCode').value = item.customerCode || '';
-      document.getElementById('customerNumber').value = item.customerNumber || '';
-      document.getElementById('estimatedSailingDate').value = item.estimatedSailingDate ? item.estimatedSailingDate.replace(/\//g, '-') : '';
-      document.getElementById('salesperson').value = item.salesperson || '';
-      document.getElementById('customerService').value = item.customerService || '';
-      document.getElementById('secondaryCustomerService').value = item.secondaryCustomerService || '';
-      document.getElementById('billOfLading').value = item.billOfLading || '';
-      document.getElementById('expenseSettlementUnit').value = item.expenseSettlementUnit || '';
-      document.getElementById('revenueSettlementUnit').value = item.revenueSettlementUnit || '';
-      document.getElementById('item').value = item.item || '';
-      document.getElementById('currency').value = item.currency || 'USD';
-      document.getElementById('warehouseCost').value = item.warehouseCost || '';
-      document.getElementById('customerServiceRevenue').value = item.customerServiceRevenue || '';
-      
-      formModal.classList.remove('hidden');
-    }
-    
-    // 查看详情
-    function viewDetail(id) {
-      const item = businessData.find(d => d.id === id);
-      if (!item) return;
-      
-      const viewContent = document.getElementById('viewContent');
-      viewContent.innerHTML = `
-        <div><strong>业务ID:</strong> ${item.businessId || '-'}</div>
-        <div><strong>业务编号:</strong> ${item.businessNumber || '-'}</div>
-        <div><strong>账单月:</strong> ${item.billMonth || '-'}</div>
-        <div><strong>客户代码:</strong> ${item.customerCode || '-'}</div>
-        <div><strong>客户编号:</strong> ${item.customerNumber || '-'}</div>
-        <div><strong>预计开航日:</strong> ${item.estimatedSailingDate || '-'}</div>
-        <div><strong>业务员:</strong> ${item.salesperson || '-'}</div>
-        <div><strong>客服:</strong> ${item.customerService || '-'}</div>
-        <div><strong>次客服:</strong> ${item.secondaryCustomerService || '-'}</div>
-        <div><strong>提单号:</strong> ${item.billOfLading || '-'}</div>
-        <div><strong>支出结算单位:</strong> ${item.expenseSettlementUnit || '-'}</div>
-        <div><strong>收入结算单位:</strong> ${item.revenueSettlementUnit || '-'}</div>
-        <div><strong>项目:</strong> ${item.item || '-'}</div>
-        <div><strong>币种:</strong> ${item.currency || '-'}</div>
-        <div><strong>对仓成本:</strong> ${item.warehouseCost !== undefined ? item.warehouseCost.toFixed(3) : '-'}</div>
-        <div><strong>客服收入:</strong> ${item.customerServiceRevenue !== undefined ? item.customerServiceRevenue.toFixed(3) : '-'}</div>
-      `;
-      
-      document.getElementById('viewModal').classList.remove('hidden');
-    }
-    
-    // 删除项目
-    function deleteItem(id) {
-      if (confirm('确定要删除这条记录吗？')) {
-        businessData = businessData.filter(item => item.id !== id);
-        filteredData = filteredData.filter(item => item.id !== id);
-        showToast('删除成功', 'success');
-        renderTable();
-      }
-    }
-    
+
     // 批量删除
     function batchDelete() {
-      const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-      if (checkedBoxes.length === 0) {
-        showToast('请至少选择一条记录', 'warning');
-        return;
-      }
-      
-      if (confirm(`确定要删除选中的 ${checkedBoxes.length} 条记录吗？`)) {
-        const idsToDelete = Array.from(checkedBoxes).map(cb => cb.dataset.id);
-        businessData = businessData.filter(item => !idsToDelete.includes(item.id));
-        filteredData = filteredData.filter(item => !idsToDelete.includes(item.id));
-        showToast(`成功删除 ${idsToDelete.length} 条记录`, 'success');
+      if (selectedIds.size === 0) return;
+      if (confirm(`确定要删除选中的 ${selectedIds.size} 条记录吗？`)) {
+        businessData = businessData.filter(d => !selectedIds.has(d.id));
+        filteredData = [...businessData];
+        selectedIds.clear();
+        document.getElementById('selectAll').checked = false;
+        updateBatchButton();
         renderTable();
       }
     }
-    
-    // 保存表单
-    function saveForm() {
-      if (!businessForm.checkValidity()) {
-        businessForm.reportValidity();
-        return;
-      }
-      
-      const formData = {
-        businessNumber: document.getElementById('businessNumber').value,
+
+    // 打开新增弹窗
+    function openAddModal() {
+      document.getElementById('editForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('editModalTitle').textContent = '新增业务';
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    // 保存数据
+    function saveData(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('editId').value;
+      const data = {
+        id: id ? parseInt(id) : Date.now(),
+        businessNo: document.getElementById('businessNo').value,
         billMonth: document.getElementById('billMonth').value,
         customerCode: document.getElementById('customerCode').value,
-        customerNumber: document.getElementById('customerNumber').value,
-        estimatedSailingDate: document.getElementById('estimatedSailingDate').value.replace(/-/g, '/'),
-        salesperson: document.getElementById('salesperson').value,
+        customerNo: document.getElementById('customerNo').value,
+        sailingDate: document.getElementById('sailingDate').value,
+        salesman: document.getElementById('salesman').value,
         customerService: document.getElementById('customerService').value,
-        secondaryCustomerService: document.getElementById('secondaryCustomerService').value,
-        billOfLading: document.getElementById('billOfLading').value,
-        expenseSettlementUnit: document.getElementById('expenseSettlementUnit').value,
-        revenueSettlementUnit: document.getElementById('revenueSettlementUnit').value,
-        item: document.getElementById('item').value,
+        secondaryService: document.getElementById('secondaryService').value,
+        billNo: document.getElementById('billNo').value,
+        expenseUnit: document.getElementById('expenseUnit').value,
+        incomeUnit: document.getElementById('incomeUnit').value,
+        project: document.getElementById('project').value,
         currency: document.getElementById('currency').value,
         warehouseCost: parseFloat(document.getElementById('warehouseCost').value) || 0,
-        customerServiceRevenue: parseFloat(document.getElementById('customerServiceRevenue').value) || 0
+        serviceIncome: parseFloat(document.getElementById('serviceIncome').value) || 0
       };
-      
-      if (currentEditId) {
-        // 编辑模式
-        const index = businessData.findIndex(item => item.id === currentEditId);
+
+      if (id) {
+        const index = businessData.findIndex(d => d.id === parseInt(id));
         if (index !== -1) {
-          businessData[index] = { ...businessData[index], ...formData };
-          showToast('更新成功', 'success');
+          businessData[index] = data;
         }
       } else {
-        // 新增模式
-        const newId = String(Date.now());
-        const newItem = {
-          id: newId,
-          businessId: newId,
-          ...formData
-        };
-        businessData.push(newItem);
-        showToast('新增成功', 'success');
+        businessData.unshift(data);
       }
-      
+
       filteredData = [...businessData];
-      formModal.classList.add('hidden');
       renderTable();
+      document.getElementById('editModal').classList.add('hidden');
     }
-    
-    // 显示提示消息
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      const toastIcon = document.getElementById('toastIcon');
-      const toastMessage = document.getElementById('toastMessage');
-      
-      toastMessage.textContent = message;
-      
-      const icons = {
-        success: 'fas fa-check-circle text-green-500',
-        error: 'fas fa-exclamation-circle text-red-500',
-        warning: 'fas fa-exclamation-triangle text-yellow-500',
-        info: 'fas fa-info-circle text-blue-500'
-      };
-      
-      const colors = {
-        success: 'bg-green-50 border border-green-200',
-        error: 'bg-red-50 border border-red-200',
-        warning: 'bg-yellow-50 border border-yellow-200',
-        info: 'bg-blue-50 border border-blue-200'
-      };
-      
-      toastIcon.className = `mr-2 text-xl ${icons[type] || icons.info}`;
-      toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-0 transition-transform duration-300 z-50 flex items-center ${colors[type] || colors.info}`;
-      
-      setTimeout(() => {
-        toast.classList.add('translate-x-full');
-      }, 3000);
+
+    // 打开导入弹窗
+    function openImportModal() {
+      document.getElementById('importModal').classList.remove('hidden');
     }
-    
-    // 导出功能（示例）
-    function exportData() {
-      showToast('导出功能开发中...', 'info');
+
+    // 打开明细调整弹窗
+    function openDetailAdjustModal() {
+      const tbody = document.getElementById('detailAdjustTableBody');
+      tbody.innerHTML = businessData.map(item => `
+        <tr>
+          <td class="px-4 py-2"><input type="checkbox" class="adjust-checkbox" value="${item.id}"></td>
+          <td class="px-4 py-2 text-sm">${item.businessNo}</td>
+          <td class="px-4 py-2 text-sm">${item.customerCode}</td>
+          <td class="px-4 py-2"><input type="number" class="form-input w-24 adjust-cost" data-id="${item.id}" value="${item.warehouseCost}" step="0.001"></td>
+          <td class="px-4 py-2"><input type="number" class="form-input w-24 adjust-income" data-id="${item.id}" value="${item.serviceIncome}" step="0.001"></td>
+        </tr>
+      `).join('');
+
+      document.getElementById('detailAdjustModal').classList.remove('hidden');
     }
-    
-    // 导入功能（示例）
-    function importData() {
-      showToast('导入功能开发中...', 'info');
-    }
-    
-    // 明细调整功能（示例）
-    function detailAdjust() {
-      showToast('明细调整功能开发中...', 'info');
-    }
-    
-    // 事件监听
-    addBtn.addEventListener('click', openAddModal);
-    searchBtn.addEventListener('click', handleSearch);
-    resetBtn.addEventListener('click', handleReset);
-    saveBtn.addEventListener('click', saveForm);
-    cancelBtn.addEventListener('click', () => formModal.classList.add('hidden'));
-    closeModal.addEventListener('click', () => formModal.classList.add('hidden'));
-    
-    // 关闭查看详情弹窗
-    document.getElementById('closeViewModal').addEventListener('click', () => {
-      document.getElementById('viewModal').classList.add('hidden');
-    });
-    document.getElementById('closeViewBtn').addEventListener('click', () => {
-      document.getElementById('viewModal').classList.add('hidden');
-    });
-    
-    // 全选功能
-    selectAll.addEventListener('change', (e) => {
-      const checkboxes = document.querySelectorAll('.row-checkbox');
-      checkboxes.forEach(cb => cb.checked = e.target.checked);
-    });
-    
-    // 分页大小改变
-    pageSizeSelect.addEventListener('change', (e) => {
-      pageSize = parseInt(e.target.value);
-      currentPage = 1;
+
+    // 保存明细调整
+    function saveDetailAdjust() {
+      document.querySelectorAll('.adjust-checkbox:checked').forEach(checkbox => {
+        const id = parseInt(checkbox.value);
+        const row = checkbox.closest('tr');
+        const cost = parseFloat(row.querySelector('.adjust-cost').value) || 0;
+        const income = parseFloat(row.querySelector('.adjust-income').value) || 0;
+
+        const item = businessData.find(d => d.id === id);
+        if (item) {
+          item.warehouseCost = cost;
+          item.serviceIncome = income;
+        }
+      });
+
+      filteredData = [...businessData];
       renderTable();
-    });
-    
-    // 跳转到指定页
-    goToPageInput.addEventListener('change', (e) => {
-      const page = parseInt(e.target.value);
-      if (page >= 1 && page <= Math.ceil(filteredData.length / pageSize)) {
-        goToPage(page);
+      document.getElementById('detailAdjustModal').classList.add('hidden');
+    }
+
+    // Mermaid图表放大预览
+    function openMermaidModal(container) {
+      const mermaidDiv = container.querySelector('.mermaid');
+      if (!mermaidDiv) return;
+
+      const modal = document.getElementById('mermaidModal');
+      const modalContent = document.getElementById('mermaidModalContent');
+
+      modalContent.innerHTML = mermaidDiv.innerHTML;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      if (window.mermaid) {
+        mermaid.run({ querySelector: modalContent.querySelectorAll('.mermaid') });
       }
-    });
-    
-    // 批量删除按钮
-    document.getElementById('batchDeleteBtn').addEventListener('click', batchDelete);
-    
-    // 导出按钮
-    document.getElementById('exportBtn').addEventListener('click', exportData);
-    
-    // 导入按钮
-    document.getElementById('importBtn').addEventListener('click', importData);
-    
-    // 明细调整按钮
-    document.getElementById('detailAdjustBtn').addEventListener('click', detailAdjust);
-    
-    // 点击弹窗外部关闭
-    formModal.addEventListener('click', (e) => {
-      if (e.target === formModal) {
-        formModal.classList.add('hidden');
+    }
+
+    function closeMermaidModal(event) {
+      if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
+        return;
       }
-    });
-    
-    document.getElementById('viewModal').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('viewModal')) {
+
+      const modal = document.getElementById('mermaidModal');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // 加载PRD文档
+    let prdLoaded = false;
+    let testCasesLoaded = false;
+
+    function loadPRD() {
+      if (prdLoaded) return;
+
+      const prdContentDiv = document.getElementById('prd-content');
+
+      if (typeof marked === 'undefined') {
+        prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+        return;
+      }
+
+      // 配置marked以支持Mermaid
+      const renderer = new marked.Renderer();
+      renderer.code = function(code, language) {
+        if (language === 'mermaid') {
+          return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+            <div class="mermaid">${code}</div>
+            <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+          </div>`;
+        }
+        return `<pre><code class="language-${language}">${code}</code></pre>`;
+      };
+
+      marked.setOptions({
+        renderer: renderer,
+        breaks: true,
+        gfm: true
+      });
+
+      // 模拟PRD内容（实际应从prd.md加载）
+      const prdMarkdown = `# 销售收支统计 PRD
+
+## 1. 功能概述
+
+销售收支统计模块用于管理业务明细数据，支持数据的增删改查、导入导出以及明细调整功能。
+
+## 2. 用户流程
+
+\`\`\`mermaid
+flowchart TD
+    A[进入页面] --> B[加载业务列表]
+    B --> C{操作类型}
+    C -->|搜索| D[输入筛选条件]
+    C -->|新增| E[打开新增弹窗]
+    C -->|编辑| F[打开编辑弹窗]
+    C -->|删除| G[确认删除]
+    C -->|导入| H[上传文件]
+    C -->|导出| I[下载文件]
+    C -->|明细调整| J[调整成本收入]
+    D --> K[显示筛选结果]
+    E --> L[填写表单提交]
+    F --> L
+    G --> M[删除数据刷新列表]
+    H --> N[解析导入数据]
+    I --> O[生成导出文件]
+    J --> P[保存调整结果]
+    L --> M
+    N --> M
+    P --> M
+\`\`\`
+
+## 3. 功能模块
+
+### 3.1 数据列表
+
+- 展示业务明细数据
+- 支持分页显示
+- 支持排序和筛选
+
+### 3.2 数据操作
+
+- 新增业务记录
+- 编辑业务记录
+- 删除业务记录
+- 批量删除
+
+### 3.3 数据导入导出
+
+- 支持Excel/CSV导入
+- 支持数据导出
+
+### 3.4 明细调整
+
+- 批量调整对仓成本
+- 批量调整客服收入
+
+## 4. 数据字段
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| 业务编号 | 字符串 | 是 | 业务唯一标识 |
+| 账单月 | 日期 | 是 | 业务所属月份 |
+| 客户代码 | 字符串 | 是 | 客户标识 |
+| 对仓成本 | 数值 | 否 | 成本金额 |
+| 客服收入 | 数值 | 否 | 收入金额 |
+`;
+
+      prdContentDiv.innerHTML = marked.parse(prdMarkdown);
+      generateTOC();
+
+      // 渲染Mermaid图表
+      if (window.mermaid) {
+        setTimeout(function() {
+          mermaid.run({ querySelector: prdContentDiv.querySelectorAll('.mermaid') });
+        }, 100);
+      }
+
+      prdLoaded = true;
+    }
+
+    function loadTestCases() {
+      if (testCasesLoaded) return;
+
+      const testCasesContentDiv = document.getElementById('testcases-content');
+
+      if (typeof marked === 'undefined') {
+        testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+        return;
+      }
+
+      // 模拟测试用例内容
+      const testCasesMarkdown = `# 销售收支统计 测试用例
+
+## 1. 功能测试
+
+### TC-SS-001: 页面加载
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 打开销售收支统计页面 | 页面正常加载，显示业务列表 |
+| 2 | 检查默认数据 | 显示默认的5条业务数据 |
+| 3 | 检查分页 | 分页控件正常显示 |
+
+### TC-SS-002: 搜索功能
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 选择月度筛选条件 | 下拉框正常展开 |
+| 2 | 选择客户代码 | 下拉框正常展开 |
+| 3 | 点击搜索按钮 | 列表根据条件筛选 |
+| 4 | 点击重置按钮 | 筛选条件清空，显示全部数据 |
+
+### TC-SS-003: 新增业务
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 点击新增按钮 | 打开新增弹窗 |
+| 2 | 填写必填字段 | 表单验证通过 |
+| 3 | 点击保存 | 数据保存成功，列表刷新 |
+
+## 2. 兼容性测试
+
+- 浏览器兼容性：Chrome、Firefox、Safari、Edge
+- 分辨率兼容性：1920x1080、1366x768、移动端适配
+`;
+
+      testCasesContentDiv.innerHTML = marked.parse(testCasesMarkdown);
+      generateTestCasesTOC();
+
+      testCasesLoaded = true;
+    }
+
+    // 生成目录导航
+    function generateTOC() {
+      const tocNav = document.getElementById('toc-nav');
+      const headings = document.querySelectorAll('#prd-content h1, #prd-content h2, #prd-content h3');
+
+      let tocHTML = '';
+      headings.forEach(function(heading, index) {
+        const id = 'heading-' + index;
+        heading.id = id;
+
+        const level = parseInt(heading.tagName.substring(1));
+        const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+
+        tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+      });
+
+      tocNav.innerHTML = tocHTML;
+    }
+
+    function generateTestCasesTOC() {
+      const tocNav = document.getElementById('testcases-toc-nav');
+      const headings = document.querySelectorAll('#testcases-content h1, #testcases-content h2, #testcases-content h3');
+
+      let tocHTML = '';
+      headings.forEach(function(heading, index) {
+        const id = 'testcases-heading-' + index;
+        heading.id = id;
+
+        const level = parseInt(heading.tagName.substring(1));
+        const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+
+        tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+      });
+
+      tocNav.innerHTML = tocHTML;
+    }
+
+    // 事件绑定
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化表格
+      renderTable();
+
+      // 搜索按钮
+      document.getElementById('searchBtn').addEventListener('click', search);
+
+      // 重置按钮
+      document.getElementById('resetBtn').addEventListener('click', reset);
+
+      // 新增按钮
+      document.getElementById('addBtn').addEventListener('click', openAddModal);
+
+      // 导入按钮
+      document.getElementById('importBtn').addEventListener('click', openImportModal);
+
+      // 导出按钮
+      document.getElementById('exportBtn').addEventListener('click', function() {
+        alert('导出功能开发中...');
+      });
+
+      // 批量删除按钮
+      document.getElementById('batchDeleteBtn').addEventListener('click', batchDelete);
+
+      // 明细调整按钮
+      document.getElementById('detailAdjustBtn').addEventListener('click', openDetailAdjustModal);
+
+      // 全选复选框
+      document.getElementById('selectAll').addEventListener('change', toggleSelectAll);
+
+      // 每页条数
+      document.getElementById('pageSize').addEventListener('change', function() {
+        pageSize = parseInt(this.value);
+        currentPage = 1;
+        renderTable();
+      });
+
+      // 跳转页码
+      document.getElementById('goToPage').addEventListener('change', function() {
+        goToPage(parseInt(this.value));
+      });
+
+      // 关闭查看弹窗
+      document.getElementById('closeViewModal').addEventListener('click', function() {
         document.getElementById('viewModal').classList.add('hidden');
-      }
+      });
+
+      // 关闭编辑弹窗
+      document.getElementById('closeEditModal').addEventListener('click', function() {
+        document.getElementById('editModal').classList.add('hidden');
+      });
+
+      // 取消编辑
+      document.getElementById('cancelEdit').addEventListener('click', function() {
+        document.getElementById('editModal').classList.add('hidden');
+      });
+
+      // 保存表单
+      document.getElementById('editForm').addEventListener('submit', saveData);
+
+      // 关闭导入弹窗
+      document.getElementById('closeImportModal').addEventListener('click', function() {
+        document.getElementById('importModal').classList.add('hidden');
+      });
+
+      // 取消导入
+      document.getElementById('cancelImport').addEventListener('click', function() {
+        document.getElementById('importModal').classList.add('hidden');
+      });
+
+      // 确认导入
+      document.getElementById('confirmImport').addEventListener('click', function() {
+        alert('导入功能开发中...');
+        document.getElementById('importModal').classList.add('hidden');
+      });
+
+      // 关闭明细调整弹窗
+      document.getElementById('closeDetailAdjustModal').addEventListener('click', function() {
+        document.getElementById('detailAdjustModal').classList.add('hidden');
+      });
+
+      // 取消明细调整
+      document.getElementById('cancelDetailAdjust').addEventListener('click', function() {
+        document.getElementById('detailAdjustModal').classList.add('hidden');
+      });
+
+      // 保存明细调整
+      document.getElementById('saveDetailAdjust').addEventListener('click', saveDetailAdjust);
+
+      // ESC键关闭模态框
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeMermaidModal();
+        }
+      });
     });
-    
-    // 初始化
-    initSampleData();
   </script>
 </body>
 </html>

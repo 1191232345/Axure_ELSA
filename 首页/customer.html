@@ -797,7 +797,7 @@
 
         <!-- 库龄分布 -->
         <div class="bg-white rounded-xl p-6 card-shadow">
-          <div class="flex items-center justify-between mb-4">
+          <div class="flex flex-wrap items-center justify-between mb-4 gap-4">
             <div class="flex items-center gap-2">
               <h3 class="font-semibold text-lg">库龄分布</h3>
               <button class="relative group">
@@ -814,9 +814,23 @@
                 </div>
               </button>
             </div>
-            <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
-              <i class="fa fa-download mr-1"></i>导出
-            </button>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-medium text-gray-700">时间范围:</label>
+                <input id="ageStartDate" type="date" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-01">
+                <span class="text-gray-500">-</span>
+                <input id="ageEndDate" type="date" class="border border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" value="2024-11-30">
+              </div>
+              <button id="ageDateApply" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 text-sm">
+                应用
+              </button>
+              <button id="ageRangeConfigBtn" class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+                <i class="fa fa-cog mr-1"></i>配置库龄段
+              </button>
+              <button class="text-sm px-3 py-1 rounded text-gray-500 hover:bg-gray-100">
+                <i class="fa fa-download mr-1"></i>导出
+              </button>
+            </div>
           </div>
           <div class="h-64">
             <canvas id="inventoryAgeChart"></canvas>
@@ -5410,7 +5424,292 @@
           }
         });
       }
+
+      // 库龄分布时间范围选择
+      const ageDateApply = document.getElementById('ageDateApply');
+      const ageStartDate = document.getElementById('ageStartDate');
+      const ageEndDate = document.getElementById('ageEndDate');
+
+      if (ageDateApply) {
+        ageDateApply.addEventListener('click', function() {
+          const startDate = ageStartDate.value;
+          const endDate = ageEndDate.value;
+
+          // 模拟根据时间范围更新库龄分布数据
+          // 实际项目中，这里应该通过API请求获取对应时间范围的数据
+          console.log('库龄分布时间范围:', startDate, '至', endDate);
+
+          // 模拟数据更新
+          // 这里可以根据实际需求调整数据
+          inventoryAgeData.quantities = [
+            Math.floor(Math.random() * 20000) + 30000,
+            Math.floor(Math.random() * 15000) + 25000,
+            Math.floor(Math.random() * 10000) + 15000,
+            Math.floor(Math.random() * 10000) + 20000,
+            Math.floor(Math.random() * 5000) + 10000
+          ];
+
+          // 重新初始化库龄分布图表
+          initInventoryAgeChart();
+
+          // 更新库龄预警统计信息
+          const total = inventoryAgeData.quantities.reduce((sum, qty) => sum + qty, 0);
+          const ageOver90Qty = inventoryAgeData.quantities[2] + inventoryAgeData.quantities[3] + inventoryAgeData.quantities[4];
+          const ageOver180Qty = inventoryAgeData.quantities[4];
+          const healthyStockPercent = ((inventoryAgeData.quantities[0] + inventoryAgeData.quantities[1]) / total * 100).toFixed(1);
+
+          document.getElementById('ageOver90Qty').textContent = ageOver90Qty.toLocaleString();
+          document.getElementById('ageOver90Percent').textContent = ((ageOver90Qty / total) * 100).toFixed(1) + '%';
+          document.getElementById('ageOver180Qty').textContent = ageOver180Qty.toLocaleString();
+          document.getElementById('ageOver180Percent').textContent = ((ageOver180Qty / total) * 100).toFixed(1) + '%';
+          document.getElementById('healthyStockPercent').textContent = healthyStockPercent + '%';
+
+          // 显示更新成功提示
+          alert('库龄分布数据已根据所选时间范围更新！');
+        });
+      }
+
+      // 库龄段配置功能
+      const ageRangeConfigBtn = document.getElementById('ageRangeConfigBtn');
+      const ageRangeModal = document.getElementById('ageRangeModal');
+      const closeAgeRangeModal = document.getElementById('closeAgeRangeModal');
+      const ageRangeList = document.getElementById('ageRangeList');
+      const addAgeRangeBtn = document.getElementById('addAgeRangeBtn');
+      const resetAgeRangeBtn = document.getElementById('resetAgeRangeBtn');
+      const saveAgeRangeBtn = document.getElementById('saveAgeRangeBtn');
+
+      // 打开模态框
+      if (ageRangeConfigBtn) {
+        ageRangeConfigBtn.addEventListener('click', function() {
+          ageRangeModal.classList.remove('hidden');
+          renderAgeRangeList();
+        });
+      }
+
+      // 关闭模态框
+      if (closeAgeRangeModal) {
+        closeAgeRangeModal.addEventListener('click', function() {
+          ageRangeModal.classList.add('hidden');
+        });
+      }
+
+      // 点击模态框外部关闭
+      if (ageRangeModal) {
+        ageRangeModal.addEventListener('click', function(e) {
+          if (e.target === ageRangeModal) {
+            ageRangeModal.classList.add('hidden');
+          }
+        });
+      }
+
+      // 渲染库龄段列表
+      function renderAgeRangeList() {
+        ageRangeList.innerHTML = '';
+        
+        inventoryAgeData.ageRanges.forEach((range, index) => {
+          const rangeItem = document.createElement('div');
+          rangeItem.className = 'flex items-center gap-2 p-3 border border-gray-200 rounded-lg';
+          
+          // 解析库龄段范围
+          let startDay = 0;
+          let endDay = 0;
+          if (range.includes('以上')) {
+            startDay = parseInt(range.replace('天以上', ''));
+          } else if (range.includes('-')) {
+            const parts = range.split('-');
+            startDay = parseInt(parts[0]);
+            endDay = parseInt(parts[1].replace('天', ''));
+          }
+          
+          rangeItem.innerHTML = `
+            <div class="flex-1 flex items-center gap-2">
+              <input type="number" class="age-start w-20 border border-gray-200 rounded-lg px-2 py-1" value="${startDay}" placeholder="开始">
+              <span>-</span>
+              <input type="number" class="age-end w-20 border border-gray-200 rounded-lg px-2 py-1" value="${endDay || ''}" placeholder="结束">
+              <span class="text-gray-500">天</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="color" class="age-color w-8 h-8 rounded-full" value="${inventoryAgeData.colors[index]}">
+              <button class="delete-age-range text-gray-400 hover:text-red-500" data-index="${index}">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          `;
+          
+          ageRangeList.appendChild(rangeItem);
+        });
+        
+        // 添加删除事件
+        document.querySelectorAll('.delete-age-range').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            if (inventoryAgeData.ageRanges.length > 1) {
+              inventoryAgeData.ageRanges.splice(index, 1);
+              inventoryAgeData.colors.splice(index, 1);
+              inventoryAgeData.quantities.splice(index, 1);
+              renderAgeRangeList();
+            } else {
+              alert('至少需要保留一个库龄段');
+            }
+          });
+        });
+      }
+
+      // 添加库龄段
+      if (addAgeRangeBtn) {
+        addAgeRangeBtn.addEventListener('click', function() {
+          const lastRange = inventoryAgeData.ageRanges[inventoryAgeData.ageRanges.length - 1];
+          let nextStart = 0;
+          
+          if (lastRange.includes('以上')) {
+            nextStart = parseInt(lastRange.replace('天以上', '')) + 90;
+          } else if (lastRange.includes('-')) {
+            const parts = lastRange.split('-');
+            nextStart = parseInt(parts[1].replace('天', '')) + 1;
+          }
+          
+          const nextEnd = nextStart + 30;
+          inventoryAgeData.ageRanges.push(`${nextStart}-${nextEnd}天`);
+          inventoryAgeData.colors.push('#6B7280'); // 默认灰色
+          inventoryAgeData.quantities.push(0);
+          renderAgeRangeList();
+        });
+      }
+
+      // 重置默认库龄段
+      if (resetAgeRangeBtn) {
+        resetAgeRangeBtn.addEventListener('click', function() {
+          if (confirm('确定要重置为默认库龄段吗？')) {
+            inventoryAgeData.ageRanges = ['0-30天', '31-60天', '61-90天', '91-180天', '180天以上'];
+            inventoryAgeData.colors = ['#52C41A', '#36CFC9', '#FAAD14', '#FF9800', '#FF4D4F'];
+            inventoryAgeData.quantities = [45680, 38920, 24560, 32150, 18532];
+            renderAgeRangeList();
+          }
+        });
+      }
+
+      // 保存库龄段配置
+      if (saveAgeRangeBtn) {
+        saveAgeRangeBtn.addEventListener('click', function() {
+          const ageStartInputs = document.querySelectorAll('.age-start');
+          const ageEndInputs = document.querySelectorAll('.age-end');
+          const ageColorInputs = document.querySelectorAll('.age-color');
+          
+          const newRanges = [];
+          const newColors = [];
+          
+          for (let i = 0; i < ageStartInputs.length; i++) {
+            const start = parseInt(ageStartInputs[i].value);
+            const end = ageEndInputs[i].value ? parseInt(ageEndInputs[i].value) : null;
+            const color = ageColorInputs[i].value;
+            
+            if (isNaN(start)) {
+              alert('请输入有效的开始天数');
+              return;
+            }
+            
+            if (end && isNaN(end)) {
+              alert('请输入有效的结束天数');
+              return;
+            }
+            
+            if (end && start >= end) {
+              alert('开始天数必须小于结束天数');
+              return;
+            }
+            
+            if (i > 0) {
+              const prevEnd = newRanges[i-1].includes('以上') 
+                ? parseInt(newRanges[i-1].replace('天以上', ''))
+                : parseInt(newRanges[i-1].split('-')[1].replace('天', ''));
+              
+              if (start <= prevEnd) {
+                alert('库龄段不能重叠，请检查时间范围');
+                return;
+              }
+            }
+            
+            if (end) {
+              newRanges.push(`${start}-${end}天`);
+            } else {
+              newRanges.push(`${start}天以上`);
+            }
+            newColors.push(color);
+          }
+          
+          // 更新库龄段数据
+          inventoryAgeData.ageRanges = newRanges;
+          inventoryAgeData.colors = newColors;
+          
+          // 重新生成数量数据（模拟）
+          inventoryAgeData.quantities = newRanges.map(() => 
+            Math.floor(Math.random() * 15000) + 10000
+          );
+          
+          // 重新初始化图表
+          initInventoryAgeChart();
+          
+          // 更新库龄预警统计信息
+          const total = inventoryAgeData.quantities.reduce((sum, qty) => sum + qty, 0);
+          const ageOver90Index = newRanges.findIndex(range => 
+            (range.includes('以上') && parseInt(range.replace('天以上', '')) > 90) ||
+            (range.includes('-') && parseInt(range.split('-')[0]) > 90)
+          );
+          const ageOver180Index = newRanges.findIndex(range => 
+            (range.includes('以上') && parseInt(range.replace('天以上', '')) > 180) ||
+            (range.includes('-') && parseInt(range.split('-')[0]) > 180)
+          );
+          
+          const ageOver90Qty = ageOver90Index >= 0 
+            ? inventoryAgeData.quantities.slice(ageOver90Index).reduce((sum, qty) => sum + qty, 0)
+            : 0;
+          const ageOver180Qty = ageOver180Index >= 0 
+            ? inventoryAgeData.quantities.slice(ageOver180Index).reduce((sum, qty) => sum + qty, 0)
+            : 0;
+          const healthyStockPercent = ((total - ageOver90Qty) / total * 100).toFixed(1);
+          
+          document.getElementById('ageOver90Qty').textContent = ageOver90Qty.toLocaleString();
+          document.getElementById('ageOver90Percent').textContent = ((ageOver90Qty / total) * 100).toFixed(1) + '%';
+          document.getElementById('ageOver180Qty').textContent = ageOver180Qty.toLocaleString();
+          document.getElementById('ageOver180Percent').textContent = ((ageOver180Qty / total) * 100).toFixed(1) + '%';
+          document.getElementById('healthyStockPercent').textContent = healthyStockPercent + '%';
+          
+          // 关闭模态框
+          ageRangeModal.classList.add('hidden');
+          
+          // 显示成功提示
+          alert('库龄段配置已保存！');
+        });
+      }
     });
   </script>
+
+  <!-- 库龄段配置模态框 -->
+  <div id="ageRangeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-lg">配置库龄段</h3>
+        <button id="closeAgeRangeModal" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div id="ageRangeList" class="space-y-3 mb-6">
+        <!-- 库龄段列表将通过JavaScript动态生成 -->
+      </div>
+      <div class="flex justify-between">
+        <button id="addAgeRangeBtn" class="flex items-center gap-1 text-sm px-3 py-2 rounded border border-gray-200 hover:bg-gray-50">
+          <i class="fa fa-plus"></i>添加库龄段
+        </button>
+        <div class="flex gap-2">
+          <button id="resetAgeRangeBtn" class="text-sm px-4 py-2 rounded border border-gray-200 hover:bg-gray-50">
+            重置默认
+          </button>
+          <button id="saveAgeRangeBtn" class="bg-primary text-white text-sm px-4 py-2 rounded-lg hover:bg-primary/90">
+            保存
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

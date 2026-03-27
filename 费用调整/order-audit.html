@@ -7,21 +7,35 @@
   <!-- 引入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- 引入 Font Awesome 图标 -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入 Mermaid 图表库 -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- 引入 Marked Markdown 解析库 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
   
-  <!-- 自定义配置 -->
+  <!-- Tailwind 配置 -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#1E88E5', // 主色调（蓝色）
-            secondary: '#FF9800', // 辅助色（橙色）
-            neutral: '#F5F7FA', // 中性色（浅灰）
-            dark: '#333647', // 深色文本
+            primary: '#2a3b7d',
+            secondary: '#36CFC9',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            gray: {
+              100: '#F2F3F5',
+              200: '#E5E6EB',
+              300: '#C9CDD4',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
+            inter: ['Inter', 'system-ui', 'sans-serif'],
           },
         },
       }
@@ -34,40 +48,82 @@
         content-visibility: auto;
       }
       .table-shadow {
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
       .btn-hover {
-        @apply transition-all duration-300 hover:shadow-md hover:-translate-y-0.5;
+        @apply transition-all duration-200 hover:shadow-md transform hover:-translate-y-0.5;
       }
-      .input-focus {
-        @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
+      .status-dot {
+        @apply w-2 h-2 rounded-full inline-block mr-2;
+      }
+      .erp-btn {
+        @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+      }
+      .erp-btn-primary {
+        @apply bg-primary text-white hover:bg-primary/90 btn-hover;
+      }
+      .erp-btn-secondary {
+        @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 btn-hover;
+      }
+      .erp-btn-danger {
+        @apply bg-danger text-white hover:bg-danger/90 btn-hover;
+      }
+      .erp-btn-warning {
+        @apply bg-warning text-white hover:bg-warning/90 btn-hover;
+      }
+      .form-input {
+        @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary;
+      }
+      .search-card {
+        @apply bg-white rounded-lg p-4 shadow-sm mb-4;
+      }
+      .action-card {
+        @apply bg-white rounded-lg p-4 shadow-sm mb-4;
+      }
+      .table-card {
+        @apply bg-white rounded-lg shadow-sm overflow-hidden mb-4;
+      }
+      .card-title {
+        @apply text-lg font-medium text-gray-900 mb-4;
+      }
+      .mermaid-container {
+        @apply my-4 cursor-pointer;
+      }
+      .mermaid-hint {
+        @apply text-xs text-gray-500 block text-center mt-1;
       }
     }
   </style>
 </head>
-<body class="bg-gray-50 font-sans text-dark">
-  <div class="container mx-auto px-4 py-8 max-w-7xl">
+<body class="bg-gray-100 font-inter text-gray-700 min-h-screen">
+  <!-- 页面容器 -->
+  <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <!-- 页面标题 -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">费用调整</h1>
+      <p class="text-gray-500 mt-1">出库单费用明细调整</p>
+    </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <!-- 搜索区域 -->
-      <div class="flex flex-col md:flex-row gap-4 mb-6">
+    <!-- 搜索区域 -->
+    <div class="search-card">
+      <div class="flex flex-col md:flex-row gap-4 mb-4">
         <div class="flex-1">
           <label for="feeNumber" class="block text-sm font-medium text-gray-700 mb-1">出库单号</label>
           <div class="flex items-center gap-2">
             <input 
               type="text" 
               id="feeNumber" 
-              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg input-focus"
+              class="flex-1 form-input"
               placeholder="输入出库单号查询（例如：HYNB-240126-0059）"
               value="HYNB-240126-0059"
             >
-            <button id="searchBtn" class="bg-primary text-white px-6 py-2 rounded-lg btn-hover">
-              <i class="fas fa-search mr-2"></i>搜索
+            <button id="searchBtn" class="erp-btn erp-btn-primary">
+              <i class="fa fa-search mr-2"></i>搜索
             </button>
             <div class="relative">
-              <button id="adjustFeeBtn" class="bg-secondary text-white px-6 py-2 rounded-lg btn-hover flex items-center">
-                <i class="fas fa-cog mr-2"></i>批量操作
-                <i class="fas fa-chevron-down ml-2"></i>
+              <button id="adjustFeeBtn" class="erp-btn erp-btn-warning flex items-center">
+                <i class="fa fa-cog mr-2"></i>批量操作
+                <i class="fa fa-chevron-down ml-2"></i>
               </button>
               <div id="adjustDropdown" class="absolute hidden top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
                 <div class="py-1">
@@ -82,16 +138,16 @@
       </div>
       
       <!-- 功能按钮区域 -->
-      <div class="flex flex-wrap gap-4 mb-6">
-        <button id="addFeeBtn" class="bg-primary text-white px-6 py-2 rounded-lg btn-hover flex items-center">
-          <i class="fas fa-plus mr-2"></i>新增费用项
+      <div class="flex flex-wrap gap-3 mb-4">
+        <button id="addFeeBtn" class="erp-btn erp-btn-primary flex items-center">
+          <i class="fa fa-plus mr-2"></i>新增费用项
         </button>
       </div>
       
       <!-- 长宽高和体积重信息区域 -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <div class="flex items-center mb-3">
-          <i class="fas fa-cube text-blue-500 mr-2"></i>
+          <i class="fa fa-cube text-blue-500 mr-2"></i>
           <h4 class="text-sm font-semibold text-blue-800">包裹尺寸信息</h4>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -114,53 +170,83 @@
       </div>
       
       <!-- 费用明细表格 -->
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 table-shadow rounded-lg overflow-hidden">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">费用名称</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计费单位</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">原金额</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">新金额</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">币别</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-            </tr>
-          </thead>
-          <tbody id="feeTableBody" class="bg-white divide-y divide-gray-200">
-            <!-- 表格数据将通过JS动态生成 -->
-          </tbody>
-        </table>
+      <div class="table-card">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-left">
+                <th class="px-4 py-3 font-medium text-gray-500">费用名称</th>
+                <th class="px-4 py-3 font-medium text-gray-500">计费单位</th>
+                <th class="px-4 py-3 font-medium text-gray-500">原金额</th>
+                <th class="px-4 py-3 font-medium text-gray-500">新金额</th>
+                <th class="px-4 py-3 font-medium text-gray-500">币别</th>
+                <th class="px-4 py-3 font-medium text-gray-500">备注</th>
+                <th class="px-4 py-3 font-medium text-gray-500">操作</th>
+              </tr>
+            </thead>
+            <tbody id="feeTableBody" class="bg-white divide-y divide-gray-200">
+              <!-- 表格数据将通过JS动态生成 -->
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- 无数据提示 -->
+        <div id="emptyState" class="hidden py-16 text-center">
+          <i class="fa fa-inbox text-4xl mb-2 block text-gray-400"></i>
+          <p class="text-gray-500">暂无费用数据，请点击"新增费用项"添加</p>
+        </div>
       </div>
       
-      <!-- 无数据提示 -->
-      <div id="emptyState" class="hidden py-16 text-center">
-        <i class="far fa-file-alt text-gray-300 text-5xl mb-4"></i>
-        <p class="text-gray-500">暂无费用数据，请点击"新增费用项"添加</p>
+      <!-- 逻辑说明区域 -->
+      <div class="bg-white rounded shadow-sm mt-4 overflow-hidden">
+        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('order-audit')">
+          <div class="flex items-center">
+            <i class="fa fa-book text-primary mr-2"></i>
+            <span class="font-semibold text-primary">逻辑说明</span>
+            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+          </div>
+          <i class="fa fa-chevron-down text-primary transition-transform" id="order-audit-logic-icon"></i>
+        </div>
+        <div id="order-audit-logic-content" class="hidden">
+          <div class="px-4 py-4">
+            <div class="flex border-b border-gray-200">
+              <button class="prd-tab-btn px-4 py-2 border-b-2 border-primary text-primary font-medium" onclick="switchTab('prd', 'order-audit')">PRD文档</button>
+              <button class="prd-tab-btn px-4 py-2 text-gray-500 hover:text-gray-700" onclick="switchTab('testcases', 'order-audit')">测试用例</button>
+            </div>
+            <div class="pt-4">
+              <div id="order-audit-prd-content" class="prd-content">
+                <!-- PRD内容将通过JavaScript加载 -->
+              </div>
+              <div id="order-audit-testcases-content" class="prd-content hidden">
+                <!-- 测试用例内容将通过JavaScript加载 -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
   
   <!-- 上传文件模态框 -->
-  <div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto relative animate-fade-in">
+  <div id="uploadModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto relative">
       <!-- 模态框头部 -->
       <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 class="text-xl font-semibold text-gray-800">
-          <i class="fas fa-upload text-primary mr-2"></i>
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fa fa-upload text-primary mr-2"></i>
           批量操作
         </h3>
         <button id="closeUploadModal" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
-          <i class="fas fa-times"></i>
+          <i class="fa fa-times"></i>
         </button>
       </div>
 
     <!-- 上传说明 -->
     <div class="mt-4 p-2 rounded-lg">
       <div class="flex items-start">
-        <i class="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-2"></i>
+        <i class="fa fa-exclamation-triangle text-danger mt-0.5 mr-2"></i>
         <div>
-          <h4 class="text-sm font-medium text-red-500 mb-1">注意：修改后订单不支持重新计费，请谨慎操作！</h4>
+          <h4 class="text-sm font-medium text-danger mb-1">注意：修改后订单不支持重新计费，请谨慎操作！</h4>
         </div>
       </div>
     </div>
@@ -170,13 +256,13 @@
         <!-- 上传区域 -->
         <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors duration-200">
           <div class="mb-3">
-            <i class="fas fa-cloud-upload text-3xl text-gray-400"></i>
+            <i class="fa fa-cloud-upload text-3xl text-gray-400"></i>
           </div>
           <p class="text-gray-600 mb-2 text-sm">拖拽文件到此处或点击选择文件</p>
           <p class="text-xs text-gray-500 mb-3">支持 Excel (.xlsx, .xls) 和 CSV (.csv) 格式，文件大小不超过 10MB</p>
           <input type="file" id="fileInput" class="hidden" accept=".xlsx,.xls,.csv">
-          <button id="selectFileBtn" class="px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors duration-200 text-sm">
-            <i class="fas fa-folder-open mr-1.5"></i>选择文件
+          <button id="selectFileBtn" class="erp-btn erp-btn-primary text-sm">
+            <i class="fa fa-folder-open mr-1.5"></i>选择文件
           </button>
         </div>
 
@@ -186,14 +272,14 @@
           <div class="space-y-2">
             <div class="flex items-center justify-between p-2 bg-gray-50 rounded-md">
               <div class="flex items-center">
-                <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                <i class="fa fa-file-excel-o text-green-600 mr-2"></i>
                 <div>
                   <p class="text-sm font-medium text-gray-900" id="fileName">批量调整表.xlsx</p>
                   <p class="text-xs text-gray-500" id="fileSize">2.3 MB</p>
                 </div>
               </div>
-              <button id="removeFileBtn" class="text-red-500 hover:text-red-700 transition-colors duration-200">
-                <i class="fas fa-times-circle"></i>
+              <button id="removeFileBtn" class="text-danger hover:text-danger/80 transition-colors duration-200">
+                <i class="fa fa-times-circle"></i>
               </button>
             </div>
           </div>
@@ -203,17 +289,17 @@
 
       <!-- 模态框底部 -->
       <div class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-        <div class="text-xs text-blue-500">
+        <div class="text-xs text-primary">
           <span id="uploadStatus">下载模板</span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="cancelUploadBtn" class="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-primary focus:ring-offset-1 text-sm">
+          <button id="cancelUploadBtn" class="erp-btn erp-btn-secondary text-sm">
             取消
           </button>
           <button id="startUploadBtn" disabled
-            class="px-3 py-1.5 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed text-sm"
+            class="erp-btn bg-gray-300 text-gray-500 cursor-not-allowed text-sm"
             title="请先选择文件">
-            <i class="fas fa-upload mr-1"></i>
+            <i class="fa fa-upload mr-1"></i>
             开始上传
           </button>
         </div>
@@ -225,6 +311,21 @@
   <div id="toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 flex items-center">
     <i id="toastIcon" class="mr-2 text-xl"></i>
     <span id="toastMessage"></span>
+  </div>
+
+  <!-- Mermaid图表放大预览弹窗 -->
+  <div id="mermaidModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-medium">图表预览</h3>
+        <button class="text-gray-400 hover:text-gray-600 mermaid-modal-close">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-auto p-6" id="mermaidModalContent">
+        <!-- 图表内容将通过JavaScript动态填充 -->
+      </div>
+    </div>
   </div>
 
   <script>
@@ -538,65 +639,75 @@
       // 使用事件委托优化事件处理
       const container = document.querySelector('.container');
       
-      // 委托处理表格按钮点击事件
+      // 委托处理按钮点击事件
       container.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-edit')) {
-          const id = e.target.getAttribute('data-id');
+        // 新增费用项按钮
+        if (e.target.id === 'addFeeBtn') {
+          showNewRow();
+        } 
+        // 调整费用下拉菜单
+        else if (e.target.id === 'adjustFeeBtn') {
+          e.stopPropagation();
+          adjustDropdown.classList.toggle('hidden');
+        }
+        // 调整下拉菜单项点击事件 - 触发上传弹窗
+        else if (e.target.closest('#adjustDropdown a')) {
+          e.preventDefault();
+          e.stopPropagation();
+          adjustDropdown.classList.add('hidden');
+          openUploadModal();
+        }
+        // 上传弹窗相关事件
+        else if (e.target.id === 'closeUploadModal' || e.target.id === 'cancelUploadBtn') {
+          closeUploadModalHandler();
+        } else if (e.target.id === 'selectFileBtn') {
+          fileInput.click();
+        } else if (e.target.id === 'removeFileBtn') {
+          removeSelectedFile();
+        } else if (e.target.id === 'startUploadBtn') {
+          startUpload();
+        }
+        // 搜索功能
+        else if (e.target.id === 'searchBtn') {
+          performSearch();
+        }
+        // 表格按钮事件
+        else if (e.target.closest('[onclick^="editFee"]')) {
+          const btn = e.target.closest('[onclick^="editFee"]');
+          const id = btn.getAttribute('onclick').match(/editFee\('([^']+)'\)/)[1];
           editFee(id);
-        } else if (e.target.classList.contains('btn-delete')) {
-          const id = e.target.getAttribute('data-id');
+        } else if (e.target.closest('[onclick^="deleteFee"]')) {
+          const btn = e.target.closest('[onclick^="deleteFee"]');
+          const id = btn.getAttribute('onclick').match(/deleteFee\('([^']+)'\)/)[1];
           deleteFee(id);
-        } else if (e.target.classList.contains('btn-save')) {
-          saveFee();
-        } else if (e.target.classList.contains('btn-cancel')) {
-          cancelEdit();
-        } else if (e.target.classList.contains('btn-add')) {
-          addNewRow();
+        } else if (e.target.closest('[onclick="saveNewRow()"]')) {
+          saveNewRow();
+        } else if (e.target.closest('[onclick="cancelNewRow()"]')) {
+          cancelNewRow();
+        } else if (e.target.closest('[onclick^="saveEditRow"]')) {
+          const btn = e.target.closest('[onclick^="saveEditRow"]');
+          const id = btn.getAttribute('onclick').match(/saveEditRow\('([^']+)'\)/)[1];
+          saveEditRow(id);
+        } else if (e.target.closest('[onclick^="cancelEditRow"]')) {
+          const btn = e.target.closest('[onclick^="cancelEditRow"]');
+          const id = btn.getAttribute('onclick').match(/cancelEditRow\('([^']+)'\)/)[1];
+          cancelEditRow(id);
         }
       });
       
-      // 委托处理输入变化事件（删除了单价和数量的自动计算逻辑）
+      // 委托处理输入变化事件
       container.addEventListener('input', (e) => {
         if (e.target.classList.contains('fee-length') ||
-                   e.target.classList.contains('fee-width') ||
-                   e.target.classList.contains('fee-height')) {
+            e.target.classList.contains('fee-width') ||
+            e.target.classList.contains('fee-height')) {
           calculateVolumeWeight(e.target);
         }
-      });
-      
-      // 新增费用项按钮
-      const addFeeBtn = document.getElementById('addFeeBtn');
-      if (addFeeBtn) {
-        addFeeBtn.addEventListener('click', showNewRow);
-      }
-      
-      // 调整费用下拉菜单
-      adjustFeeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        adjustDropdown.classList.toggle('hidden');
       });
       
       // 点击其他区域关闭下拉菜单
       document.addEventListener('click', () => {
         adjustDropdown.classList.add('hidden');
       });
-      
-      // 调整下拉菜单项点击事件 - 触发上传弹窗
-      document.querySelectorAll('#adjustDropdown a').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          adjustDropdown.classList.add('hidden');
-          openUploadModal();
-        });
-      });
-      
-      // 上传弹窗相关事件
-      closeUploadModal.addEventListener('click', closeUploadModalHandler);
-      cancelUploadBtn.addEventListener('click', closeUploadModalHandler);
-      selectFileBtn.addEventListener('click', () => fileInput.click());
-      removeFileBtn.addEventListener('click', removeSelectedFile);
-      startUploadBtn.addEventListener('click', startUpload);
       
       // 文件选择事件
       fileInput.addEventListener('change', handleFileSelect);
@@ -605,9 +716,6 @@
       uploadModal.addEventListener('click', (e) => {
         if (e.target === uploadModal) closeUploadModalHandler();
       });
-      
-      // 搜索功能
-      searchBtn.addEventListener('click', performSearch);
     }
     
     // 显示新增行
@@ -937,6 +1045,225 @@
       
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
+
+    // 逻辑说明区域
+    function togglePrdLogic(id) {
+      const content = document.getElementById(`${id}-logic-content`);
+      const icon = document.getElementById(`${id}-logic-icon`);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+        if (id === 'order-audit') {
+          loadPRD('order-audit');
+        }
+      } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    function switchTab(tab, id) {
+      document.querySelectorAll(`#${id}-prd-content, #${id}-testcases-content`).forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.getElementById(`${id}-${tab}-content`).classList.remove('hidden');
+      
+      document.querySelectorAll('.prd-tab-btn').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary');
+        btn.classList.add('text-gray-500');
+      });
+      event.target.classList.remove('text-gray-500');
+      event.target.classList.add('border-primary', 'text-primary');
+      
+      if (tab === 'testcases') {
+        loadTestCases(id);
+      }
+    }
+
+    // 加载PRD文档
+    function loadPRD(id) {
+      const prdContentDiv = document.getElementById(`${id}-prd-content`);
+
+      if (typeof marked === 'undefined') {
+        prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+        return;
+      }
+
+      // 配置marked以支持Mermaid
+      const renderer = new marked.Renderer();
+      renderer.code = function(code, language) {
+        if (language === 'mermaid') {
+          return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+            <div class="mermaid">${code}</div>
+            <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+          </div>`;
+        }
+        return `<pre><code class="language-${language}">${code}</code></pre>`;
+      };
+
+      marked.setOptions({
+        renderer: renderer,
+        breaks: true,
+        gfm: true
+      });
+
+      // 模拟PRD内容
+      const prdMarkdown = `# 费用调整 PRD
+
+## 1. 功能概述
+
+费用调整模块用于管理出库单的费用明细，支持新增、编辑、删除费用项，以及批量上传费用数据。
+
+## 2. 用户流程
+
+\`\`\`mermaid
+flowchart TD
+    A[进入页面] --> B[输入出库单号]
+    B --> C[点击搜索]
+    C --> D[显示费用明细]
+    D --> E{操作类型}
+    E -->|新增费用项| F[填写费用信息]
+    E -->|编辑费用项| G[修改费用信息]
+    E -->|删除费用项| H[确认删除]
+    E -->|批量操作| I[上传文件]
+    F --> J[保存费用项]
+    G --> J
+    H --> K[删除成功]
+    I --> L[文件上传处理]
+    J --> D
+    K --> D
+    L --> D
+\`\`\`
+
+## 3. 功能模块
+
+### 3.1 费用明细管理
+
+- 展示费用项列表
+- 支持新增、编辑、删除费用项
+- 显示原金额和新金额对比
+
+### 3.2 批量操作
+
+- 支持覆盖、更新、累加三种操作方式
+- 上传Excel或CSV文件
+- 文件格式验证和大小限制
+
+### 3.3 尺寸信息
+
+- 显示包裹长宽高
+- 计算体积重和计费重
+
+## 4. 数据字段
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| 费用名称 | 字符串 | 是 | 费用类型名称 |
+| 计费单位 | 字符串 | 是 | 费用计算单位 |
+| 原金额 | 数值 | 是 | 原始费用金额 |
+| 新金额 | 数值 | 是 | 调整后的费用金额 |
+| 币别 | 字符串 | 是 | 货币类型 |
+| 备注 | 字符串 | 否 | 费用说明 |
+`;
+
+      prdContentDiv.innerHTML = marked.parse(prdMarkdown);
+
+      // 渲染Mermaid图表
+      if (window.mermaid) {
+        setTimeout(function() {
+          mermaid.run({ querySelector: prdContentDiv.querySelectorAll('.mermaid') });
+        }, 100);
+      }
+    }
+
+    function loadTestCases(id) {
+      const testCasesContentDiv = document.getElementById(`${id}-testcases-content`);
+
+      if (typeof marked === 'undefined') {
+        testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+        return;
+      }
+
+      // 模拟测试用例内容
+      const testCasesMarkdown = `# 费用调整 测试用例
+
+## 1. 功能测试
+
+### TC-AUD-001: 页面加载
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 打开费用调整页面 | 页面正常加载，显示搜索区域 |
+| 2 | 输入出库单号 | 输入框正常接收输入 |
+| 3 | 点击搜索按钮 | 显示测试数据 |
+
+### TC-AUD-002: 新增费用项
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 点击新增费用项按钮 | 显示新增行 |
+| 2 | 填写费用信息 | 输入框正常接收输入 |
+| 3 | 点击保存按钮 | 费用项新增成功 |
+
+### TC-AUD-003: 批量操作
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 点击批量操作按钮 | 下拉菜单展开 |
+| 2 | 选择操作类型 | 打开上传弹窗 |
+| 3 | 选择文件 | 文件信息显示 |
+| 4 | 点击上传按钮 | 文件上传成功 |
+
+## 2. 兼容性测试
+
+- 浏览器兼容性：Chrome、Firefox、Safari、Edge
+- 分辨率兼容性：1920x1080、1366x768、移动端适配
+`;
+
+      testCasesContentDiv.innerHTML = marked.parse(testCasesMarkdown);
+    }
+
+    // Mermaid图表放大预览
+    function openMermaidModal(container) {
+      const mermaidDiv = container.querySelector('.mermaid');
+      if (!mermaidDiv) return;
+
+      const modal = document.getElementById('mermaidModal');
+      const modalContent = document.getElementById('mermaidModalContent');
+
+      modalContent.innerHTML = mermaidDiv.innerHTML;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      if (window.mermaid) {
+        mermaid.run({ querySelector: modalContent.querySelectorAll('.mermaid') });
+      }
+    }
+
+    function closeMermaidModal(event) {
+      if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
+        return;
+      }
+
+      const modal = document.getElementById('mermaidModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
   </script>
+
+  <!-- Mermaid图表放大模态框 -->
+  <div id="mermaidModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-auto relative">
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-medium">图表预览</h3>
+        <button class="mermaid-modal-close text-gray-400 hover:text-gray-600">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6" id="mermaidModalContent">
+        <!-- Mermaid图表将在这里渲染 -->
+      </div>
+    </div>
+  </div>
 </body>
 </html>

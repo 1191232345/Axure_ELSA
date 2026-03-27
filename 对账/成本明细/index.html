@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>对账明细获取 - ELSA</title>
+  
+  <!-- CDN 资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          transitionTimingFunction: {
+            'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义样式 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+      }
+      .modal-content {
+        animation: slideUp 0.3s ease-out;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .table-row-hover:hover {
+        background-color: #F9FAFB;
+      }
+    }
+  </style>
+  
+  <!-- 核心样式 -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen">
+  <!-- 切换标签 - 固定在右下角 -->
+  <div class="tabs fixed bottom-8 right-8 z-40">
+    <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+    <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+    <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+  </div>
+  
+  <!-- Header 导航 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-semibold">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                费用管理
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="reconciliation">对账明细获取</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- PRD 内容区域 -->
+  <main id="main-prd" class="main-content" style="display: none;">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex gap-6">
+        <aside class="w-64 flex-shrink-0 hidden lg:block">
+          <div class="toc sticky top-4">
+            <div class="toc-title">
+              <i class="fa fa-list-alt mr-2"></i>目录导航
+            </div>
+            <div id="toc-nav"></div>
+          </div>
+        </aside>
+        <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+            <div id="prd-content" class="prose max-w-none">
+              <div class="text-center py-16">
+                <div class="animate-pulse">
+                  <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                  <p class="text-lg text-gray-500">正在加载PRD文档...</p>
+                  <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                    <i class="fa fa-refresh mr-2"></i>手动加载PRD
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 测试用例内容区域 -->
+  <main id="main-testcases" class="main-content" style="display: none;">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex gap-6">
+        <aside class="w-64 flex-shrink-0 hidden lg:block">
+          <div class="toc sticky top-4">
+            <div class="toc-title">
+              <i class="fa fa-list-alt mr-2"></i>目录导航
+            </div>
+            <div id="testcases-toc-nav"></div>
+          </div>
+        </aside>
+        <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+            <div id="testcases-content" class="prose max-w-none">
+              <div class="text-center py-16">
+                <div class="animate-pulse">
+                  <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                  <p class="text-lg text-gray-500">正在加载测试用例文档...</p>
+                  <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                    <i class="fa fa-refresh mr-2"></i>手动加载测试用例
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Mermaid 图表放大预览模态框 -->
+  <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+    <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+      <button class="mermaid-modal-close" onclick="closeMermaidModal()">
+        <i class="fa fa-times"></i>
+      </button>
+      <div class="mermaid-modal-title">
+        <i class="fa fa-sitemap mr-2"></i>流程图预览
+      </div>
+      <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+    </div>
+  </div>
+  
+  <!-- 原型页面 -->
+  <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+  <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <!-- 页面标题和操作栏 -->
+    <!-- <div class="bg-white rounded-xl p-6 card-shadow mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-dark mb-2">对账明细获取</h1>
+          <p class="text-gray-500">费用明细查询与管理</p>
+        </div>
+    </div> -->
+
+    <!-- 汇总数据卡片 -->
+    <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">总记录数</span>
+          <i class="fa fa-list text-primary text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="totalRecords">0</div>
+        <div class="text-xs text-gray-500">已选: <span id="selectedRecords">0</span> 条</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">总金额</span>
+          <i class="fa fa-dollar text-success text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1 text-success" id="totalAmount">$0.00</div>
+        <div class="text-xs text-gray-500">已选金额: <span id="selectedAmount">$0.00</span></div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">客户数量</span>
+          <i class="fa fa-users text-secondary text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="customerCount">0</div>
+        <div class="text-xs text-gray-500">不同客户</div>
+      </div>
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-gray-500 text-sm">仓库数量</span>
+          <i class="fa fa-warehouse text-warning text-xl"></i>
+        </div>
+        <div class="text-2xl font-bold mb-1" id="warehouseCount">0</div>
+        <div class="text-xs text-gray-500">不同仓库</div>
+      </div>
+    </div> -->
+
+    <!-- 筛选区域 -->
+    <div class="bg-white rounded-xl p-4 card-shadow mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-700">检索条件</h3>
+        </div>
+      
+      <!-- 基础筛选条件（动态渲染） -->
+      <div id="basicFilters" class="flex flex-wrap gap-4 items-center mb-3">
+        <!-- 条件将通过JavaScript动态渲染 -->
+        </div>
+
+      <!-- 操作按钮 -->
+      <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+        <button id="btnFilter" class="erp-btn erp-btn-primary">
+          <i class="fa fa-search mr-1.5"></i>筛选
+        </button>
+        <button id="btnResetFilter" class="erp-btn erp-btn-secondary">
+          <i class="fa fa-refresh mr-1.5"></i>重置
+        </button>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <div class="flex items-center gap-3 mb-4">
+        <button id="btnGetFee" class="erp-btn erp-btn-primary">
+          <i class="fa fa-download mr-1.5"></i>
+          <span>费用获取</span>
+        </button>
+        <button id="btnBatchGetFee" class="erp-btn erp-btn-primary">
+          <i class="fa fa-download mr-1.5"></i>
+          <span>批量获取费用</span>
+        </button>
+        <!-- <button id="btnBatchSubmit" class="erp-btn erp-btn-primary">
+          <i class="fa fa-check-square mr-1.5"></i>
+          <span>批量提交</span>
+        </button> -->
+        <button id="btnExport" class="erp-btn erp-btn-warning">
+          <i class="fa fa-download mr-1.5"></i>
+          <span>导出账单</span>
+        </button>
+        <button id="btnExportDetail" class="erp-btn erp-btn-warning">
+          <i class="fa fa-download mr-1.5"></i>
+          <span>导出明细</span>
+        </button>
+
+      </div>
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <!-- 原有的按钮区域 -->
+        </div>
+        <div id="totalAmount" class="text-right">
+          <span class="text-gray-700 font-medium">金额合计：</span>
+          <span class="text-success font-semibold text-lg">$0.00</span>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table id="reconciliationTable" class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">
+                <input type="checkbox" id="tableCheckAll" class="rounded border-gray-300">
+              </th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单号</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单月</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">航期</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">客户代码</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">销售</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">客服</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单类型</th>
+              <th class="text-right py-3 px-4 font-semibold text-gray-700">账单金额</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单状态</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">操作人</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">操作时间</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">账单备注</th>
+              <th class="text-center py-3 px-4 font-semibold text-gray-700">操作</th>
+            </tr>
+          </thead>
+          <tbody id="reconciliationTableBody">
+            <!-- 数据将通过JavaScript动态渲染 -->
+          </tbody>
+        </table>
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <div id="paginationInfo" class="text-sm text-gray-500">显示 0-0 条，共 0 条</div>
+        <div class="flex gap-2 items-center">
+          <button id="prevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-left text-xs"></i>
+          </button>
+          <div id="pageButtons" class="flex gap-2">
+            <!-- 页码按钮将通过JavaScript动态生成 -->
+          </div>
+          <button id="nextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
+            <i class="fa fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 逻辑说明区域 -->
+    <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+      <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="toggleLogicDescription()">
+        <div class="flex items-center">
+          <i class="fa fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+        </div>
+        <i class="fa fa-chevron-down text-primary transition-transform" id="logicDescriptionToggleIcon"></i>
+      </div>
+      <div id="logicDescriptionContent" class="hidden">
+        <!-- 初始化页面（数据展示逻辑） -->
+        <div class="p-4 border-b border-gray-100">
+          <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+            <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-gray-200 rounded">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">费用列表加载</td>
+                  <td class="px-3 py-2 text-gray-600">页面加载时默认展示费用明细列表</td>
+                  <td class="px-3 py-2 text-gray-600">费用明细表(expense_detail)</td>
+                  <td class="px-3 py-2 text-gray-600">按创建时间倒序展示，支持分页</td>
+                  <td class="px-3 py-2 text-gray-600">默认每页10条数据</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">筛选条件默认值</td>
+                  <td class="px-3 py-2 text-gray-600">页面加载时设置筛选条件默认值</td>
+                  <td class="px-3 py-2 text-gray-600">配置项</td>
+                  <td class="px-3 py-2 text-gray-600">费用类型默认选择"出库+快递(YC)"，其他条件为空</td>
+                  <td class="px-3 py-2 text-gray-600">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 检索条件 -->
+        <div class="p-4 border-b border-gray-100">
+          <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+            <i class="fa fa-search text-primary mr-2"></i>检索条件
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-gray-200 rounded">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">费用类型</td>
+                  <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                  <td class="px-3 py-2 text-gray-600">根据选择的费用类型动态更新表头和筛选条件</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">客户代码</td>
+                  <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                  <td class="px-3 py-2 text-gray-600">支持多选，默认"全部"</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">仓库代码</td>
+                  <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                  <td class="px-3 py-2 text-gray-600">支持多选，默认"全部"</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 按钮逻辑 -->
+        <div class="p-4 border-b border-gray-100">
+          <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+            <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-gray-200 rounded">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">费用获取</td>
+                  <td class="px-3 py-2 text-gray-600">主页面操作区</td>
+                  <td class="px-3 py-2 text-gray-600">打开费用获取弹窗</td>
+                  <td class="px-3 py-2 text-gray-600">无</td>
+                  <td class="px-3 py-2 text-gray-600">填写表单后提交，刷新主列表</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">批量获取费用</td>
+                  <td class="px-3 py-2 text-gray-600">主页面操作区</td>
+                  <td class="px-3 py-2 text-gray-600">打开批量获取费用弹窗</td>
+                  <td class="px-3 py-2 text-gray-600">无正在执行的任务</td>
+                  <td class="px-3 py-2 text-gray-600">选择费用后确认添加，刷新主列表</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">筛选</td>
+                  <td class="px-3 py-2 text-gray-600">筛选区域</td>
+                  <td class="px-3 py-2 text-gray-600">执行查询</td>
+                  <td class="px-3 py-2 text-gray-600">筛选条件已设置</td>
+                  <td class="px-3 py-2 text-gray-600">查询并刷新列表</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">重置</td>
+                  <td class="px-3 py-2 text-gray-600">筛选区域</td>
+                  <td class="px-3 py-2 text-gray-600">清空筛选条件</td>
+                  <td class="px-3 py-2 text-gray-600">无</td>
+                  <td class="px-3 py-2 text-gray-600">清空条件并刷新列表</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">导出账单</td>
+                  <td class="px-3 py-2 text-gray-600">主页面操作区</td>
+                  <td class="px-3 py-2 text-gray-600">导出当前数据</td>
+                  <td class="px-3 py-2 text-gray-600">有数据可导出</td>
+                  <td class="px-3 py-2 text-gray-600">生成并下载导出文件</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">导出明细</td>
+                  <td class="px-3 py-2 text-gray-600">主页面操作区</td>
+                  <td class="px-3 py-2 text-gray-600">导出详细数据</td>
+                  <td class="px-3 py-2 text-gray-600">有数据可导出</td>
+                  <td class="px-3 py-2 text-gray-600">生成并下载导出文件</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 属性取值逻辑 -->
+        <div class="p-4">
+          <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+            <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-gray-200 rounded">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">账单号</td>
+                  <td class="px-3 py-2 text-gray-600">费用账单的唯一标识</td>
+                  <td class="px-3 py-2 text-gray-600">系统生成</td>
+                  <td class="px-3 py-2 text-gray-600">自动生成唯一账单号</td>
+                  <td class="px-3 py-2 text-gray-600">文本显示</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">账单月</td>
+                  <td class="px-3 py-2 text-gray-600">费用所属月份</td>
+                  <td class="px-3 py-2 text-gray-600">用户输入</td>
+                  <td class="px-3 py-2 text-gray-600">通过日期选择器选择</td>
+                  <td class="px-3 py-2 text-gray-600">YYYY-MM格式</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">航期</td>
+                  <td class="px-3 py-2 text-gray-600">费用所属航期</td>
+                  <td class="px-3 py-2 text-gray-600">用户输入</td>
+                  <td class="px-3 py-2 text-gray-600">通过日期选择器选择</td>
+                  <td class="px-3 py-2 text-gray-600">YYYY-MM格式</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">客户代码</td>
+                  <td class="px-3 py-2 text-gray-600">费用所属客户</td>
+                  <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                  <td class="px-3 py-2 text-gray-600">从客户列表中选择</td>
+                  <td class="px-3 py-2 text-gray-600">文本显示</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">账单类型</td>
+                  <td class="px-3 py-2 text-gray-600">费用类型</td>
+                  <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                  <td class="px-3 py-2 text-gray-600">从费用类型列表中选择</td>
+                  <td class="px-3 py-2 text-gray-600">文本显示</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">账单金额</td>
+                  <td class="px-3 py-2 text-gray-600">费用金额</td>
+                  <td class="px-3 py-2 text-gray-600">系统计算</td>
+                  <td class="px-3 py-2 text-gray-600">根据费用明细计算</td>
+                  <td class="px-3 py-2 text-gray-600">货币格式（保留2位小数）</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">账单状态</td>
+                  <td class="px-3 py-2 text-gray-600">账单处理状态</td>
+                  <td class="px-3 py-2 text-gray-600">系统生成</td>
+                  <td class="px-3 py-2 text-gray-600">根据处理进度自动更新</td>
+                  <td class="px-3 py-2 text-gray-600">文本显示</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 任务历史弹窗 -->
+
+
+  <!-- 费用获取弹窗 -->
+  <div id="feeModal" class="fixed inset-0 z-50 items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-primary to-primary/80">
+        <h3 class="text-xl font-bold text-white">费用获取</h3>
+        <button id="closeFeeModal" class="text-white/80 hover:text-white transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="flex-1 overflow-hidden flex">
+        <!-- 左侧筛选条件 -->
+        <div class="w-96 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
+          <!-- 1. 基础信息区域 -->
+          <div class="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-5 bg-primary rounded"></div>
+              <h4 class="font-semibold text-dark">基础信息</h4>
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">账单月<span class="text-red-500">*</span></label>
+                <input type="month" id="modalBillMonth" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">航期<span class="text-red-500">*</span></label>
+                <input type="month" id="modalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">账单类型 <span class="text-red-500">*</span></label>
+                <select id="modalBillType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" required>
+                  <option value="出库+快递(YC)">出库+快递(YC)</option>
+                  <option value="出库+快递(TMS)">出库+快递(TMS)</option>
+                  <option value="仓储费">仓储费</option>
+                  <option value="快递赔付">快递赔付</option>
+                  <option value="库内赔付(错发)">库内赔付(错发)</option>
+                  <option value="库内赔付(丢件)">库内赔付(丢件)</option>
+                  <option value="库内赔付(其他)">库内赔付(其他)</option>
+                  <option value="充值">充值</option>
+                  <option value="费用调整">费用调整</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 检索条件区域 -->
+          <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-5 bg-primary rounded"></div>
+              <h4 class="font-semibold text-dark">检索条件</h4>
+            </div>
+            
+            <!-- 折叠面板 -->
+            <div class="space-y-3">
+              <!-- 基本信息折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('basicInfo')">
+                  <span class="text-sm font-medium text-gray-700">基本信息</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="basicInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="basicInfoContent">
+                  <div id="conditionCustomerCode" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">客户代码<span class="text-red-500">*</span></label>
+                    <div class="relative">
+                      <div id="modalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="modalCustomerCodeText" class="text-gray-700">请选择</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="modalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                          <span>ZJJS</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="modalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                          <span>ZJHW</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="modalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
+                          <span>ZJWL</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionWarehouseCode">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
+                    <div class="relative">
+                      <div id="modalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="modalWarehouseCodeText" class="text-gray-700">全部</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="modalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA008</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA009</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA010</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA011</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="modalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
+                          <span>CA012</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionSerialNo" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">流水号</label>
+                    <div class="relative">
+                      <input type="text" id="modalSerialNo" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="单个或批量（逗号分隔）">
+                    </div>
+                  </div>
+                  <div id="conditionOrderNo" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">订单号</label>
+                    <div class="relative">
+                      <input type="text" id="modalOrderNo" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="单个或批量（逗号分隔）">
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+              
+              <!-- 时间条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('timeInfo')">
+                  <span class="text-sm font-medium text-gray-700">时间条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="timeInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="timeInfoContent">
+                  <div id="conditionCreateTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">创建时间<span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionSettlementDate" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionCompensationTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="conditionOutboundTime">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="modalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="modalOutboundEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 其他条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('otherInfo')">
+                  <span class="text-sm font-medium text-gray-700">其他条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="otherInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="otherInfoContent">
+                  <div id="conditionChannel" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
+                    <select id="modalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                      <option value="UPS_GROUND">UPS_GROUND</option>
+                    </select>
+                  </div>
+                  <div id="conditionShippingMethod">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
+                    <select id="modalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex gap-2 mt-4">
+              <button id="modalReset" class="erp-btn erp-btn-secondary flex-1">
+                <i class="fa fa-refresh mr-1"></i>重置
+              </button>
+              <button id="modalSearch" class="erp-btn erp-btn-primary flex-1">
+                <i class="fa fa-search mr-1"></i>获取数据
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧费用列表 -->
+        <div class="flex-1 flex flex-col">
+          <!-- 费用列表头部 -->
+          <div class="p-4 border-b border-gray-200 bg-white">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-6 bg-primary rounded"></div>
+                <h4 class="text-lg font-semibold text-dark">费用列表</h4>
+                <span class="text-sm text-gray-500 ml-2">已选 <span id="modalSelectedCount" class="font-semibold text-primary">0</span> 条</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="text-sm text-gray-500">
+                  <i class="fa fa-info-circle mr-1"></i>
+                  请先选择账单类型并搜索数据
+                </div>
+                <div class="text-sm font-semibold">
+                  金额合计：<span id="modalTotalAmount" class="text-success">$0.00</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 出库+快递(YC) -->
+            <div id="listSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <!-- 第一行：基础条件 -->
+              <div class="flex flex-wrap gap-2 items-end mb-2">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">仓库</label>
+                  <div class="relative">
+                    <div id="listWarehouseDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listWarehouseText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listWarehouseOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA008" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA008</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA009" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA009</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA010" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA010</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA011" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA011</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listWarehouse" value="CA012" class="mr-1.5 rounded border-gray-300" onchange="updateListWarehouseText()">
+                        <span>CA012</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">下单时间</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="listOrderStartDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                    <input type="date" id="listOrderEndDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 第二行：高级条件 -->
+              <div class="flex flex-wrap gap-2 items-end">
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">参考号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="referenceNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="referenceNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listReferenceNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="参考号">
+                      </div>
+                    </div>
+                    <div id="referenceNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('referenceNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('referenceNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">出库单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="outboundNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="outboundNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listOutboundNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="出库单号">
+                      </div>
+                    </div>
+                    <div id="outboundNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('outboundNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('outboundNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">快递单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="expressNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="expressNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listExpressNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="快递单号">
+                      </div>
+                    </div>
+                    <div id="expressNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('expressNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('expressNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 充值 -->
+            <div id="listRechargeSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <!-- 第一行：基础条件 -->
+              <div class="flex flex-wrap gap-2 items-end mb-2">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listRechargeCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listRechargeCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listRechargeCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listRechargeCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListRechargeCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listRechargeCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListRechargeCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listRechargeCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListRechargeCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listRechargeCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListRechargeCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">流水号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="rechargeSerialNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="rechargeSerialNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listRechargeSerialNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="流水号">
+                      </div>
+                    </div>
+                    <div id="rechargeSerialNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('rechargeSerialNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('rechargeSerialNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">创建时间</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="listRechargeStartDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                    <input type="date" id="listRechargeEndDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listRechargeSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 费用调整 -->
+            <div id="listAdjustmentSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <!-- 第一行：基础条件 -->
+              <div class="flex flex-wrap gap-2 items-end mb-2">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listAdjustmentCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listAdjustmentCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listAdjustmentCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listAdjustmentCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListAdjustmentCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listAdjustmentCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListAdjustmentCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listAdjustmentCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListAdjustmentCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listAdjustmentCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListAdjustmentCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">订单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="adjustmentOrderNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="adjustmentOrderNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listAdjustmentOrderNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="订单号">
+                      </div>
+                    </div>
+                    <div id="adjustmentOrderNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('adjustmentOrderNo', '模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateSearchType('adjustmentOrderNo', '精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">创建时间</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="listAdjustmentStartDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                    <input type="date" id="listAdjustmentEndDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listAdjustmentSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 赔付类型 -->
+            <div id="listCompensationSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="flex flex-wrap gap-2 items-end">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listCompensationCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listCompensationCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listCompensationCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listCompensationCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListCompensationCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">工单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="workOrderSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="workOrderSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listWorkOrderNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="工单号">
+                      </div>
+                    </div>
+                    <div id="workOrderSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateWorkOrderSearchType('模糊搜索')">模糊搜索</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateWorkOrderSearchType('精确搜索')">精确搜索</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listCompensationSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-gray-90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 检索条件区域 - 仓储费 -->
+            <div id="listStorageFeeSearchConditions" class="hidden bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div class="flex flex-wrap gap-2 items-end">
+                <div class="flex-1 min-w-[120px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">客户代码</label>
+                  <div class="relative">
+                    <div id="listStorageCustomerCodeDropdown" class="w-full border border-gray-200 rounded px-2 py-1.5 text-xs cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                      <span id="listStorageCustomerCodeText" class="text-gray-700">全部</span>
+                      <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                    </div>
+                    <div id="listStorageCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto">
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>全部</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="ZJJS" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>ZJJS</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="ZJHW" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>ZJHW</span>
+                      </label>
+                      <label class="flex items-center px-2 py-1.5 hover:bg-gray-50 cursor-pointer text-xs">
+                        <input type="radio" name="listStorageCustomerCode" value="ZJWL" class="mr-1.5 rounded border-gray-300" onchange="updateListStorageCustomerCodeText()">
+                        <span>ZJWL</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">仓储订单号</label>
+                  <div class="relative">
+                    <div class="flex border border-gray-200 rounded overflow-hidden">
+                      <div id="storageOrderNoSearchTypeDropdown" class="w-24 border-r border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors flex items-center justify-between px-2 py-1.5 text-xs">
+                        <span id="storageOrderNoSearchTypeText" class="text-gray-700">模糊</span>
+                        <i class="fa fa-chevron-down text-gray-400 text-xs"></i>
+                      </div>
+                      <div class="flex-1">
+                        <input type="text" id="listStorageOrderNo" class="w-full border-none rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="仓储订单号">
+                      </div>
+                    </div>
+                    <div id="storageOrderNoSearchTypeOptions" class="hidden absolute z-10 w-24 mt-1 bg-white border border-gray-200 rounded shadow-lg">
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateStorageOrderNoSearchType('模糊查询')">模糊查询</div>
+                      <div class="px-2 py-1.5 hover:bg-gray-100 cursor-pointer text-xs" onclick="updateStorageOrderNoSearchType('精确查询')">精确查询</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">计费日期</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="listStorageStartDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="开始日期">
+                    <input type="date" id="listStorageEndDate" class="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white" placeholder="结束日期">
+                  </div>
+                </div>
+                <div class="flex items-end">
+                  <button id="listStorageFeeSearchBtn" class="px-3 py-1.5 bg-primary text-white rounded text-xs hover:bg-gray-90 transition-colors">
+                    <i class="fa fa-search mr-1"></i>搜索
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 费用列表内容 -->
+          <div class="flex-1 overflow-auto p-4">
+            <div class="border border-gray-200 rounded-lg bg-white h-full">
+              <table id="modalDataTable" class="w-full h-full">
+                <thead class="bg-gray-50 sticky top-0" id="modalDataTableHead">
+                  <tr>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">
+                      <input type="checkbox" id="modalCheckAll" class="rounded border-gray-300">
+                    </th>
+                    <!-- 表头将通过JavaScript根据账单类型动态生成 -->
+                  </tr>
+                </thead>
+                <tbody id="modalDataTableBody" class="text-sm"></tbody>
+                  <!-- 数据将通过搜索加载 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+        <div class="text-sm text-gray-600">
+          <i class="fa fa-lightbulb-o mr-1"></i>
+          提示：未勾选任何项时将添加全部搜索结果
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="modalCancel" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            关闭
+          </button>
+          <button id="modalSubmit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <i class="fa fa-check mr-2"></i>确认添加
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批量获取费用弹窗 -->
+  <div id="batchFeeModal" class="fixed inset-0 z-50 items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-primary to-primary/80">
+        <h3 class="text-xl font-bold text-white">批量获取费用</h3>
+        <button id="closeBatchFeeModal" class="text-white/80 hover:text-white transition-colors">
+          <i class="fa fa-times text-2xl"></i>
+        </button>
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="flex-1 overflow-hidden flex">
+        <!-- 左侧筛选条件 -->
+        <div class="w-96 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
+          <!-- 1. 基础信息区域 -->
+          <div class="bg-white rounded-lg p-4 mb-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-5 bg-primary rounded"></div>
+              <h4 class="font-semibold text-dark">基础信息</h4>
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">账单月<span class="text-red-500">*</span></label>
+                <input type="month" id="batchModalBillMonth" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">航期<span class="text-red-500">*</span></label>
+                <input type="month" id="batchModalVoyagePeriod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">费用类型 <span class="text-red-500">*</span></label>
+                <select id="batchModalFeeType" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" required>
+                  <option value="" selected>全部</option>
+                  <option value="出库+快递(YC)">出库+快递(YC)</option>
+                  <option value="出库+快递(TMS)">出库+快递(TMS)</option>
+                  <option value="仓储费">仓储费</option>
+                  <option value="快递赔付">快递赔付</option>
+                  <option value="库内赔付(错发)">库内赔付(错发)</option>
+                  <option value="库内赔付(丢件)">库内赔付(丢件)</option>
+                  <option value="库内赔付(其他)">库内赔付(其他)</option>
+                  <option value="充值">充值</option>
+                  <option value="费用调整">费用调整</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 检索条件区域 -->
+          <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-1 h-5 bg-primary rounded"></div>
+              <h4 class="font-semibold text-dark">检索条件</h4>
+            </div>
+            
+            <!-- 折叠面板 -->
+            <div class="space-y-3">
+              <!-- 基本信息折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('batchBasicInfo')">
+                  <span class="text-sm font-medium text-gray-700">基本信息</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="batchBasicInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="batchBasicInfoContent">
+                  <div id="batchConditionCustomerCode" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">客户代码</label>
+                    <div class="relative">
+                      <div id="batchModalCustomerCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="batchModalCustomerCodeText" class="text-gray-700">全部</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="batchModalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>全部</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>ZJJS</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="ZJHW" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>ZJHW</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="radio" name="batchModalCustomerCode" value="ZJWL" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
+                          <span>ZJWL</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionWarehouseCode">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">仓库</label>
+                    <div class="relative">
+                      <div id="batchModalWarehouseCodeDropdown" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-primary transition-colors flex items-center justify-between bg-white">
+                        <span id="batchModalWarehouseCodeText" class="text-gray-700">全部</span>
+                        <i class="fa fa-chevron-down text-gray-400"></i>
+                      </div>
+                      <div id="batchModalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA008</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA009" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA009</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA010" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA010</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA011" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA011</span>
+                        </label>
+                        <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
+                          <input type="checkbox" name="batchModalWarehouseCode" value="CA012" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
+                          <span>CA012</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionSerialNo" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">流水号</label>
+                    <div class="relative">
+                      <input type="text" id="batchModalSerialNo" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="单个或批量（逗号分隔）">
+                    </div>
+                  </div>
+                  <div id="batchConditionOrderNo" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">订单号</label>
+                    <div class="relative">
+                      <input type="text" id="batchModalOrderNo" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="单个或批量（逗号分隔）">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 时间条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('batchTimeInfo')">
+                  <span class="text-sm font-medium text-gray-700">时间条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="batchTimeInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="batchTimeInfoContent">
+                  <div id="batchConditionCreateTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">创建时间<span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCreateStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCreateEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionSettlementDate" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">结算日期</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalSettlementStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalSettlementEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionCompensationTime" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">赔付时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCompensationStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalCompensationEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                  <div id="batchConditionOutboundTime">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">出库时间</label>
+                    <div class="flex gap-2">
+                      <div class="flex-1">
+                        <input type="date" id="batchModalOutboundStartDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="开始日期">
+                      </div>
+                      <div class="flex-1">
+                        <input type="date" id="batchModalOutboundEndDate" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all" placeholder="结束日期">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 其他条件折叠面板 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <button class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left" onclick="toggleCollapse('batchOtherInfo')">
+                  <span class="text-sm font-medium text-gray-700">其他条件</span>
+                  <i class="fa fa-chevron-down text-gray-400 transition-transform" id="batchOtherInfoIcon"></i>
+                </button>
+                <div class="p-3 border-t border-gray-200" id="batchOtherInfoContent">
+                  <div id="batchConditionChannel" class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">渠道</label>
+                    <select id="batchModalChannel" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                      <option value="UPS_GROUND">UPS_GROUND</option>
+                    </select>
+                  </div>
+                  <div id="batchConditionShippingMethod">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">运输方式</label>
+                    <select id="batchModalShippingMethod" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white transition-all">
+                      <option value="" selected>全部</option>
+                      <option value="FEDEX_MPS">FEDEX_MPS</option>
+                      <option value="FEDEX_HOME_GROUND">FEDEX_HOME_GROUND</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex gap-2 mt-4">
+              <button id="batchModalReset" class="erp-btn erp-btn-secondary flex-1">
+                <i class="fa fa-refresh mr-1"></i>重置
+              </button>
+              <button id="batchModalSearch" class="erp-btn erp-btn-primary flex-1">
+                <i class="fa fa-search mr-1"></i>获取费用
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧费用列表 -->
+        <div class="flex-1 flex flex-col">
+          <!-- 费用列表头部 -->
+          <div class="p-4 border-b border-gray-200 bg-white">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-6 bg-primary rounded"></div>
+                <h4 class="text-lg font-semibold text-dark">费用列表</h4>
+                <span class="text-sm text-gray-500 ml-2">已选 <span id="batchModalSelectedCount" class="font-semibold text-primary">0</span> 条</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <div class="text-sm text-gray-500">
+                  <i class="fa fa-info-circle mr-1"></i>
+                  请先选择费用类型并搜索数据
+                </div>
+                <div class="text-sm font-semibold">
+                  金额合计：<span id="batchModalTotalAmount" class="text-success">$0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 费用列表内容 -->
+          <div class="flex-1 overflow-auto p-4">
+            <div class="border border-gray-200 rounded-lg bg-white h-full">
+              <!-- 加载状态 -->
+              <div id="batchModalLoading" class="hidden flex items-center justify-center h-60">
+                <div class="flex flex-col items-center">
+                  <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p class="text-gray-600">数据加载中，请稍候...</p>
+                </div>
+              </div>
+              
+              <!-- 空状态 -->
+              <div id="batchModalEmpty" class="hidden flex items-center justify-center h-60">
+                <div class="flex flex-col items-center">
+                  <i class="fa fa-search text-4xl text-gray-300 mb-4"></i>
+                  <p class="text-gray-600">暂无数据，请先搜索</p>
+                </div>
+              </div>
+              
+              <!-- 表格 -->
+              <table id="batchModalDataTable" class="w-full h-full">
+                <thead class="bg-gray-50 sticky top-0" id="batchModalDataTableHead">
+                  <tr>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">
+                      <input type="checkbox" id="batchModalCheckAll" class="rounded border-gray-300">
+                    </th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">客户代码</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">费用类型</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">费用项目</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">费用金额</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-700 text-sm">币种</th>
+                  </tr>
+                </thead>
+                <tbody id="batchModalDataTableBody" class="text-sm"></tbody>
+              </table>
+            </div>
+            
+            <!-- 分页控件 -->
+            <div id="batchModalPagination" class="hidden flex items-center justify-between mt-4">
+              <div class="text-sm text-gray-600">
+                显示 <span id="batchModalStartItem">1</span>-<span id="batchModalEndItem">10</span> 条，共 <span id="batchModalTotalItems">0</span> 条
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="batchModalPrevPage" class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:border-primary hover:text-primary transition-colors" disabled>
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <button id="batchModalNextPage" class="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-600 hover:border-primary hover:text-primary transition-colors">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+        <div class="text-sm text-gray-600">
+          <i class="fa fa-lightbulb-o mr-1"></i>
+          提示：未勾选任何项时将添加全部搜索结果
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="batchModalCancel" class="erp-btn erp-btn-secondary">
+            关闭
+          </button>
+          <button id="batchModalSubmit" class="erp-btn erp-btn-primary">
+            <i class="fa fa-check mr-1.5"></i>确认添加
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 详情查看弹窗 -->
+  <div id="detailModal" class="fixed inset-0 z-50 items-center justify-center modal-overlay">
+    <div class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+        <h3 class="text-lg font-bold text-dark">费用明细详情</h3>
+        <button id="closeDetailModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <!-- 账单信息固定区域 -->
+      <div id="billInfoSection" class="border-b border-gray-200 bg-white">
+        <!-- 账单信息内容将通过JavaScript动态渲染 -->
+      </div>
+      
+      <!-- 明细列表可滚动区域 -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <div id="detailContent">
+          <!-- 明细内容将通过JavaScript动态渲染 -->
+        </div>
+      </div>
+      
+      <!-- 弹窗底部 -->
+      <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 bg-gray-50">
+        <button id="detailClose" class="erp-btn erp-btn-secondary">
+          关闭
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  </body>
+</html>

@@ -4,18 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>财务管理 - 未出账订单</title>
+  <!-- 引入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Font Awesome 图标 -->
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入 Mermaid 图表库 -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <!-- 引入 Marked Markdown 解析库 -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
   <script>
-    // Tailwind 配置
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#165DFF',
+            primary: '#2a3b7d',
+            secondary: '#36CFC9',
             success: '#00B42A',
-            danger: '#F53F3F',
             warning: '#FF7D00',
+            danger: '#F53F3F',
             gray: {
               100: '#F2F3F5',
               200: '#E5E6EB',
@@ -33,6 +41,7 @@
       }
     }
   </script>
+  
   <style type="text/tailwindcss">
     @layer utilities {
       .content-auto {
@@ -47,14 +56,56 @@
       .status-dot {
         @apply w-2 h-2 rounded-full inline-block mr-2;
       }
+      .erp-btn {
+        @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+      }
+      .erp-btn-primary {
+        @apply bg-primary text-white hover:bg-primary/90 btn-hover;
+      }
+      .erp-btn-secondary {
+        @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 btn-hover;
+      }
+      .erp-btn-danger {
+        @apply bg-danger text-white hover:bg-danger/90 btn-hover;
+      }
+      .erp-btn-warning {
+        @apply bg-warning text-white hover:bg-warning/90 btn-hover;
+      }
+      .form-input {
+        @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary;
+      }
+      .search-card {
+        @apply bg-white rounded-lg p-4 shadow-sm mb-4;
+      }
+      .action-card {
+        @apply bg-white rounded-lg p-4 shadow-sm mb-4;
+      }
+      .table-card {
+        @apply bg-white rounded-lg shadow-sm overflow-hidden mb-4;
+      }
+      .card-title {
+        @apply text-lg font-medium text-gray-900 mb-4;
+      }
+      .mermaid-container {
+        @apply my-4 cursor-pointer;
+      }
+      .mermaid-hint {
+        @apply text-xs text-gray-500 block text-center mt-1;
+      }
     }
   </style>
 </head>
 <body class="bg-gray-100 font-inter text-gray-700 min-h-screen">
   <!-- 页面容器 -->
   <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <!-- 页面标题 -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">未出账订单</h1>
+      <p class="text-gray-500 mt-1">批量重计费用</p>
+    </div>
+    
     <!-- 搜索筛选区域 -->
-    <div class="bg-white rounded-lg p-4 mb-6 shadow-sm">
+    <div class="search-card">
       <div class="flex flex-wrap gap-4 items-center">
         <!-- 订单号查询 -->
         <div class="flex items-center">
@@ -71,7 +122,7 @@
         <!-- 客户代码 -->
         <div class="flex items-center">
           <label class="text-gray-500 mr-2 whitespace-nowrap">客户代码</label>
-          <select class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-white">
+          <select class="form-input bg-white">
             <option>DEMO - demo</option>
           </select>
         </div>
@@ -79,7 +130,7 @@
         <!-- 仓库 -->
         <div class="flex items-center">
           <label class="text-gray-500 mr-2 whitespace-nowrap">仓库</label>
-          <select class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-white">
+          <select class="form-input bg-white">
             <option>请选择仓库</option>
             <option>DE001</option>
             <option>DE002</option>
@@ -89,7 +140,7 @@
         <!-- 配送渠道 -->
         <div class="flex items-center">
           <label class="text-gray-500 mr-2 whitespace-nowrap">配送渠道</label>
-          <select class="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-white">
+          <select class="form-input bg-white">
             <option>请选择配送渠道</option>
             <option>FEDEX_MPS</option>
             <option>FEDEX_HOME_GROUND</option>
@@ -98,10 +149,10 @@
         
         <!-- 操作按钮 -->
         <div class="ml-auto flex items-center gap-2">
-          <button class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 btn-hover">
+          <button class="erp-btn erp-btn-secondary">
             重置
           </button>
-          <button id="searchBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
+          <button id="searchBtn" class="erp-btn erp-btn-primary">
             搜索
           </button>
           <button class="flex items-center text-primary text-sm hover:text-primary/80">
@@ -111,32 +162,34 @@
       </div>
     </div>
     
-    <!-- 订单列表区域 -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-      <!-- 批量操作按钮 -->
-      <div class="flex flex-wrap items-center justify-between p-4 border-b border-gray-100">
+    <!-- 操作按钮区域 -->
+    <div class="action-card">
+      <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex gap-3">
-          <button id="batchRecalculateBtn" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
+          <button id="batchRecalculateBtn" class="erp-btn erp-btn-secondary">
             <i class="fa fa-repeat mr-1"></i> 批量重计
           </button>
-          <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
+          <button class="erp-btn erp-btn-secondary">
             <i class="fa fa-download mr-1"></i> 导出
           </button>
-          <button id="recalculateBtn" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
+          <button id="recalculateBtn" class="erp-btn erp-btn-secondary">
             <i class="fa fa-calculator mr-1"></i> 重计明细
           </button>
         </div>
         
-        <div class="flex gap-2 mt-2 sm:mt-0">
-          <button class="px-3 py-1.5 bg-primary text-white rounded-md text-sm btn-hover">
+        <div class="flex gap-2">
+          <button class="erp-btn erp-btn-primary">
             出库单
           </button>
-          <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover">
+          <button class="erp-btn erp-btn-secondary">
             仓储费
           </button>
         </div>
       </div>
-      
+    </div>
+    
+    <!-- 订单列表区域 -->
+    <div class="table-card">
       <!-- 订单表格 -->
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -172,7 +225,7 @@
           Total <span id="totalCount">0</span>
         </div>
         <div class="flex items-center gap-2">
-          <select class="border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+          <select class="form-input text-sm">
             <option>10/page</option>
             <option>20/page</option>
             <option>50/page</option>
@@ -193,7 +246,35 @@
           </nav>
           <div class="flex items-center gap-1">
             <span class="text-sm text-gray-500">Go to</span>
-            <input type="text" value="1" class="w-10 h-8 border rounded text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <input type="text" value="1" class="w-10 h-8 form-input text-center text-sm">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 逻辑说明区域 -->
+    <div class="bg-white rounded shadow-sm mt-4 overflow-hidden">
+      <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('recalculation')">
+        <div class="flex items-center">
+          <i class="fa fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+        </div>
+        <i class="fa fa-chevron-down text-primary transition-transform" id="recalculation-logic-icon"></i>
+      </div>
+      <div id="recalculation-logic-content" class="hidden">
+        <div class="px-4 py-4">
+          <div class="flex border-b border-gray-200">
+            <button class="prd-tab-btn px-4 py-2 border-b-2 border-primary text-primary font-medium" onclick="switchTab('prd', 'recalculation')">PRD文档</button>
+            <button class="prd-tab-btn px-4 py-2 text-gray-500 hover:text-gray-700" onclick="switchTab('testcases', 'recalculation')">测试用例</button>
+          </div>
+          <div class="pt-4">
+            <div id="recalculation-prd-content" class="prd-content">
+              <!-- PRD内容将通过JavaScript加载 -->
+            </div>
+            <div id="recalculation-testcases-content" class="prd-content hidden">
+              <!-- 测试用例内容将通过JavaScript加载 -->
+            </div>
           </div>
         </div>
       </div>
@@ -201,8 +282,8 @@
   </div>
   
   <!-- 重计明细弹窗 -->
-  <div id="recalculateModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white rounded-lg w-full max-w-7xl max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+  <div id="recalculateModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-7xl max-h-[90vh] flex flex-col">
       <!-- 弹窗头部 -->
       <div class="p-4 border-b border-gray-100 flex items-center justify-between">
         <h3 class="text-lg font-medium">重计明细</h3>
@@ -216,20 +297,20 @@
         <div class="flex flex-wrap gap-4">
             <div class="flex items-center">
             <label class="text-gray-500 mr-2 whitespace-nowrap">订单号</label>
-            <input type="text" class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-gray-400" placeholder="请输入订单号、参考单号、跟踪号">
+            <input type="text" class="form-input text-sm" placeholder="请输入订单号、参考单号、跟踪号">
           </div>
           <div class="flex items-center">
             <label class="text-gray-500 mr-2 whitespace-nowrap">操作时间</label>
             <div class="flex gap-2">
-              <input type="date" class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+              <input type="date" class="form-input text-sm">
               <span class="text-gray-400">至</span>
-              <input type="date" class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+              <input type="date" class="form-input text-sm">
             </div>
           </div>
           
           <div class="flex items-center">
             <label class="text-gray-500 mr-2 whitespace-nowrap">计费类型</label>
-            <select class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <select class="form-input text-sm">
               <option>全部</option>
               <option>出库单</option>
               <option>仓储费</option>
@@ -238,7 +319,7 @@
           
           <div class="flex items-center">
             <label class="text-gray-500 mr-2 whitespace-nowrap">物流产品</label>
-            <select class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <select class="form-input text-sm">
               <option>全部</option>
               <option>FEDEX_MPS</option>
               <option>FEDEX_HOME_GROUND</option>
@@ -248,7 +329,7 @@
 
           <div class="flex items-center">
             <label class="text-gray-500 mr-2 whitespace-nowrap">状态</label>
-            <select id="recalculateStatusFilter" class="border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <select id="recalculateStatusFilter" class="form-input text-sm">
               <option value="all">全部</option>
               <option value="processing">重计中</option>
               <option value="success">成功</option>
@@ -256,7 +337,7 @@
             </select>
           </div>
 
-          <button class="ml-auto px-4 py-1.5 bg-primary text-white rounded-md text-sm btn-hover">
+          <button class="ml-auto erp-btn erp-btn-primary text-sm">
             搜索
           </button>
         </div>
@@ -300,7 +381,7 @@
         </div>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <select id="recalculatePageSize" class="border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            <select id="recalculatePageSize" class="form-input text-sm">
               <option value="10">10/page</option>
               <option value="20">20/page</option>
               <option value="50">50/page</option>
@@ -324,9 +405,9 @@
           <div class="flex items-center gap-2">
             <div class="flex items-center gap-1">
               <span class="text-sm text-gray-500">Go to</span>
-              <input type="number" id="recalculateGoToPage" value="1" min="1" class="w-10 h-8 border rounded text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+              <input type="number" id="recalculateGoToPage" value="1" min="1" class="w-10 h-8 form-input text-center text-sm">
             </div>
-            <button class="px-4 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 btn-hover" id="closeModalBtn">
+            <button class="erp-btn erp-btn-secondary text-sm" id="closeModalBtn">
               关闭
             </button>
           </div>
@@ -336,8 +417,8 @@
   </div>
 
   <!-- 数据量超限提示弹窗 -->
-  <div id="limitExceededModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+  <div id="limitExceededModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-md">
       <div class="p-6">
         <div class="flex items-center mb-4">
           <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mr-4">
@@ -366,10 +447,10 @@
           </div>
         </div>
         <div class="flex justify-end gap-3">
-          <button id="cancelLimitBtn" class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+          <button id="cancelLimitBtn" class="erp-btn erp-btn-secondary">
             取消
           </button>
-          <button id="confirmLimitBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
+          <button id="confirmLimitBtn" class="erp-btn erp-btn-primary">
             确认处理
           </button>
         </div>
@@ -378,8 +459,8 @@
   </div>
 
   <!-- 批量重计进度弹窗 -->
-  <div id="progressModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+  <div id="progressModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-md">
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-medium">批量重计处理中</h3>
@@ -415,7 +496,7 @@
           <span>正在处理中，请稍候...</span>
         </div>
         <div class="flex justify-end">
-          <button id="cancelProgressBtn" class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+          <button id="cancelProgressBtn" class="erp-btn erp-btn-secondary">
             取消处理
           </button>
         </div>
@@ -424,8 +505,8 @@
   </div>
 
   <!-- 提交成功提示弹窗 -->
-  <div id="successModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+  <div id="successModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-md">
       <div class="p-6">
         <div class="flex items-center mb-4">
           <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mr-4">
@@ -447,13 +528,28 @@
           </div>
         </div>
         <div class="flex justify-end gap-3">
-          <button id="closeSuccessBtn" class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50">
+          <button id="closeSuccessBtn" class="erp-btn erp-btn-secondary">
             知道了
           </button>
-          <button id="goToRecalculateDetailBtn" class="px-4 py-2 bg-primary text-white rounded-md text-sm btn-hover">
+          <button id="goToRecalculateDetailBtn" class="erp-btn erp-btn-primary">
             <i class="fa fa-list mr-1"></i> 查看重计明细
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mermaid图表放大预览弹窗 -->
+  <div id="mermaidModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-medium">图表预览</h3>
+        <button class="text-gray-400 hover:text-gray-600 mermaid-modal-close">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-auto p-6" id="mermaidModalContent">
+        <!-- 图表内容将通过JavaScript动态填充 -->
       </div>
     </div>
   </div>
@@ -488,30 +584,13 @@
     // 通用弹窗打开函数
     function openModal(modalEl) {
       modalEl.classList.remove('hidden');
-      setTimeout(() => {
-        modalEl.classList.add('opacity-100');
-        const content = modalEl.querySelector('div');
-        if (content) {
-          content.classList.remove('scale-95');
-          content.classList.add('scale-100');
-        }
-      }, 10);
       document.body.style.overflow = 'hidden';
     }
     
     // 通用弹窗关闭函数
     function closeModalFunc(modalEl) {
-      modalEl.classList.remove('opacity-100');
-      const content = modalEl.querySelector('div');
-      if (content) {
-        content.classList.remove('scale-100');
-        content.classList.add('scale-95');
-      }
-      
-      setTimeout(() => {
-        modalEl.classList.add('hidden');
-        document.body.style.overflow = '';
-      }, 300);
+      modalEl.classList.add('hidden');
+      document.body.style.overflow = '';
     }
     
     // 重计明细弹窗
@@ -815,14 +894,123 @@
       updateSelectAllCheckbox();
     }
     
-    // 事件监听
-    const searchBtn = document.getElementById('searchBtn');
-    searchBtn.addEventListener('click', loadTestData);
+    // 存储提交的重计任务数据
+    let recalculateTasks = [];
     
-    recalculateBtn.addEventListener('click', openRecalculateModal);
-    closeModal.addEventListener('click', closeRecalculateModal);
-    closeModalBtn.addEventListener('click', closeRecalculateModal);
-    batchRecalculateBtn.addEventListener('click', handleBatchRecalculate);
+    // 加载重计明细数据
+    function loadRecalculateData() {
+      // 从下拉框获取筛选状态
+      const statusFilter = document.getElementById('recalculateStatusFilter').value;
+      recalculateCurrentStatus = statusFilter;
+      recalculateCurrentPage = 1; // 切换状态时重置到第一页
+
+      // 模拟API调用
+      // const response = await fetch(`/api/recalculate-details?status=${statusFilter}&page=${recalculateCurrentPage}&pageSize=${recalculatePageSize}`);
+      // const data = await response.json();
+
+      const tbody = document.getElementById('recalculateTableBody');
+
+      // 根据状态筛选数据
+      let filteredData = [];
+      if (statusFilter === 'all') {
+        filteredData = recalculateTasks;
+      } else if (statusFilter === 'processing') {
+        filteredData = recalculateTasks.filter(item => item.status === 'processing');
+      } else if (statusFilter === 'success') {
+        filteredData = recalculateTasks.filter(item => item.status === 'success');
+      } else if (statusFilter === 'failed') {
+        filteredData = recalculateTasks.filter(item => item.status === 'failed');
+      }
+
+      const total = filteredData.length;
+      recalculateTotalCountEl.textContent = total;
+
+      // 计算分页
+      const totalPages = Math.ceil(total / recalculatePageSize);
+      const startIndex = (recalculateCurrentPage - 1) * recalculatePageSize;
+      const endIndex = startIndex + recalculatePageSize;
+      const pageData = filteredData.slice(startIndex, endIndex);
+
+      // 渲染表格
+      if (pageData.length === 0) {
+        tbody.innerHTML = `
+          <tr class="border-t border-gray-100">
+            <td colspan="10" class="px-4 py-12 text-center text-gray-400">
+              <i class="fa fa-inbox text-4xl mb-2 block"></i>
+              <p>暂无数据</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = pageData.map(item => `
+          <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3">${item.operationTime}</td>
+            <td class="px-4 py-3">${item.operator}</td>
+            <td class="px-4 py-3">${item.warehouseCode}</td>
+            <td class="px-4 py-3">${item.customerCode}</td>
+            <td class="px-4 py-3">${item.orderNo}</td>
+            <td class="px-4 py-3">${item.logisticsProduct}</td>
+            <td class="px-4 py-3">${item.chargeType}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded-full text-xs ${item.status === 'processing' ? 'bg-blue-100 text-blue-800' : item.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                ${item.status === 'processing' ? '重计中' : item.status === 'success' ? '成功' : '失败'}
+              </span>
+            </td>
+            <td class="px-4 py-3">${item.recalculateAmount.toFixed(3)}</td>
+            <td class="px-4 py-3">${item.failureReason || '-'}</td>
+          </tr>
+        `).join('');
+      }
+
+      // 更新分页按钮状态
+      updateRecalculatePagination(totalPages);
+    }
+
+    // 更新重计明细分页
+    function updateRecalculatePagination(totalPages) {
+      const prevBtn = document.getElementById('recalculatePrevPage');
+      const nextBtn = document.getElementById('recalculateNextPage');
+      const pageNumbers = document.getElementById('recalculatePageNumbers');
+      const goToPageInput = document.getElementById('recalculateGoToPage');
+
+      prevBtn.disabled = recalculateCurrentPage === 1;
+      nextBtn.disabled = recalculateCurrentPage === totalPages;
+
+      // 渲染页码按钮
+      pageNumbers.innerHTML = '';
+      for (let i = 1; i <= Math.min(5, totalPages); i++) {
+        const button = document.createElement('button');
+        button.className = `w-8 h-8 flex items-center justify-center rounded ${i === recalculateCurrentPage ? 'bg-primary text-white' : 'border border-gray-200 hover:border-primary hover:text-primary'} recalculate-page-btn`;
+        button.dataset.page = i;
+        button.textContent = i;
+        button.addEventListener('click', function() {
+          recalculateCurrentPage = parseInt(this.dataset.page);
+          loadRecalculateData();
+        });
+        pageNumbers.appendChild(button);
+      }
+
+      goToPageInput.value = recalculateCurrentPage;
+      goToPageInput.max = totalPages;
+    }
+
+    // 添加重计任务
+    function addRecalculateTasks(ids, totalCount) {
+      const tasks = ids.map(id => ({
+        id: Date.now() + id,
+        operationTime: new Date().toLocaleString('zh-CN'),
+        operator: 'system',
+        warehouseCode: 'DE001',
+        customerCode: 'DEMO',
+        orderNo: `DEMO-20251112-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        logisticsProduct: Math.random() > 0.5 ? 'FEDEX_MPS' : 'FEDEX_HOME_GROUND',
+        chargeType: '出库单',
+        status: 'processing',
+        recalculateAmount: Math.random() * 500 + 10,
+        failureReason: null
+      }));
+      recalculateTasks = [...tasks, ...recalculateTasks];
+    }
     
     // 全选功能
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
@@ -919,311 +1107,309 @@
       }
     });
 
-    // 存储提交的重计任务数据
-    let recalculateTasks = [];
-    
-    // 加载重计明细数据
-    function loadRecalculateData() {
-      // 从下拉框获取筛选状态
-      const statusFilter = document.getElementById('recalculateStatusFilter').value;
-      recalculateCurrentStatus = statusFilter;
-      recalculateCurrentPage = 1; // 切换状态时重置到第一页
+    // Mermaid图表放大预览
+    function openMermaidModal(container) {
+      const mermaidDiv = container.querySelector('.mermaid');
+      if (!mermaidDiv) return;
 
-      // 模拟API调用
-      // const response = await fetch(`/api/recalculate-details?status=${statusFilter}&page=${recalculateCurrentPage}&pageSize=${recalculatePageSize}`);
-      // const data = await response.json();
+      const modal = document.getElementById('mermaidModal');
+      const modalContent = document.getElementById('mermaidModalContent');
 
-      const tbody = document.getElementById('recalculateTableBody');
+      modalContent.innerHTML = mermaidDiv.innerHTML;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
 
-      // 根据状态筛选数据
-      let filteredData = [];
-      if (statusFilter === 'all') {
-        filteredData = recalculateTasks;
-      } else if (statusFilter === 'processing') {
-        filteredData = recalculateTasks.filter(item => item.status === 'processing');
-      } else if (statusFilter === 'success') {
-        filteredData = recalculateTasks.filter(item => item.status === 'success');
-      } else if (statusFilter === 'failed') {
-        filteredData = recalculateTasks.filter(item => item.status === 'failed');
+      if (window.mermaid) {
+        mermaid.run({ querySelector: modalContent.querySelectorAll('.mermaid') });
+      }
+    }
+
+    function closeMermaidModal(event) {
+      if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
+        return;
       }
 
-      const total = filteredData.length;
-      recalculateTotalCountEl.textContent = total;
+      const modal = document.getElementById('mermaidModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
 
-      // 计算分页
-      const totalPages = Math.ceil(total / recalculatePageSize);
-      const startIndex = (recalculateCurrentPage - 1) * recalculatePageSize;
-      const endIndex = startIndex + recalculatePageSize;
-      const pageData = filteredData.slice(startIndex, endIndex);
-
-      if (total === 0) {
-        tbody.innerHTML = `
-          <tr id="recalculateEmptyRow" class="border-t border-gray-100">
-            <td colspan="10" class="px-4 py-12 text-center text-gray-400">
-              <i class="fa fa-inbox text-4xl mb-2 block"></i>
-              <p>暂无数据</p>
-            </td>
-          </tr>
-        `;
+    // 逻辑说明区域
+    function togglePrdLogic(id) {
+      const content = document.getElementById(`${id}-logic-content`);
+      const icon = document.getElementById(`${id}-logic-icon`);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+        if (id === 'recalculation') {
+          loadPRD('recalculation');
+        }
       } else {
-        tbody.innerHTML = pageData.map(item => {
-          // 状态显示
-          let statusHtml = '';
-          if (item.status === 'processing') {
-            statusHtml = '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">重计中</span>';
-          } else if (item.status === 'success') {
-            statusHtml = '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">成功</span>';
-          } else if (item.status === 'failed') {
-            statusHtml = '<span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">失败</span>';
-          }
-
-          return `
-          <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3">${item.operateTime}</td>
-            <td class="px-4 py-3">${item.operator}</td>
-            <td class="px-4 py-3">${item.warehouse}</td>
-            <td class="px-4 py-3">${item.customerCode}</td>
-            <td class="px-4 py-3">${item.orderNo}</td>
-            <td class="px-4 py-3">${item.logisticsProduct}</td>
-            <td class="px-4 py-3">${item.billType}</td>
-            <td class="px-4 py-3">${statusHtml}</td>
-            <td class="px-4 py-3 ${item.status === 'success' ? 'text-success font-medium' : item.status === 'failed' ? 'text-danger' : ''}">${item.recalculatedAmount || '-'}</td>
-            <td class="px-4 py-3 ${item.status === 'failed' ? 'text-danger' : 'text-gray-400'}">${item.failReason || '-'}</td>
-          </tr>
-        `}).join('');
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
       }
-
-      // 更新分页控件
-      updateRecalculatePagination(totalPages, total);
     }
 
-    // 更新分页控件
-    function updateRecalculatePagination(totalPages, total) {
-      const prevBtn = document.getElementById('recalculatePrevPage');
-      const nextBtn = document.getElementById('recalculateNextPage');
-      const pageNumbers = document.getElementById('recalculatePageNumbers');
-      const goToPageInput = document.getElementById('recalculateGoToPage');
-
-      // 更新上一页/下一页按钮状态
-      prevBtn.disabled = recalculateCurrentPage === 1 || total === 0;
-      nextBtn.disabled = recalculateCurrentPage === totalPages || total === 0;
-
-      // 生成页码按钮
-      let pageButtonsHtml = '';
-      const maxVisiblePages = 5;
-      let startPage = Math.max(1, recalculateCurrentPage - Math.floor(maxVisiblePages / 2));
-      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-      if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        const isActive = i === recalculateCurrentPage;
-        pageButtonsHtml += `
-          <button class="w-8 h-8 flex items-center justify-center rounded ${isActive ? 'bg-primary text-white' : 'border border-gray-200 hover:border-primary hover:text-primary'} recalculate-page-btn" data-page="${i}">${i}</button>
-        `;
-      }
-
-      // 如果总页数大于显示的页数，添加省略号
-      if (totalPages > endPage) {
-        pageButtonsHtml += `<span class="px-2 text-gray-600">...</span>`;
-        pageButtonsHtml += `<button class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary recalculate-page-btn" data-page="${totalPages}">${totalPages}</button>`;
-      }
-
-      pageNumbers.innerHTML = pageButtonsHtml;
-
-      // 更新跳转输入框
-      goToPageInput.value = recalculateCurrentPage;
-      goToPageInput.max = totalPages || 1;
-
-      // 绑定页码按钮点击事件
-      pageNumbers.querySelectorAll('.recalculate-page-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const page = parseInt(btn.getAttribute('data-page'));
-          recalculateCurrentPage = page;
-          loadRecalculateData();
-        });
+    function switchTab(tab, id) {
+      document.querySelectorAll(`#${id}-prd-content, #${id}-testcases-content`).forEach(content => {
+        content.classList.add('hidden');
       });
+      document.getElementById(`${id}-${tab}-content`).classList.remove('hidden');
+      
+      document.querySelectorAll('.prd-tab-btn').forEach(btn => {
+        btn.classList.remove('border-primary', 'text-primary');
+        btn.classList.add('text-gray-500');
+      });
+      event.target.classList.remove('text-gray-500');
+      event.target.classList.add('border-primary', 'text-primary');
+      
+      if (tab === 'testcases') {
+        loadTestCases(id);
+      }
     }
 
-    // 状态筛选变更事件
-    document.getElementById('recalculateStatusFilter').addEventListener('change', () => {
-      loadRecalculateData();
-    });
+    // 加载PRD文档
+    function loadPRD(id) {
+      const prdContentDiv = document.getElementById(`${id}-prd-content`);
 
-    // 分页大小变更事件
-    document.getElementById('recalculatePageSize').addEventListener('change', (e) => {
-      recalculatePageSize = parseInt(e.target.value);
-      recalculateCurrentPage = 1;
-      loadRecalculateData();
-    });
-
-    // 上一页按钮事件
-    document.getElementById('recalculatePrevPage').addEventListener('click', () => {
-      if (recalculateCurrentPage > 1) {
-        recalculateCurrentPage--;
-        loadRecalculateData();
+      if (typeof marked === 'undefined') {
+        prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+        return;
       }
-    });
 
-    // 下一页按钮事件
-    document.getElementById('recalculateNextPage').addEventListener('click', () => {
-      const statusFilter = document.getElementById('recalculateStatusFilter').value;
-      const total = recalculateTasks.filter(item => {
-        if (statusFilter === 'all') return true;
-        if (statusFilter === 'processing') return item.status === 'processing';
-        if (statusFilter === 'success') return item.status === 'success';
-        if (statusFilter === 'failed') return item.status === 'failed';
-        return false;
-      }).length;
-      const totalPages = Math.ceil(total / recalculatePageSize);
-      if (recalculateCurrentPage < totalPages) {
-        recalculateCurrentPage++;
-        loadRecalculateData();
+      // 配置marked以支持Mermaid
+      const renderer = new marked.Renderer();
+      renderer.code = function(code, language) {
+        if (language === 'mermaid') {
+          return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+            <div class="mermaid">${code}</div>
+            <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+          </div>`;
+        }
+        return `<pre><code class="language-${language}">${code}</code></pre>`;
+      };
+
+      marked.setOptions({
+        renderer: renderer,
+        breaks: true,
+        gfm: true
+      });
+
+      // 模拟PRD内容
+      const prdMarkdown = `# 未出账订单 PRD
+
+## 1. 功能概述
+
+未出账订单模块用于管理需要重计费用的订单数据，支持批量重计、费用明细查询等功能。
+
+## 2. 用户流程
+
+\`\`\`mermaid
+flowchart TD
+    A[进入页面] --> B[加载订单列表]
+    B --> C{操作类型}
+    C -->|搜索| D[输入筛选条件]
+    C -->|批量重计| E[选择订单]
+    C -->|重计明细| F[查看重计记录]
+    D --> G[显示筛选结果]
+    E --> H[确认重计]
+    H --> I[提交重计任务]
+    I --> J[显示成功提示]
+    F --> K[查看重计状态]
+\`\`\`
+
+## 3. 功能模块
+
+### 3.1 订单列表
+
+- 展示未出账订单数据
+- 支持订单号、客户代码、仓库、配送渠道筛选
+- 支持批量选择订单
+
+### 3.2 批量重计
+
+- 支持选择部分订单或全部订单进行重计
+- 数据量超限提示和处理
+- 重计进度显示
+- 重计结果查询
+
+### 3.3 重计明细
+
+- 按状态筛选重计记录
+- 查看重计详情和失败原因
+- 支持分页查询
+
+## 4. 数据字段
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| 订单号 | 字符串 | 是 | 订单唯一标识 |
+| 客户代码 | 字符串 | 是 | 客户标识 |
+| 仓库 | 字符串 | 是 | 仓库代码 |
+| 配送渠道 | 字符串 | 否 | 物流配送渠道 |
+| 下单时间 | 日期时间 | 是 | 订单创建时间 |
+| 账单类型 | 字符串 | 是 | 出库单/仓储费 |
+| 物流产品 | 字符串 | 否 | 物流服务产品 |
+| 计费总金额 | 数值 | 是 | 费用总金额 |
+| 币种 | 字符串 | 是 | 货币类型 |
+`;
+
+      prdContentDiv.innerHTML = marked.parse(prdMarkdown);
+
+      // 渲染Mermaid图表
+      if (window.mermaid) {
+        setTimeout(function() {
+          mermaid.run({ querySelector: prdContentDiv.querySelectorAll('.mermaid') });
+        }, 100);
       }
-    });
+    }
 
-      // 跳转到指定页
-      document.getElementById('recalculateGoToPage').addEventListener('change', (e) => {
-        const statusFilter = document.getElementById('recalculateStatusFilter').value;
-        const total = recalculateTasks.filter(item => {
-          if (statusFilter === 'all') return true;
-          if (statusFilter === 'processing') return item.status === 'processing';
-          if (statusFilter === 'success') return item.status === 'success';
-          if (statusFilter === 'failed') return item.status === 'failed';
-          return false;
-        }).length;
-        const totalPages = Math.ceil(total / recalculatePageSize);
-        const page = parseInt(e.target.value);
-        if (page >= 1 && page <= totalPages) {
-          recalculateCurrentPage = page;
-          loadRecalculateData();
+    function loadTestCases(id) {
+      const testCasesContentDiv = document.getElementById(`${id}-testcases-content`);
+
+      if (typeof marked === 'undefined') {
+        testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+        return;
+      }
+
+      // 模拟测试用例内容
+      const testCasesMarkdown = `# 未出账订单 测试用例
+
+## 1. 功能测试
+
+### TC-REC-001: 页面加载
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 打开未出账订单页面 | 页面正常加载，显示订单列表 |
+| 2 | 检查默认数据 | 显示默认的空数据提示 |
+| 3 | 检查搜索区域 | 搜索条件和按钮正常显示 |
+
+### TC-REC-002: 搜索功能
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 输入订单号 | 输入框正常接收输入 |
+| 2 | 选择客户代码 | 下拉框正常展开 |
+| 3 | 点击搜索按钮 | 显示测试数据 |
+| 4 | 点击重置按钮 | 搜索条件清空 |
+
+### TC-REC-003: 批量重计
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 勾选订单 | 复选框正常选中 |
+| 2 | 点击批量重计 | 成功提交重计任务 |
+| 3 | 查看成功提示 | 显示提交成功弹窗 |
+
+## 2. 兼容性测试
+
+- 浏览器兼容性：Chrome、Firefox、Safari、Edge
+- 分辨率兼容性：1920x1080、1366x768、移动端适配
+`;
+
+      testCasesContentDiv.innerHTML = marked.parse(testCasesMarkdown);
+    }
+
+    // 绑定事件
+    function bindEvents() {
+      // 使用事件委托优化事件处理
+      const container = document.querySelector('.container');
+      
+      // 委托处理按钮点击事件
+      container.addEventListener('click', (e) => {
+        if (e.target.id === 'searchBtn') {
+          loadTestData();
+        } else if (e.target.id === 'recalculateBtn') {
+          openRecalculateModal();
+        } else if (e.target.id === 'closeModal' || e.target.id === 'closeModalBtn') {
+          closeRecalculateModal();
+        } else if (e.target.id === 'batchRecalculateBtn') {
+          handleBatchRecalculate();
+        } else if (e.target.id === 'goToRecalculateDetailBtn') {
+          goToRecalculateDetail();
+        } else if (e.target.id === 'closeSuccessBtn') {
+          closeSuccessModal();
+        } else if (e.target.classList.contains('mermaid-modal-close')) {
+          closeMermaidModal(e);
         }
       });
-
-    // 刷新重计明细数据（不重置页码，用于异步状态更新）
-    function refreshRecalculateData() {
-      // 从下拉框获取筛选状态
-      const statusFilter = document.getElementById('recalculateStatusFilter').value;
-
-      const tbody = document.getElementById('recalculateTableBody');
-
-      // 根据状态筛选数据
-      let filteredData = [];
-      if (statusFilter === 'all') {
-        filteredData = recalculateTasks;
-      } else if (statusFilter === 'processing') {
-        filteredData = recalculateTasks.filter(item => item.status === 'processing');
-      } else if (statusFilter === 'success') {
-        filteredData = recalculateTasks.filter(item => item.status === 'success');
-      } else if (statusFilter === 'failed') {
-        filteredData = recalculateTasks.filter(item => item.status === 'failed');
-      }
-
-      const total = filteredData.length;
-      recalculateTotalCountEl.textContent = total;
-
-      // 计算分页
-      const totalPages = Math.ceil(total / recalculatePageSize);
-      const startIndex = (recalculateCurrentPage - 1) * recalculatePageSize;
-      const endIndex = startIndex + recalculatePageSize;
-      const pageData = filteredData.slice(startIndex, endIndex);
-
-      if (total === 0) {
-        tbody.innerHTML = `
-          <tr id="recalculateEmptyRow" class="border-t border-gray-100">
-            <td colspan="10" class="px-4 py-12 text-center text-gray-400">
-              <i class="fa fa-inbox text-4xl mb-2 block"></i>
-              <p>暂无数据</p>
-            </td>
-          </tr>
-        `;
-      } else {
-        tbody.innerHTML = pageData.map(item => {
-          // 状态显示
-          let statusHtml = '';
-          if (item.status === 'processing') {
-            statusHtml = '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">重计中</span>';
-          } else if (item.status === 'success') {
-            statusHtml = '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">成功</span>';
-          } else if (item.status === 'failed') {
-            statusHtml = '<span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">失败</span>';
+      
+      // 委托处理分页点击事件
+      container.addEventListener('click', (e) => {
+        if (e.target.classList.contains('page-link')) {
+          e.preventDefault();
+          const page = parseInt(e.target.getAttribute('data-page'));
+          if (!isNaN(page)) {
+            currentPage = page;
+            loadRecalculateData(currentStatus);
           }
-
-          return `
-          <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3">${item.operateTime}</td>
-            <td class="px-4 py-3">${item.operator}</td>
-            <td class="px-4 py-3">${item.warehouse}</td>
-            <td class="px-4 py-3">${item.customerCode}</td>
-            <td class="px-4 py-3">${item.orderNo}</td>
-            <td class="px-4 py-3">${item.logisticsProduct}</td>
-            <td class="px-4 py-3">${item.billType}</td>
-            <td class="px-4 py-3">${statusHtml}</td>
-            <td class="px-4 py-3 ${item.status === 'success' ? 'text-success font-medium' : item.status === 'failed' ? 'text-danger' : ''}">${item.recalculatedAmount || '-'}</td>
-            <td class="px-4 py-3 ${item.status === 'failed' ? 'text-danger' : 'text-gray-400'}">${item.failReason || '-'}</td>
-          </tr>
-        `}).join('');
-      }
-
-      // 更新分页控件
-      updateRecalculatePagination(totalPages, total);
-    }
-    
-    // 添加重计任务到明细
-    function addRecalculateTasks(orderIds, totalCount) {
-      const now = new Date();
-      const operateTime = now.toLocaleString('zh-CN', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
+        }
       });
       
-      // 为每个订单创建任务记录
-      orderIds.forEach((orderId, index) => {
-        // 模拟订单数据（实际应该从API获取）
-        const task = {
-          id: Date.now() + index,
-          operateTime: operateTime,
-          operator: '系统管理员',
-          warehouse: 'DE001',
-          customerCode: 'DEMO',
-          orderNo: `DEMO-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(orderId).padStart(6, '0')}`,
-          logisticsProduct: index % 2 === 0 ? 'FEDEX_MPS' : 'FEDEX_HOME_GROUND',
-          billType: '出库单',
-          recalculatedAmount: null,
-          failReason: null,
-          status: 'processing' // processing, success, failed
-        };
-        
-        recalculateTasks.push(task);
-        
-        // 模拟异步处理，随机设置成功或失败
-        setTimeout(() => {
-          const random = Math.random();
-          if (random > 0.2) {
-            // 80% 成功率
-            task.status = 'success';
-            task.recalculatedAmount = (Math.random() * 500 + 10).toFixed(2);
-          } else {
-            // 20% 失败率
-            task.status = 'failed';
-            task.failReason = ['计费规则不存在', '订单状态异常', '数据校验失败'][Math.floor(Math.random() * 3)];
-          }
-          
-          // 状态变化时，刷新数据（不重置页码）
-          refreshRecalculateData();
-        }, 2000 + Math.random() * 3000); // 2-5秒后完成
+      // 委托处理状态筛选事件
+      container.addEventListener('change', (e) => {
+        if (e.target.id === 'statusFilter') {
+          currentStatus = e.target.value;
+          currentPage = 1;
+          loadRecalculateData(currentStatus);
+        }
+      });
+      
+      // 委托处理全选事件
+      container.addEventListener('change', (e) => {
+        if (e.target.id === 'selectAll') {
+          const isChecked = e.target.checked;
+          document.querySelectorAll('.order-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+          });
+        }
+      });
+      
+      // 点击模态框外部关闭
+      recalculateModal.addEventListener('click', (e) => {
+        if (e.target === recalculateModal) {
+          closeRecalculateModal();
+        }
+      });
+      
+      successModal.addEventListener('click', (e) => {
+        if (e.target === successModal) {
+          closeSuccessModal();
+        }
+      });
+      
+      // 关闭Mermaid弹窗
+      document.getElementById('mermaidModal').addEventListener('click', closeMermaidModal);
+      
+      // ESC键关闭模态框
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeMermaidModal();
+          closeRecalculateModal();
+          closeSuccessModal();
+        }
       });
     }
-    
-    // 初始化
-    loadOrderData();
-    loadRecalculateData();
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化数据
+      loadOrderData();
+
+      // Mermaid初始化
+      if (window.mermaid) {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default',
+          securityLevel: 'loose',
+          logLevel: 3
+        });
+      }
+
+      // 绑定事件
+      bindEvents();
+    });
   </script>
 </body>
 </html>

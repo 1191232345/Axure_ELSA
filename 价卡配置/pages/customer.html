@@ -1,0 +1,239 @@
+<div id="page-customer" class="page">
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div class="flex items-center w-full sm:w-auto">
+                <label class="text-xs text-neutral-600 mr-2">客户</label>
+                <select id="customerSelect" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                    <option value="all">全部</option>
+                    <option value="C001">C001</option>
+                    <option value="C002">C002</option>
+                    <option value="C003">C003</option>
+                </select>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="resetCustomerSearch()">
+                    <i class="fa fa-refresh mr-1.5"></i> 重置
+                </button>
+                <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="searchCustomer()">
+                    <i class="fa fa-search mr-1.5"></i> 搜索
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded shadow-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+                <thead class="bg-primary/10">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">客户代码</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">客户名称</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联收费项</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-neutral-100" id="customerTableBody">
+                    <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                        <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">C001</td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">客户A</td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">18</td>
+                        <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                            <button class="table-btn text-primary hover:bg-primary/10" onclick="openCustomerSettings('C001')">设置</button>
+                        </td>
+                    </tr>
+                    <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                        <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">C002</td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">客户B</td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">32</td>
+                        <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                            <button class="table-btn text-primary hover:bg-primary/10" onclick="openCustomerSettings('C002')">设置</button>
+                        </td>
+                    </tr>
+                    <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                        <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">C003</td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">客户C</td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">45</td>
+                        <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                            <button class="table-btn text-primary hover:bg-primary/10" onclick="openCustomerSettings('C003')">设置</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-neutral-600">
+            共 <span class="font-medium">3</span> 条记录
+        </div>
+        <div class="flex items-center gap-2">
+            <button class="px-3 py-1 rounded border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50" disabled>
+                <i class="fa fa-chevron-left"></i>
+            </button>
+            <button class="px-3 py-1 rounded bg-primary text-white">1</button>
+            <button class="px-3 py-1 rounded border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50" disabled>
+                <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('customer')">
+            <div class="flex items-center">
+                <i class="fa fa-book text-primary mr-2"></i>
+                <span class="font-semibold text-primary">逻辑说明</span>
+                <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+            </div>
+            <i class="fa fa-chevron-down text-primary transition-transform" id="customer-logic-icon"></i>
+        </div>
+        <div id="customer-logic-content" class="hidden">
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">客户列表加载</td>
+                                <td class="px-3 py-2 text-gray-600">页面加载时展示所有客户</td>
+                                <td class="px-3 py-2 text-gray-600">客户信息表</td>
+                                <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">关联收费项统计</td>
+                                <td class="px-3 py-2 text-gray-600">统计每个客户关联的费用项数量</td>
+                                <td class="px-3 py-2 text-gray-600">费用配置表</td>
+                                <td class="px-3 py-2 text-gray-600">显示数字</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-search text-primary mr-2"></i>检索条件
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">客户</td>
+                                <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                <td class="px-3 py-2 text-gray-600">根据选择客户精确筛选</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">设置</td>
+                                <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                <td class="px-3 py-2 text-gray-600">打开客户费用设置弹窗</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">配置费用项后保存，刷新列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">重置</td>
+                                <td class="px-3 py-2 text-gray-600">搜索区域</td>
+                                <td class="px-3 py-2 text-gray-600">清空搜索条件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">显示全部数据</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">搜索</td>
+                                <td class="px-3 py-2 text-gray-600">搜索区域</td>
+                                <td class="px-3 py-2 text-gray-600">根据条件筛选数据</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">显示筛选结果</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据类型</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段长度</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">是否必填</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">默认值</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值来源</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示格式</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                <td class="px-3 py-2 text-gray-600">字符串</td>
+                                <td class="px-3 py-2 text-gray-600">20</td>
+                                <td class="px-3 py-2 text-gray-600">是</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">客户信息表</td>
+                                <td class="px-3 py-2 text-gray-600">直接显示</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">客户名称</td>
+                                <td class="px-3 py-2 text-gray-600">字符串</td>
+                                <td class="px-3 py-2 text-gray-600">50</td>
+                                <td class="px-3 py-2 text-gray-600">是</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">客户信息表</td>
+                                <td class="px-3 py-2 text-gray-600">直接显示</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">关联收费项</td>
+                                <td class="px-3 py-2 text-gray-600">数字</td>
+                                <td class="px-3 py-2 text-gray-600">10</td>
+                                <td class="px-3 py-2 text-gray-600">否</td>
+                                <td class="px-3 py-2 text-gray-600">0</td>
+                                <td class="px-3 py-2 text-gray-600">费用配置表</td>
+                                <td class="px-3 py-2 text-gray-600">直接显示</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,179 @@
+<div id="page-storage-fee-add" class="page">
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <button onclick="switchToPage('storage-fee')" class="text-gray-500 hover:text-gray-700 mr-3">
+                    <i class="fa fa-arrow-left"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-800">新增仓储费</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded shadow-card p-6 mb-4">
+        <form id="addStorageFeeForm">
+            <div class="mb-6">
+                <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-info-circle text-primary mr-2"></i>基本信息
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">费用项名称 <span class="text-red-500">*</span></label>
+                        <input type="text" id="storageFeeName" class="form-input" placeholder="请输入费用项名称，如：标准仓储费">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">业务类型</label>
+                        <div class="form-input bg-gray-50 text-gray-600">仓储</div>
+                        <input type="hidden" id="storageFeeBusinessType" value="storage">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">计费单位 <span class="text-red-500">*</span></label>
+                        <select id="storageFeeUnit" class="form-select">
+                            <option value="">请选择计费单位</option>
+                            <option value="day">天</option>
+                            <option value="volume">体积(m³)</option>
+                            <option value="pallet">托</option>
+                            <option value="box">箱</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">适用仓库 <span class="text-red-500">*</span></label>
+                        <select id="storageFeeWarehouse" class="form-select">
+                            <option value="">请选择仓库</option>
+                            <option value="DEMO">DEMO仓库</option>
+                            <option value="DE001">德国仓库</option>
+                            <option value="MD001">马德里仓库</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">有效期开始 <span class="text-red-500">*</span></label>
+                        <input type="date" id="storageFeeValidFrom" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">有效期结束 <span class="text-red-500">*</span></label>
+                        <input type="date" id="storageFeeValidTo" class="form-input">
+                    </div>
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label">适用客户 <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <div id="storageFeeCustomerSelect" class="form-input min-h-[42px] cursor-pointer flex flex-wrap gap-2 items-center" onclick="toggleCustomerDropdown('storage')">
+                                <span id="storageFeeCustomerPlaceholder" class="text-gray-400">请选择适用客户</span>
+                                <div id="storageFeeCustomerTags" class="flex flex-wrap gap-1"></div>
+                                <i class="fa fa-angle-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                            <div id="storageFeeCustomerDropdown" class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden max-h-60 overflow-y-auto">
+                                <div class="p-2 border-b border-gray-100">
+                                    <input type="text" id="storageFeeCustomerSearch" class="form-input text-sm" placeholder="搜索客户..." oninput="filterCustomerList('storage')">
+                                </div>
+                                <div id="storageFeeCustomerList" class="p-2">
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C001" data-name="客户A" onclick="selectCustomer('storage', 'C001', '客户A')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户A (C001)</span>
+                                    </div>
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C002" data-name="客户B" onclick="selectCustomer('storage', 'C002', '客户B')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户B (C002)</span>
+                                    </div>
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C003" data-name="客户C" onclick="selectCustomer('storage', 'C003', '客户C')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户C (C003)</span>
+                                    </div>
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C004" data-name="客户D" onclick="selectCustomer('storage', 'C004', '客户D')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户D (C004)</span>
+                                    </div>
+                                    <div class="customer-option p-2 hover:bg-gray-50 rounded cursor-pointer flex items-center" data-value="C005" data-name="客户E" onclick="selectCustomer('storage', 'C005', '客户E')">
+                                        <input type="checkbox" class="mr-2 customer-checkbox">
+                                        <span>客户E (C005)</span>
+                                    </div>
+                                </div>
+                                <div class="p-2 border-t border-gray-100 bg-gray-50 flex justify-between">
+                                    <button type="button" class="text-sm text-primary hover:underline" onclick="selectAllCustomers('storage')">全选</button>
+                                    <button type="button" class="text-sm text-gray-500 hover:underline" onclick="clearAllCustomers('storage')">清空</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <i class="fa fa-info-circle mr-1"></i>可多选客户，支持搜索
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-list-alt text-primary mr-2"></i>阶梯价格配置
+                </h2>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-blue-700">
+                        <i class="fa fa-lightbulb-o mr-1"></i>
+                        <strong>提示：</strong>仓储费通常按存储时长阶梯计费，例如：1-30天按标准费率，31-60天上浮10%，60天以上上浮20%。
+                    </p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-200 rounded-lg">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">开始天数 <span class="text-red-500">*</span></th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">结束天数</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">单价(元/单位/天) <span class="text-red-500">*</span></th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">最低收费</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">最高收费</th>
+                                <th class="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="storageFeeTiersContainer" class="divide-y divide-gray-200">
+                            <tr class="tier-row hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <input type="number" class="form-input w-full tier-start" placeholder="1" min="0" value="1">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" class="form-input w-full tier-end" placeholder="30" min="0" value="30">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" class="form-input w-full tier-price" placeholder="0.00" min="0" step="0.01">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" class="form-input w-full tier-min" placeholder="0.00" min="0" step="0.01">
+                                </td>
+                                <td class="px-4 py-3">
+                                    <input type="number" class="form-input w-full tier-max" placeholder="不限" min="0" step="0.01">
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <button type="button" class="text-gray-400 hover:text-red-500" onclick="removeTierRow(this)" disabled title="至少保留一行">
+                                        <i class="fa fa-trash-o"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        <i class="fa fa-info-circle mr-1"></i>结束天数留空表示无上限
+                    </div>
+                    <button type="button" class="erp-btn erp-btn-secondary" onclick="addStorageFeeTier()">
+                        <i class="fa fa-plus mr-1.5"></i> 添加阶梯
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fa fa-file-text-o text-primary mr-2"></i>其他信息
+                </h2>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <textarea id="storageFeeRemark" class="form-textarea" placeholder="请输入备注信息" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <button type="button" onclick="switchToPage('storage-fee')" class="erp-btn erp-btn-secondary">取消</button>
+                <button type="button" onclick="saveStorageFee()" class="erp-btn erp-btn-primary">
+                    <i class="fa fa-save mr-1.5"></i>保存
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

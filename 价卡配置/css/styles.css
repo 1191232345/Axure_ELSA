@@ -1,0 +1,1329 @@
+/* 全局样式 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    width: 180px;
+    background: linear-gradient(180deg, #0056b3 0%, #004494 100%);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 20px 0;
+}
+
+.nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-link {
+    display: block;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-left: 3px solid white;
+}
+
+.nav-link.active {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border-left: 3px solid white;
+}
+
+/* 主内容区样式 */
+.main-content {
+    margin-left: 180px;
+    padding: 20px;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+/* 卡片样式 */
+.shadow-card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 按钮样式 */
+.erp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    outline: none;
+}
+
+.erp-btn-primary {
+    background-color: #0056b3;
+    color: white;
+}
+
+.erp-btn-primary:hover {
+    background-color: #004494;
+}
+
+.erp-btn-secondary {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #dee2e6;
+}
+
+.erp-btn-secondary:hover {
+    background-color: #e9ecef;
+}
+
+/* 表格样式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-hover-row:hover {
+    background-color: #f5f5f5;
+}
+
+.table-btn {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    border-color: #0056b3;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,86,179,0.25);
+}
+
+/* 页面样式 */
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 0;
+        overflow-x: hidden;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .sidebar.active {
+        width: 180px;
+    }
+
+    .main-content.sidebar-active {
+        margin-left: 180px;
+    }
+}
+
+/* 费用项管理页面样式 */
+#fee-add .form-group {
+    margin-bottom: 1rem;
+}
+
+#fee-add .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+#fee-add .form-input,
+#fee-add .form-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+/* 阶梯价格表格样式 */
+#priceTiersContainer input[type="number"] {
+    width: 100%;
+}
+
+/* 逻辑说明卡片样式 */
+#warehouse-logic-content,
+#customer-logic-content {
+    transition: all 0.3s ease;
+}
+
+#warehouse-logic-content.hidden,
+#customer-logic-content.hidden {
+    display: none;
+}
+
+/* 价格模式切换样式 */
+#fixedPriceSection,
+#tieredPriceSection {
+    transition: all 0.3s ease;
+}
+
+#fixedPriceSection.hidden,
+#tieredPriceSection.hidden {
+    display: none;
+}
+
+/* 费用管理下拉菜单样式 */
+.group {
+    position: relative;
+}
+
+.group:hover .absolute {
+    opacity: 1;
+    visibility: visible;
+}
+
+.absolute {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+/* 多选下拉框样式 */
+select[multiple] {
+    height: 120px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* 阶梯价格表格样式 */
+.tier-row {
+    transition: background-color 0.2s ease;
+}
+
+.tier-row:hover {
+    background-color: #f5f5f5;
+}
+
+/* 价格预览卡片样式 */
+.price-preview-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px;
+    background-color: #f9f9f9;
+}
+
+.price-preview-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.price-preview-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.price-preview-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.price-preview-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.price-preview-value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* 费用管理菜单样式 */
+.relative.group {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 2px;
+    z-index: 1000;
+}
+
+/* 主色调 */
+.text-primary {
+    color: #0056b3;
+}
+
+.bg-primary {
+    background-color: #0056b3;
+}
+
+.border-primary {
+    border-color: #0056b3;
+}
+
+.bg-primary\/10 {
+    background-color: rgba(0,86,179,0.1);
+}
+
+.bg-primary\/80 {
+    background-color: rgba(0,86,179,0.8);
+}
+
+.bg-primary\/5 {
+    background-color: rgba(0,86,179,0.05);
+}
+
+.bg-primary\/20 {
+    background-color: rgba(0,86,179,0.2);
+}
+
+/* 中性色 */
+.text-neutral-600 {
+    color: #666;
+}
+
+.text-neutral-700 {
+    color: #555;
+}
+
+.text-neutral-800 {
+    color: #333;
+}
+
+.border-neutral-100 {
+    border-color: #f0f0f0;
+}
+
+.border-neutral-200 {
+    border-color: #e0e0e0;
+}
+
+.border-neutral-300 {
+    border-color: #d0d0d0;
+}
+
+.bg-neutral-50 {
+    background-color: #f9f9f9;
+}
+
+/* 间距工具类 */
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+.mr-3 {
+    margin-right: 0.75rem;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* 布局工具类 */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-start {
+    justify-content: flex-start;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.sm\:w-auto {
+    width: auto;
+}
+
+.sm\:ml-auto {
+    margin-left: auto;
+}
+
+.sm\:flex-row {
+    flex-direction: row;
+}
+
+.sm\:items-center {
+    align-items: center;
+}
+
+/* 网格布局 */
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.md\:col-span-2 {
+    grid-column: span 2 / span 2;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+/* 文本工具类 */
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-base {
+    font-size: 1rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-left {
+    text-align: left;
+}
+
+/* 边框工具类 */
+.border {
+    border: 1px solid #e0e0e0;
+}
+
+.border-b {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.border-t {
+    border-top: 1px solid #e0e0e0;
+}
+
+.rounded {
+    border-radius: 0.25rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+/* 过渡动画 */
+.transition-colors {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+.transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+/* 状态类 */
+.opacity-0 {
+    opacity: 0;
+}
+
+.opacity-100 {
+    opacity: 1;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.sticky {
+    position: sticky;
+}
+
+.right-0 {
+    right: 0;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.z-20 {
+    z-index: 20;
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+/* 交互状态 */
+.hover\:bg-gray-50:hover {
+    background-color: #f9f9f9;
+}
+
+.hover\:bg-neutral-50:hover {
+    background-color: #f9f9f9;
+}
+
+.hover\:bg-primary\/10:hover {
+    background-color: rgba(0,86,179,0.1);
+}
+
+.hover\:bg-neutral-50:hover {
+    background-color: #f9f9f9;
+}
+
+.hover\:bg-gray-100:hover {
+    background-color: #f3f4f6;
+}
+
+.hover\:text-blue-700:hover {
+    color: #1d4ed8;
+}
+
+.hover\:text-red-700:hover {
+    color: #b91c1c;
+}
+
+.hover\:text-gray-600:hover {
+    color: #4b5563;
+}
+
+.hover\:text-gray-700:hover {
+    color: #374151;
+}
+
+/* 响应式工具类 */
+@media (min-width: 640px) {
+    .sm\:flex {
+        display: flex;
+    }
+
+    .sm\:flex-row {
+        flex-direction: row;
+    }
+
+    .sm\:items-center {
+        align-items: center;
+    }
+
+    .sm\:ml-auto {
+        margin-left: auto;
+    }
+
+    .sm\:w-auto {
+        width: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    .md\:grid {
+        display: grid;
+    }
+
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .md\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+}
+
+/* 渐变背景 */
+.bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+.from-primary\/5 {
+    --tw-gradient-from: rgba(0,86,179,0.05);
+    --tw-gradient-to: rgba(0,86,179,0);
+}
+
+.to-primary\/10 {
+    --tw-gradient-to: rgba(0,86,179,0.1);
+}
+
+/* 特殊状态 */
+.disabled:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 价格模式切换样式 */
+#fixedPriceSection,
+#tieredPriceSection {
+    transition: all 0.3s ease;
+}
+
+#fixedPriceSection.hidden,
+#tieredPriceSection.hidden {
+    display: none;
+}
+
+/* 阶梯价格表格样式 */
+.tier-minmax {
+    transition: all 0.3s ease;
+}
+
+.tier-minmax.hidden {
+    display: none;
+}
+
+.tier-minmax-header {
+    transition: all 0.3s ease;
+}
+
+.tier-minmax-header.hidden {
+    display: none;
+}
+
+/* 逻辑说明卡片样式 */
+#warehouse-logic-content,
+#customer-logic-content {
+    transition: all 0.3s ease;
+}
+
+#warehouse-logic-content.hidden,
+#customer-logic-content.hidden {
+    display: none;
+}
+
+/* 费用管理下拉菜单样式 */
+.relative.group {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 2px;
+    z-index: 1000;
+}
+
+/* 多选下拉框样式 */
+select[multiple] {
+    height: 120px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* 阶梯价格表格样式 */
+.tier-row {
+    transition: background-color 0.2s ease;
+}
+
+.tier-row:hover {
+    background-color: #f5f5f5;
+}
+
+/* 价格预览卡片样式 */
+.price-preview-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px;
+    background-color: #f9f9f9;
+}
+
+.price-preview-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.price-preview-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.price-preview-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.price-preview-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.price-preview-value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* 费用管理菜单样式 */
+.relative.group {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 2px;
+    z-index: 1000;
+}
+
+/* 主色调 */
+.text-primary {
+    color: #0056b3;
+}
+
+.bg-primary {
+    background-color: #0056b3;
+}
+
+.border-primary {
+    border-color: #0056b3;
+}
+
+.bg-primary\/10 {
+    background-color: rgba(0,86,179,0.1);
+}
+
+.bg-primary\/80 {
+    background-color: rgba(0,86,179,0.8);
+}
+
+.bg-primary\/5 {
+    background-color: rgba(0,86,179,0.05);
+}
+
+.bg-primary\/20 {
+    background-color: rgba(0,86,179,0.2);
+}
+
+/* 中性色 */
+.text-neutral-600 {
+    color: #666;
+}
+
+.text-neutral-700 {
+    color: #555;
+}
+
+.text-neutral-800 {
+    color: #333;
+}
+
+.border-neutral-100 {
+    border-color: #f0f0f0;
+}
+
+.border-neutral-200 {
+    border-color: #e0e0e0;
+}
+
+.border-neutral-300 {
+    border-color: #d0d0d0;
+}
+
+.bg-neutral-50 {
+    background-color: #f9f9f9;
+}
+
+/* 间距工具类 */
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+.mr-3 {
+    margin-right: 0.75rem;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* 布局工具类 */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-start {
+    justify-content: flex-start;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.sm\:w-auto {
+    width: auto;
+}
+
+.sm\:ml-auto {
+    margin-left: auto;
+}
+
+.sm\:flex-row {
+    flex-direction: row;
+}
+
+.sm\:items-center {
+    align-items: center;
+}
+
+/* 网格布局 */
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.md\:col-span-2 {
+    grid-column: span 2 / span 2;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+/* 文本工具类 */
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-base {
+    font-size: 1rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-left {
+    text-align: left;
+}
+
+/* 边框工具类 */
+.border {
+    border: 1px solid #e0e0e0;
+}
+
+.border-b {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.border-t {
+    border-top: 1px solid #e0e0e0;
+}
+
+.rounded {
+    border-radius: 0.25rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+/* 过渡动画 */
+.transition-colors {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+.transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+/* 状态类 */
+.opacity-0 {
+    opacity: 0;
+}
+
+.opacity-100 {
+    opacity: 1;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
+}
+
+.sticky {
+    position: sticky;
+}
+
+.right-0 {
+    right: 0;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.z-20 {
+    z-index: 20;
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+/* 交互状态 */
+.hover\:bg-gray-50:hover {
+    background-color: #f9f9f9;
+}
+
+.hover\:bg-neutral-50:hover {
+    background-color: #f9f9f9;
+}
+
+.hover\:bg-primary\/10:hover {
+    background-color: rgba(0,86,179,0.1);
+}
+
+.hover\:bg-neutral-50:hover {
+    background-color: #f9f9f9;
+}
+
+.hover\:bg-gray-100:hover {
+    background-color: #f3f4f6;
+}
+
+.hover\:text-blue-700:hover {
+    color: #1d4ed8;
+}
+
+.hover\:text-red-700:hover {
+    color: #b91c1c;
+}
+
+.hover\:text-gray-600:hover {
+    color: #4b5563;
+}
+
+.hover\:text-gray-700:hover {
+    color: #374151;
+}
+
+/* 响应式工具类 */
+@media (min-width: 640px) {
+    .sm\:flex {
+        display: flex;
+    }
+
+    .sm\:flex-row {
+        flex-direction: row;
+    }
+
+    .sm\:items-center {
+        align-items: center;
+    }
+
+    .sm\:ml-auto {
+        margin-left: auto;
+    }
+
+    .sm\:w-auto {
+        width: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    .md\:grid {
+        display: grid;
+    }
+
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .md\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+}
+
+/* 渐变背景 */
+.bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+.from-primary\/5 {
+    --tw-gradient-from: rgba(0,86,179,0.05);
+    --tw-gradient-to: rgba(0,86,179,0);
+}
+
+.to-primary\/10 {
+    --tw-gradient-to: rgba(0,86,179,0.1);
+}
+
+/* 特殊状态 */
+.disabled:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 价格模式切换样式 */
+#fixedPriceSection,
+#tieredPriceSection {
+    transition: all 0.3s ease;
+}
+
+#fixedPriceSection.hidden,
+#tieredPriceSection.hidden {
+    display: none;
+}
+
+/* 阶梯价格表格样式 */
+.tier-minmax {
+    transition: all 0.3s ease;
+}
+
+.tier-minmax.hidden {
+    display: none;
+}
+
+.tier-minmax-header {
+    transition: all 0.3s ease;
+}
+
+.tier-minmax-header.hidden {
+    display: none;
+}
+
+/* 逻辑说明卡片样式 */
+#warehouse-logic-content,
+#customer-logic-content {
+    transition: all 0.3s ease;
+}
+
+#warehouse-logic-content.hidden,
+#customer-logic-content.hidden {
+    display: none;
+}
+
+/* 费用管理下拉菜单样式 */
+.relative.group {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 2px;
+    z-index: 1000;
+}
+
+/* 多选下拉框样式 */
+select[multiple] {
+    height: 120px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* 阶梯价格表格样式 */
+.tier-row {
+    transition: background-color 0.2s ease;
+}
+
+.tier-row:hover {
+    background-color: #f5f5f5;
+}
+
+/* 价格预览卡片样式 */
+.price-preview-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 16px;
+    background-color: #f9f9f9;
+}
+
+.price-preview-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.price-preview-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.price-preview-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.price-preview-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.price-preview-value {
+    font-weight: 600;
+    color: #333;
+}
