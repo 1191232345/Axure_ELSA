@@ -1,1204 +1,1458 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>入库详情 - 物流管理系统</title>
-  <!-- 引入Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 自定义配置 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#1890ff',
-            success: '#52c41a',
-            warning: '#faad14',
-            danger: '#ff4d4f',
-            neutral: {
-              100: '#f5f5f5',
-              200: '#e5e5e5',
-              300: '#d9d9d9',
-              500: '#8c8c8c',
-              600: '#666666',
-              700: '#595959',
-              800: '#434343',
-            }
-          },
-          boxShadow: {
-            'table-shadow': '0 2px 8px rgba(0, 0, 0, 0.08)',
-          }
-        }
-      }
-    }
-  </script>
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .badge-pill {
-        @apply inline-flex items-center px-2 py-1 text-xs font-medium rounded-full;
-      }
-      .btn-primary {
-        @apply px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm hover:shadow-md;
-      }
-      .btn-default {
-        @apply px-4 py-2 border border-neutral-300 rounded-md text-sm font-medium text-neutral-700 hover:bg-neutral-100 transition-colors shadow-sm hover:shadow-md;
-      }
-      .tab-active {
-        @apply text-primary border-b-2 border-primary bg-primary/5;
-      }
-      .tab-inactive {
-        @apply text-neutral-600 hover:text-primary transition-colors hover:bg-neutral-50 rounded-t-md;
-      }
-    }
-  </style>
-
-  <style>
-    /* 水印样式 */
-    body::before {
-      content: '曾少文';
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-45deg);
-      font-size: 120px;
-      color: rgba(0, 0, 0, 0.05);
-      z-index: -1;
-      pointer-events: none;
-      font-weight: bold;
-    }
-
-    /* 优化卡片样式 */
-    .info-card-enhanced {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .info-card-enhanced:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    /* 表格样式优化 */
-    .table-container {
-      overflow-x: auto;
-      border-radius: 8px;
-      border: 1px solid #f0f0f0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    th, td {
-      padding: 14px 16px;
-      text-align: left;
-      border-bottom: 1px solid #f5f5f5;
-    }
-
-    th {
-      background: linear-gradient(to bottom, #fafbfc 0%, #f5f6f7 100%);
-      font-weight: 600;
-      color: #374151;
-      font-size: 13px;
-      white-space: nowrap;
-      letter-spacing: 0.025em;
-    }
-
-    th:first-child {
-      border-top-left-radius: 8px;
-    }
-
-    th:last-child {
-      border-top-right-radius: 8px;
-    }
-
-    tbody tr {
-      transition: all 0.2s ease;
-    }
-
-    tbody tr:nth-child(even) {
-      background-color: #fafbfc;
-    }
-
-    tbody tr:hover {
-      background-color: #eef2ff;
-      transform: translateX(2px);
-    }
-
-    .row-warning {
-      background-color: #fff7ed !important;
-      border-left: 3px solid #faad14;
-    }
-
-    .row-warning:hover {
-      background-color: #ffe7ba !important;
-    }
-
-    .total-row {
-      background: linear-gradient(to right, #fafbfc 0%, #f0f2f5 100%) !important;
-      font-weight: 600;
-      color: #1f2937;
-    }
-
-    .total-row td {
-      font-weight: 600;
-      background: transparent;
-    }
-
-    /* 汇总卡片优化 */
-    .summary-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      transition: all 0.3s ease;
-    }
-
-    .summary-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .summary-item {
-      color: white;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .summary-item:hover {
-      transform: scale(1.05);
-    }
-
-    .summary-label {
-      font-size: 12px;
-      opacity: 0.9;
-      margin-bottom: 8px;
-    }
-
-    .summary-value {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    /* 标签页优化 */
-    .tab-item {
-      position: relative;
-      padding: 12px 20px;
-      transition: all 0.3s ease;
-      font-weight: 500;
-    }
-
-    .tab-item::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: transparent;
-      transition: all 0.3s ease;
-    }
-
-    .tab-active::after {
-      background: #1890ff;
-    }
-
-    /* 空状态优化 */
-    .empty-state {
-      padding: 60px 20px;
-      text-align: center;
-      animation: fadeIn 0.5s ease;
-    }
-
-    .empty-state-icon {
-      font-size: 48px;
-      color: #d1d5db;
-      margin-bottom: 16px;
-      animation: bounce 2s infinite;
-    }
-
-    .empty-state-text {
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-
-    /* 头部返回按钮优化 */
-    .header-btn {
-      transition: all 0.3s ease;
-      border-radius: 8px;
-    }
-
-    .header-btn:hover {
-      background-color: #f3f4f6;
-      transform: translateX(-2px);
-    }
-
-    /* 信息字段优化 */
-    .info-field {
-      transition: all 0.2s ease;
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-
-    .info-field:hover {
-      background-color: #f9fafb;
-    }
-
-    .info-label {
-      color: #9ca3af;
-      font-size: 12px;
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
-
-    .info-value {
-      color: #1f2937;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    /* 徽章优化 */
-    .badge-pill {
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
-      transition: all 0.3s ease;
-    }
-
-    .badge-pill:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
-    }
-
-    /* 分隔线优化 */
-    .divider {
-      height: 1px;
-      background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-      margin: 16px 0;
-    }
-
-    /* 加载动画 */
-    .loading {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
-</head>
-<body class="bg-gray-100 min-h-screen">
-  <!-- 页面头部 -->
-  <header class="bg-white shadow-md sticky top-0 z-20 border-b border-gray-100">
-    <div class="container mx-auto px-4 py-4">
-      <div class="flex items-center space-x-3">
-        <button id="back-button" class="header-btn p-2 text-neutral-500 hover:text-primary">
-          <i class="fa fa-arrow-left text-xl"></i>
-        </button>
-        <h1 class="text-xl font-bold text-gray-800 tracking-wide">入库详情</h1>
-      </div>
-    </div>
-  </header>
-
-  <!-- 主要内容 -->
-  <main class="container mx-auto px-4 py-8 max-w-7xl">
-    <!-- 单号信息卡片（新，独立于基础信息卡片之上） -->
-    <div class="info-card-enhanced p-5 mb-4">
-      <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-        <i class="fa fa-barcode mr-2 text-primary"></i>
-        单号信息
-      </h2>
-      <div class="flex flex-wrap gap-x-10 gap-y-3">
-        <div class="info-field flex flex-col">
-          <span class="info-label">订单号</span>
-          <span class="info-value">RVGJJJ-251210-0001</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">入库单号</span>
-          <span class="info-value text-primary">KJDB-2512-011</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">参考号</span>
-          <span class="info-value">RVGJJJ-251210-0001</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 基本信息卡片（始终显示） -->
-    <div class="info-card-enhanced p-5 mb-6">
-      <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-        <i class="fa fa-info-circle mr-2 text-primary"></i>
-        基本信息
-      </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-5 gap-y-3">
-        <div class="info-field flex flex-col">
-          <span class="info-label">客户代码</span>
-          <span class="info-value">GJJJ</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">业务类型</span>
-          <span class="info-value text-primary">储存</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">预计到港日期</span>
-          <span class="info-value">2025-12-10 08:00:00</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">联系人</span>
-          <span class="info-value">KUKA</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">仓群</span>
-          <span class="info-value">美东仓群02</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">柜号</span>
-          <span class="info-value">KJDB-2512-011</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">提单号</span>
-          <span class="info-value text-gray-400">-</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">邮箱</span>
-          <span class="info-value">gujing@kukahome.com</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">仓库</span>
-          <span class="info-value">MD001</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">柜型</span>
-          <span class="info-value">53HQ1</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">船公司</span>
-          <span class="info-value text-gray-400">-</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">手机号码</span>
-          <span class="info-value">17671196647</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">入库类型</span>
-          <span class="badge-pill bg-primary/10 text-primary">整柜</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">目的港</span>
-          <span class="info-value text-gray-400">-</span>
-        </div>
-        <div class="info-field flex flex-col">
-          <span class="info-label">交货方式</span>
-          <span class="info-value text-gray-400">-</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab导航栏 -->
-    <div class="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
-      <nav class="flex space-x-1 border-b border-gray-200 px-2">
-        <button class="tab-item tab-active px-5 py-3 text-sm font-medium" data-tab="basic">
-          <i class="fa fa-box mr-1.5"></i>产品信息
-        </button>
-        <button class="tab-item tab-inactive px-5 py-3 text-sm font-medium" data-tab="delivery">
-          <i class="fa fa-truck mr-1.5"></i>配送信息
-        </button>
-        <button class="tab-item tab-inactive px-5 py-3 text-sm font-medium" data-tab="pallet">
-          <i class="fa fa-pallet mr-1.5"></i>打托信息
-        </button>
-        <button class="tab-item tab-inactive px-5 py-3 text-sm font-medium" data-tab="empty">
-          <i class="fa fa-box-open mr-1.5"></i>提空信息
-        </button>
-        <button class="tab-item tab-inactive px-5 py-3 text-sm font-medium" data-tab="outbound">
-          <i class="fa fa-sign-out-alt mr-1.5"></i>出库信息
-        </button>
-        <button class="tab-item tab-inactive px-5 py-3 text-sm font-medium" data-tab="logs">
-          <i class="fa fa-history mr-1.5"></i>操作日志
-        </button>
-      </nav>
-    </div>
-
-    <!-- Tab内容区 -->
-    <div class="flex-1 min-w-0">
-      <!-- 基本信息标签页 -->
-      <div id="tab-basic" class="tab-content">
-          <!-- 存储产品列表 -->
-          <div class="info-card-enhanced p-6 mb-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                <i class="fa fa-boxes mr-2 text-primary"></i>存储产品列表
-              </h2>
-              <button class="btn-primary flex items-center">
-                <i class="fa fa-download mr-2"></i>导出
-              </button>
-            </div>
-
-            <!-- 汇总信息 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-6 summary-card">
-              <div class="summary-item">
-                <div class="summary-label">总箱数</div>
-                <div class="summary-value">315</div>
-              </div>
-              <div class="summary-item">
-                <div class="summary-label">总件数</div>
-                <div class="summary-value">315</div>
-              </div>
-              <div class="summary-item">
-                <div class="summary-label">SKU数</div>
-                <div class="summary-value">3</div>
-              </div>
-              <div class="summary-item">
-                <div class="summary-label">产品总值</div>
-                <div class="summary-value">$18,106.61</div>
-              </div>
-            </div>
-
-            <!-- 产品表格 -->
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>产品名称</th>
-                    <th>产品尺寸</th>
-                    <th>总重量</th>
-                    <th>预报箱数</th>
-                    <th>预报箱率</th>
-                    <th>预报件数</th>
-                    <th>预报总体积(cm³)</th>
-                    <th>打托件数</th>
-                    <th>上架数量</th>
-                    <th>实际总体积(cm³)</th>
-                    <th>不良品数量</th>
-                    <th>预估托数</th>
-                    <th>实际托数</th>
-                    <th>是否一箱多件</th>
-                    <th>是否混箱</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="row-warning">
-                    <td>DC7Y007-KZZ23116-9</td>
-                    <td>餐椅 Dining Chair</td>
-                    <td>68CM x 65CM x 48CM</td>
-                    <td>3125.5 KG</td>
-                    <td>133</td>
-                    <td>1</td>
-                    <td>133</td>
-                    <td>28217280</td>
-                    <td>121</td>
-                    <td>121</td>
-                    <td>25671360</td>
-                    <td>
-                      <span class="text-danger flex items-center">
-                        <i class="fa fa-exclamation-circle mr-1"></i>-12
-                      </span>
-                    </td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>否</td>
-                    <td>否</td>
-                  </tr>
-                  <tr>
-                    <td>DC7Y007-G0402190</td>
-                    <td>餐椅 Dining Chair</td>
-                    <td>68CM x 65CM x 48CM</td>
-                    <td>4206.5 KG</td>
-                    <td>179</td>
-                    <td>1</td>
-                    <td>179</td>
-                    <td>37976640</td>
-                    <td>179</td>
-                    <td>179</td>
-                    <td>37976640</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>否</td>
-                    <td>否</td>
-                  </tr>
-                  <tr>
-                    <td>DC7Y007-KZZ23116-1</td>
-                    <td>餐椅 Dining Chair</td>
-                    <td>68CM x 65CM x 48CM</td>
-                    <td>70.5 KG</td>
-                    <td>3</td>
-                    <td>1</td>
-                    <td>3</td>
-                    <td>636480</td>
-                    <td>3</td>
-                    <td>3</td>
-                    <td>636480</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td>否</td>
-                    <td>否</td>
-                  </tr>
-                  <tr class="total-row">
-                    <td colspan="3">合计</td>
-                    <td>7402.5 KG</td>
-                    <td>315</td>
-                    <td>-</td>
-                    <td>315</td>
-                    <td>66830400</td>
-                    <td>303</td>
-                    <td>303</td>
-                    <td>64284480</td>
-                    <td>
-                      <span class="text-danger flex items-center">
-                        <i class="fa fa-exclamation-circle mr-1"></i>-12
-                      </span>
-                    </td>
-                    <td>3</td>
-                    <td>3</td>
-                    <td></td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 备注 -->
-          <div class="info-card-enhanced p-6">
-            <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-              <i class="fa fa-sticky-note mr-2 text-primary"></i>备注
-            </h2>
-            <div class="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200">
-              RVGJJJ-251210-0001KJDB-2512-011
-            </div>
-          </div>
-        </div>
-
-        <!-- 配送信息标签页 -->
-        <div id="tab-delivery" class="tab-content hidden">
-          <div class="info-card-enhanced p-6">
-            <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-              <i class="fa fa-truck mr-2 text-primary"></i>配送信息
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="info-field flex flex-col">
-                <span class="info-label">车队名称</span>
-                <span class="info-value">AM TRANSWORLD INC</span>
-              </div>
-              <div class="info-field flex flex-col">
-                <span class="info-label">邮箱</span>
-                <span class="info-value">op33@manymyc.com</span>
-              </div>
-              <div class="info-field flex flex-col">
-                <span class="info-label">电话号码</span>
-                <span class="info-value">646-312-8886</span>
-              </div>
-              <div class="info-field flex flex-col">
-                <span class="info-label">备用电话号</span>
-                <span class="info-value">-</span>
-              </div>
-              <div class="info-field flex flex-col">
-                <span class="info-label">预约入库时间</span>
-                <span class="info-value">2025-03-05 08:00:00</span>
-              </div>
-              <div class="info-field flex flex-col">
-                <span class="info-label">实际送达时间</span>
-                <span class="info-value">2025-03-02 22:54:38</span>
-              </div>
-              <div class="info-field flex flex-col md:col-span-2">
-                <span class="info-label">仓库地址</span>
-                <span class="info-value">NJ-OLD BRIDGE - 08857-600 Fairfield Old Bridge, NJ 08857</span>
-              </div>
-            </div>
-            
-            <div class="mt-8">
-              <h3 class="text-md font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fa fa-paperclip mr-2 text-primary"></i>附件
-              </h3>
-              <div class="flex justify-between items-center mb-4">
-                <span class="text-sm text-gray-600">PC02020-03-02 22:35:40</span>
-                <button class="text-primary text-sm hover:underline flex items-center">
-                  <i class="fa fa-download mr-1"></i> 导出
-                </button>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20delivery%20document%20receipt&image_size=square" alt="配送凭证" class="w-full h-full object-cover rounded-lg">
-                </div>
-              </div>
-            </div>
-            
-            <!-- 拆托信息 -->
-            <div class="mt-8">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-md font-semibold text-gray-800 flex items-center">
-                  <i class="fa fa-box-open mr-2 text-primary"></i>拆托信息
-                </h3>
-                <div class="relative">
-                  <button class="btn-primary flex items-center" onclick="toggleExportMenu('unpalletExportMenu')">
-                    <i class="fa fa-download mr-2"></i>导出
-                    <i class="fa fa-chevron-down ml-2"></i>
-                  </button>
-                  <div id="unpalletExportMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                    <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg" onclick="exportUnpalletData('all')">
-                      <i class="fa fa-file mr-2"></i>导出全部
-                    </button>
-                    <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100" onclick="exportUnpalletData('film')">
-                      <i class="fa fa-film mr-2"></i>导出缠膜照片
-                    </button>
-                    <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg" onclick="exportUnpalletData('tray')">
-                      <i class="fa fa-inbox mr-2"></i>导出托盘照片
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 拆托详情展示区域 -->
-              <div class="space-y-4">
-                <!-- 拆托1 -->
-                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <!-- 第一层：拆托信息 -->
-                  <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50" onclick="togglePalletImages('unpallet1')">
-                    <div class="p-3 bg-gray-50 rounded-lg">
-                      <div class="font-semibold text-gray-800 text-lg">第1托</div>
-                      <div class="text-sm text-gray-600 mt-1">混托 ｜ 总件数：5</div>
-                    </div>
-                    <div class="ml-4">
-                      <i id="unpallet1-icon" class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
-                    </div>
-                  </div>
-                  
-                  <!-- 第二层：展示图片（默认折叠） -->
-                  <div id="unpallet1-images" class="p-4 border-t border-gray-200 hidden">
-                    <div class="text-sm text-gray-600 mb-3">缠膜照片</div>
-                    <div class="flex flex-wrap gap-4 mb-4" id="unpallet1-film-images">
-                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletizing%20process&image_size=square" alt="缠膜照片" class="w-full h-full object-cover rounded-lg">
-                      </div>
-                    </div>
-                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
-                    <div class="flex flex-wrap gap-4" id="unpallet1-tray-images">
-                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletized%20boxes&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- 拆托2 -->
-                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  <!-- 第一层：拆托信息 -->
-                  <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50" onclick="togglePalletImages('unpallet2')">
-                    <div class="p-3 bg-gray-50 rounded-lg">
-                      <div class="font-semibold text-gray-800 text-lg">第2托</div>
-                      <div class="text-sm text-gray-600 mt-1">混托 ｜ 总件数：3</div>
-                    </div>
-                    <div class="ml-4">
-                      <i id="unpallet2-icon" class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
-                    </div>
-                  </div>
-                  
-                  <!-- 第二层：展示图片（默认折叠） -->
-                  <div id="unpallet2-images" class="p-4 border-t border-gray-200 hidden">
-                    <div class="text-sm text-gray-600 mb-3">缠膜照片</div>
-                    <div class="flex flex-wrap gap-4 mb-4" id="unpallet2-film-images">
-                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletizing%20process%202&image_size=square" alt="缠膜照片" class="w-full h-full object-cover rounded-lg">
-                      </div>
-                    </div>
-                    <div class="text-sm text-gray-600 mb-3">托盘图片</div>
-                    <div class="flex flex-wrap gap-4" id="unpallet2-tray-images">
-                      <div class="w-48 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=warehouse%20unpalletized%20boxes%202&image_size=square" alt="托盘图片" class="w-full h-full object-cover rounded-lg">
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 打托信息标签页 -->
-        <div id="tab-pallet" class="tab-content hidden">
-          <div class="info-card-enhanced p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                <i class="fa fa-pallet mr-2 text-primary"></i>打托信息
-              </h2>
-              <button class="btn-primary flex items-center">
-                <i class="fa fa-download mr-2"></i>导出
-              </button>
-            </div>
-
-            <!-- 打托统计信息 -->
-            <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
-              <div class="flex flex-wrap gap-6">
-                <div class="flex items-center">
-                  <span class="text-gray-600 mr-2">托盘:</span>
-                  <span class="font-semibold text-gray-800">46</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="text-gray-600 mr-2">SKU数量:</span>
-                  <span class="font-semibold text-gray-800">8</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="text-gray-600 mr-2">RFID数量:</span>
-                  <span class="font-semibold text-gray-800">334</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 打托表格 -->
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>SKU</th>
-                    <th>产品名称</th>
-                    <th>箱子尺寸</th>
-                    <th>总件数</th>
-                    <th>异常数量</th>
-                    <th>打托数</th>
-                    <th>打托件数</th>
-                    <th>上架数量</th>
-                    <th>自定义编码</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>FS000111A-00203</td>
-                    <td>沙发</td>
-                    <td>91CM × 77CM × 37CM</td>
-                    <td>135</td>
-                    <td>0</td>
-                    <td>23</td>
-                    <td>135</td>
-                    <td>135</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111F-00203</td>
-                    <td>沙发</td>
-                    <td>91CM × 75CM × 31CM</td>
-                    <td>37</td>
-                    <td>0</td>
-                    <td>6</td>
-                    <td>37</td>
-                    <td>37</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111C-00203</td>
-                    <td>沙发</td>
-                    <td>77CM × 58CM × 19CM</td>
-                    <td>7</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td>7</td>
-                    <td>7</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111H-00203</td>
-                    <td>沙发</td>
-                    <td>77CM × 58.5CM ×  33CM</td>
-                    <td>7</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td>7</td>
-                    <td>7</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111H-00203</td>
-                    <td>沙发</td>
-                    <td>91CM × 58.5CM × 33CM</td>
-                    <td>7</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td>7</td>
-                    <td>7</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111B-00203</td>
-                    <td>沙发</td>
-                    <td>91CM × 77CM × 19CM</td>
-                    <td>51</td>
-                    <td>0</td>
-                    <td>5</td>
-                    <td>51</td>
-                    <td>51</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111D-00203</td>
-                    <td>沙发</td>
-                    <td>91CM × 58CM × 17CM</td>
-                    <td>35</td>
-                    <td>0</td>
-                    <td>2</td>
-                    <td>35</td>
-                    <td>35</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>FS000111G-00203</td>
-                    <td>沙发</td>
-                    <td>92.5CM × 58.5CM × 45CM</td>
-                    <td>62</td>
-                    <td>0</td>
-                    <td>8</td>
-                    <td>62</td>
-                    <td>62</td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 提空信息标签页 -->
-        <div id="tab-empty" class="tab-content hidden">
-          <div class="info-card-enhanced p-6">
-            <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-              <i class="fa fa-box-open mr-2 text-primary"></i>提空信息
-            </h2>
-            <div class="empty-state">
-              <i class="fa fa-box-open empty-state-icon"></i>
-              <p class="empty-state-text">暂无提空信息</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 出库信息标签页 -->
-        <div id="tab-outbound" class="tab-content hidden">
-          <div class="info-card-enhanced p-6">
-            <h2 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 flex items-center">
-              <i class="fa fa-sign-out-alt mr-2 text-primary"></i>出库信息
-            </h2>
-            <div class="empty-state">
-              <i class="fa fa-sign-out-alt empty-state-icon"></i>
-              <p class="empty-state-text">暂无出库信息</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 操作日志标签页 -->
-      <div id="tab-logs" class="tab-content hidden">
-        <div class="info-card-enhanced p-6">
-          <div class="flex items-center justify-between mb-6 pb-3 border-b border-gray-100">
-            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-              <i class="fa fa-history mr-2 text-primary"></i>操作日志
-            </h2>
-            <div class="flex items-center space-x-3">
-              <!-- 导出按钮展示与产品列表一致 -->
-              <button id="export-logs" class="btn-primary flex items-center shadow-sm hover:shadow-md transition-shadow" title="导出日志">
-                <i class="fa fa-download mr-2"></i>导出
-              </button>
-              <!-- 刷新按钮保持为小文字按钮 -->
-              <button id="refresh-logs" class="text-sm text-primary hover:text-primary/80 hover:bg-primary/5 transition-colors flex items-center px-3 py-2 rounded-lg" title="刷新">
-                <i class="fa fa-sync-alt mr-1.5"></i>刷新
-              </button>
-            </div>
-          </div>
-
-          <!-- 操作日志表格 -->
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>操作人</th>
-                  <th>时间</th>
-                  <th>内容</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="font-medium text-gray-800">系统自动</span></td>
-                  <td class="text-gray-600">2025-12-10 08:00:00</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-green-50 text-green-700 rounded-md text-sm">创建入库订单</span></td>
-                </tr>
-                <tr>
-                  <td><span class="font-medium text-gray-800">张三</span></td>
-                  <td class="text-gray-600">2025-12-10 09:15:00</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-sm">预约车队</span></td>
-                </tr>
-                <tr>
-                  <td><span class="font-medium text-gray-800">李四</span></td>
-                  <td class="text-gray-600">2025-12-10 14:20:00</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-sm">修改送仓时间</span></td>
-                </tr>
-                <tr>
-                  <td><span class="font-medium text-gray-800">王五（仓库管理员）</span></td>
-                  <td class="text-gray-600">2025-12-11 10:30:00</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-sm">确认送仓</span></td>
-                </tr>
-                <tr>
-                  <td class="text-gray-400">-</td>
-                  <td class="text-gray-400">-</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-sm">到仓</span></td>
-                </tr>
-                <tr>
-                  <td class="text-gray-400">-</td>
-                  <td class="text-gray-400">-</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-sm">卸货/打托/上架</span></td>
-                </tr>
-                <tr>
-                  <td class="text-gray-400">-</td>
-                  <td class="text-gray-400">-</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-sm">提空</span></td>
-                </tr>
-                <tr>
-                  <td class="text-gray-400">-</td>
-                  <td class="text-gray-400">-</td>
-                  <td><span class="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 rounded-md text-sm line-through">取消订单</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- JavaScript 交互逻辑 -->
-  <script>
-    // 标签页切换功能
-    function initTabs() {
-      const tabButtons = document.querySelectorAll('.tab-item');
-      const tabContents = document.querySelectorAll('.tab-content');
-
-      tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const targetTab = button.dataset.tab;
-
-          // 更新按钮样式
-          tabButtons.forEach(btn => {
-            btn.classList.remove('tab-active');
-            btn.classList.add('tab-inactive');
-          });
-          button.classList.remove('tab-inactive');
-          button.classList.add('tab-active');
-
-          // 显示对应的内容
-          tabContents.forEach(content => {
-            content.classList.add('hidden');
-          });
-          document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
-        });
-      });
-    }
-
-    // 返回按钮
-    document.getElementById('back-button').addEventListener('click', function() {
-      window.history.back();
-    });
-
-    // 操作日志功能
-    function initLogs() {
-      const logTable = document.querySelector('#tab-logs table');
-      const logRows = logTable ? logTable.querySelectorAll('tbody tr') : [];
-
-      // 初始隐藏"未执行"的日志记录（通过判断内容是否为"取消订单"）
-      logRows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length >= 3) {
-          const content = cells[2].textContent.toLowerCase();
-          // 判断是否为未执行的环节：内容为"取消订单"
-          if (content.includes('取消订单')) {
-            row.style.display = 'none';
-          }
-        }
-      });
-
-      // 刷新按钮功能
-      const refreshBtn = document.getElementById('refresh-logs');
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', function() {
-          // 重新加载日志数据
-          logRows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 3) {
-              const content = cells[2].textContent.toLowerCase();
-              // 隐藏未执行的环节
-              if (content.includes('取消订单')) {
-                row.style.display = 'none';
-              } else {
-                row.style.display = '';
-              }
-            } else {
-              row.style.display = '';
-            }
-          });
-
-          // 添加旋转动画
-          const icon = refreshBtn.querySelector('i');
-          if (icon) {
-            icon.classList.add('fa-spin');
-            setTimeout(() => {
-              icon.classList.remove('fa-spin');
-            }, 1000);
-          }
-        });
-      }
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入库详情 - ELSA</title>
     
-    // 切换托盘图片显示/隐藏
-    function togglePalletImages(palletId) {
-      const imagesContainer = document.getElementById(`${palletId}-images`);
-      const icon = document.getElementById(`${palletId}-icon`);
-      
-      if (imagesContainer.classList.contains('hidden')) {
-        imagesContainer.classList.remove('hidden');
-        icon.classList.add('rotate-180');
-      } else {
-        imagesContainer.classList.add('hidden');
-        icon.classList.remove('rotate-180');
-      }
-    }
-
-    // 切换导出下拉菜单
-    function toggleExportMenu(menuId) {
-      const menu = document.getElementById(menuId);
-      if (menu.classList.contains('hidden')) {
-        menu.classList.remove('hidden');
-      } else {
-        menu.classList.add('hidden');
-      }
-    }
-
-    // 点击其他地方关闭下拉菜单
-    document.addEventListener('click', function(event) {
-      const menus = document.querySelectorAll('[id$="ExportMenu"]');
-      menus.forEach(menu => {
-        if (!menu.contains(event.target) && !event.target.closest('button')) {
-          menu.classList.add('hidden');
-        }
-      });
-    });
-
-    // 导出拆托数据
-    function exportUnpalletData(type) {
-      const palletCount = 2;
-      let exportData = [];
-      let exportTypeName = '';
-      
-      for (let i = 1; i <= palletCount; i++) {
-        let filmImages = [];
-        let trayImages = [];
-        
-        const filmContainer = document.getElementById(`unpallet${i}-film-images`);
-        const trayContainer = document.getElementById(`unpallet${i}-tray-images`);
-        
-        if (filmContainer) {
-          const filmImgs = filmContainer.querySelectorAll('img');
-          filmImgs.forEach(img => {
-            filmImages.push({
-              src: img.src,
-              alt: img.alt
-            });
-          });
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2a3b7d',
+                        'primary-light': '#3a4ca7',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        dark: '#1D2129',
+                        'light-bg': '#FFFFFF',
+                        'card-bg': '#FFFFFF',
+                        border: '#E5E7EB'
+                    },
+                    boxShadow: {
+                        'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+                        'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
         }
         
-        if (trayContainer) {
-          const trayImgs = trayContainer.querySelectorAll('img');
-          trayImgs.forEach(img => {
-            trayImages.push({
-              src: img.src,
-              alt: img.alt
-            });
-          });
-        }
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3
+        });
         
-        const palletInfo = {
-          palletNumber: i,
-          filmImages: filmImages,
-          trayImages: trayImages
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+                    <div class="mermaid">${code}</div>
+                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+                </div>`;
+            }
+            return `<pre><code class="language-${language}">${code}</code></pre>`;
         };
         
-        if (type === 'all') {
-          exportTypeName = '全部';
-          exportData.push(palletInfo);
-        } else if (type === 'film') {
-          exportTypeName = '缠膜照片';
-          exportData.push({
-            palletNumber: i,
-            filmImages: filmImages
-          });
-        } else if (type === 'tray') {
-          exportTypeName = '托盘照片';
-          exportData.push({
-            palletNumber: i,
-            trayImages: trayImages
-          });
+        marked.setOptions({
+            renderer: renderer,
+            breaks: true,
+            gfm: true
+        });
+    </script>
+    
+    <style>
+        .main-content { display: none; }
+        .main-content.active { display: block; }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            min-height: 100vh;
         }
-      }
-      
-      console.log('导出类型:', exportTypeName);
-      console.log('导出数据:', exportData);
-      
-      // 模拟导出提示
-      let message = `正在导出${exportTypeName}...`;
-      if (type === 'all') {
-        const totalFilm = exportData.reduce((sum, p) => sum + p.filmImages.length, 0);
-        const totalTray = exportData.reduce((sum, p) => sum + p.trayImages.length, 0);
-        message += `\n缠膜照片: ${totalFilm}张\n托盘图片: ${totalTray}张`;
-      } else if (type === 'film') {
-        const totalFilm = exportData.reduce((sum, p) => sum + p.filmImages.length, 0);
-        message += `\n共 ${totalFilm} 张缠膜照片`;
-      } else if (type === 'tray') {
-        const totalTray = exportData.reduce((sum, p) => sum + p.trayImages.length, 0);
-        message += `\n共 ${totalTray} 张托盘图片`;
-      }
-      
-      alert(message + '\n\n（实际项目中此处会触发文件下载）');
-      
-      // 关闭下拉菜单
-      document.getElementById('unpalletExportMenu').classList.add('hidden');
-    }
+        
+        .prose { 
+            color: #374151; 
+            line-height: 1.8; 
+            font-size: 0.95rem;
+            max-width: 100%;
+        }
+        
+        .prose h1 { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 3px solid #2a3b7d;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .prose h2 { 
+            font-size: 1.4rem; 
+            font-weight: 600; 
+            color: #2a3b7d; 
+            margin: 2.5rem 0 1.2rem; 
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            border-left: 4px solid #2a3b7d;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .prose h3 { 
+            font-size: 1.15rem; 
+            font-weight: 600; 
+            color: #475569; 
+            margin: 2rem 0 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .prose table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin: 1.5rem 0; 
+            font-size: 0.85rem; 
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .prose th { 
+            padding: 0.875rem 1rem; 
+            background: linear-gradient(135deg, #2a3b7d 0%, #4f46e5 100%);
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            white-space: nowrap;
+        }
+        
+        .prose th:first-child { border-top-left-radius: 12px; }
+        .prose th:last-child { border-top-right-radius: 12px; }
+        
+        .prose td { 
+            padding: 0.75rem 1rem; 
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+        
+        .prose tr:last-child td { border-bottom: none; }
+        .prose tr:nth-child(even) td { background: #f9fafb; }
+        .prose tr:hover td { background: #f0f4ff; }
+        
+        .toc {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .toc-title {
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #2a3b7d;
+        }
+        
+        .toc a {
+            display: block;
+            padding: 0.375rem 0.5rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .toc a:hover {
+            background: #f0f4ff;
+            color: #2a3b7d;
+        }
+        
+        .toc-level-2 {
+            padding-left: 0;
+            font-weight: 500;
+        }
+        
+        .toc-level-3 {
+            padding-left: 1.5rem;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+            box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .tab:hover {
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .tab.active {
+            background: white;
+            color: #2a3b7d;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+        }
+        
+        .erp-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .erp-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .erp-btn:active {
+            transform: translateY(0);
+        }
+        
+        .erp-btn-primary {
+            background-color: #2a3b7d;
+            color: white;
+            border-color: #2a3b7d;
+        }
+        
+        .erp-btn-primary:hover {
+            background-color: #3a4ca7;
+            border-color: #3a4ca7;
+        }
+        
+        .erp-btn-secondary {
+            background-color: white;
+            color: #525252;
+            border-color: #d4d4d4;
+        }
+        
+        .erp-btn-secondary:hover {
+            border-color: #a3a3a3;
+            color: #262626;
+        }
+        
+        .erp-btn-danger {
+            background-color: #F53F3F;
+            color: white;
+            border-color: #F53F3F;
+        }
+        
+        .erp-btn-danger:hover {
+            background-color: #ff5c5c;
+            border-color: #ff5c5c;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1D2129;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .mermaid {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+        
+        .mermaid:hover {
+            transform: scale(1.02);
+        }
+        
+        .mermaid-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .mermaid-modal.active {
+            display: flex;
+        }
+        
+        .mermaid-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 95%;
+            max-height: 95%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalZoomIn 0.3s ease-out;
+        }
+        
+        @keyframes modalZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .mermaid-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #374151;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        
+        .mermaid-modal-close:hover {
+            background: #e5e7eb;
+            transform: rotate(90deg);
+        }
+        
+        .mermaid-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: rgba(42, 59, 125, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .mermaid-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .mermaid-container:hover .mermaid-hint {
+            opacity: 1;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .info-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1D2129;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-field {
+            margin-bottom: 12px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .data-table th {
+            padding: 12px 16px;
+            background: linear-gradient(to bottom, #fafbfc 0%, #f5f6f7 100%);
+            font-weight: 600;
+            color: #374151;
+            font-size: 13px;
+            text-align: left;
+            border-bottom: 1px solid #E5E7EB;
+            white-space: nowrap;
+        }
+        
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+        
+        .row-warning {
+            background-color: #fff7ed !important;
+            border-left: 3px solid #FF7D00;
+        }
+        
+        .row-warning:hover {
+            background-color: #ffe7ba !important;
+        }
+        
+        .total-row {
+            background: linear-gradient(to right, #fafbfc 0%, #f0f2f5 100%) !important;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .total-row td {
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+        
+        .badge-primary {
+            background-color: rgba(42, 59, 125, 0.1);
+            color: #2a3b7d;
+        }
+        
+        .badge-success {
+            background-color: rgba(0, 180, 42, 0.1);
+            color: #00B42A;
+        }
+        
+        .badge-warning {
+            background-color: rgba(255, 125, 0, 0.1);
+            color: #FF7D00;
+        }
+        
+        .badge-danger {
+            background-color: rgba(245, 63, 63, 0.1);
+            color: #F53F3F;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            color: white;
+            text-align: center;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #E5E7EB;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+        
+        .tab-nav-item {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tab-nav-item:hover {
+            color: #2a3b7d;
+            background-color: #f9fafb;
+        }
+        
+        .tab-nav-item.active {
+            color: #2a3b7d;
+            border-bottom-color: #2a3b7d;
+            background-color: rgba(42, 59, 125, 0.05);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        body::before {
+            content: '曾少文';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            color: rgba(0, 0, 0, 0.03);
+            z-index: -1;
+            pointer-events: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+    <div class="tabs fixed bottom-8 right-8 z-40">
+        <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+        <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+        <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+    </div>
+    
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+        <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-lg font-semibold">ELSA</span>
+                    </div>
+                    <nav class="hidden md:ml-10 md:flex md:space-x-6">
+                        <div class="relative group">
+                            <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                                入库管理
+                                <i class="fa fa-angle-down ml-1 text-xs"></i>
+                            </a>
+                            <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">入库列表</a>
+                                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">入库详情</a>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+                            <i class="fa fa-bell-o"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+                        <i class="fa fa-angle-down ml-1 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main id="main-prd" class="main-content">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="prd-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载PRD文档...</p>
+                                    <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载PRD
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <main id="main-testcases" class="main-content">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="testcases-toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="testcases-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载测试用例文档...</p>
+                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载测试用例
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+        <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+            <button class="mermaid-modal-close" onclick="closeMermaidModal()">
+                <i class="fa fa-times"></i>
+            </button>
+            <div class="mermaid-modal-title" style="font-size: 18px; font-weight: 600; color: #1D2129; margin-bottom: 20px;">
+                <i class="fa fa-sitemap mr-2"></i>流程图预览
+            </div>
+            <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+        </div>
+    </div>
+    
+    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+        <div class="container mx-auto px-2 py-6">
+            <div id="page-inbound-detail" class="page active">
+                <div class="info-card">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <button id="back-button" class="p-2 text-neutral-500 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors">
+                            <i class="fa fa-arrow-left text-lg"></i>
+                        </button>
+                        <h1 class="text-xl font-bold text-gray-800">入库详情</h1>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h2 class="info-card-title">
+                        <i class="fa fa-barcode mr-2 text-primary"></i>
+                        单号信息
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-5 gap-y-3">
+                        <div class="info-field">
+                            <div class="info-label">订单号</div>
+                            <div class="info-value">RVGJJJ-251210-0001</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">入库单号</div>
+                            <div class="info-value text-primary">KJDB-2512-011</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">参考号</div>
+                            <div class="info-value">RVGJJJ-251210-0001</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h2 class="info-card-title">
+                        <i class="fa fa-info-circle mr-2 text-primary"></i>
+                        基本信息
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-5 gap-y-3">
+                        <div class="info-field">
+                            <div class="info-label">客户代码</div>
+                            <div class="info-value">GJJJ</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">业务类型</div>
+                            <div class="info-value text-primary">储存</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">预计到港日期</div>
+                            <div class="info-value">2025-12-10 08:00:00</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">联系人</div>
+                            <div class="info-value">KUKA</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">仓群</div>
+                            <div class="info-value">美东仓群02</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">柜号</div>
+                            <div class="info-value">KJDB-2512-011</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">提单号</div>
+                            <div class="info-value text-gray-400">-</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">邮箱</div>
+                            <div class="info-value">gujing@kukahome.com</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">仓库</div>
+                            <div class="info-value">MD001</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">柜型</div>
+                            <div class="info-value">53HQ1</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">船公司</div>
+                            <div class="info-value text-gray-400">-</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">手机号码</div>
+                            <div class="info-value">17671196647</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">入库类型</div>
+                            <div class="info-value">
+                                <span class="status-badge badge-primary">整柜</span>
+                            </div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">目的港</div>
+                            <div class="info-value text-gray-400">-</div>
+                        </div>
+                        <div class="info-field">
+                            <div class="info-label">交货方式</div>
+                            <div class="info-value text-gray-400">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <nav class="tab-nav">
+                        <button class="tab-nav-item active" data-tab="basic">
+                            <i class="fa fa-box mr-1.5"></i>产品信息
+                        </button>
+                        <button class="tab-nav-item" data-tab="delivery">
+                            <i class="fa fa-truck mr-1.5"></i>配送信息
+                        </button>
+                        <button class="tab-nav-item" data-tab="pallet">
+                            <i class="fa fa-pallet mr-1.5"></i>打托信息
+                        </button>
+                        <button class="tab-nav-item" data-tab="empty">
+                            <i class="fa fa-box-open mr-1.5"></i>提空信息
+                        </button>
+                        <button class="tab-nav-item" data-tab="outbound">
+                            <i class="fa fa-sign-out mr-1.5"></i>出库信息
+                        </button>
+                        <button class="tab-nav-item" data-tab="logs">
+                            <i class="fa fa-history mr-1.5"></i>操作日志
+                        </button>
+                    </nav>
+                </div>
+                
+                <div id="tab-basic" class="tab-content active">
+                    <div class="info-card">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                                <i class="fa fa-boxes mr-2 text-primary"></i>存储产品列表
+                            </h2>
+                            <button class="erp-btn erp-btn-primary">
+                                <i class="fa fa-download mr-1.5"></i>导出
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-6 summary-card">
+                            <div class="summary-item">
+                                <div class="summary-label">总箱数</div>
+                                <div class="summary-value">315</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">总件数</div>
+                                <div class="summary-value">315</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">SKU数</div>
+                                <div class="summary-value">3</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">产品总值</div>
+                                <div class="summary-value">$18,106.61</div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>产品名称</th>
+                                        <th>产品尺寸</th>
+                                        <th>总重量</th>
+                                        <th>预报箱数</th>
+                                        <th>预报箱率</th>
+                                        <th>预报件数</th>
+                                        <th>预报总体积(cm³)</th>
+                                        <th>打托件数</th>
+                                        <th>上架数量</th>
+                                        <th>实际总体积(cm³)</th>
+                                        <th>不良品数量</th>
+                                        <th>预估托数</th>
+                                        <th>实际托数</th>
+                                        <th>是否一箱多件</th>
+                                        <th>是否混箱</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="row-warning">
+                                        <td>DC7Y007-KZZ23116-9</td>
+                                        <td>餐椅 Dining Chair</td>
+                                        <td>68CM x 65CM x 48CM</td>
+                                        <td>3125.5 KG</td>
+                                        <td>133</td>
+                                        <td>1</td>
+                                        <td>133</td>
+                                        <td>28217280</td>
+                                        <td>121</td>
+                                        <td>121</td>
+                                        <td>25671360</td>
+                                        <td>
+                                            <span class="text-danger flex items-center">
+                                                <i class="fa fa-exclamation-circle mr-1"></i>-12
+                                            </span>
+                                        </td>
+                                        <td>1</td>
+                                        <td>1</td>
+                                        <td>否</td>
+                                        <td>否</td>
+                                    </tr>
+                                    <tr>
+                                        <td>DC7Y007-G0402190</td>
+                                        <td>餐椅 Dining Chair</td>
+                                        <td>68CM x 65CM x 48CM</td>
+                                        <td>4206.5 KG</td>
+                                        <td>179</td>
+                                        <td>1</td>
+                                        <td>179</td>
+                                        <td>37976640</td>
+                                        <td>179</td>
+                                        <td>179</td>
+                                        <td>37976640</td>
+                                        <td>0</td>
+                                        <td>1</td>
+                                        <td>1</td>
+                                        <td>否</td>
+                                        <td>否</td>
+                                    </tr>
+                                    <tr>
+                                        <td>DC7Y007-KZZ23116-1</td>
+                                        <td>餐椅 Dining Chair</td>
+                                        <td>68CM x 65CM x 48CM</td>
+                                        <td>70.5 KG</td>
+                                        <td>3</td>
+                                        <td>1</td>
+                                        <td>3</td>
+                                        <td>636480</td>
+                                        <td>3</td>
+                                        <td>3</td>
+                                        <td>636480</td>
+                                        <td>0</td>
+                                        <td>1</td>
+                                        <td>1</td>
+                                        <td>否</td>
+                                        <td>否</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td colspan="3">合计</td>
+                                        <td>7402.5 KG</td>
+                                        <td>315</td>
+                                        <td>-</td>
+                                        <td>315</td>
+                                        <td>66830400</td>
+                                        <td>303</td>
+                                        <td>303</td>
+                                        <td>64284480</td>
+                                        <td>
+                                            <span class="text-danger flex items-center">
+                                                <i class="fa fa-exclamation-circle mr-1"></i>-12
+                                            </span>
+                                        </td>
+                                        <td>3</td>
+                                        <td>3</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h2 class="info-card-title">
+                            <i class="fa fa-sticky-note mr-2 text-primary"></i>
+                            备注
+                        </h2>
+                        <div class="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            RVGJJJ-251210-0001KJDB-2512-011
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-delivery" class="tab-content">
+                    <div class="info-card">
+                        <h2 class="info-card-title">
+                            <i class="fa fa-truck mr-2 text-primary"></i>
+                            配送信息
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="info-field">
+                                <div class="info-label">车队名称</div>
+                                <div class="info-value">AM TRANSWORLD INC</div>
+                            </div>
+                            <div class="info-field">
+                                <div class="info-label">邮箱</div>
+                                <div class="info-value">op33@manymyc.com</div>
+                            </div>
+                            <div class="info-field">
+                                <div class="info-label">电话号码</div>
+                                <div class="info-value">646-312-8886</div>
+                            </div>
+                            <div class="info-field">
+                                <div class="info-label">备用电话号</div>
+                                <div class="info-value">-</div>
+                            </div>
+                            <div class="info-field">
+                                <div class="info-label">预约入库时间</div>
+                                <div class="info-value">2025-03-05 08:00:00</div>
+                            </div>
+                            <div class="info-field">
+                                <div class="info-label">实际送达时间</div>
+                                <div class="info-value">2025-03-02 22:54:38</div>
+                            </div>
+                            <div class="info-field md:col-span-2">
+                                <div class="info-label">仓库地址</div>
+                                <div class="info-value">NJ-OLD BRIDGE - 08857-600 Fairfield Old Bridge, NJ 08857</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-pallet" class="tab-content">
+                    <div class="info-card">
+                        <div class="text-center py-16">
+                            <i class="fa fa-pallet text-5xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">暂无打托信息</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-empty" class="tab-content">
+                    <div class="info-card">
+                        <div class="text-center py-16">
+                            <i class="fa fa-box-open text-5xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">暂无提空信息</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-outbound" class="tab-content">
+                    <div class="info-card">
+                        <div class="text-center py-16">
+                            <i class="fa fa-sign-out text-5xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500">暂无出库信息</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-logs" class="tab-content">
+                    <div class="info-card">
+                        <h2 class="info-card-title">
+                            <i class="fa fa-history mr-2 text-primary"></i>
+                            操作日志
+                        </h2>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa fa-user text-primary"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-medium text-gray-800">管理员</span>
+                                        <span class="text-xs text-gray-500">2025-03-02 22:54:38</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">创建入库单</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa fa-check text-success"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-medium text-gray-800">系统</span>
+                                        <span class="text-xs text-gray-500">2025-03-02 23:00:00</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600">入库单状态更新为：已入库</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('inbound')">
+                        <div class="flex items-center">
+                            <i class="fa fa-book text-primary mr-2"></i>
+                            <span class="font-semibold text-primary">逻辑说明</span>
+                            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                        </div>
+                        <i class="fa fa-chevron-down text-primary transition-transform" id="inbound-logic-icon"></i>
+                    </div>
+                    <div id="inbound-logic-content" class="hidden">
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">单号信息</td>
+                                            <td class="px-3 py-2 text-gray-600">展示入库单的基本单号信息</td>
+                                            <td class="px-3 py-2 text-gray-600">入库单主表</td>
+                                            <td class="px-3 py-2 text-gray-600">直接展示</td>
+                                            <td class="px-3 py-2 text-gray-600">包含订单号、入库单号、参考号</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">基本信息</td>
+                                            <td class="px-3 py-2 text-gray-600">展示入库单的详细信息</td>
+                                            <td class="px-3 py-2 text-gray-600">入库单主表</td>
+                                            <td class="px-3 py-2 text-gray-600">网格布局展示</td>
+                                            <td class="px-3 py-2 text-gray-600">包含客户、仓库、联系人等</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">产品列表</td>
+                                            <td class="px-3 py-2 text-gray-600">展示入库产品的详细信息</td>
+                                            <td class="px-3 py-2 text-gray-600">入库产品明细表</td>
+                                            <td class="px-3 py-2 text-gray-600">表格形式展示</td>
+                                            <td class="px-3 py-2 text-gray-600">支持汇总统计</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">返回</td>
+                                            <td class="px-3 py-2 text-gray-600">页面左上角</td>
+                                            <td class="px-3 py-2 text-gray-600">返回入库列表页</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">跳转至列表页</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">导出</td>
+                                            <td class="px-3 py-2 text-gray-600">产品列表右上角</td>
+                                            <td class="px-3 py-2 text-gray-600">导出产品列表数据</td>
+                                            <td class="px-3 py-2 text-gray-600">有产品数据</td>
+                                            <td class="px-3 py-2 text-gray-600">下载Excel文件</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">入库单号</td>
+                                            <td class="px-3 py-2 text-gray-600">入库单唯一标识</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">自动生成</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示，主色高亮</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">入库类型</td>
+                                            <td class="px-3 py-2 text-gray-600">入库的类型分类</td>
+                                            <td class="px-3 py-2 text-gray-600">用户选择</td>
+                                            <td class="px-3 py-2 text-gray-600">枚举值</td>
+                                            <td class="px-3 py-2 text-gray-600">徽章显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">不良品数量</td>
+                                            <td class="px-3 py-2 text-gray-600">产品不良品数量统计</td>
+                                            <td class="px-3 py-2 text-gray-600">系统计算</td>
+                                            <td class="px-3 py-2 text-gray-600">预报-实际</td>
+                                            <td class="px-3 py-2 text-gray-600">负数红色显示</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function switchMainTab(tab) {
+            document.querySelectorAll('.main-content').forEach(function(content) {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            const targetContent = document.getElementById('main-' + tab);
+            if (targetContent) {
+                targetContent.classList.add('active');
+                targetContent.style.display = 'block';
+            }
+            const targetTab = document.getElementById('tab-' + tab);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            if (tab === 'prd' && !prdLoaded) {
+                loadPRD();
+            } else if (tab === 'testcases' && !testCasesLoaded) {
+                loadTestCases();
+            }
+        }
 
-    // 页面加载完成后初始化
-    document.addEventListener('DOMContentLoaded', function() {
-      initTabs();
-      initLogs();
-    });
-  </script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function openMermaidModal(container) {
+            const mermaidDiv = container.querySelector('.mermaid');
+            if (!mermaidDiv) return;
+            const modal = document.getElementById('mermaidModal');
+            const modalContent = document.getElementById('mermaidModalContent');
+            modalContent.innerHTML = mermaidDiv.innerHTML;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (window.mermaid) {
+                mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
+            }
+        }
+
+        function closeMermaidModal(event) {
+            if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
+                return;
+            }
+            const modal = document.getElementById('mermaidModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        let prdLoaded = false;
+        let testCasesLoaded = false;
+
+        function loadPRD() {
+            if (prdLoaded) return;
+            const prdContentDiv = document.getElementById('prd-content');
+            if (typeof marked === 'undefined') {
+                prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'prd.md', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const markdown = xhr.responseText;
+                    const html = marked.parse(markdown);
+                    prdContentDiv.innerHTML = html;
+                    generateTOC();
+                    if (window.mermaid) {
+                        setTimeout(function() {
+                            mermaid.init(undefined, prdContentDiv.querySelectorAll('.mermaid'));
+                        }, 100);
+                    }
+                    prdLoaded = true;
+                }
+            };
+            xhr.send();
+        }
+
+        function loadTestCases() {
+            if (testCasesLoaded) return;
+            const testCasesContentDiv = document.getElementById('testcases-content');
+            if (typeof marked === 'undefined') {
+                testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'test-cases.md', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const markdown = xhr.responseText;
+                    const html = marked.parse(markdown);
+                    testCasesContentDiv.innerHTML = html;
+                    generateTestCasesTOC();
+                    if (window.mermaid) {
+                        setTimeout(function() {
+                            mermaid.init(undefined, testCasesContentDiv.querySelectorAll('.mermaid'));
+                        }, 100);
+                    }
+                    testCasesLoaded = true;
+                }
+            };
+            xhr.send();
+        }
+
+        function generateTOC() {
+            const tocNav = document.getElementById('toc-nav');
+            const headings = document.querySelectorAll('#prd-content h1, #prd-content h2, #prd-content h3');
+            let tocHTML = '';
+            headings.forEach(function(heading, index) {
+                const id = 'heading-' + index;
+                heading.id = id;
+                const level = parseInt(heading.tagName.substring(1));
+                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+            });
+            tocNav.innerHTML = tocHTML;
+        }
+
+        function generateTestCasesTOC() {
+            const tocNav = document.getElementById('testcases-toc-nav');
+            const headings = document.querySelectorAll('#testcases-content h1, #testcases-content h2, #testcases-content h3');
+            let tocHTML = '';
+            headings.forEach(function(heading, index) {
+                const id = 'testcases-heading-' + index;
+                heading.id = id;
+                const level = parseInt(heading.tagName.substring(1));
+                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+            });
+            tocNav.innerHTML = tocHTML;
+        }
+
+        function togglePrdLogic(module) {
+            const content = document.getElementById(module + '-logic-content');
+            const icon = document.getElementById(module + '-logic-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMermaidModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabNavItems = document.querySelectorAll('.tab-nav-item');
+            tabNavItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    tabNavItems.forEach(function(navItem) {
+                        navItem.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(function(content) {
+                        content.classList.remove('active');
+                    });
+                    const targetContent = document.getElementById('tab-' + tabId);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+            
+            document.getElementById('back-button').addEventListener('click', function() {
+                window.history.back();
+            });
+        });
+    </script>
 </body>
 </html>
-

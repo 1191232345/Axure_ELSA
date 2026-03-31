@@ -561,6 +561,131 @@
             </table>
           </div>
         </div>
+
+        <!-- 费用获取弹窗逻辑 -->
+        <div class="p-4 border-t border-gray-100">
+          <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+            <i class="fa fa-window-restore text-primary mr-2"></i>费用获取弹窗逻辑
+          </h4>
+          <div class="overflow-x-auto mb-3">
+            <table class="min-w-full text-sm border border-gray-200 rounded">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互场景</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">执行动作</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">打开弹窗</td>
+                  <td class="px-3 py-2 text-gray-600">点击"费用获取"按钮</td>
+                  <td class="px-3 py-2 text-gray-600">1.初始化客户代码为"请选择"<br>2.初始化仓库为"全部"<br>3.更新检索条件显示</td>
+                  <td class="px-3 py-2 text-gray-600">弹窗打开时的初始化操作</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">账单类型变更</td>
+                  <td class="px-3 py-2 text-gray-600">选择账单类型</td>
+                  <td class="px-3 py-2 text-gray-600">1.更新表格表头<br>2.更新检索条件显示<br>3.清空费用列表检索条件<br>4.清空数据列表</td>
+                  <td class="px-3 py-2 text-gray-600">类型变更时重置数据</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">客户代码变更</td>
+                  <td class="px-3 py-2 text-gray-600">选择客户代码</td>
+                  <td class="px-3 py-2 text-gray-600">1.清空费用列表检索条件<br>2.清空数据列表</td>
+                  <td class="px-3 py-2 text-gray-600">客户代码变更时重置数据</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">获取数据</td>
+                  <td class="px-3 py-2 text-gray-600">点击"获取数据"按钮</td>
+                  <td class="px-3 py-2 text-gray-600">1.收集检索条件<br>2.调用查询接口<br>3.渲染费用列表</td>
+                  <td class="px-3 py-2 text-gray-600">手动触发数据查询</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">重置</td>
+                  <td class="px-3 py-2 text-gray-600">点击"重置"按钮</td>
+                  <td class="px-3 py-2 text-gray-600">1.清空所有检索条件<br>2.清空数据列表<br>3.更新检索条件显示</td>
+                  <td class="px-3 py-2 text-gray-600">重置为初始状态</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="bg-blue-50 p-3 rounded-lg text-sm">
+            <p class="text-gray-700"><strong>弹窗结构说明：</strong></p>
+            <ul class="list-disc list-inside text-gray-600 mt-1 space-y-1">
+              <li><strong>左侧区域：</strong>检索条件区域，包含基础信息（账单月、航期、账单类型）和检索条件（客户代码、仓库、时间条件、其他条件）</li>
+              <li><strong>右侧区域：</strong>费用列表区域，展示查询到的费用数据，支持二次筛选</li>
+            </ul>
+            <p class="text-gray-700 mt-2"><strong>联动说明：</strong>左侧检索条件区域的客户代码变更时，会同步清空右侧费用列表区域的检索条件和数据列表</p>
+          </div>
+        </div>
+
+        <!-- 批量获取费用弹窗逻辑 -->
+        <div class="p-4 border-t border-gray-100">
+          <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+            <i class="fa fa-clone text-primary mr-2"></i>批量获取费用弹窗逻辑
+          </h4>
+          <div class="overflow-x-auto mb-3">
+            <table class="min-w-full text-sm border border-gray-200 rounded">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互场景</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">执行动作</th>
+                  <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">打开弹窗</td>
+                  <td class="px-3 py-2 text-gray-600">点击"批量获取费用"按钮</td>
+                  <td class="px-3 py-2 text-gray-600">1.检查是否有任务正在执行<br>2.初始化客户代码为"全部"<br>3.初始化仓库为"全部"<br>4.更新检索条件显示</td>
+                  <td class="px-3 py-2 text-gray-600">弹窗打开时的初始化操作</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">费用类型变更</td>
+                  <td class="px-3 py-2 text-gray-600">选择费用类型</td>
+                  <td class="px-3 py-2 text-gray-600">1.更新检索条件显示<br>2.清空数据列表<br>3.清空选中项</td>
+                  <td class="px-3 py-2 text-gray-600">类型变更时重置数据</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">获取费用</td>
+                  <td class="px-3 py-2 text-gray-600">点击"获取费用"按钮</td>
+                  <td class="px-3 py-2 text-gray-600">1.收集检索条件<br>2.关闭弹窗<br>3.后台异步处理查询任务</td>
+                  <td class="px-3 py-2 text-gray-600">异步处理数据查询</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">全选/取消全选</td>
+                  <td class="px-3 py-2 text-gray-600">点击表头复选框</td>
+                  <td class="px-3 py-2 text-gray-600">1.切换所有行的选中状态<br>2.更新选中数量和金额合计</td>
+                  <td class="px-3 py-2 text-gray-600">批量选择操作</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">单选</td>
+                  <td class="px-3 py-2 text-gray-600">点击行复选框</td>
+                  <td class="px-3 py-2 text-gray-600">1.切换当前行选中状态<br>2.更新选中数量和金额合计</td>
+                  <td class="px-3 py-2 text-gray-600">单条选择操作</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-800">确认添加</td>
+                  <td class="px-3 py-2 text-gray-600">点击"确认添加"按钮</td>
+                  <td class="px-3 py-2 text-gray-600">1.获取选中的费用项（未选则取全部）<br>2.添加到主列表<br>3.关闭弹窗<br>4.刷新主列表</td>
+                  <td class="px-3 py-2 text-gray-600">确认并添加数据</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="bg-orange-50 p-3 rounded-lg text-sm">
+            <p class="text-gray-700"><strong>异步处理机制：</strong></p>
+            <ul class="list-disc list-inside text-gray-600 mt-1 space-y-1">
+              <li>批量获取费用采用异步处理机制，点击"获取费用"后关闭弹窗</li>
+              <li>系统在后台异步处理数据查询任务</li>
+              <li>处理完成后通过通知提示用户</li>
+              <li>用户可以重新打开弹窗查看结果</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -638,7 +763,7 @@
                         <span id="modalCustomerCodeText" class="text-gray-700">请选择</span>
                         <i class="fa fa-chevron-down text-gray-400"></i>
                       </div>
-                      <div id="modalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      <div id="modalCustomerCodeOptions" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                         <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
                           <input type="radio" name="modalCustomerCode" value="ZJJS" class="mr-2 rounded border-gray-300" onchange="updateCustomerCodeText()">
                           <span>ZJJS</span>
@@ -661,7 +786,7 @@
                         <span id="modalWarehouseCodeText" class="text-gray-700">全部</span>
                         <i class="fa fa-chevron-down text-gray-400"></i>
                       </div>
-                      <div id="modalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      <div id="modalWarehouseCodeOptions" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                         <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
                           <input type="checkbox" name="modalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateWarehouseCodeText()">
                           <span>CA008</span>
@@ -1313,7 +1438,7 @@
                         <span id="batchModalCustomerCodeText" class="text-gray-700">全部</span>
                         <i class="fa fa-chevron-down text-gray-400"></i>
                       </div>
-                      <div id="batchModalCustomerCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      <div id="batchModalCustomerCodeOptions" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                         <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
                           <input type="radio" name="batchModalCustomerCode" value="" class="mr-2 rounded border-gray-300" onchange="updateBatchCustomerCodeText()">
                           <span>全部</span>
@@ -1340,7 +1465,7 @@
                         <span id="batchModalWarehouseCodeText" class="text-gray-700">全部</span>
                         <i class="fa fa-chevron-down text-gray-400"></i>
                       </div>
-                      <div id="batchModalWarehouseCodeOptions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      <div id="batchModalWarehouseCodeOptions" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                         <label class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm">
                           <input type="checkbox" name="batchModalWarehouseCode" value="CA008" class="mr-2 rounded border-gray-300" onchange="updateBatchWarehouseCodeText()">
                           <span>CA008</span>

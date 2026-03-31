@@ -860,6 +860,121 @@
             <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
         </div>
     </div>
+
+    <!-- 添加用户选择弹窗 -->
+    <div id="add-user-modal" class="modal-overlay">
+        <div class="modal-content" style="width: 1000px;">
+            <div class="modal-header">
+                <h3 class="modal-title">关联用户 - <span id="add-user-department-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('add-user-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 左侧：未关联任何层级的员工 -->
+                    <div class="border border-gray-200 rounded">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800">未关联员工</h4>
+                                <span class="text-xs text-gray-500">已选: <span id="left-selected-count">0</span> 人</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" placeholder="搜索账号或昵称..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="left-user-search">
+                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <div class="flex items-center mb-2 px-2">
+                                <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded" id="select-all-left-users">
+                                <label class="ml-2 text-xs text-gray-600">全选</label>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto" id="left-user-list">
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user001" data-user-name="赵六">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhaoliu</div>
+                                        <div class="text-xs text-gray-500">赵六 | zhaoliu@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user002" data-user-name="孙七">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">sunqi</div>
+                                        <div class="text-xs text-gray-500">孙七 | sunqi@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user003" data-user-name="周八">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhouba</div>
+                                        <div class="text-xs text-gray-500">周八 | zhouba@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user004" data-user-name="吴九">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">wujiu</div>
+                                        <div class="text-xs text-gray-500">吴九 | wujiu@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user005" data-user-name="郑十">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhengshi</div>
+                                        <div class="text-xs text-gray-500">郑十 | zhengshi@example.com</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                            <button class="erp-btn erp-btn-primary w-full" onclick="addSelectedToLeft()">
+                                <i class="fa fa-arrow-right mr-1.5"></i> 添加选中
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：已关联本层级的员工 -->
+                    <div class="border border-gray-200 rounded">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800">已关联员工</h4>
+                                <span class="text-xs text-gray-500">已选: <span id="right-selected-count">0</span> 人</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" placeholder="搜索账号或昵称..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="right-user-search">
+                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <div class="flex items-center mb-2 px-2">
+                                <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded" id="select-all-right-users">
+                                <label class="ml-2 text-xs text-gray-600">全选</label>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto" id="right-user-list">
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="zhangsan" data-user-name="张三">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded right-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhangsan</div>
+                                        <div class="text-xs text-gray-500">张三 | zhangsan@example.com</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                            <button class="erp-btn erp-btn-danger w-full" onclick="removeSelectedFromRight()">
+                                <i class="fa fa-arrow-left mr-1.5"></i> 移除选中
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('add-user-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveUserRelations()">保存</button>
+            </div>
+        </div>
+    </div>
     
     <!-- 测试用例内容 - 从 Markdown 加载 -->
     <main id="main-testcases" class="main-content" style="display: none;">
@@ -1231,9 +1346,9 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">关联用户</td>
                                             <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
-                                            <td class="px-3 py-2 text-gray-600">打开编辑部门弹窗，填充当前数据</td>
+                                            <td class="px-3 py-2 text-gray-600">打开关联用户穿梭框弹窗，左侧显示未关联员工，右侧显示已关联员工</td>
                                             <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">填写表单后提交，更新部门树</td>
+                                            <td class="px-3 py-2 text-gray-600">支持批量添加/移除用户，保存后更新部门用户关联关系</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">删除</td>
@@ -1887,6 +2002,262 @@
                 </div>
             </div>
 
+            <!-- 库存管理逻辑说明 -->
+            <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('inventory')">
+                    <div class="flex items-center">
+                        <i class="fa fa-book text-primary mr-2"></i>
+                        <span class="font-semibold text-primary">逻辑说明</span>
+                        <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                    </div>
+                    <i class="fa fa-chevron-down text-primary transition-transform" id="inventory-logic-icon"></i>
+                </div>
+                <div id="inventory-logic-content">
+                    <!-- 初始化页面（数据展示逻辑） -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">库存列表</td>
+                                        <td class="px-3 py-2 text-gray-600">页面加载时展示当前用户有权限的库存数据</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory表</td>
+                                        <td class="px-3 py-2 text-gray-600">按SKU升序排列，默认显示第1页</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">预警库存标识</td>
+                                        <td class="px-3 py-2 text-gray-600">根据库存数量和预警阈值判断显示状态</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.quantity & inventory.alert_threshold</td>
+                                        <td class="px-3 py-2 text-gray-600">库存≤预警阈值显示"预警"，否则显示"正常"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">库存数量统计</td>
+                                        <td class="px-3 py-2 text-gray-600">表头显示各状态的库存数量汇总</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory表统计</td>
+                                        <td class="px-3 py-2 text-gray-600">在途、待上架、总库存分别统计并显示在表头</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 检索条件 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-search text-primary mr-2"></i>检索条件
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的仓库精确查询，不选择时显示所有仓库的库存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的虚拟仓精确查询，不选择时显示所有虚拟仓的库存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品类型</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据产品类型精确查询</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据产品名称模糊查询</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉选择+文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">支持精确查询和模糊查询两种模式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉选择+文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">支持精确查询和模糊查询两种模式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">预警库存</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">选择"正常"显示库存充足的记录，选择"预警"显示库存不足的记录</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 按钮逻辑 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">搜索</td>
+                                        <td class="px-3 py-2 text-gray-600">筛选区域右侧</td>
+                                        <td class="px-3 py-2 text-gray-600">根据筛选条件查询库存数据</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">刷新列表，显示符合条件的库存记录</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">重置</td>
+                                        <td class="px-3 py-2 text-gray-600">筛选区域右侧</td>
+                                        <td class="px-3 py-2 text-gray-600">清空所有筛选条件，恢复默认状态</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">刷新列表，显示所有库存记录</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">导出</td>
+                                        <td class="px-3 py-2 text-gray-600">页面左上角</td>
+                                        <td class="px-3 py-2 text-gray-600">导出当前筛选结果到Excel文件</td>
+                                        <td class="px-3 py-2 text-gray-600">至少有一条库存记录</td>
+                                        <td class="px-3 py-2 text-gray-600">下载Excel文件，文件名格式：库存列表_YYYYMMDD_HHmmss.xlsx</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 属性取值逻辑 -->
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">序号</td>
+                                        <td class="px-3 py-2 text-gray-600">记录序号</td>
+                                        <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                        <td class="px-3 py-2 text-gray-600">根据当前页码和每页条数自动计算</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">产品SKU编码</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.sku</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示，加粗</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品图片</td>
+                                        <td class="px-3 py-2 text-gray-600">产品图片缩略图</td>
+                                        <td class="px-3 py-2 text-gray-600">product.image_url</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取图片URL</td>
+                                        <td class="px-3 py-2 text-gray-600">图片显示，无图片时显示"-"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品类型</td>
+                                        <td class="px-3 py-2 text-gray-600">产品分类信息</td>
+                                        <td class="px-3 py-2 text-gray-600">product.type</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取类型信息</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示，超长时省略</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品名称</td>
+                                        <td class="px-3 py-2 text-gray-600">产品名称</td>
+                                        <td class="px-3 py-2 text-gray-600">product.name</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">客户自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">product.custom_code</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">实体仓库名称</td>
+                                        <td class="px-3 py-2 text-gray-600">warehouse.name</td>
+                                        <td class="px-3 py-2 text-gray-600">关联仓库表获取仓库名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">虚拟仓名称</td>
+                                        <td class="px-3 py-2 text-gray-600">virtual_warehouse.name</td>
+                                        <td class="px-3 py-2 text-gray-600">关联虚拟仓表获取虚拟仓名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">预警库存</td>
+                                        <td class="px-3 py-2 text-gray-600">库存预警状态</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.quantity & inventory.alert_threshold</td>
+                                        <td class="px-3 py-2 text-gray-600">比较库存数量与预警阈值，quantity ≤ alert_threshold时显示"预警"</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示，"预警"显示红色，"正常"显示绿色</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">在途</td>
+                                        <td class="px-3 py-2 text-gray-600">在途库存数量</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.in_transit_quantity</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">待上架</td>
+                                        <td class="px-3 py-2 text-gray-600">待上架库存数量</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.pending_quantity</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">总库存</td>
+                                        <td class="px-3 py-2 text-gray-600">总库存数量</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.total_quantity</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="page-transfer" class="page">
                 <div class="bg-white rounded shadow-card p-4 mb-4">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -2078,18 +2449,6 @@
                                             <td class="px-3 py-2 text-gray-600">页面加载展示所有调拨单</td>
                                             <td class="px-3 py-2 text-gray-600">系统菜单</td>
                                             <td class="px-3 py-2 text-gray-600">按创建时间倒序</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">状态筛选</td>
-                                            <td class="px-3 py-2 text-gray-600">顶部状态下拉框</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer.status</td>
-                                            <td class="px-3 py-2 text-gray-600">全部/待处理/已审批/已完成/已拒绝</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">调拨单号搜索</td>
-                                            <td class="px-3 py-2 text-gray-600">顶部搜索框</td>
-                                            <td class="px-3 py-2 text-gray-600">transfer.transfer_no</td>
-                                            <td class="px-3 py-2 text-gray-600">模糊匹配</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">仓储费迁移</td>
@@ -2304,46 +2663,64 @@
                                             <td class="px-3 py-2 text-gray-800">调出仓库</td>
                                             <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                             <td class="px-3 py-2 text-gray-600">是</td>
-                                            <td class="px-3 py-2 text-gray-600">仅支持选择，账号所在部门的虚拟仓</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、仅支持选择账号所在部门的虚拟仓<br>
+                                                2、选择主仓后，调入仓库的主仓选项自动禁用<br>
+                                                3、选择后自动更新可用库存
+                                            </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调入仓库</td>
                                             <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                             <td class="px-3 py-2 text-gray-600">是</td>
-                                            <td class="px-3 py-2 text-gray-600">选择调入仓库，不能与调出仓库相同</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、不能与调出仓库相同<br>
+                                                2、主仓和主仓之间不能相互调拨（选择时自动禁用）<br>
+                                                3、选择主仓后，调出仓库的主仓选项自动禁用
+                                            </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">SKU</td>
                                             <td class="px-3 py-2 text-gray-600">搜索选择框</td>
                                             <td class="px-3 py-2 text-gray-600">是</td>
-                                            <td class="px-3 py-2 text-gray-600">支持搜索选择，根据调出仓库，展示仓库内的SKU和库存</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、支持搜索选择，根据调出仓库展示仓库内的SKU和库存<br>
+                                                2、选择后自动更新可用库存
+                                            </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">剩余库存</td>
+                                            <td class="px-3 py-2 text-gray-800">可用库存</td>
                                             <td class="px-3 py-2 text-gray-600">文本展示</td>
                                             <td class="px-3 py-2 text-gray-600">否</td>
-                                            <td class="px-3 py-2 text-gray-600">根据调出仓库和SKU，自动计算显示</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、根据调出仓库和SKU自动计算显示<br>
+                                                2、库存充足显示绿色，库存为0显示红色
+                                            </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">调拨数量</td>
                                             <td class="px-3 py-2 text-gray-600">数字输入框</td>
                                             <td class="px-3 py-2 text-gray-600">是</td>
-                                            <td class="px-3 py-2 text-gray-600">输入正整数，不能超过剩余库存</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、输入正整数<br>
+                                                2、不能超过可用库存<br>
+                                                3、最小值为1
+                                            </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">仓储费迁移</td>
                                             <td class="px-3 py-2 text-gray-600">复选框</td>
                                             <td class="px-3 py-2 text-gray-600">否</td>
                                             <td class="px-3 py-2 text-gray-600">
-                                                1、勾选后:调拨SKU的整月仓储费由转入仓承担；<br>
-                                                2、不勾选时:仓储费按天计算，调出仓承担调拨前的仓储费，且调入方仓储费计算顺延<br>
+                                                1、勾选后：调拨SKU的整月仓储费由转入仓承担<br>
+                                                2、不勾选时：仓储费按天计算，调出仓承担调拨前的仓储费，且调入方仓储费计算顺延
                                             </td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">备注</td>
                                             <td class="px-3 py-2 text-gray-600">文本域</td>
                                             <td class="px-3 py-2 text-gray-600">否</td>
-                                            <td class="px-3 py-2 text-gray-600">选填，可输入备注信息</td>
+                                            <td class="px-3 py-2 text-gray-600">选填，可输入备注信息，最多500字</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -2455,6 +2832,216 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- 出库列表页面逻辑说明 -->
+                <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('shipment-list')">
+                        <div class="flex items-center">
+                            <i class="fa fa-book text-primary mr-2"></i>
+                            <span class="font-semibold text-primary">逻辑说明</span>
+                            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                        </div>
+                        <i class="fa fa-chevron-down text-primary transition-transform" id="shipment-list-logic-icon"></i>
+                    </div>
+                    <div id="shipment-list-logic-content">
+                        <!-- 初始化页面（数据展示逻辑） -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">出库列表</td>
+                                            <td class="px-3 py-2 text-gray-600">展示当前用户有权限查看出库单列表</td>
+                                            <td class="px-3 py-2 text-gray-600">shipment表</td>
+                                            <td class="px-3 py-2 text-gray-600">按创建时间倒序排列，默认展示最近30天数据</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">状态标识</td>
+                                            <td class="px-3 py-2 text-gray-600">不同状态用不同颜色标识</td>
+                                            <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                            <td class="px-3 py-2 text-gray-600">待处理-黄色、已审批-蓝色、已完成-绿色、已拒绝-红色</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 检索条件 -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-search text-primary mr-2"></i>检索条件
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">出库单号</td>
+                                            <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">支持模糊搜索，非必填</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">状态</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                            <td class="px-3 py-2 text-gray-600">筛选出库单状态，默认为"全部"</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 按钮逻辑 -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">搜索</td>
+                                            <td class="px-3 py-2 text-gray-600">搜索栏右侧</td>
+                                            <td class="px-3 py-2 text-gray-600">根据筛选条件查询出库单列表</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">刷新列表，展示符合条件的出库单</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">重置</td>
+                                            <td class="px-3 py-2 text-gray-600">搜索栏右侧</td>
+                                            <td class="px-3 py-2 text-gray-600">清空所有筛选条件</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">清空筛选条件，刷新列表展示默认数据</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">新增出库</td>
+                                            <td class="px-3 py-2 text-gray-600">列表上方</td>
+                                            <td class="px-3 py-2 text-gray-600">跳转到新增出库页面</td>
+                                            <td class="px-3 py-2 text-gray-600">用户有新增出库权限</td>
+                                            <td class="px-3 py-2 text-gray-600">跳转到新增出库页面</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">导出</td>
+                                            <td class="px-3 py-2 text-gray-600">列表上方</td>
+                                            <td class="px-3 py-2 text-gray-600">导出出库单列表数据</td>
+                                            <td class="px-3 py-2 text-gray-600">用户有导出权限</td>
+                                            <td class="px-3 py-2 text-gray-600">下载Excel文件</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">详情</td>
+                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">查看出库单详情</td>
+                                            <td class="px-3 py-2 text-gray-600">出库单存在</td>
+                                            <td class="px-3 py-2 text-gray-600">弹出详情弹窗</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">编辑</td>
+                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">编辑出库单信息</td>
+                                            <td class="px-3 py-2 text-gray-600">出库单状态为"待处理"</td>
+                                            <td class="px-3 py-2 text-gray-600">跳转到编辑页面</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">删除</td>
+                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">删除出库单</td>
+                                            <td class="px-3 py-2 text-gray-600">出库单状态为"待处理"</td>
+                                            <td class="px-3 py-2 text-gray-600">二次确认后删除出库单，刷新列表</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 属性取值逻辑 -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">出库单号</td>
+                                            <td class="px-3 py-2 text-gray-600">shipment表</td>
+                                            <td class="px-3 py-2 text-gray-600">系统自动生成，格式：SHIP+年月日+4位序号</td>
+                                            <td class="px-3 py-2 text-gray-600">文本展示，可点击查看详情</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">虚拟仓名称</td>
+                                            <td class="px-3 py-2 text-gray-600">warehouse表</td>
+                                            <td class="px-3 py-2 text-gray-600">关联warehouse表获取仓库名称</td>
+                                            <td class="px-3 py-2 text-gray-600">文本展示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">SKU</td>
+                                            <td class="px-3 py-2 text-gray-600">shipment_detail表</td>
+                                            <td class="px-3 py-2 text-gray-600">关联产品表获取SKU</td>
+                                            <td class="px-3 py-2 text-gray-600">文本展示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">出库数量</td>
+                                            <td class="px-3 py-2 text-gray-600">shipment_detail表</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">数字展示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">状态</td>
+                                            <td class="px-3 py-2 text-gray-600">shipment表</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值，枚举：pending/approved/completed/rejected</td>
+                                            <td class="px-3 py-2 text-gray-600">状态标签展示，不同状态不同颜色</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">创建时间</td>
+                                            <td class="px-3 py-2 text-gray-600">shipment表</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">格式：YYYY-MM-DD HH:mm:ss</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">操作人</td>
+                                            <td class="px-3 py-2 text-gray-600">user表</td>
+                                            <td class="px-3 py-2 text-gray-600">关联user表获取用户名</td>
+                                            <td class="px-3 py-2 text-gray-600">文本展示</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2623,17 +3210,17 @@
                 </div>
             </div>
 
-            <!-- 出库新增页面PRD说明 -->
+            <!-- 新增出库页面逻辑说明 -->
             <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
-                <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('shipment')">
+                <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('new-shipment')">
                     <div class="flex items-center">
                         <i class="fa fa-book text-primary mr-2"></i>
                         <span class="font-semibold text-primary">逻辑说明</span>
                         <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
                     </div>
-                    <i class="fa fa-chevron-down text-primary transition-transform" id="shipment-logic-icon"></i>
+                    <i class="fa fa-chevron-down text-primary transition-transform" id="new-shipment-logic-icon"></i>
                 </div>
-                <div id="shipment-logic-content">
+                <div id="new-shipment-logic-content">
                     <!-- 初始化页面（数据展示逻辑） -->
                     <div class="p-4 border-b border-gray-100">
                         <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
@@ -2651,10 +3238,34 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">/</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">页面加载时默认选择当前客户的客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">customer表</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选，默认选中当前客户</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">销售平台</td>
+                                        <td class="px-3 py-2 text-gray-600">展示所有支持的销售平台选项</td>
+                                        <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选，包含Amazon、eBay、Shopify等</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
+                                        <td class="px-3 py-2 text-gray-600">展示用户有权限的仓库类型</td>
+                                        <td class="px-3 py-2 text-gray-600">warehouse表</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选，包含主仓、渠道仓、备货仓</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的仓库类型动态加载对应的仓库代码</td>
+                                        <td class="px-3 py-2 text-gray-600">warehouse表</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选，根据仓库类型筛选</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品列表</td>
+                                        <td class="px-3 py-2 text-gray-600">默认展示一行空产品，等待用户添加</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">表格展示，支持添加/删除产品</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -2677,9 +3288,34 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">/</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">默认选中当前客户，不可更改</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">销售平台</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">选择销售平台，必填</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">参考号</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">输入参考号，如Amazon店铺编码，必填</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">配送渠道</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">选择配送渠道（发现快递/非发现快递），必填</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">选择仓库类型，必填</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据仓库类型动态加载，必填</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -2705,17 +3341,44 @@
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">提交</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
-                                        <td class="px-3 py-2 text-gray-600">必填项不能为空</td>
-                                        <td class="px-3 py-2 text-gray-600">保存数据，关闭当前页面，返回出库列表页面</td>
+                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
+                                        <td class="px-3 py-2 text-gray-600">验证表单 → 扣减库存 → 生成出库单</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、所有必填项已填写<br>
+                                            2、至少添加一个产品<br>
+                                            3、库存充足
+                                        </td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、保存出库单数据<br>
+                                            2、扣减对应库存<br>
+                                            3、关闭当前页面<br>
+                                            4、返回出库列表页面
+                                        </td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">取消</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
+                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
                                         <td class="px-3 py-2 text-gray-600">确认弹窗（二次提示确认）</td>
-                                        <td class="px-3 py-2 text-gray-600">/</td>
-                                        <td class="px-3 py-2 text-gray-600">不保存填写数据，关闭页面，并返回出库列表页面</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、不保存填写数据<br>
+                                            2、关闭页面<br>
+                                            3、返回出库列表页面
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">添加产品</td>
+                                        <td class="px-3 py-2 text-gray-600">产品信息表格下方</td>
+                                        <td class="px-3 py-2 text-gray-600">在产品列表中添加一行新的空产品</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">产品列表增加一行，等待填写</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">删除产品</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">删除当前行的产品</td>
+                                        <td class="px-3 py-2 text-gray-600">产品列表至少有一行</td>
+                                        <td class="px-3 py-2 text-gray-600">移除当前行产品</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -3071,7 +3734,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label for="transfer-from"><span class="required">*</span> 调出仓库</label>
-                    <select id="transfer-from" class="form-select" onchange="updateTransferStock()">
+                    <select id="transfer-from" class="form-select" onchange="handleTransferFromChange()">
                         <option value="">请选择调出仓库</option>
                         <optgroup label="主仓">
                             <option value="NBFX">NBFX主仓</option>
@@ -3089,7 +3752,7 @@
                 </div>
                 <div class="form-group">
                     <label for="transfer-to"><span class="required">*</span> 调入仓库</label>
-                    <select id="transfer-to" class="form-select">
+                    <select id="transfer-to" class="form-select" onchange="handleTransferToChange()">
                         <option value="">请选择调入仓库</option>
                         <optgroup label="主仓">
                             <option value="NBFX">NBFX主仓</option>
@@ -3383,124 +4046,6 @@
         </div>
     </div>
 
-    <!-- 关联用户模态框 -->
-    <div id="user-management-modal" class="modal-overlay">
-        <div class="modal-content" style="width: 800px;">
-            <div class="modal-header">
-                <h3 class="modal-title">关联用户 - <span id="current-department-name"></span></h3>
-                <button class="close-btn" onclick="closeModal('user-management-modal')">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center w-full sm:w-64">
-                        <label class="text-xs text-neutral-600 mr-2">用户搜索</label>
-                        <div class="relative flex-1">
-                            <input type="text" placeholder="请输入用户名或工号..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="user-search-input">
-                            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
-                        </div>
-                    </div>
-                    <button class="erp-btn erp-btn-primary ml-4" onclick="addUserToDepartment()">
-                        <i class="fa fa-plus mr-1.5"></i> 添加用户
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
-                        <thead class="bg-primary/10">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">
-                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded" id="select-all-users">
-                                </th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">用户姓名</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">工号</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">职位</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">手机号码</th>
-                                <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-neutral-100" id="user-list">
-                            <!-- 示例用户数据 -->
-                            <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded user-checkbox">
-                                </td>
-                                <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">张三</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">EMP001</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">经理</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">13800138001</td>
-                                <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
-                                    <button class="table-btn text-danger hover:bg-danger/10" onclick="removeUserFromDepartment('EMP001', '张三')">移除</button>
-                                </td>
-                            </tr>
-                            <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded user-checkbox">
-                                </td>
-                                <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">李四</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">EMP002</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">主管</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">13800138002</td>
-                                <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
-                                    <button class="table-btn text-danger hover:bg-danger/10" onclick="removeUserFromDepartment('EMP002', '李四')">移除</button>
-                                </td>
-                            </tr>
-                            <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
-                                <td class="px-4 py-3 whitespace-nowrap">
-                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded user-checkbox">
-                                </td>
-                                <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">王五</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">EMP003</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">员工</td>
-                                <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">13800138003</td>
-                                <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
-                                    <button class="table-btn text-danger hover:bg-danger/10" onclick="removeUserFromDepartment('EMP003', '王五')">移除</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="close-btn" onclick="closeModal('user-management-modal')">关闭</button>
-                <button class="erp-btn erp-btn-danger" onclick="removeSelectedUsers()">批量移除</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 添加用户到部门模态框 -->
-    <div id="add-user-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">添加用户</h3>
-                <button class="close-btn" onclick="closeModal('add-user-modal')">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="add-user-name"><span class="required">*</span> 用户名</label>
-                    <input type="text" id="add-user-name" class="form-input" placeholder="请输入用户名">
-                </div>
-                <div class="form-group">
-                    <label for="add-user-id"><span class="required">*</span> 工号</label>
-                    <input type="text" id="add-user-id" class="form-input" placeholder="请输入工号">
-                </div>
-                <div class="form-group">
-                    <label for="add-user-position">职位</label>
-                    <input type="text" id="add-user-position" class="form-input" placeholder="请输入职位">
-                </div>
-                <div class="form-group">
-                    <label for="add-user-phone">手机号码</label>
-                    <input type="tel" id="add-user-phone" class="form-input" placeholder="请输入手机号码">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="close-btn" onclick="closeModal('add-user-modal')">取消</button>
-                <button class="erp-btn erp-btn-primary" onclick="saveAddUser()">添加</button>
-            </div>
-        </div>
-    </div>
     
     <!-- 上传文档模态框 -->
 
@@ -3548,6 +4093,40 @@
                     mermaid.init(undefined, mermaidElements);
                 }
             }, 100);
+            
+            // 左侧全选
+            document.getElementById('select-all-left-users').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.left-user-checkbox');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateSelectedCount();
+            });
+            
+            // 右侧全选
+            document.getElementById('select-all-right-users').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.right-user-checkbox');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateSelectedCount();
+            });
+            
+            // 左侧用户选择变化
+            document.getElementById('left-user-list').addEventListener('change', function(e) {
+                if (e.target.classList.contains('left-user-checkbox')) {
+                    updateSelectedCount();
+                    const allCheckboxes = document.querySelectorAll('.left-user-checkbox');
+                    const checkedCheckboxes = document.querySelectorAll('.left-user-checkbox:checked');
+                    document.getElementById('select-all-left-users').checked = allCheckboxes.length === checkedCheckboxes.length;
+                }
+            });
+            
+            // 右侧用户选择变化
+            document.getElementById('right-user-list').addEventListener('change', function(e) {
+                if (e.target.classList.contains('right-user-checkbox')) {
+                    updateSelectedCount();
+                    const allCheckboxes = document.querySelectorAll('.right-user-checkbox');
+                    const checkedCheckboxes = document.querySelectorAll('.right-user-checkbox:checked');
+                    document.getElementById('select-all-right-users').checked = allCheckboxes.length === checkedCheckboxes.length;
+                }
+            });
         });
 
         // 模态框操作
@@ -3643,61 +4222,73 @@
         
         function manageUsers(departmentId, departmentName) {
             currentDepartmentId = departmentId;
-            document.getElementById('current-department-name').textContent = departmentName;
-            openModal('user-management-modal');
-        }
-        
-        function addUserToDepartment() {
-            // 清空表单
-            document.getElementById('add-user-name').value = '';
-            document.getElementById('add-user-id').value = '';
-            document.getElementById('add-user-position').value = '';
-            document.getElementById('add-user-phone').value = '';
+            document.getElementById('add-user-department-name').textContent = departmentName;
+            document.getElementById('left-user-search').value = '';
+            document.getElementById('right-user-search').value = '';
+            document.querySelectorAll('.left-user-checkbox, .right-user-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('select-all-left-users').checked = false;
+            document.getElementById('select-all-right-users').checked = false;
+            updateSelectedCount();
             openModal('add-user-modal');
         }
         
-        function saveAddUser() {
-            const name = document.getElementById('add-user-name').value;
-            const userId = document.getElementById('add-user-id').value;
-            const position = document.getElementById('add-user-position').value;
-            const phone = document.getElementById('add-user-phone').value;
-            
-            if (!name || !userId) {
-                alert('请填写用户名和工号');
+        function updateSelectedCount() {
+            const leftChecked = document.querySelectorAll('.left-user-checkbox:checked').length;
+            const rightChecked = document.querySelectorAll('.right-user-checkbox:checked').length;
+            document.getElementById('left-selected-count').textContent = leftChecked;
+            document.getElementById('right-selected-count').textContent = rightChecked;
+        }
+        
+        function addSelectedToLeft() {
+            const selectedItems = document.querySelectorAll('.left-user-checkbox:checked');
+            if (selectedItems.length === 0) {
+                alert('请选择要添加的用户');
                 return;
             }
             
-            // 模拟添加用户
-            alert('用户添加成功');
-            closeModal('add-user-modal');
+            const rightList = document.getElementById('right-user-list');
+            selectedItems.forEach(checkbox => {
+                const userItem = checkbox.closest('.user-item');
+                checkbox.classList.remove('left-user-checkbox');
+                checkbox.classList.add('right-user-checkbox');
+                checkbox.checked = false;
+                rightList.appendChild(userItem);
+            });
             
-            // 这里可以添加代码来更新用户列表
+            document.getElementById('select-all-left-users').checked = false;
+            updateSelectedCount();
         }
         
-        function removeUserFromDepartment(userId, userName) {
-            if (confirm('确定要从部门中移除用户 ' + userName + ' 吗？')) {
-                // 模拟移除用户
-                alert('用户移除成功');
-                
-                // 这里可以添加代码来更新用户列表
-            }
-        }
-        
-        function removeSelectedUsers() {
-            const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
-            if (selectedCheckboxes.length === 0) {
+        function removeSelectedFromRight() {
+            const selectedItems = document.querySelectorAll('.right-user-checkbox:checked');
+            if (selectedItems.length === 0) {
                 alert('请选择要移除的用户');
                 return;
             }
             
-            if (confirm('确定要批量移除选中的 ' + selectedCheckboxes.length + ' 个用户吗？')) {
-                // 模拟批量移除用户
-                alert('用户批量移除成功');
-                
-                // 这里可以添加代码来更新用户列表
+            const leftList = document.getElementById('left-user-list');
+            selectedItems.forEach(checkbox => {
+                const userItem = checkbox.closest('.user-item');
+                checkbox.classList.remove('right-user-checkbox');
+                checkbox.classList.add('left-user-checkbox');
+                checkbox.checked = false;
+                leftList.appendChild(userItem);
+            });
+            
+            document.getElementById('select-all-right-users').checked = false;
+            updateSelectedCount();
+        }
+        
+        function saveUserRelations() {
+            const rightUsers = document.querySelectorAll('#right-user-list .user-item');
+            const userNames = Array.from(rightUsers).map(item => item.dataset.userName).join('、');
+            
+            if (confirm('确定保存当前的用户关联关系吗？\n已关联用户：' + userNames)) {
+                alert('保存成功');
+                closeModal('add-user-modal');
             }
         }
-
+        
         // 切换PRD逻辑说明展开/收起
         function togglePrdLogic(module) {
             const content = document.getElementById(module + '-logic-content');
@@ -3861,6 +4452,91 @@
         }
 
         // 调拨管理
+        // 判断仓库类型
+        function getWarehouseType(warehouseCode) {
+            const mainWarehouses = ['NBFX'];
+            const channelWarehouses = ['NBFX002', 'NBFX003', 'NBFX004'];
+            const stockWarehouses = ['STOCK001', 'STOCK002'];
+            
+            if (mainWarehouses.includes(warehouseCode)) {
+                return 'main';
+            } else if (channelWarehouses.includes(warehouseCode)) {
+                return 'channel';
+            } else if (stockWarehouses.includes(warehouseCode)) {
+                return 'stock';
+            }
+            return 'unknown';
+        }
+        
+        // 处理调出仓库选择变化
+        function handleTransferFromChange() {
+            updateTransferStock();
+            updateWarehouseOptions('from');
+        }
+        
+        // 处理调入仓库选择变化
+        function handleTransferToChange() {
+            updateWarehouseOptions('to');
+        }
+        
+        // 更新仓库选项的禁用状态
+        function updateWarehouseOptions(changedField) {
+            const fromSelect = document.getElementById('transfer-from');
+            const toSelect = document.getElementById('transfer-to');
+            const fromValue = fromSelect.value;
+            const toValue = toSelect.value;
+            
+            // 主仓代码列表
+            const mainWarehouses = ['NBFX'];
+            
+            if (changedField === 'from') {
+                // 如果调出仓库是主仓，禁用调入仓库的主仓选项
+                const isFromMain = mainWarehouses.includes(fromValue);
+                
+                // 遍历调入仓库的所有选项
+                Array.from(toSelect.options).forEach(option => {
+                    if (option.value === '') return; // 跳过默认选项
+                    
+                    // 如果调出仓库是主仓，且当前选项也是主仓，则禁用
+                    if (isFromMain && mainWarehouses.includes(option.value)) {
+                        option.disabled = true;
+                        option.textContent = option.textContent.replace(' (不可选)', '') + ' (不可选)';
+                    } else {
+                        option.disabled = false;
+                        option.textContent = option.textContent.replace(' (不可选)', '');
+                    }
+                });
+                
+                // 如果调入仓库当前选中的是被禁用的选项，清空选择
+                if (toValue && mainWarehouses.includes(toValue) && isFromMain) {
+                    toSelect.value = '';
+                }
+            } else if (changedField === 'to') {
+                // 如果调入仓库是主仓，禁用调出仓库的主仓选项
+                const isToMain = mainWarehouses.includes(toValue);
+                
+                // 遍历调出仓库的所有选项
+                Array.from(fromSelect.options).forEach(option => {
+                    if (option.value === '') return; // 跳过默认选项
+                    
+                    // 如果调入仓库是主仓，且当前选项也是主仓，则禁用
+                    if (isToMain && mainWarehouses.includes(option.value)) {
+                        option.disabled = true;
+                        option.textContent = option.textContent.replace(' (不可选)', '') + ' (不可选)';
+                    } else {
+                        option.disabled = false;
+                        option.textContent = option.textContent.replace(' (不可选)', '');
+                    }
+                });
+                
+                // 如果调出仓库当前选中的是被禁用的选项，清空选择
+                if (fromValue && mainWarehouses.includes(fromValue) && isToMain) {
+                    fromSelect.value = '';
+                    updateTransferStock();
+                }
+            }
+        }
+        
         function updateTransferStock() {
             const from = document.getElementById('transfer-from').value;
             const sku = document.getElementById('transfer-sku').value;

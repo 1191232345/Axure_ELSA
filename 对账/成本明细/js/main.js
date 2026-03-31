@@ -232,6 +232,9 @@
         modalData = [];
         modalSelectedItems.clear();
         updateModalSelectedCount();
+        
+        // 类型变更时，清空费用列表检索条件和数据列表
+        clearModalFeeListConditions();
       });
 
       // 批量费用类型变化时更新检索条件
@@ -295,6 +298,55 @@
       // 筛选功能
       document.getElementById('btnFilter').addEventListener('click', filterData);
       document.getElementById('btnResetFilter').addEventListener('click', resetFilter);
+
+      // 费用获取弹窗 - 客户代码下拉框点击事件
+      document.getElementById('modalCustomerCodeDropdown').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleCustomerCodeDropdown();
+      });
+
+      // 费用获取弹窗 - 仓库下拉框点击事件
+      document.getElementById('modalWarehouseCodeDropdown').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleWarehouseCodeDropdown();
+      });
+
+      // 点击页面其他地方关闭下拉框
+      document.addEventListener('click', function(e) {
+        const customerCodeDropdown = document.getElementById('modalCustomerCodeDropdown');
+        const customerCodeOptions = document.getElementById('modalCustomerCodeOptions');
+        const warehouseCodeDropdown = document.getElementById('modalWarehouseCodeDropdown');
+        const warehouseCodeOptions = document.getElementById('modalWarehouseCodeOptions');
+        const batchCustomerCodeDropdown = document.getElementById('batchModalCustomerCodeDropdown');
+        const batchCustomerCodeOptions = document.getElementById('batchModalCustomerCodeOptions');
+        const batchWarehouseCodeDropdown = document.getElementById('batchModalWarehouseCodeDropdown');
+        const batchWarehouseCodeOptions = document.getElementById('batchModalWarehouseCodeOptions');
+        
+        if (customerCodeDropdown && customerCodeOptions && !customerCodeDropdown.contains(e.target)) {
+          customerCodeOptions.classList.add('hidden');
+        }
+        if (warehouseCodeDropdown && warehouseCodeOptions && !warehouseCodeDropdown.contains(e.target)) {
+          warehouseCodeOptions.classList.add('hidden');
+        }
+        if (batchCustomerCodeDropdown && batchCustomerCodeOptions && !batchCustomerCodeDropdown.contains(e.target)) {
+          batchCustomerCodeOptions.classList.add('hidden');
+        }
+        if (batchWarehouseCodeDropdown && batchWarehouseCodeOptions && !batchWarehouseCodeDropdown.contains(e.target)) {
+          batchWarehouseCodeOptions.classList.add('hidden');
+        }
+      });
+
+      // 批量获取费用弹窗 - 客户代码下拉框点击事件
+      document.getElementById('batchModalCustomerCodeDropdown').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleBatchCustomerCodeDropdown();
+      });
+
+      // 批量获取费用弹窗 - 仓库下拉框点击事件
+      document.getElementById('batchModalWarehouseCodeDropdown').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleBatchWarehouseCodeDropdown();
+      });
 
       // 初始化检索条件
       renderBasicFilters();
@@ -364,6 +416,9 @@
       } else {
         text.textContent = radio.value;
       }
+      
+      // 客户代码变更时，清空费用列表检索条件和数据列表
+      clearModalFeeListConditions();
     }
 
     // 初始化客户代码为未选中状态
@@ -1094,6 +1149,30 @@
         });
         updateModalSelectedCount();
       });
+    }
+    
+    // 清空费用列表检索条件和数据列表
+    function clearModalFeeListConditions() {
+      // 清空费用列表检索条件
+      const listCustomerCodeRadios = document.querySelectorAll('input[name="listCustomerCode"]');
+      listCustomerCodeRadios.forEach(radio => radio.checked = false);
+      const listCustomerCodeText = document.getElementById('listCustomerCodeText');
+      if (listCustomerCodeText) listCustomerCodeText.textContent = '全部';
+      
+      const listWarehouseCheckboxes = document.querySelectorAll('input[name="listWarehouse"]');
+      listWarehouseCheckboxes.forEach(cb => cb.checked = true);
+      const listWarehouseText = document.getElementById('listWarehouseText');
+      if (listWarehouseText) listWarehouseText.textContent = '全部';
+      
+      const listOutboundNoInput = document.getElementById('listOutboundNo');
+      if (listOutboundNoInput) listOutboundNoInput.value = '';
+      
+      // 清空数据列表
+      const modalDataTableBody = document.getElementById('modalDataTableBody');
+      if (modalDataTableBody) modalDataTableBody.innerHTML = '';
+      modalData = [];
+      modalSelectedItems.clear();
+      updateModalSelectedCount();
     }
     
     // 根据账单类型更新检索条件显示
