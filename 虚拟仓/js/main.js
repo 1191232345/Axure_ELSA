@@ -1079,7 +1079,7 @@
         function generateTOC() {
             const content = document.getElementById('prd-content');
             const headings = content.querySelectorAll('h2, h3');
-            const tocNav = document.getElementById('toc-nav');
+            const tocNav = document.getElementById('prd-toc-nav');
             
             if (!tocNav || headings.length === 0) return;
             
