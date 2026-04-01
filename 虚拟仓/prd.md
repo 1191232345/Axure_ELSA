@@ -338,7 +338,7 @@ graph TD
 | 字段 | 数据来源 | 取值规则 | 显示格式 |
 |------|----------|----------|----------|
 | 部门名称 | department.name | 直接取值 | 文本显示 |
-| 部门编码 | department.code | 自动生成，格式：父编码-序号 | NBFX001-01-01 |
+| 部门编码 | department.code | 自动生成，格式：父编码+序号 | NBFX00101 |
 | 虚拟仓数量 | warehouse表count | 统计该部门关联的虚拟仓数量 | 数字 |
 | 创建时间 | department.create_time | 时间戳转日期 | YYYY-MM-DD |
 
@@ -371,7 +371,7 @@ graph TD
 | 字段 | 数据来源 | 取值规则 | 显示格式 |
 |------|----------|----------|----------|
 | 虚拟仓名称 | warehouse.name | 直接取值 | 文本显示，主仓加"（授权）" |
-| 仓库类型 | warehouse.type | main=主仓, channel=渠道仓, stock=备货仓 | 文本显示 |
+| 仓库类型 | warehouse.type | main=主仓, ch=渠道仓, st=备货仓 | 文本显示 |
 | 所属部门 | department.name | 通过department_id关联查询 | 文本显示 |
 | 关联实体仓 | warehouse.entity_warehouse_id | 直接取值 | 文本显示 |
 
@@ -434,7 +434,7 @@ graph TD
 
 | 字段 | 数据来源 | 取值规则 | 显示格式 |
 |------|----------|----------|----------|
-| 调拨单号 | transfer.transfer_no | 自动生成，格式：TRANSFER+时间戳 | 文本显示 |
+| 调拨单号 | transfer.transfer_no | 自动生成，格式：TR-客户代码-年月日-5位序列（例：TR-NBFX-20260227-00001） | 文本显示 |
 | 调出仓库 | from_warehouse.name | 通过from_warehouse_id关联 | 文本显示 |
 | 调入仓库 | to_warehouse.name | 通过to_warehouse_id关联 | 文本显示 |
 | SKU | transfer.sku | 直接取值 | 文本显示 |

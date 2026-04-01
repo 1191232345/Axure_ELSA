@@ -1,0 +1,709 @@
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">提交</td>
+                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
+                                        <td class="px-3 py-2 text-gray-600">验证表单 → 扣减库存 → 生成出库单</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、所有必填项已填写<br>
+                                            2、至少添加一个产品<br>
+                                            3、库存充足
+                                        </td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、保存出库单数据<br>
+                                            2、扣减对应库存<br>
+                                            3、关闭当前页面<br>
+                                            4、返回出库列表页面
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">取消</td>
+                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
+                                        <td class="px-3 py-2 text-gray-600">确认弹窗（二次提示确认）</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、不保存填写数据<br>
+                                            2、关闭页面<br>
+                                            3、返回出库列表页面
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">添加产品</td>
+                                        <td class="px-3 py-2 text-gray-600">产品信息表格下方</td>
+                                        <td class="px-3 py-2 text-gray-600">在产品列表中添加一行新的空产品</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">产品列表增加一行，等待填写</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">删除产品</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">删除当前行的产品</td>
+                                        <td class="px-3 py-2 text-gray-600">产品列表至少有一行</td>
+                                        <td class="px-3 py-2 text-gray-600">移除当前行产品</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 页面属性描述 -->
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-windows text-primary mr-2"></i>属性描述
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择客户代码</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">销售平台</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择销售平台</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">参考号</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入参考号</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">配送渠道</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择配送渠道</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">收件人姓名</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入收件人姓名</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">国家</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择国家</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">省/州</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入省/州</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">城市</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入城市</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">地址</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入详细地址</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">邮编</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入邮编</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">联系方式</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入联系方式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">数据来源：虚拟仓管理</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、根据仓库类型，筛选仓库<br>
+                                            2、仅展示授权账号可查询的仓库<br>
+                                            3、根据仓库类型，展示不同的仓库
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">拣货方式</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择拣货方式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品代码/SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">显示产品SKU</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">出库件数</td>
+                                        <td class="px-3 py-2 text-gray-600">数字输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入出库数量，不能超过库存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">备注</td>
+                                        <td class="px-3 py-2 text-gray-600">文本域</td>
+                                        <td class="px-3 py-2 text-gray-600">否</td>
+                                        <td class="px-3 py-2 text-gray-600">选填，可输入备注信息</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 新建部门模态框 -->
+    <div id="new-department-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新建部门</h3>
+                <button class="close-btn" onclick="closeModal('new-department-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="new-department-name"><span class="required">*</span> 部门名称</label>
+                    <input type="text" id="new-department-name" class="form-input" placeholder="请输入部门名称">
+                </div>
+                <div class="form-group">
+                    <label for="new-department-parent">上级部门</label>
+                    <select id="new-department-parent" class="form-select">
+                        <option value="">请选择上级部门（可选）</option>
+                        <option value="1">NBFX</option>
+                        <option value="11">运营部1</option>
+                        <option value="12">运营部2</option>
+                        <option value="13">运营部3</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('new-department-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveNewDepartment()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑部门模态框 -->
+    <div id="edit-department-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑部门</h3>
+                <button class="close-btn" onclick="closeModal('edit-department-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-department-id">
+                <div class="form-group">
+                    <label for="edit-department-name"><span class="required">*</span> 部门名称</label>
+                    <input type="text" id="edit-department-name" class="form-input" placeholder="请输入部门名称">
+                </div>
+                <div class="form-group">
+                    <label for="edit-department-parent">上级部门</label>
+                    <select id="edit-department-parent" class="form-select">
+                        <option value="">请选择上级部门（可选）</option>
+                        <option value="1">NBFX</option>
+                        <option value="11">运营部1</option>
+                        <option value="12">运营部2</option>
+                        <option value="13">运营部3</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('edit-department-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveEditDepartment()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建虚拟仓名称模态框 -->
+    <div id="new-warehouse-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新建虚拟仓名称</h3>
+                <button class="close-btn" onclick="closeModal('new-warehouse-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="new-warehouse-name"><span class="required">*</span> 虚拟仓名称</label>
+                    <input type="text" id="new-warehouse-name" class="form-input" placeholder="请输入虚拟仓名称">
+                </div>
+                <div class="form-group">
+                    <label for="new-warehouse-type"><span class="required">*</span> 仓库类型</label>
+                    <select id="new-warehouse-type" class="form-select">
+                        <option value="channel">渠道仓</option>
+                        <option value="stock">备货仓</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-warehouse-department"><span class="required">*</span> 所属部门</label>
+                    <select id="new-warehouse-department" class="form-select">
+                        <option value="1">NBFX</option>
+                        <option value="11">运营部1</option>
+                        <option value="12">运营部2</option>
+                        <option value="13">运营部3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-warehouse-entity"><span class="required">*</span> 关联仓库</label>
+                    <select id="new-warehouse-entity" class="form-select">
+                        <option value="DE001">DE001</option>
+                        <option value="DE002">DE002</option>
+                        <option value="DE003">DE003</option>
+                        <option value="DE004">DE004</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('new-warehouse-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveNewWarehouse()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑虚拟仓名称模态框 -->
+    <div id="edit-warehouse-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑虚拟仓名称</h3>
+                <button class="close-btn" onclick="closeModal('edit-warehouse-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-warehouse-id">
+                <div class="form-group">
+                    <label for="edit-warehouse-name"><span class="required">*</span> 虚拟仓名称</label>
+                    <input type="text" id="edit-warehouse-name" class="form-input" placeholder="请输入虚拟仓名称">
+                </div>
+                <div class="form-group">
+                    <label for="edit-warehouse-type"><span class="required">*</span> 仓库类型</label>
+                    <select id="edit-warehouse-type" class="form-select">
+                        <option value="main">主仓</option>
+                        <option value="channel">渠道仓</option>
+                        <option value="stock">备货仓</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-warehouse-department"><span class="required">*</span> 所属部门</label>
+                    <select id="edit-warehouse-department" class="form-select">
+                        <option value="1">NBFX</option>
+                        <option value="11">运营部1</option>
+                        <option value="12">运营部2</option>
+                        <option value="13">运营部3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-warehouse-entity"><span class="required">*</span> 关联仓库</label>
+                    <select id="edit-warehouse-entity" class="form-select">
+                        <option value="DE001">DE001</option>
+                        <option value="DE002">DE002</option>
+                        <option value="DE003">DE003</option>
+                        <option value="DE004">DE004</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('edit-warehouse-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveEditWarehouse()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增库存模态框 -->
+    <div id="inventory-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增库存</h3>
+                <button class="close-btn" onclick="closeModal('inventory-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="inventory-sku"><span class="required">*</span> SKU</label>
+                    <input type="text" id="inventory-sku" class="form-input" placeholder="请输入SKU">
+                </div>
+                <div class="form-group">
+                    <label for="inventory-name"><span class="required">*</span> 商品名称</label>
+                    <input type="text" id="inventory-name" class="form-input" placeholder="请输入商品名称">
+                </div>
+                <div class="form-group">
+                    <label for="inventory-warehouse-type"><span class="required">*</span> 仓库类型</label>
+                    <select id="inventory-warehouse-type" class="form-select" onchange="updateInventoryWarehouseList()">
+                        <option value="">请选择仓库类型</option>
+                        <option value="main">主仓</option>
+                        <option value="channel">渠道仓</option>
+                        <option value="stock">备货仓</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inventory-warehouse"><span class="required">*</span> 虚拟仓名称</label>
+                    <select id="inventory-warehouse" class="form-select">
+                        <option value="">请先选择仓库类型</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inventory-quantity"><span class="required">*</span> 库存数量</label>
+                    <input type="number" id="inventory-quantity" class="form-input" placeholder="请输入库存数量" min="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('inventory-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveInventory()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增调拨模态框 -->
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增调拨</h3>
+                <button class="close-btn" onclick="closeModal('transfer-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="transfer-from"><span class="required">*</span> 调出仓库</label>
+                    <select id="transfer-from" class="form-select" onchange="handleTransferFromChange()">
+                        <option value="">请选择调出仓库</option>
+                        <optgroup label="主仓">
+                            <option value="NBFX">NBFX主仓</option>
+                        </optgroup>
+                        <optgroup label="渠道仓">
+                            <option value="NBFX002">NBFX渠道仓A</option>
+                            <option value="NBFX003">NBFX渠道仓B</option>
+                            <option value="NBFX004">NBFX渠道仓C</option>
+                        </optgroup>
+                        <optgroup label="备货仓">
+                            <option value="STOCK001">备货仓1</option>
+                            <option value="STOCK002">备货仓2</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transfer-to"><span class="required">*</span> 调入仓库</label>
+                    <select id="transfer-to" class="form-select" onchange="handleTransferToChange()">
+                        <option value="">请选择调入仓库</option>
+                        <optgroup label="主仓">
+                            <option value="NBFX">NBFX主仓</option>
+                        </optgroup>
+                        <optgroup label="渠道仓">
+                            <option value="NBFX002">NBFX渠道仓A</option>
+                            <option value="NBFX003">NBFX渠道仓B</option>
+                            <option value="NBFX004">NBFX渠道仓C</option>
+                        </optgroup>
+                        <optgroup label="备货仓">
+                            <option value="STOCK001">备货仓1</option>
+                            <option value="STOCK002">备货仓2</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transfer-sku"><span class="required">*</span> SKU</label>
+                    <input type="text" id="transfer-sku" class="form-input" placeholder="请输入或选择SKU" list="transfer-sku-list" onchange="updateTransferStock()">
+                    <datalist id="transfer-sku-list">
+                        <option value="SKU001">SKU001 - 商品A</option>
+                        <option value="SKU002">SKU002 - 商品B</option>
+                        <option value="SKU003">SKU003 - 商品C</option>
+                        <option value="SKU004">SKU004 - 商品D</option>
+                        <option value="SKU005">SKU005 - 商品E</option>
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>可用库存</label>
+                    <div id="transfer-stock" class="form-input bg-gray-50 text-gray-500">请先选择调出仓库和SKU</div>
+                </div>
+                <div class="form-group">
+                    <label for="transfer-quantity"><span class="required">*</span> 调拨数量</label>
+                    <input type="number" id="transfer-quantity" class="form-input" placeholder="请输入调拨数量" min="1">
+                </div>
+                <div class="form-group">
+                    <label>仓储费迁移</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="transfer-migrate-storage-fee" class="mr-2">
+                        <span class="text-sm text-gray-600">同步迁移整月仓储费</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        勾选后，调拨SKU的整月仓储费由转入仓承担；不勾选时，仓储费按天计算，调出仓承担调拨前的仓储费
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="transfer-note">备注</label>
+                    <textarea id="transfer-note" class="form-input" rows="3" placeholder="请输入备注"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('transfer-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveTransfer()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 调拨详情模态框 -->
+    <div id="transfer-detail-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">调拨单详情</h3>
+                <button class="close-btn" onclick="closeModal('transfer-detail-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label>调拨单号</label>
+                        <div id="detail-transfer-no" class="form-input bg-gray-50">TR-NBFX-20260227-00001</div>
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <div id="detail-transfer-status" class="form-input bg-gray-50">已完成</div>
+                    </div>
+                    <div class="form-group">
+                        <label>调出仓库</label>
+                        <div id="detail-transfer-from" class="form-input bg-gray-50">NBFX主仓</div>
+                    </div>
+                    <div class="form-group">
+                        <label>调入仓库</label>
+                        <div id="detail-transfer-to" class="form-input bg-gray-50">NBFX渠道仓A</div>
+                    </div>
+                    <div class="form-group">
+                        <label>SKU</label>
+                        <div id="detail-transfer-sku" class="form-input bg-gray-50">SKU001</div>
+                    </div>
+                    <div class="form-group">
+                        <label>调拨数量</label>
+                        <div id="detail-transfer-quantity" class="form-input bg-gray-50">100</div>
+                    </div>
+                    <div class="form-group">
+                        <label>仓储费迁移</label>
+                        <div id="detail-transfer-migrate" class="form-input bg-gray-50">是</div>
+                    </div>
+                    <div class="form-group">
+                        <label>创建时间</label>
+                        <div id="detail-transfer-create-time" class="form-input bg-gray-50">2026-02-27 10:00:00</div>
+                    </div>
+                    <div class="form-group">
+                        <label>操作人</label>
+                        <div id="detail-transfer-operator" class="form-input bg-gray-50">zsw</div>
+                    </div>
+                    <div class="form-group">
+                        <label>备注</label>
+                        <div id="detail-transfer-note" class="form-input bg-gray-50">备注信息</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-primary" onclick="closeModal('transfer-detail-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 调拨编辑模态框 -->
+    <div id="transfer-edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑调拨</h3>
+                <button class="close-btn" onclick="closeModal('transfer-edit-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-transfer-no">调拨单号</label>
+                    <input type="text" id="edit-transfer-no" class="form-input bg-gray-50" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="edit-transfer-from"><span class="required">*</span> 调出仓库</label>
+                    <select id="edit-transfer-from" class="form-select">
+                        <option value="">请选择调出仓库</option>
+                        <optgroup label="主仓">
+                            <option value="NBFX">NBFX主仓</option>
+                        </optgroup>
+                        <optgroup label="渠道仓">
+                            <option value="NBFX002">NBFX渠道仓A</option>
+                            <option value="NBFX003">NBFX渠道仓B</option>
+                            <option value="NBFX004">NBFX渠道仓C</option>
+                        </optgroup>
+                        <optgroup label="备货仓">
+                            <option value="STOCK001">备货仓1</option>
+                            <option value="STOCK002">备货仓2</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-transfer-to"><span class="required">*</span> 调入仓库</label>
+                    <select id="edit-transfer-to" class="form-select">
+                        <option value="">请选择调入仓库</option>
+                        <optgroup label="主仓">
+                            <option value="NBFX">NBFX主仓</option>
+                        </optgroup>
+                        <optgroup label="渠道仓">
+                            <option value="NBFX002">NBFX渠道仓A</option>
+                            <option value="NBFX003">NBFX渠道仓B</option>
+                            <option value="NBFX004">NBFX渠道仓C</option>
+                        </optgroup>
+                        <optgroup label="备货仓">
+                            <option value="STOCK001">备货仓1</option>
+                            <option value="STOCK002">备货仓2</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-transfer-sku"><span class="required">*</span> SKU</label>
+                    <input type="text" id="edit-transfer-sku" class="form-input" placeholder="请输入或选择SKU">
+                </div>
+                <div class="form-group">
+                    <label for="edit-transfer-quantity"><span class="required">*</span> 调拨数量</label>
+                    <input type="number" id="edit-transfer-quantity" class="form-input" placeholder="请输入调拨数量" min="1">
+                </div>
+                <div class="form-group">
+                    <label>仓储费迁移</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="edit-transfer-migrate-storage-fee" class="mr-2">
+                        <span class="text-sm text-gray-600">同步迁移整月仓储费</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">
+                        勾选后，调拨SKU的整月仓储费由转入仓承担；不勾选时，仓储费按天计算，调出仓承担调拨前的仓储费
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-transfer-note">备注</label>
+                    <textarea id="edit-transfer-note" class="form-input" rows="3" placeholder="请输入备注"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('transfer-edit-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveEditTransfer()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 调拨审批模态框 -->
+    <div id="transfer-approve-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">审批调拨单</h3>
+                <button class="close-btn" onclick="closeModal('transfer-approve-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-blue-800 mb-3">调拨单信息</h4>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <span class="text-gray-600">调拨单号：</span>
+                            <span id="approve-transfer-no" class="font-medium text-gray-800">TR-NBFX-20260227-00002</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">调出仓库：</span>
+                            <span id="approve-transfer-from" class="font-medium text-gray-800">NBFX渠道仓A</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">调入仓库：</span>
+                            <span id="approve-transfer-to" class="font-medium text-gray-800">NBFX渠道仓B</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">SKU：</span>
+                            <span id="approve-transfer-sku" class="font-medium text-gray-800">SKU002</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">调拨数量：</span>
+                            <span id="approve-transfer-quantity" class="font-medium text-gray-800">50</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">仓储费迁移：</span>
+                            <span id="approve-transfer-migrate" class="font-medium text-gray-800">否</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="approve-transfer-result"><span class="required">*</span> 审批结果</label>
+                    <select id="approve-transfer-result" class="form-select">
+                        <option value="">请选择审批结果</option>
+                        <option value="approved">通过</option>
+                        <option value="rejected">拒绝</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="approve-transfer-reason">审批意见</label>
+                    <textarea id="approve-transfer-reason" class="form-input" rows="3" placeholder="请输入审批意见"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('transfer-approve-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveApproveTransfer()">确认审批</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增出库模态框 -->
+    <div id="shipment-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">新增出库</h3>
+                <button class="close-btn" onclick="closeModal('shipment-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="shipment-warehouse"><span class="required">*</span> 虚拟仓名称</label>
+                    <select id="shipment-warehouse" class="form-select">
+                        <option value="NBFX">NBFX主仓</option>
+                        <option value="NBFX002">NBFX渠道仓A</option>
+                        <option value="NBFX003">NBFX渠道仓B</option>
+                        <option value="NBFX004">NBFX渠道仓C</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="shipment-sku"><span class="required">*</span> SKU</label>
+                    <input type="text" id="shipment-sku" class="form-input" placeholder="请输入SKU">
+                </div>
+                <div class="form-group">
+                    <label for="shipment-quantity"><span class="required">*</span> 出库数量</label>
+                    <input type="number" id="shipment-quantity" class="form-input" placeholder="请输入出库数量" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="shipment-note">备注</label>
+                    <textarea id="shipment-note" class="form-input" rows="3" placeholder="请输入备注"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('shipment-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveShipment()">保存</button>
+            </div>
+        </div>

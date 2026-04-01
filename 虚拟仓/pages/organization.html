@@ -1,0 +1,473 @@
+            <div id="page-organization" class="page active">
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="text-xs text-neutral-600 mr-2">部门名称</label>
+                            <div class="relative flex-1 sm:w-64">
+                                <input type="text" placeholder="请输入部门名称..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="department-search-input">
+                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none">
+                                <i class="fa fa-refresh mr-1.5"></i> 重置
+                            </button>
+                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none">
+                                <i class="fa fa-search mr-1.5"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex justify-start gap-3">
+                        <button class="erp-btn erp-btn-primary" onclick="openNewDepartmentModal()">
+                            <i class="fa fa-plus mr-1.5"></i> 新建部门
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+                            <thead class="bg-primary/10">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门名称</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门编码</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联虚拟仓</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">创建时间</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-neutral-100" id="department-list">
+                                <!-- 一级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                                        <button class="w-4 h-4 text-gray-400 hover:text-primary transition-colors" onclick="toggleDepartment(1)">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                        NBFX
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">9</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(1, 'NBFX')">关联用户</button>
+                                    </td>
+                                </tr>
+                                <!-- 二级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-1" style="display: table-row;">
+                                    <td class="px-12 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                                        <button class="w-4 h-4 text-gray-400 hover:text-primary transition-colors" onclick="toggleDepartment(11)">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                        运营部1
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX01</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(11, '运营部1', '1')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(11, '运营部1')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(11, '运营部1')">删除</button>
+                                    </td>
+                                </tr>
+                                <!-- 三级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-11" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0101</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(111, '运营组1', '11')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(111, '运营组1')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(111, '运营组1')">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-11" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组2</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0102</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-04 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(112, '运营组2', '11')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(112, '运营组2')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(112, '运营组2')">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-11" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0103</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-05 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(113, '运营组3', '11')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(113, '运营组3')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(113, '运营组3')">删除</button>
+                                    </td>
+                                </tr>
+                                <!-- 二级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-1" style="display: table-row;">
+                                    <td class="px-12 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                                        <button class="w-4 h-4 text-gray-400 hover:text-primary transition-colors" onclick="toggleDepartment(12)">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                        运营部2
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX02</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-06 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(12, '运营部2', '1')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(12, '运营部2')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(12, '运营部2')">删除</button>
+                                    </td>
+                                </tr>
+                                <!-- 三级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-12" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0201</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-07 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(121, '运营组1', '12')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(121, '运营组1')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(121, '运营组1')">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-12" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组2</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0202</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-08 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(122, '运营组2', '12')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(122, '运营组2')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(122, '运营组2')">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-12" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0203</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-09 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(123, '运营组3', '12')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(123, '运营组3')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(123, '运营组3')">删除</button>
+                                    </td>
+                                </tr>
+                                <!-- 二级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-1" style="display: table-row;">
+                                    <td class="px-12 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                                        <button class="w-4 h-4 text-gray-400 hover:text-primary transition-colors" onclick="toggleDepartment(13)">
+                                            <i class="fa fa-chevron-down"></i>
+                                        </button>
+                                        运营部3
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX-03</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-10 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(13, '运营部3', '1')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(13, '运营部3')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(13, '运营部3')">删除</button>
+                                    </td>
+                                </tr>
+                                <!-- 三级部门 -->
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-13" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0301</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-11 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(131, '运营组1', '13')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(131, '运营组1')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(131, '运营组1')">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-13" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组2</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0302</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-12 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(132, '运营组2', '13')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(132, '运营组2')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(132, '运营组2')">删除</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-13" style="display: table-row;">
+                                    <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0303</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-13 14:00:00</td>
+                                    <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(133, '运营组3', '13')">编辑</button>
+                                        <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(133, '运营组3')">关联用户</button>
+                                        <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteDepartment(133, '运营组3')">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 逻辑说明 -->
+                <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('organization')">
+                        <div class="flex items-center">
+                            <i class="fa fa-book text-primary mr-2"></i>
+                            <span class="font-semibold text-primary">逻辑说明</span>
+                            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                        </div>
+                        <i class="fa fa-chevron-down text-primary transition-transform" id="organization-logic-icon"></i>
+                    </div>
+                    <div id="organization-logic-content">
+                        <!-- 初始化页面（数据展示逻辑） -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">部门树加载</td>
+                                            <td class="px-3 py-2 text-gray-600">页面加载时默认展示部门树形结构</td>
+                                            <td class="px-3 py-2 text-gray-600">系统菜单</td>
+                                            <td class="px-3 py-2 text-gray-600">一级部门→二级部门→三级部门，按层级缩进展示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">根部门展示</td>
+                                            <td class="px-3 py-2 text-gray-600">根部门为"NBFX"，默认展开</td>
+                                            <td class="px-3 py-2 text-gray-600">部门表</td>
+                                            <td class="px-3 py-2 text-gray-600">根部门固定在顶部，不可删除</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">子部门展示</td>
+                                            <td class="px-3 py-2 text-gray-600">点击展开按钮显示子部门</td>
+                                            <td class="px-3 py-2 text-gray-600">部门表parent_id关联</td>
+                                            <td class="px-3 py-2 text-gray-600">二级部门在上级部门下方缩进显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">三级部门展示</td>
+                                            <td class="px-3 py-2 text-gray-600">三级部门为最末级，不可再添加子部门</td>
+                                            <td class="px-3 py-2 text-gray-600">部门表level=3</td>
+                                            <td class="px-3 py-2 text-gray-600">缩进更多，与二级部门区分</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 检索条件 -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-search text-primary mr-2"></i>检索条件
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">部门名称</td>
+                                            <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据部门名称精确查询</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 按钮逻辑 -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">新建部门</td>
+                                            <td class="px-3 py-2 text-gray-600">部门管理页面右上角</td>
+                                            <td class="px-3 py-2 text-gray-600">打开新建部门弹窗</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">填写表单后提交，刷新部门树</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">编辑</td>
+                                            <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">打开编辑部门弹窗，填充当前数据</td>
+                                            <td class="px-3 py-2 text-gray-600">根节点（NBFX）不允许编辑</td>
+                                            <td class="px-3 py-2 text-gray-600">填写表单后提交，刷新部门树</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">关联用户</td>
+                                            <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">打开关联用户穿梭框弹窗，左侧显示未关联员工，右侧显示已关联员工</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">支持批量添加/移除用户，保存后更新部门用户关联关系</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">删除</td>
+                                            <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">确认弹窗</td>
+                                            <td class="px-3 py-2 text-gray-600">根节点（NBFX）不允许删除；非根节点需检查是否有下级部门/关联虚拟仓</td>
+                                            <td class="px-3 py-2 text-gray-600">确认后删除，刷新部门树</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">展开/收起</td>
+                                            <td class="px-3 py-2 text-gray-600">部门名称前展开图标</td>
+                                            <td class="px-3 py-2 text-gray-600">切换子部门显示隐藏</td>
+                                            <td class="px-3 py-2 text-gray-600">该部门有子部门</td>
+                                            <td class="px-3 py-2 text-gray-600">切换图标方向</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 属性取值逻辑 -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">部门名称</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">上级部门</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、来源：组织树<br>
+                                                2、默认值 = 公司
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">部门编码</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">格式：父编码+层级序号</td>
+                                            <td class="px-3 py-2 text-gray-600">NBFX0101</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">关联虚拟仓</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">统计该部门关联的关联虚拟仓</td>
+                                            <td class="px-3 py-2 text-gray-600">数字</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">创建时间</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">新增提交时间</td>
+                                            <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 属性取值逻辑（弹窗） -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（新增部门）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">部门名称</td>
+                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">上级部门</td>
+                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                            <td class="px-3 py-2 text-gray-600">
+                                                1、来源：组织树<br>
+                                                2、默认值 = 公司
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                         <!-- 属性取值逻辑（弹窗） -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（关联用户）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">用户来源</td>
+                                            <td class="px-3 py-2 text-gray-600">系统管理 - 客户管理</td>
+                                            <td class="px-3 py-2 text-gray-600">/</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+

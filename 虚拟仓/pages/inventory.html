@@ -1,0 +1,432 @@
+            <div id="page-inventory" class="page">
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="inventory-warehouse">仓库</label>
+                            <select id="inventory-warehouse" class="form-select">
+                                <option value="">请选择</option>
+                                <option value="DE001">DE001</option>
+                                <option value="DEMO">DEMO</option>
+                                <option value="CA008">CA008</option>
+                                <option value="CA003">CA003</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inventory-virtual-warehouse">虚拟仓</label>
+                            <select id="inventory-virtual-warehouse" class="form-select">
+                                <option value="">请选择</option>
+                                <option value="NBFX002">NBFX渠道仓A</option>
+                                <option value="NBFX003">NBFX渠道仓B</option>
+                                <option value="NBFX004">NBFX渠道仓C</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inventory-product-type">产品类型</label>
+                            <select id="inventory-product-type" class="form-select">
+                                <option value="">请选择</option>
+                                <option value="type1">统一品类/一品卖1/统一品...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inventory-product-name">产品名称</label>
+                            <input type="text" id="inventory-product-name" class="form-input" placeholder="请输入">
+                        </div>
+                        <div class="form-group">
+                            <label for="inventory-sku">SKU</label>
+                            <div class="flex">
+                                <select class="form-select w-24">
+                                    <option value="exact">精确查询</option>
+                                    <option value="fuzzy">模糊查询</option>
+                                </select>
+                                <input type="text" id="inventory-sku" class="form-input ml-2" placeholder="ADADAD">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inventory-custom-code">自定义编码</label>
+                            <div class="flex">
+                                <select class="form-select w-24">
+                                    <option value="exact">精确查询</option>
+                                    <option value="fuzzy">模糊查询</option>
+                                </select>
+                                <input type="text" id="inventory-custom-code" class="form-input ml-2" placeholder="请输入">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inventory-alert">预警库存</label>
+                            <select id="inventory-alert" class="form-select">
+                                <option value="">请选择</option>
+                                <option value="normal">正常</option>
+                                <option value="alert">预警</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button class="erp-btn erp-btn-secondary">
+                            重置
+                        </button>
+                        <button class="erp-btn erp-btn-primary">
+                            搜索
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-start gap-3 mb-4">
+                    <button class="erp-btn erp-btn-secondary">
+                        <i class="fa fa-download mr-1.5"></i> 导出
+                    </button>
+                </div>
+
+                <div class="bg-white rounded shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">
+                                        序号
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">SKU</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">产品图片</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">产品类型</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">产品名称</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">自定义编码</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">仓库</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">虚拟仓</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">预警库存 <i class="fa fa-info-circle text-blue-500"></i></th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">在途 (0) <i class="fa fa-caret-down text-gray-500"></i></th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">待上架 (0) <i class="fa fa-caret-down text-gray-500"></i></th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap">总库存 (270) <i class="fa fa-caret-down text-gray-500"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-neutral-100" id="inventory-list">
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2</td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">-</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">统一品类/一品卖1/统一品...</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">DEMO</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓A</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">正常</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">25</td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">-</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">统一品类/一品卖1/统一品...</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">CA008</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓B</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">正常</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">22</td>
+                                </tr>
+                                <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50">
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">4</td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">-</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">统一品类/一品卖1/统一品...</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">adadad</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">CA003</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX渠道仓C</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">正常</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">0</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">15</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-between items-center p-4 border-t border-gray-100">
+                        <div class="text-sm text-gray-600">
+                            共4条
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select class="form-select w-24">
+                                <option value="10">10条/页</option>
+                                <option value="20">20条/页</option>
+                                <option value="50">50条/页</option>
+                            </select>
+                            <div class="flex items-center gap-1">
+                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center" disabled>
+                                    <i class="fa fa-chevron-left"></i>
+                                </button>
+                                <button class="erp-btn erp-btn-primary w-8 h-8 flex items-center justify-center">
+                                    1
+                                </button>
+                                <button class="erp-btn erp-btn-secondary w-8 h-8 flex items-center justify-center" disabled>
+                                    <i class="fa fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-sm text-gray-600">前往</span>
+                                <input type="number" class="form-input w-16 text-center" value="1" min="1" max="1">
+                                <span class="text-sm text-gray-600">页</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 库存管理逻辑说明 -->
+            <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('inventory')">
+                    <div class="flex items-center">
+                        <i class="fa fa-book text-primary mr-2"></i>
+                        <span class="font-semibold text-primary">逻辑说明</span>
+                        <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                    </div>
+                    <i class="fa fa-chevron-down text-primary transition-transform" id="inventory-logic-icon"></i>
+                </div>
+                <div id="inventory-logic-content">
+                    <!-- 初始化页面（数据展示逻辑） -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">库存列表</td>
+                                        <td class="px-3 py-2 text-gray-600">页面加载时展示当前用户有权限的库存数据</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory表</td>
+                                        <td class="px-3 py-2 text-gray-600">按SKU升序排列，默认显示第1页</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">预警库存标识</td>
+                                        <td class="px-3 py-2 text-gray-600">根据库存数量和预警阈值判断显示状态</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.quantity & inventory.alert_threshold</td>
+                                        <td class="px-3 py-2 text-gray-600">库存≤预警阈值显示"预警"，否则显示"正常"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">库存数量统计</td>
+                                        <td class="px-3 py-2 text-gray-600">表头显示各状态的库存数量汇总</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory表统计</td>
+                                        <td class="px-3 py-2 text-gray-600">在途、待上架、总库存分别统计并显示在表头</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 检索条件 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-search text-primary mr-2"></i>检索条件
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的仓库精确查询，不选择时显示所有仓库的库存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的虚拟仓精确查询，不选择时显示所有虚拟仓的库存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品类型</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据产品类型精确查询</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">根据产品名称模糊查询</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉选择+文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">支持精确查询和模糊查询两种模式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉选择+文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">支持精确查询和模糊查询两种模式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">预警库存</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">选择"正常"显示库存充足的记录，选择"预警"显示库存不足的记录</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 按钮逻辑 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">搜索</td>
+                                        <td class="px-3 py-2 text-gray-600">筛选区域右侧</td>
+                                        <td class="px-3 py-2 text-gray-600">根据筛选条件查询库存数据</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">刷新列表，显示符合条件的库存记录</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">重置</td>
+                                        <td class="px-3 py-2 text-gray-600">筛选区域右侧</td>
+                                        <td class="px-3 py-2 text-gray-600">清空所有筛选条件，恢复默认状态</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">刷新列表，显示所有库存记录</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">导出</td>
+                                        <td class="px-3 py-2 text-gray-600">页面左上角</td>
+                                        <td class="px-3 py-2 text-gray-600">导出当前筛选结果到Excel文件</td>
+                                        <td class="px-3 py-2 text-gray-600">至少有一条库存记录</td>
+                                        <td class="px-3 py-2 text-gray-600">下载Excel文件，文件名格式：库存列表_YYYYMMDD_HHmmss.xlsx</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 属性取值逻辑 -->
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">序号</td>
+                                        <td class="px-3 py-2 text-gray-600">记录序号</td>
+                                        <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                        <td class="px-3 py-2 text-gray-600">根据当前页码和每页条数自动计算</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">产品SKU编码</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.sku</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示，加粗</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品图片</td>
+                                        <td class="px-3 py-2 text-gray-600">产品图片缩略图</td>
+                                        <td class="px-3 py-2 text-gray-600">product.image_url</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取图片URL</td>
+                                        <td class="px-3 py-2 text-gray-600">图片显示，无图片时显示"-"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品类型</td>
+                                        <td class="px-3 py-2 text-gray-600">产品分类信息</td>
+                                        <td class="px-3 py-2 text-gray-600">product.type</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取类型信息</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示，超长时省略</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品名称</td>
+                                        <td class="px-3 py-2 text-gray-600">产品名称</td>
+                                        <td class="px-3 py-2 text-gray-600">product.name</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">客户自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">product.custom_code</td>
+                                        <td class="px-3 py-2 text-gray-600">关联产品表获取自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">实体仓库名称</td>
+                                        <td class="px-3 py-2 text-gray-600">warehouse.name</td>
+                                        <td class="px-3 py-2 text-gray-600">关联仓库表获取仓库名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">虚拟仓名称</td>
+                                        <td class="px-3 py-2 text-gray-600">virtual_warehouse.name</td>
+                                        <td class="px-3 py-2 text-gray-600">关联虚拟仓表获取虚拟仓名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">预警库存</td>
+                                        <td class="px-3 py-2 text-gray-600">库存预警状态</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.quantity & inventory.alert_threshold</td>
+                                        <td class="px-3 py-2 text-gray-600">比较库存数量与预警阈值，quantity ≤ alert_threshold时显示"预警"</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示，"预警"显示红色，"正常"显示绿色</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">在途</td>
+                                        <td class="px-3 py-2 text-gray-600">在途库存数量</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.in_transit_quantity</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">待上架</td>
+                                        <td class="px-3 py-2 text-gray-600">待上架库存数量</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.pending_quantity</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">总库存</td>
+                                        <td class="px-3 py-2 text-gray-600">总库存数量</td>
+                                        <td class="px-3 py-2 text-gray-600">inventory.total_quantity</td>
+                                        <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                        <td class="px-3 py-2 text-gray-600">数字显示</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
