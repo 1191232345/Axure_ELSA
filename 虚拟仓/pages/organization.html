@@ -35,6 +35,7 @@
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门名称</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门编码</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联虚拟仓</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联客户</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">创建时间</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
                                 </tr>
@@ -49,7 +50,12 @@
                                         NBFX
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">9</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(1, 'NBFX')">9</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(1, 'NBFX')">15</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="manageUsers(1, 'NBFX')">关联用户</button>
@@ -64,7 +70,12 @@
                                         运营部1
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX01</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(11, '运营部1')">3</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(11, '运营部1')">5</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(11, '运营部1', '1')">编辑</button>
@@ -76,7 +87,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-11" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组1</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0101</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(111, '运营组1')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(111, '运营组1')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(111, '运营组1', '11')">编辑</button>
@@ -87,7 +103,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-11" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组2</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0102</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(112, '运营组2')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(112, '运营组2')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-04 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(112, '运营组2', '11')">编辑</button>
@@ -98,7 +119,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-11" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组3</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0103</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(113, '运营组3')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(113, '运营组3')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-05 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(113, '运营组3', '11')">编辑</button>
@@ -115,7 +141,12 @@
                                         运营部2
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX02</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(12, '运营部2')">3</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(12, '运营部2')">5</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-06 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(12, '运营部2', '1')">编辑</button>
@@ -127,7 +158,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-12" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组1</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0201</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(121, '运营组1')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(121, '运营组1')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-07 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(121, '运营组1', '12')">编辑</button>
@@ -138,7 +174,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-12" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组2</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0202</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(112, '运营组2')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(112, '运营组2')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-08 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(122, '运营组2', '12')">编辑</button>
@@ -149,7 +190,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-12" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组3</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0203</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(123, '运营组3')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(123, '运营组3')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-09 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(123, '运营组3', '12')">编辑</button>
@@ -166,7 +212,12 @@
                                         运营部3
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX-03</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(13, '运营部3')">3</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(13, '运营部3')">5</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-10 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(13, '运营部3', '1')">编辑</button>
@@ -178,7 +229,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-13" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组1</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0301</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(131, '运营组1')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(131, '运营组1')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-11 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(131, '运营组1', '13')">编辑</button>
@@ -189,7 +245,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-13" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组2</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0302</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(112, '运营组2')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(112, '运营组2')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-12 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(132, '运营组2', '13')">编辑</button>
@@ -200,7 +261,12 @@
                                 <tr class="table-hover-row transition-colors duration-150 hover:bg-neutral-50 department-child department-13" style="display: table-row;">
                                     <td class="px-20 py-3 font-medium text-neutral-800 whitespace-nowrap">运营组3</td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">NBFX0303</td>
-                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewWarehouses(133, '运营组3')">1</button>
+                                    </td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <button class="text-primary hover:underline" onclick="viewCustomers(133, '运营组3')">2</button>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-13 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
                                         <button class="table-btn text-primary hover:bg-primary/10 mr-2" onclick="editDepartment(133, '运营组3', '13')">编辑</button>
@@ -333,6 +399,20 @@
                                             <td class="px-3 py-2 text-gray-600">支持批量添加/移除用户，保存后更新部门用户关联关系</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">关联虚拟仓</td>
+                                            <td class="px-3 py-2 text-gray-600">主表"关联虚拟仓"列</td>
+                                            <td class="px-3 py-2 text-gray-600">点击数字，打开关联虚拟仓弹窗，展示该部门授权的所有虚拟仓</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">展示虚拟仓列表，支持查看虚拟仓详情</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">关联客户</td>
+                                            <td class="px-3 py-2 text-gray-600">主表"关联客户"列</td>
+                                            <td class="px-3 py-2 text-gray-600">点击数字，打开关联客户弹窗，展示该部门授权的所有客户</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">展示客户列表，支持查看客户详情</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">删除</td>
                                             <td class="px-3 py-2 text-gray-600">每行数据操作列</td>
                                             <td class="px-3 py-2 text-gray-600">确认弹窗</td>
@@ -391,8 +471,14 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">关联虚拟仓</td>
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
-                                            <td class="px-3 py-2 text-gray-600">统计该部门关联的关联虚拟仓</td>
-                                            <td class="px-3 py-2 text-gray-600">数字</td>
+                                            <td class="px-3 py-2 text-gray-600">统计该部门授权的虚拟仓数量，点击可查看详情</td>
+                                            <td class="px-3 py-2 text-gray-600">数字（可点击）</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">关联客户</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">统计该部门授权的客户数量，点击可查看详情</td>
+                                            <td class="px-3 py-2 text-gray-600">数字（可点击）</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">创建时间</td>

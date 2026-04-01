@@ -31,7 +31,7 @@
                             <select id="new-shipment-delivery-channel" class="form-select">
                                 <option value="1">发现快递</option>
                                 <option value="2">非发现快递</option>
-                            </select
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -58,8 +58,8 @@
                             <input type="text" id="new-shipment-recipient-city" class="form-input" placeholder="请输入城市">
                         </div>
                         <div class="form-group">
-                            <label for="new-shipment-recipient-name"><span class="required">*</span> 名称</label>
-                            <input type="text" id="new-shipment-recipient-name" class="form-input" placeholder="请输入名称">
+                            <label for="new-shipment-recipient-company-name"><span class="required">*</span> 名称</label>
+                            <input type="text" id="new-shipment-recipient-company-name" class="form-input" placeholder="请输入名称">
                         </div>
                         <div class="form-group">
                             <label for="new-shipment-recipient-contact"><span class="required">*</span> 联系方式</label>
@@ -84,16 +84,16 @@
                     <h4 class="text-md font-semibold text-gray-800 mb-4">产品信息</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="form-group">
-                            <label for="new-shipment-warehouse-location"><span class="required">*</span> 仓库类型</label>
-                            <select id="new-shipment-warehouse-location" class="form-select">
+                            <label for="new-shipment-warehouse-type"><span class="required">*</span> 仓库类型</label>
+                            <select id="new-shipment-warehouse-type" class="form-select">
                                 <option value="DE001">主仓</option>
                                 <option value="DE002">渠道仓</option>
                                 <option value="DE003">备货仓</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="new-shipment-warehouse-location"><span class="required">*</span> 仓库代码</label>
-                            <select id="new-shipment-warehouse-location" class="form-select">
+                            <label for="new-shipment-warehouse-code"><span class="required">*</span> 仓库代码</label>
+                            <select id="new-shipment-warehouse-code" class="form-select">
                                 <option value="DE001">DE001</option>
                                 <option value="DE002">DE002</option>
                                 <option value="DE003">DE003</option>
@@ -141,7 +141,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-4 flex justify-center>
+                    <div class="mt-4 flex justify-center">
                         <button class="erp-btn erp-btn-secondary">
                             <i class="fa fa-plus mr-1.5"></i> 添加产品
                         </button>
@@ -287,3 +287,181 @@
                                         <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
                                         <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
                                         <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">提交</td>
+                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
+                                        <td class="px-3 py-2 text-gray-600">验证表单 → 扣减库存 → 生成出库单</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、所有必填项已填写<br>
+                                            2、至少添加一个产品<br>
+                                            3、库存充足
+                                        </td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、保存出库单数据<br>
+                                            2、扣减对应库存<br>
+                                            3、关闭当前页面<br>
+                                            4、返回出库列表页面
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">取消</td>
+                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
+                                        <td class="px-3 py-2 text-gray-600">确认弹窗（二次提示确认）</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、不保存填写数据<br>
+                                            2、关闭页面<br>
+                                            3、返回出库列表页面
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">添加产品</td>
+                                        <td class="px-3 py-2 text-gray-600">产品信息表格下方</td>
+                                        <td class="px-3 py-2 text-gray-600">在产品列表中添加一行新的空产品</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">产品列表增加一行，等待填写</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">删除产品</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">删除当前行的产品</td>
+                                        <td class="px-3 py-2 text-gray-600">产品列表至少有一行</td>
+                                        <td class="px-3 py-2 text-gray-600">移除当前行产品</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 页面属性描述 -->
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-windows text-primary mr-2"></i>属性描述
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择客户代码</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">销售平台</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择销售平台</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">参考号</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入参考号</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">配送渠道</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择配送渠道</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">收件人姓名</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入收件人姓名</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">国家</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择国家</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">省/州</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入省/州</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">城市</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入城市</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">地址</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入详细地址</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">邮编</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入邮编</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">联系方式</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入联系方式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">数据来源：虚拟仓管理</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">
+                                            1、根据仓库类型，筛选仓库<br>
+                                            2、仅展示授权账号可查询的仓库<br>
+                                            3、根据仓库类型，展示不同的仓库
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">拣货方式</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">选择拣货方式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品代码/SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">显示产品SKU</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">出库件数</td>
+                                        <td class="px-3 py-2 text-gray-600">数字输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">输入出库数量，不能超过库存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">备注</td>
+                                        <td class="px-3 py-2 text-gray-600">文本域</td>
+                                        <td class="px-3 py-2 text-gray-600">否</td>
+                                        <td class="px-3 py-2 text-gray-600">选填，可输入备注信息</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>

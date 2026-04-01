@@ -1,79 +1,56 @@
         // 页面切换
         document.addEventListener('DOMContentLoaded', function() {
-            // 确保组织机构页面默认显示
-            const organizationPage = document.getElementById('page-organization');
-            if (organizationPage) {
-                organizationPage.classList.add('active');
+            // 左侧全选
+            const selectAllLeftUsers = document.getElementById('select-all-left-users');
+            if (selectAllLeftUsers) {
+                selectAllLeftUsers.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.left-user-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    updateSelectedCount();
+                });
             }
             
-            // 为所有带有 data-page 属性的菜单项添加点击事件
-            document.querySelectorAll('[data-page]').forEach(function(link) {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    
-                    // 隐藏所有页面
-                    document.querySelectorAll('.page').forEach(function(pageEl) {
-                        pageEl.classList.remove('active');
-                    });
-                    
-                    // 显示目标页面
-                    const targetPage = document.getElementById('page-' + page);
-                    if (targetPage) {
-                        targetPage.classList.add('active');
-                        
-                        // 重新渲染该页面中的Mermaid图表
-                        setTimeout(function() {
-                            const mermaidElements = targetPage.querySelectorAll('.mermaid');
-                            if (mermaidElements.length > 0) {
-                                mermaid.init(undefined, mermaidElements);
-                            }
-                        }, 50);
-                    }
-                });
-            });
-            
-            // 初始化组织机构页面中的Mermaid图表
-            setTimeout(function() {
-                const mermaidElements = organizationPage.querySelectorAll('.mermaid');
-                if (mermaidElements.length > 0) {
-                    mermaid.init(undefined, mermaidElements);
-                }
-            }, 100);
-            
-            // 左侧全选
-            document.getElementById('select-all-left-users').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.left-user-checkbox');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                updateSelectedCount();
-            });
-            
             // 右侧全选
-            document.getElementById('select-all-right-users').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.right-user-checkbox');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                updateSelectedCount();
-            });
+            const selectAllRightUsers = document.getElementById('select-all-right-users');
+            if (selectAllRightUsers) {
+                selectAllRightUsers.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('.right-user-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    updateSelectedCount();
+                });
+            }
             
             // 左侧用户选择变化
-            document.getElementById('left-user-list').addEventListener('change', function(e) {
-                if (e.target.classList.contains('left-user-checkbox')) {
-                    updateSelectedCount();
-                    const allCheckboxes = document.querySelectorAll('.left-user-checkbox');
-                    const checkedCheckboxes = document.querySelectorAll('.left-user-checkbox:checked');
-                    document.getElementById('select-all-left-users').checked = allCheckboxes.length === checkedCheckboxes.length;
-                }
-            });
+            const leftUserList = document.getElementById('left-user-list');
+            if (leftUserList) {
+                leftUserList.addEventListener('change', function(e) {
+                    if (e.target.classList.contains('left-user-checkbox')) {
+                        updateSelectedCount();
+                        const allCheckboxes = document.querySelectorAll('.left-user-checkbox');
+                        const checkedCheckboxes = document.querySelectorAll('.left-user-checkbox:checked');
+                        const selectAllLeft = document.getElementById('select-all-left-users');
+                        if (selectAllLeft) {
+                            selectAllLeft.checked = allCheckboxes.length === checkedCheckboxes.length;
+                        }
+                    }
+                });
+            }
             
             // 右侧用户选择变化
-            document.getElementById('right-user-list').addEventListener('change', function(e) {
-                if (e.target.classList.contains('right-user-checkbox')) {
-                    updateSelectedCount();
-                    const allCheckboxes = document.querySelectorAll('.right-user-checkbox');
-                    const checkedCheckboxes = document.querySelectorAll('.right-user-checkbox:checked');
-                    document.getElementById('select-all-right-users').checked = allCheckboxes.length === checkedCheckboxes.length;
-                }
-            });
+            const rightUserList = document.getElementById('right-user-list');
+            if (rightUserList) {
+                rightUserList.addEventListener('change', function(e) {
+                    if (e.target.classList.contains('right-user-checkbox')) {
+                        updateSelectedCount();
+                        const allCheckboxes = document.querySelectorAll('.right-user-checkbox');
+                        const checkedCheckboxes = document.querySelectorAll('.right-user-checkbox:checked');
+                        const selectAllRight = document.getElementById('select-all-right-users');
+                        if (selectAllRight) {
+                            selectAllRight.checked = allCheckboxes.length === checkedCheckboxes.length;
+                        }
+                    }
+                });
+            }
         });
 
         // 模态框操作
@@ -167,6 +144,16 @@
         // 用户关联管理
         let currentDepartmentId = '';
         
+        function viewWarehouses(departmentId, departmentName) {
+            document.getElementById('view-warehouses-department-name').textContent = departmentName;
+            openModal('view-warehouses-modal');
+        }
+
+        function viewCustomers(departmentId, departmentName) {
+            document.getElementById('view-customers-department-name').textContent = departmentName;
+            openModal('view-customers-modal');
+        }
+
         function manageUsers(departmentId, departmentName) {
             currentDepartmentId = departmentId;
             document.getElementById('add-user-department-name').textContent = departmentName;
@@ -264,7 +251,7 @@
                     setTimeout(function() {
                         const mermaidElements = content.querySelectorAll('.mermaid');
                         if (mermaidElements.length > 0) {
-                            mermaid.init(undefined, mermaidElements);
+                            mermaid.run();
                         }
                     }, 50);
                 } else {
@@ -282,13 +269,39 @@
             document.getElementById('new-warehouse-type').value = 'department';
             document.getElementById('new-warehouse-department').value = '1';
             document.getElementById('new-warehouse-entity').value = 'DE001';
+            // 初始化字段显示
+            updateWarehouseFields();
+        }
+
+        function updateWarehouseFields() {
+            const warehouseType = document.getElementById('new-warehouse-type').value;
+            const departmentField = document.getElementById('department-field');
+            const channelField = document.getElementById('channel-field');
+            
+            if (warehouseType === 'department') {
+                departmentField.style.display = 'block';
+                channelField.style.display = 'none';
+            } else if (warehouseType === 'channel') {
+                departmentField.style.display = 'none';
+                channelField.style.display = 'block';
+            } else if (warehouseType === 'stock') {
+                departmentField.style.display = 'none';
+                channelField.style.display = 'none';
+            }
         }
 
         function saveNewWarehouse() {
             const name = document.getElementById('new-warehouse-name').value;
             const type = document.getElementById('new-warehouse-type').value;
-            const departmentId = document.getElementById('new-warehouse-department').value;
+            let departmentId = '';
+            let channelId = '';
             const entityWarehouse = document.getElementById('new-warehouse-entity').value;
+            
+            if (type === 'department') {
+                departmentId = document.getElementById('new-warehouse-department').value;
+            } else if (type === 'channel') {
+                channelId = document.getElementById('new-warehouse-channel').value;
+            }
             
             if (!name) {
                 alert('请输入虚拟仓名称');
@@ -300,6 +313,23 @@
             closeModal('new-warehouse-modal');
         }
 
+        function updateEditWarehouseFields() {
+            const warehouseType = document.getElementById('edit-warehouse-type').value;
+            const departmentField = document.getElementById('edit-department-field');
+            const channelField = document.getElementById('edit-channel-field');
+            
+            if (warehouseType === 'main' || warehouseType === 'department') {
+                departmentField.style.display = 'block';
+                channelField.style.display = 'none';
+            } else if (warehouseType === 'channel') {
+                departmentField.style.display = 'none';
+                channelField.style.display = 'block';
+            } else if (warehouseType === 'stock') {
+                departmentField.style.display = 'none';
+                channelField.style.display = 'none';
+            }
+        }
+
         function editWarehouse(id, name, type, departmentId, entityWarehouse) {
             openModal('edit-warehouse-modal');
             document.getElementById('edit-warehouse-id').value = id;
@@ -307,14 +337,23 @@
             document.getElementById('edit-warehouse-type').value = type;
             document.getElementById('edit-warehouse-department').value = departmentId;
             document.getElementById('edit-warehouse-entity').value = entityWarehouse;
+            // 初始化字段显示
+            updateEditWarehouseFields();
         }
 
         function saveEditWarehouse() {
             const id = document.getElementById('edit-warehouse-id').value;
             const name = document.getElementById('edit-warehouse-name').value;
             const type = document.getElementById('edit-warehouse-type').value;
-            const departmentId = document.getElementById('edit-warehouse-department').value;
+            let departmentId = '';
+            let channelId = '';
             const entityWarehouse = document.getElementById('edit-warehouse-entity').value;
+            
+            if (type === 'main' || type === 'department') {
+                departmentId = document.getElementById('edit-warehouse-department').value;
+            } else if (type === 'channel') {
+                channelId = document.getElementById('edit-warehouse-channel').value;
+            }
             
             if (!name) {
                 alert('请输入虚拟仓名称');
@@ -324,6 +363,28 @@
             // 模拟保存
             alert('虚拟仓名称编辑成功');
             closeModal('edit-warehouse-modal');
+        }
+
+        function moveSelectedUsers(from, to) {
+            const fromCheckboxes = document.querySelectorAll(`.${from}-user-checkbox:checked`);
+            const toContainer = document.querySelector(`.${to}-user-checkbox`).parentElement.parentElement.parentElement;
+            
+            fromCheckboxes.forEach(checkbox => {
+                const userItem = checkbox.parentElement.parentElement;
+                const newUserItem = userItem.cloneNode(true);
+                newUserItem.querySelector('input').classList.remove(`${from}-user-checkbox`);
+                newUserItem.querySelector('input').classList.add(`${to}-user-checkbox`);
+                toContainer.appendChild(newUserItem);
+                userItem.remove();
+            });
+            
+            updateSelectedCount();
+        }
+
+        function saveUsers() {
+            // 模拟保存
+            alert('用户关联成功');
+            closeModal('add-user-modal');
         }
 
         function deleteWarehouse(id, name) {
@@ -694,37 +755,39 @@
         }
 
         function showShipmentList() {
-            // 隐藏所有页面
-            document.querySelectorAll('.page').forEach(function(pageEl) {
-                pageEl.classList.remove('active');
-            });
-            
-            // 显示出库列表页面
-            const shipmentPage = document.getElementById('page-shipment');
-            if (shipmentPage) {
-                shipmentPage.classList.add('active');
+            // 使用 switchPage 函数切换回出库列表页面
+            if (typeof switchPage === 'function') {
+                switchPage('shipment');
+            } else if (typeof loadPage === 'function') {
+                loadPage('shipment');
+            } else {
+                console.error('switchPage or loadPage function not found');
             }
         }
 
         function saveNewShipment() {
             // 获取表单数据
-            const warehouse = document.getElementById('new-shipment-warehouse').value;
             const platform = document.getElementById('new-shipment-platform').value;
             const amazonStore = document.getElementById('new-shipment-amazon-store').value;
+            const deliveryChannel = document.getElementById('new-shipment-delivery-channel').value;
             const recipientName = document.getElementById('new-shipment-recipient-name').value;
             const recipientCountry = document.getElementById('new-shipment-recipient-country').value;
             const recipientState = document.getElementById('new-shipment-recipient-state').value;
             const recipientCity = document.getElementById('new-shipment-recipient-city').value;
+            const recipientCompanyName = document.getElementById('new-shipment-recipient-company-name').value;
+            const recipientContact = document.getElementById('new-shipment-recipient-contact').value;
+            const recipientCompany = document.getElementById('new-shipment-recipient-company').value;
             const recipientAddress = document.getElementById('new-shipment-recipient-address').value;
             const recipientZip = document.getElementById('new-shipment-recipient-zip').value;
-            const recipientPhone = document.getElementById('new-shipment-recipient-phone').value;
-            const warehouseLocation = document.getElementById('new-shipment-warehouse-location').value;
+            const warehouseType = document.getElementById('new-shipment-warehouse-type').value;
+            const warehouseCode = document.getElementById('new-shipment-warehouse-code').value;
             const pickMethod = document.getElementById('new-shipment-pick-method').value;
             
             // 验证必填字段
-            if (!warehouse || !platform || !amazonStore || !recipientName || !recipientCountry || 
-                !recipientState || !recipientCity || !recipientAddress || !recipientZip || 
-                !recipientPhone || !warehouseLocation || !pickMethod) {
+            if (!platform || !amazonStore || !deliveryChannel || !recipientName || !recipientCountry || 
+                !recipientState || !recipientCity || !recipientCompanyName || !recipientContact || 
+                !recipientCompany || !recipientAddress || !recipientZip || !warehouseType || 
+                !warehouseCode || !pickMethod) {
                 alert('请填写所有必填字段');
                 return;
             }
@@ -758,7 +821,7 @@
             
             // 重新渲染mermaid图表
             if (window.mermaid) {
-                mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
+                mermaid.run();
             }
         }
         
@@ -828,7 +891,7 @@
                                     const mermaidElements = prdContentDiv.querySelectorAll('.mermaid');
                                     if (mermaidElements.length > 0) {
                                         console.log('找到Mermaid图表数量:', mermaidElements.length);
-                                        mermaid.init(undefined, mermaidElements);
+                                        mermaid.run();
                                     }
                                 }, 100);
                             }
@@ -914,7 +977,7 @@
                                     const mermaidElements = testCasesContentDiv.querySelectorAll('.mermaid');
                                     if (mermaidElements.length > 0) {
                                         console.log('找到Mermaid图表数量:', mermaidElements.length);
-                                        mermaid.init(undefined, mermaidElements);
+                                        mermaid.run();
                                     }
                                 }, 100);
                             }

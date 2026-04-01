@@ -1,184 +1,3 @@
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">提交</td>
-                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
-                                        <td class="px-3 py-2 text-gray-600">验证表单 → 扣减库存 → 生成出库单</td>
-                                        <td class="px-3 py-2 text-gray-600">
-                                            1、所有必填项已填写<br>
-                                            2、至少添加一个产品<br>
-                                            3、库存充足
-                                        </td>
-                                        <td class="px-3 py-2 text-gray-600">
-                                            1、保存出库单数据<br>
-                                            2、扣减对应库存<br>
-                                            3、关闭当前页面<br>
-                                            4、返回出库列表页面
-                                        </td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">取消</td>
-                                        <td class="px-3 py-2 text-gray-600">页面底部</td>
-                                        <td class="px-3 py-2 text-gray-600">确认弹窗（二次提示确认）</td>
-                                        <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">
-                                            1、不保存填写数据<br>
-                                            2、关闭页面<br>
-                                            3、返回出库列表页面
-                                        </td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">添加产品</td>
-                                        <td class="px-3 py-2 text-gray-600">产品信息表格下方</td>
-                                        <td class="px-3 py-2 text-gray-600">在产品列表中添加一行新的空产品</td>
-                                        <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">产品列表增加一行，等待填写</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">删除产品</td>
-                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
-                                        <td class="px-3 py-2 text-gray-600">删除当前行的产品</td>
-                                        <td class="px-3 py-2 text-gray-600">产品列表至少有一行</td>
-                                        <td class="px-3 py-2 text-gray-600">移除当前行产品</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 页面属性描述 -->
-                    <div class="p-4">
-                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                            <i class="fa fa-windows text-primary mr-2"></i>属性描述
-                        </h4>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm border border-gray-200 rounded">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">选择客户代码</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">销售平台</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">选择销售平台</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">参考号</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入参考号</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">配送渠道</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">选择配送渠道</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">收件人姓名</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入收件人姓名</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">国家</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">选择国家</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">省/州</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入省/州</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">城市</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入城市</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">地址</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入详细地址</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">邮编</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入邮编</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">联系方式</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入联系方式</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">数据来源：虚拟仓管理</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">
-                                            1、根据仓库类型，筛选仓库<br>
-                                            2、仅展示授权账号可查询的仓库<br>
-                                            3、根据仓库类型，展示不同的仓库
-                                        </td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">拣货方式</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">选择拣货方式</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">产品代码/SKU</td>
-                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">显示产品SKU</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">出库件数</td>
-                                        <td class="px-3 py-2 text-gray-600">数字输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">输入出库数量，不能超过库存</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">备注</td>
-                                        <td class="px-3 py-2 text-gray-600">文本域</td>
-                                        <td class="px-3 py-2 text-gray-600">否</td>
-                                        <td class="px-3 py-2 text-gray-600">选填，可输入备注信息</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
     <!-- 新建部门模态框 -->
     <div id="new-department-modal" class="modal-overlay">
         <div class="modal-content">
@@ -260,18 +79,27 @@
                 </div>
                 <div class="form-group">
                     <label for="new-warehouse-type"><span class="required">*</span> 仓库类型</label>
-                    <select id="new-warehouse-type" class="form-select">
+                    <select id="new-warehouse-type" class="form-select" onchange="updateWarehouseFields()">
+                        <option value="department">部门仓</option>
                         <option value="channel">渠道仓</option>
                         <option value="stock">备货仓</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="department-field">
                     <label for="new-warehouse-department"><span class="required">*</span> 所属部门</label>
                     <select id="new-warehouse-department" class="form-select">
                         <option value="1">NBFX</option>
                         <option value="11">运营部1</option>
                         <option value="12">运营部2</option>
                         <option value="13">运营部3</option>
+                    </select>
+                </div>
+                <div class="form-group" id="channel-field" style="display: none;">
+                    <label for="new-warehouse-channel"><span class="required">*</span> 关联渠道</label>
+                    <select id="new-warehouse-channel" class="form-select">
+                        <option value="channel1">渠道1</option>
+                        <option value="channel2">渠道2</option>
+                        <option value="channel3">渠道3</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -308,19 +136,28 @@
                 </div>
                 <div class="form-group">
                     <label for="edit-warehouse-type"><span class="required">*</span> 仓库类型</label>
-                    <select id="edit-warehouse-type" class="form-select">
+                    <select id="edit-warehouse-type" class="form-select" onchange="updateEditWarehouseFields()">
                         <option value="main">主仓</option>
+                        <option value="department">部门仓</option>
                         <option value="channel">渠道仓</option>
                         <option value="stock">备货仓</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="edit-department-field">
                     <label for="edit-warehouse-department"><span class="required">*</span> 所属部门</label>
                     <select id="edit-warehouse-department" class="form-select">
                         <option value="1">NBFX</option>
                         <option value="11">运营部1</option>
                         <option value="12">运营部2</option>
                         <option value="13">运营部3</option>
+                    </select>
+                </div>
+                <div class="form-group" id="edit-channel-field" style="display: none;">
+                    <label for="edit-warehouse-channel"><span class="required">*</span> 关联渠道</label>
+                    <select id="edit-warehouse-channel" class="form-select">
+                        <option value="channel1">渠道1</option>
+                        <option value="channel2">渠道2</option>
+                        <option value="channel3">渠道3</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -707,3 +544,173 @@
                 <button class="erp-btn erp-btn-primary" onclick="saveShipment()">保存</button>
             </div>
         </div>
+    </div>
+
+    <!-- 关联用户模态框 -->
+    <div id="add-user-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">关联用户 - <span id="add-user-department-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('add-user-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold">可选用户</h4>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="select-all-left-users" class="mr-2">
+                                <label for="select-all-left-users" class="text-sm">全选</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="left-user-search" class="form-input" placeholder="搜索用户">
+                        </div>
+                        <div class="max-h-80 overflow-y-auto border rounded">
+                            <div class="p-2 border-b">
+                                <div class="flex items-center">
+                                    <input type="checkbox" class="left-user-checkbox mr-2">
+                                    <span>用户1</span>
+                                </div>
+                            </div>
+                            <div class="p-2 border-b">
+                                <div class="flex items-center">
+                                    <input type="checkbox" class="left-user-checkbox mr-2">
+                                    <span>用户2</span>
+                                </div>
+                            </div>
+                            <div class="p-2 border-b">
+                                <div class="flex items-center">
+                                    <input type="checkbox" class="left-user-checkbox mr-2">
+                                    <span>用户3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center space-y-2">
+                        <button class="erp-btn erp-btn-primary" onclick="moveSelectedUsers('left', 'right')">
+                            <i class="fa fa-arrow-right"></i>
+                        </button>
+                        <button class="erp-btn erp-btn-primary" onclick="moveSelectedUsers('right', 'left')">
+                            <i class="fa fa-arrow-left"></i>
+                        </button>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold">已选用户</h4>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="select-all-right-users" class="mr-2">
+                                <label for="select-all-right-users" class="text-sm">全选</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="right-user-search" class="form-input" placeholder="搜索用户">
+                        </div>
+                        <div class="max-h-80 overflow-y-auto border rounded">
+                            <div class="p-2 border-b">
+                                <div class="flex items-center">
+                                    <input type="checkbox" class="right-user-checkbox mr-2">
+                                    <span>用户4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-between">
+                    <div class="text-sm text-gray-600">
+                        已选择 <span id="left-selected-count">0</span> 个用户
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        已选择 <span id="right-selected-count">0</span> 个用户
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('add-user-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveUsers()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看关联客户模态框 -->
+    <div id="view-customers-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">关联客户 - <span id="view-customers-department-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('view-customers-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 border-b">客户ID</th>
+                                <th class="px-4 py-2 border-b">客户名称</th>
+                                <th class="px-4 py-2 border-b">联系方式</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-2 border-b">C001</td>
+                                <td class="px-4 py-2 border-b">客户1</td>
+                                <td class="px-4 py-2 border-b">13800138001</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border-b">C002</td>
+                                <td class="px-4 py-2 border-b">客户2</td>
+                                <td class="px-4 py-2 border-b">13800138002</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-primary" onclick="closeModal('view-customers-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看关联仓库模态框 -->
+    <div id="view-warehouses-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">关联仓库 - <span id="view-warehouses-department-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('view-warehouses-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 border-b">仓库ID</th>
+                                <th class="px-4 py-2 border-b">仓库名称</th>
+                                <th class="px-4 py-2 border-b">仓库类型</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-2 border-b">W001</td>
+                                <td class="px-4 py-2 border-b">主仓</td>
+                                <td class="px-4 py-2 border-b">主仓</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2 border-b">W002</td>
+                                <td class="px-4 py-2 border-b">渠道仓A</td>
+                                <td class="px-4 py-2 border-b">渠道仓</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-primary" onclick="closeModal('view-warehouses-modal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
