@@ -35,7 +35,7 @@
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门名称</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">部门编码</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联虚拟仓</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联客户</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联用户</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">创建时间</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap sticky right-0 bg-primary/10 z-20">操作</th>
                                 </tr>
@@ -54,7 +54,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(1, 'NBFX')">9</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(1, 'NBFX')">15</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(1, 'NBFX')">15</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -74,7 +74,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(11, '运营部1')">3</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(11, '运营部1')">5</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(11, '运营部1')">5</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -91,7 +91,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(111, '运营组1')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(111, '运营组1')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(111, '运营组1')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-01 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -107,7 +107,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(112, '运营组2')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(112, '运营组2')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(112, '运营组2')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-04 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -123,7 +123,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(113, '运营组3')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(113, '运营组3')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(113, '运营组3')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-05 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -145,7 +145,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(12, '运营部2')">3</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(12, '运营部2')">5</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(12, '运营部2')">5</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-06 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -162,7 +162,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(121, '运营组1')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(121, '运营组1')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(121, '运营组1')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-07 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -178,7 +178,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(112, '运营组2')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(112, '运营组2')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(112, '运营组2')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-08 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -194,7 +194,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(123, '运营组3')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(123, '运营组3')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(123, '运营组3')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-09 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -216,7 +216,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(13, '运营部3')">3</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(13, '运营部3')">5</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(13, '运营部3')">5</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-10 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -233,7 +233,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(131, '运营组1')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(131, '运营组1')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(131, '运营组1')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-11 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -249,7 +249,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(112, '运营组2')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(112, '运营组2')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(112, '运营组2')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-12 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -265,7 +265,7 @@
                                         <button class="text-primary hover:underline" onclick="viewWarehouses(133, '运营组3')">1</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
-                                        <button class="text-primary hover:underline" onclick="viewCustomers(133, '运营组3')">2</button>
+                                        <button class="text-primary hover:underline" onclick="viewUsers(133, '运营组3')">2</button>
                                     </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">2026-02-13 14:00:00</td>
                                     <td class="px-4 py-3 text-left whitespace-nowrap sticky right-0 bg-white z-10">
@@ -406,11 +406,11 @@
                                             <td class="px-3 py-2 text-gray-600">展示虚拟仓列表，支持查看虚拟仓详情</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">关联客户</td>
-                                            <td class="px-3 py-2 text-gray-600">主表"关联客户"列</td>
-                                            <td class="px-3 py-2 text-gray-600">点击数字，打开关联客户弹窗，展示该部门授权的所有客户</td>
+                                            <td class="px-3 py-2 text-gray-800">关联用户</td>
+                                            <td class="px-3 py-2 text-gray-600">主表"关联用户"列</td>
+                                            <td class="px-3 py-2 text-gray-600">点击数字，打开关联用户弹窗，展示该部门授权的所有用户</td>
                                             <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">展示客户列表，支持查看客户详情</td>
+                                            <td class="px-3 py-2 text-gray-600">展示用户列表，支持查看用户详情</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">删除</td>
@@ -475,9 +475,9 @@
                                             <td class="px-3 py-2 text-gray-600">数字（可点击）</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">关联客户</td>
+                                            <td class="px-3 py-2 text-gray-800">关联用户</td>
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
-                                            <td class="px-3 py-2 text-gray-600">统计该部门授权的客户数量，点击可查看详情</td>
+                                            <td class="px-3 py-2 text-gray-600">统计该部门授权的用户数量，点击可查看详情</td>
                                             <td class="px-3 py-2 text-gray-600">数字（可点击）</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
@@ -545,7 +545,7 @@
                                     <tbody class="divide-y divide-gray-100">
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">用户来源</td>
-                                            <td class="px-3 py-2 text-gray-600">系统管理 - 客户管理</td>
+                                            <td class="px-3 py-2 text-gray-600">系统管理 - 用户管理</td>
                                             <td class="px-3 py-2 text-gray-600">/</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         </tr>

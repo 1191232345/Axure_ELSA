@@ -498,5 +498,135 @@
             loadModals();
         });
     </script>
+
+    <!-- Mermaid流程图放大弹窗 -->
+    <div id="mermaid-modal" class="modal-overlay" onclick="closeMermaidModal(event)">
+        <div class="modal-content" style="width: 90%; max-width: 1200px; max-height: 90vh;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closeModal('mermaid-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+                <div class="mermaid-modal-title">
+                    <i class="fa fa-sitemap mr-2"></i>流程图预览
+                </div>
+                <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加用户选择弹窗 -->
+    <div id="add-user-modal" class="modal-overlay">
+        <div class="modal-content" style="width: 1000px;">
+            <div class="modal-header">
+                <h3 class="modal-title">关联用户 - <span id="add-user-department-name"></span></h3>
+                <button class="close-btn" onclick="closeModal('add-user-modal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 左侧：未关联任何层级的员工 -->
+                    <div class="border border-gray-200 rounded">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800">未关联员工</h4>
+                                <span class="text-xs text-gray-500">已选: <span id="left-selected-count">0</span> 人</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" placeholder="搜索账号或昵称..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="left-user-search">
+                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <div class="flex items-center mb-2 px-2">
+                                <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded" id="select-all-left-users">
+                                <label class="ml-2 text-xs text-gray-600">全选</label>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto" id="left-user-list">
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user001" data-user-name="赵六">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhaoliu</div>
+                                        <div class="text-xs text-gray-500">赵六 | zhaoliu@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user002" data-user-name="孙七">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">sunqi</div>
+                                        <div class="text-xs text-gray-500">孙七 | sunqi@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user003" data-user-name="周八">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhouba</div>
+                                        <div class="text-xs text-gray-500">周八 | zhouba@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user004" data-user-name="吴九">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">wujiu</div>
+                                        <div class="text-xs text-gray-500">吴九 | wujiu@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="user005" data-user-name="郑十">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded left-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhengshi</div>
+                                        <div class="text-xs text-gray-500">郑十 | zhengshi@example.com</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                            <button class="erp-btn erp-btn-primary w-full" onclick="addSelectedToLeft()">
+                                <i class="fa fa-arrow-right mr-1.5"></i> 添加选中
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：已关联本层级的员工 -->
+                    <div class="border border-gray-200 rounded">
+                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800">已关联员工</h4>
+                                <span class="text-xs text-gray-500">已选: <span id="right-selected-count">0</span> 人</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" placeholder="搜索账号或昵称..." class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" id="right-user-search">
+                                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <div class="flex items-center mb-2 px-2">
+                                <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded" id="select-all-right-users">
+                                <label class="ml-2 text-xs text-gray-600">全选</label>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto" id="right-user-list">
+                                <div class="user-item flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer" data-user-id="zhangsan" data-user-name="张三">
+                                    <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded right-user-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="text-sm font-medium text-gray-800">zhangsan</div>
+                                        <div class="text-xs text-gray-500">张三 | zhangsan@example.com</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                            <button class="erp-btn erp-btn-danger w-full" onclick="removeSelectedFromRight()">
+                                <i class="fa fa-arrow-left mr-1.5"></i> 移除选中
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeModal('add-user-modal')">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="saveUserRelations()">保存</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

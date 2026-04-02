@@ -149,9 +149,9 @@
             openModal('view-warehouses-modal');
         }
 
-        function viewCustomers(departmentId, departmentName) {
-            document.getElementById('view-customers-department-name').textContent = departmentName;
-            openModal('view-customers-modal');
+        function viewUsers(departmentId, departmentName) {
+            document.getElementById('view-users-department-name').textContent = departmentName;
+            openModal('view-users-modal');
         }
 
         function manageUsers(departmentId, departmentName) {
