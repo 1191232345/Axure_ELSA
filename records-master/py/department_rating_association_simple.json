@@ -1,0 +1,16 @@
+{
+  "department_associations": [
+    {
+      "department": "头程客服部",
+      "rating_item_ids": ["1", "2", "3"]
+    },
+    {
+      "department": "海外仓客服部",
+      "rating_item_ids": ["4", "5", "6","7", "8"]
+    },
+    {
+      "department": "清关组",
+      "rating_item_ids": [ "9", "10","11"]
+    }
+  ]
+}

@@ -1,0 +1,594 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+自动增量备份数据库脚本
+功能：每天自动执行一次数据库增量备份，通过数据比对实现真正的增量备份
+"""
+
+import os
+import sys
+import sqlite3
+import datetime
+import shutil
+import time
+import logging
+import json
+from logging.handlers import TimedRotatingFileHandler
+
+# 设置日志
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+log_file = os.path.join(log_dir, 'backup.log')
+logger = logging.getLogger('backup')
+logger.setLevel(logging.INFO)
+
+# 创建TimedRotatingFileHandler，每天凌晨0点创建新的日志文件，保留30天的日志
+handler = TimedRotatingFileHandler(
+    log_file,
+    when='midnight',
+    interval=1,
+    backupCount=30,
+    encoding='utf-8'
+)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+# 同时输出到控制台
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# 数据库文件路径（使用绝对路径）
+DB_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'db', 'performance_data.db')
+
+# 备份目录
+BACKUP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'db_backups')
+
+# 增量备份记录文件
+INCREMENTAL_BACKUP_RECORD = os.path.join(BACKUP_DIR, 'incremental_backup_info.json')
+
+# 表结构定义
+TABLES = {
+    'employees': {
+        'primary_key': 'id',
+        'columns': ['id', 'name', 'department']
+    },
+    'rating_items': {
+        'primary_key': 'id',
+        'columns': ['id', 'name', 'description', 'enabled']
+    },
+    'employee_rating_relations': {
+        'primary_key': ['employee_id', 'rating_item_id'],
+        'columns': ['employee_id', 'rating_item_id']
+    },
+    'evaluation_results': {
+        'primary_key': 'id',
+        'columns': ['id', 'employee_id', 'evaluator', 'date', 'overall_comment']
+    },
+    'evaluation_ratings': {
+        'primary_key': 'id',
+        'columns': ['id', 'evaluation_id', 'item_id', 'score', 'comment']
+    }
+}
+
+# 获取数据库连接
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# 检查数据库文件是否存在
+def check_db_file():
+    if not os.path.exists(DB_FILE):
+        logger.error(f"数据库文件 '{DB_FILE}' 不存在")
+        return False
+    return True
+
+# 确保备份目录存在
+def ensure_backup_dir():
+    if not os.path.exists(BACKUP_DIR):
+        os.makedirs(BACKUP_DIR)
+        logger.info(f"创建备份目录: {BACKUP_DIR}")
+
+# 获取上次备份时间
+def get_last_backup_info():
+    if not os.path.exists(INCREMENTAL_BACKUP_RECORD):
+        return {
+            'last_backup_time': None,
+            'last_backup_file': None
+        }
+    
+    try:
+        with open(INCREMENTAL_BACKUP_RECORD, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"读取上次备份信息失败: {str(e)}")
+        return {
+            'last_backup_time': None,
+            'last_backup_file': None
+        }
+
+# 保存备份信息
+def save_backup_info(backup_info):
+    try:
+        with open(INCREMENTAL_BACKUP_RECORD, 'w', encoding='utf-8') as f:
+            json.dump(backup_info, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"保存备份信息失败: {str(e)}")
+
+# 执行全量备份
+def perform_full_backup():
+    """执行数据库全量备份"""
+    ensure_backup_dir()
+    
+    # 创建带时间戳的备份文件名
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_file = os.path.join(BACKUP_DIR, f'full_backup_{timestamp}.db')
+    
+    try:
+        shutil.copy2(DB_FILE, backup_file)
+        logger.info(f"已创建数据库全量备份: {backup_file}")
+        
+        # 更新备份信息
+        backup_info = {
+            'last_backup_time': timestamp,
+            'last_backup_file': backup_file,
+            'backup_type': 'full'
+        }
+        save_backup_info(backup_info)
+        
+        return backup_file
+    except Exception as e:
+        logger.error(f"创建数据库全量备份失败: {str(e)}")
+        return None
+
+# 执行增量备份
+def perform_incremental_backup():
+    """执行数据库增量备份，通过比较数据实现真正的增量备份"""
+    ensure_backup_dir()
+    
+    # 获取上次备份信息
+    last_backup_info = get_last_backup_info()
+    last_backup_time = last_backup_info.get('last_backup_time')
+    last_backup_file = last_backup_info.get('last_backup_file')
+    
+    # 如果是第一次备份或距离上次全量备份超过7天，执行全量备份
+    if not last_backup_time or is_full_backup_needed(last_backup_time):
+        logger.info("执行全量备份（第一次备份或距离上次全量备份超过7天）")
+        return perform_full_backup()
+    
+    # 创建增量备份文件
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_file = os.path.join(BACKUP_DIR, f'incremental_backup_{timestamp}.db')
+    
+    try:
+        # 获取自上次备份以来的变化数据
+        logger.info(f"开始执行增量备份，上次备份时间: {last_backup_time}")
+        changes_data = capture_incremental_changes(last_backup_time)
+        
+        # 如果没有变化，不创建备份文件
+        if not any(changes_data.values()):
+            logger.info("自上次备份以来数据库没有变化，跳过增量备份")
+            
+            # 更新备份时间但不创建新文件
+            backup_info = last_backup_info.copy()
+            backup_info['last_backup_time'] = timestamp
+            save_backup_info(backup_info)
+            return None
+        
+        # 创建增量备份文件（只包含变化的数据）
+        save_incremental_changes(backup_file, changes_data)
+        
+        logger.info(f"已创建数据库增量备份: {backup_file}")
+        logger.info(f"变化统计: ")
+        for table, changes in changes_data.items():
+            if changes:
+                logger.info(f"  {table}: {len(changes.get('added', []))}条新增, {len(changes.get('updated', []))}条更新, {len(changes.get('deleted', []))}条删除")
+        
+        # 收集每个表的当前最大ID，用于下次备份时的精确比对
+        table_max_ids = {}
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            for table_name, table_info in TABLES.items():
+                pk_column = table_info['primary_key']
+                if isinstance(pk_column, list):
+                    pk_column = pk_column[0]  # 使用第一个主键列
+                
+                try:
+                    cursor.execute(f"SELECT MAX(CAST({pk_column} AS INTEGER)) FROM {table_name}")
+                    max_id = cursor.fetchone()[0]
+                    if max_id is not None:
+                        table_max_ids[table_name] = max_id
+                except Exception as e:
+                    logger.warning(f"无法获取表 {table_name} 的最大ID: {str(e)}")
+            
+            conn.close()
+        except Exception as e:
+            logger.error(f"收集表最大ID信息失败: {str(e)}")
+        
+        # 更新备份信息，包含每个表的最大ID，以便下次备份时进行精确比对
+        backup_info = {
+            'last_backup_time': timestamp,
+            'last_backup_file': backup_file,
+            'backup_type': 'incremental',
+            'changes_size': sum(len(v) for t in changes_data.values() for v in t.values()),
+            'table_max_ids': table_max_ids
+        }
+        save_backup_info(backup_info)
+        
+        return backup_file
+    except Exception as e:
+        logger.error(f"创建数据库增量备份失败: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+# 检查是否需要执行全量备份
+def is_full_backup_needed(last_backup_time_str):
+    """检查是否需要执行全量备份（每7天执行一次全量备份）"""
+    try:
+        # 获取上次备份信息
+        last_backup_info = get_last_backup_info()
+        
+        # 如果上次是全量备份，检查是否超过7天
+        if last_backup_info.get('backup_type') == 'full':
+            last_backup_time = datetime.datetime.strptime(last_backup_time_str, '%Y%m%d_%H%M%S')
+            days_since_last_full = (datetime.datetime.now() - last_backup_time).days
+            return days_since_last_full >= 7
+        
+        # 如果上次是增量备份，检查距离上次全量备份是否超过7天
+        elif last_backup_info.get('backup_type') == 'incremental':
+            # 查找最近一次的全量备份
+            full_backups = []
+            if os.path.exists(BACKUP_DIR):
+                for filename in os.listdir(BACKUP_DIR):
+                    if filename.startswith('full_backup_') and filename.endswith('.db'):
+                        try:
+                            # 提取时间戳
+                            timestamp_str = filename[12:-3]
+                            backup_time = datetime.datetime.strptime(timestamp_str, '%Y%m%d_%H%M%S')
+                            full_backups.append((backup_time, filename))
+                        except:
+                            continue
+            
+            # 如果有全量备份，检查最近一次是否超过7天
+            if full_backups:
+                # 按时间排序，取最近的一次
+                full_backups.sort(reverse=True)
+                latest_full_backup_time = full_backups[0][0]
+                days_since_last_full = (datetime.datetime.now() - latest_full_backup_time).days
+                return days_since_last_full >= 7
+        
+        # 如果没有足够信息判断，默认不强制全量备份
+        return False
+    except Exception as e:
+        logger.error(f"判断是否需要全量备份时出错: {str(e)}")
+        # 如果解析失败，默认不强制全量备份，避免每次都执行全量备份
+        return False
+
+# 捕获自上次备份以来的增量变化
+def capture_incremental_changes(last_backup_time_str):
+    """捕获自上次备份以来数据库的增量变化（新增、修改、删除的记录），使用精确的数据比对机制"""
+    changes_data = {}
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 解析上次备份时间
+        last_backup_time = datetime.datetime.strptime(last_backup_time_str, '%Y%m%d_%H%M%S')
+        last_backup_time_str_full = last_backup_time.strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 对于每个表，检查增量变化
+        for table_name, table_info in TABLES.items():
+            logger.debug(f"检查表 {table_name} 的增量变化")
+            changes_data[table_name] = {
+                'added': [],
+                'updated': [],
+                'deleted': []
+            }
+            
+            # 尝试获取主键列名
+            pk_column = table_info['primary_key']
+            if isinstance(pk_column, list):
+                pk_column = pk_column[0]  # 使用第一个主键列
+            
+            # 获取上次备份时表的最大ID，作为增量备份的起点
+            last_max_id = get_last_table_max_id(table_name, last_backup_time_str)
+            
+            # 针对不同的表使用不同的增量检测策略
+            if table_name == 'evaluation_results':
+                # 使用日期和ID的组合来精确检测新增记录
+                if last_max_id is not None:
+                    cursor.execute(f"""
+                        SELECT * FROM {table_name} 
+                        WHERE date >= ? AND id > ?
+                    """, (last_backup_time.strftime('%Y-%m-%d'), last_max_id))
+                else:
+                    # 如果是第一次获取，使用日期过滤
+                    cursor.execute(f"""
+                        SELECT * FROM {table_name} 
+                        WHERE date >= ?
+                    """, (last_backup_time.strftime('%Y-%m-%d'),))
+                added_records = cursor.fetchall()
+                
+                for record in added_records:
+                    changes_data[table_name]['added'].append(dict(record))
+            
+            elif table_name == 'evaluation_ratings':
+                # 使用ID范围过滤，确保只捕获新增记录
+                cursor.execute(f"SELECT MAX(id) FROM {table_name}")
+                current_max_id = cursor.fetchone()[0]
+                
+                if current_max_id is not None:
+                    # 确定增量备份的ID范围
+                    start_id = (last_max_id or 0) + 1
+                    if start_id <= current_max_id:
+                        cursor.execute(f"SELECT * FROM {table_name} WHERE id >= ?", (start_id,))
+                        added_records = cursor.fetchall()
+                        
+                        for record in added_records:
+                            changes_data[table_name]['added'].append(dict(record))
+            
+            else:
+                # 对于其他表，使用主键ID范围进行精确过滤
+                try:
+                    # 获取当前表的最大ID
+                    cursor.execute(f"SELECT MAX(CAST({pk_column} AS INTEGER)) FROM {table_name}")
+                    current_max_id = cursor.fetchone()[0]
+                    
+                    if current_max_id is not None:
+                        # 确定增量备份的ID范围
+                        start_id = (last_max_id or 0) + 1
+                        if start_id <= current_max_id:
+                            # 只获取ID在增量范围内的记录
+                            cursor.execute(f"SELECT * FROM {table_name} WHERE CAST({pk_column} AS INTEGER) >= ?", (start_id,))
+                            added_records = cursor.fetchall()
+                            
+                            for record in added_records:
+                                changes_data[table_name]['added'].append(dict(record))
+                except Exception as e:
+                    logger.warning(f"无法精确检查表 {table_name} 的增量变化: {str(e)}")
+        
+        conn.close()
+    except Exception as e:
+        logger.error(f"捕获数据库增量变化失败: {str(e)}")
+        import traceback
+        traceback.print_exc()
+    
+    return changes_data
+
+# 获取上次备份时表的最大ID
+def get_last_table_max_id(table_name, last_backup_time_str):
+    """获取上次备份时指定表的最大ID，使用精确的时间点进行数据比对"""
+    try:
+        # 尝试从备份信息中获取上次记录的表结构信息
+        # 首先检查增量备份记录文件
+        backup_info = get_last_backup_info()
+        
+        # 如果备份信息中有专门记录的表最大ID，则直接返回
+        if 'table_max_ids' in backup_info and table_name in backup_info['table_max_ids']:
+            return backup_info['table_max_ids'][table_name]
+        
+        # 解析上次备份时间
+        last_backup_time = datetime.datetime.strptime(last_backup_time_str, '%Y%m%d_%H%M%S')
+        last_backup_time_str_full = last_backup_time.strftime('%Y-%m-%d %H:%M:%S')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 尝试从表结构定义获取主键
+        table_info = TABLES.get(table_name)
+        if not table_info:
+            conn.close()
+            return None
+        
+        pk_column = table_info['primary_key']
+        if isinstance(pk_column, list):
+            pk_column = pk_column[0]  # 使用第一个主键列
+        
+        # 针对不同表使用不同的精确查询策略
+        if table_name == 'evaluation_results':
+            # 使用精确的时间点和ID结合查询
+            cursor.execute(f"SELECT MAX(id) FROM {table_name} WHERE date < ?", 
+                          (last_backup_time.strftime('%Y-%m-%d'),))
+        elif table_name == 'evaluation_ratings':
+            # 使用关联表的时间进行精确查询
+            cursor.execute("""
+                SELECT MAX(er.id) 
+                FROM evaluation_ratings er 
+                JOIN evaluation_results res ON er.evaluation_id = res.id 
+                WHERE res.date < ?
+            """, (last_backup_time.strftime('%Y-%m-%d'),))
+        else:
+            # 对于其他表，我们使用主键列的最大ID作为参考
+            try:
+                # 尝试获取表中所有数据的创建或修改时间字段
+                # 这里假设表中可能有create_time或update_time字段
+                for time_col in ['create_time', 'update_time', 'date']:
+                    # 检查列是否存在
+                    cursor.execute(f"PRAGMA table_info({table_name})")
+                    columns = [row[1] for row in cursor.fetchall()]
+                    
+                    if time_col in columns:
+                        # 如果有时间字段，使用时间字段进行精确过滤
+                        cursor.execute(f"SELECT MAX(CAST({pk_column} AS INTEGER)) FROM {table_name} WHERE {time_col} < ?", 
+                                      (last_backup_time_str_full,))
+                        max_id = cursor.fetchone()[0]
+                        if max_id is not None:
+                            conn.close()
+                            return max_id
+                
+                # 如果没有时间字段，返回None，让调用者使用默认策略
+                conn.close()
+                return None
+            except Exception as inner_e:
+                logger.warning(f"使用时间字段获取表 {table_name} 上次备份时的最大ID失败: {str(inner_e)}")
+                conn.close()
+                return None
+        
+        max_id = cursor.fetchone()[0]
+        conn.close()
+        return max_id
+    except Exception as e:
+        logger.warning(f"获取表 {table_name} 上次备份时的最大ID失败: {str(e)}")
+        return None
+
+# 保存增量变化到备份文件
+def save_incremental_changes(backup_file, changes_data):
+    """将增量变化数据保存到备份文件中"""
+    try:
+        # 创建增量备份文件
+        with open(backup_file, 'w', encoding='utf-8') as f:
+            json.dump({
+                'backup_time': datetime.datetime.now().strftime('%Y%m%d_%H%M%S'),
+                'backup_type': 'incremental',
+                'changes': changes_data
+            }, f, ensure_ascii=False, indent=2)
+        
+        # 不再创建SQL恢复脚本文件，根据用户需求只保留备份数据库文件和日志
+        # 所有变化信息已保存在备份文件中，可用于恢复操作
+    except Exception as e:
+        logger.error(f"保存增量变化到备份文件失败: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+# 清理过期备份和SQL文件
+def cleanup_old_backups():
+    """清理30天以前的备份文件，并删除所有SQL脚本文件"""
+    try:
+        if not os.path.exists(BACKUP_DIR):
+            return
+        
+        thirty_days_ago = datetime.datetime.now() - datetime.timedelta(days=30)
+        
+        # 获取备份目录中的所有文件
+        for filename in os.listdir(BACKUP_DIR):
+            file_path = os.path.join(BACKUP_DIR, filename)
+            
+            # 跳过目录和记录文件
+            if os.path.isdir(file_path) or filename == os.path.basename(INCREMENTAL_BACKUP_RECORD):
+                continue
+            
+            # 如果是SQL文件，立即删除
+            if filename.endswith('.sql'):
+                os.remove(file_path)
+                logger.info(f"已删除SQL脚本文件: {file_path}")
+                continue
+            
+            # 获取文件的修改时间
+            file_modified_time = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+            
+            # 如果文件超过30天，删除它
+            if file_modified_time < thirty_days_ago:
+                os.remove(file_path)
+                logger.info(f"已删除过期备份文件: {file_path}")
+    except Exception as e:
+        logger.error(f"清理过期备份失败: {str(e)}")
+
+# 执行备份任务
+def perform_backup_task():
+    """执行备份任务的主函数"""
+    logger.info("开始执行数据库备份任务")
+    
+    # 检查数据库文件是否存在
+    if not check_db_file():
+        logger.error("数据库文件不存在，备份任务失败")
+        return False
+    
+    # 执行增量备份
+    backup_file = perform_incremental_backup()
+    
+    # 检查是否执行了备份（有变化）或只是更新了备份时间（无变化）
+    last_backup_info = get_last_backup_info()
+    if backup_file or (last_backup_info and last_backup_info.get('last_backup_time')):
+        # 无论是否创建了新备份文件，都清理过期备份
+        cleanup_old_backups()
+        
+        # 如果创建了增量备份文件，执行完备份后删除它
+        if backup_file and 'incremental_backup_' in backup_file:
+            try:
+                os.remove(backup_file)
+                logger.info(f"已删除增量备份文件: {backup_file}")
+            except Exception as e:
+                logger.error(f"删除增量备份文件失败: {str(e)}")
+                
+            # 更新备份信息，移除增量备份文件路径
+            backup_info = last_backup_info.copy()
+            backup_info['last_backup_file'] = None
+            save_backup_info(backup_info)
+        
+        if backup_file:
+            if 'incremental_backup_' in backup_file:
+                logger.info("数据库备份任务执行完成（创建并自动删除了增量备份文件）")
+            else:
+                logger.info("数据库备份任务执行完成（创建了新备份文件）")
+        else:
+            logger.info("数据库备份任务执行完成（数据库无变化，仅更新了备份时间）")
+        return True
+    else:
+        logger.error("数据库备份任务执行失败")
+        return False
+
+# 启动定时备份服务
+def start_scheduled_backup():
+    """启动定时备份服务，每天执行一次备份"""
+    logger.info("定时备份服务已启动，每天凌晨2点执行备份")
+    
+    # 首先执行一次备份
+    perform_backup_task()
+    
+    # 进入定时循环
+    while True:
+        # 获取当前时间
+        now = datetime.datetime.now()
+        
+        # 计算明天凌晨2点的时间
+        tomorrow = now + datetime.timedelta(days=1)
+        backup_time = tomorrow.replace(hour=2, minute=0, second=0, microsecond=0)
+        
+        # 计算等待时间
+        wait_seconds = (backup_time - now).total_seconds()
+        
+        logger.info(f"下次备份时间: {backup_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info(f"等待 {wait_seconds:.2f} 秒后执行下一次备份")
+        
+        # 等待到明天凌晨2点
+        time.sleep(wait_seconds)
+        
+        # 执行备份
+        perform_backup_task()
+
+# 如果脚本被直接运行，则启动定时备份服务
+if __name__ == '__main__':
+    # 允许在命令行设置日志级别
+    if '--verbose' in sys.argv:
+        logger.setLevel(logging.DEBUG)
+    
+    # 提供命令行选项
+    if len(sys.argv) > 1:
+        if sys.argv[1] == '--now':
+            # 立即执行一次备份
+            perform_backup_task()
+        elif sys.argv[1] == '--full':
+            # 执行一次全量备份
+            ensure_backup_dir()
+            perform_full_backup()
+        elif sys.argv[1] == '--schedule':
+            # 启动定时备份服务
+            start_scheduled_backup()
+        else:
+            print("用法:")
+            print("  python automatic_backup.py --now      # 立即执行一次备份")
+            print("  python automatic_backup.py --full     # 执行一次全量备份")
+            print("  python3 automatic_backup.py --schedule # 启动定时备份服务")
+        print("  python3 automatic_backup.py --verbose  # 启用详细日志输出")
+    else:
+        # 默认启动定时备份服务
+        start_scheduled_backup()
