@@ -652,8 +652,8 @@
                 <tr class="hover:bg-gray-50">
                   <td class="px-3 py-2 text-gray-800">获取费用</td>
                   <td class="px-3 py-2 text-gray-600">点击"获取费用"按钮</td>
-                  <td class="px-3 py-2 text-gray-600">1.收集检索条件<br>2.关闭弹窗<br>3.后台异步处理查询任务</td>
-                  <td class="px-3 py-2 text-gray-600">异步处理数据查询</td>
+                  <td class="px-3 py-2 text-gray-600">1.收集检索条件<br>2.显示加载状态<br>3.同步处理查询任务<br>4.显示查询结果</td>
+                  <td class="px-3 py-2 text-gray-600">同步处理数据查询，实时显示结果</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="px-3 py-2 text-gray-800">全选/取消全选</td>
@@ -676,13 +676,13 @@
               </tbody>
             </table>
           </div>
-          <div class="bg-orange-50 p-3 rounded-lg text-sm">
-            <p class="text-gray-700"><strong>异步处理机制：</strong></p>
+          <div class="bg-blue-50 p-3 rounded-lg text-sm">
+            <p class="text-gray-700"><strong>同步处理机制：</strong></p>
             <ul class="list-disc list-inside text-gray-600 mt-1 space-y-1">
-              <li>批量获取费用采用异步处理机制，点击"获取费用"后关闭弹窗</li>
-              <li>系统在后台异步处理数据查询任务</li>
-              <li>处理完成后通过通知提示用户</li>
-              <li>用户可以重新打开弹窗查看结果</li>
+              <li>批量获取费用采用同步处理机制，点击"获取费用"后立即开始查询</li>
+              <li>系统在当前页面同步处理数据查询任务</li>
+              <li>查询完成后直接在弹窗中显示结果，无需重新打开</li>
+              <li>支持实时查看查询进度和结果</li>
             </ul>
           </div>
         </div>

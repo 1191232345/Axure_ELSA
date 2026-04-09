@@ -453,6 +453,25 @@
             max-width: 90%;
         }
 
+        .message-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin-left: auto;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .message:hover .message-action-btn {
+            opacity: 1;
+        }
+
+        .message-action-btn:hover {
+            background: #f0f0f0;
+        }
+
         .message.customer .message-content {
             background: #e6f7ff;
         }
@@ -1085,6 +1104,9 @@
                                     <div class="message-header">
                                         <span class="message-sender">客服</span>
                                         <span class="message-time">2025-11-25 16:30</span>
+                                        <button class="message-action-btn" title="撤回消息" onclick="handleWithdrawMessage(this)">
+                                            <i class="fa fa-undo text-gray-400 hover:text-primary"></i>
+                                        </button>
                                     </div>
                                     <div class="message-content">
                                         已收到您的工单，我们正在核实相关信息，请耐心等待。
@@ -1479,17 +1501,42 @@
                 String(now.getSeconds()).padStart(2, '0');
             
             const messageHTML = '<div class="message">' +
+                '<div class="message-avatar system">' +
+                '<i class="fa fa-headphones"></i>' +
+                '</div>' +
+                '<div class="message-body">' +
                 '<div class="message-header">' +
                 '<span class="message-sender">客服</span>' +
                 '<span class="message-time">' + timeStr + '</span>' +
+                '<button class="message-action-btn" title="撤回消息" onclick="handleWithdrawMessage(this)">' +
+                '<i class="fa fa-undo text-gray-400 hover:text-primary"></i>' +
+                '</button>' +
                 '</div>' +
                 '<div class="message-content">' + content + '</div>' +
+                '</div>' +
                 '</div>';
             
             messagesContainer.insertAdjacentHTML('beforeend', messageHTML);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             input.value = '';
             showToast('发送成功', 'success');
+        }
+
+        function handleWithdrawMessage(button) {
+            showConfirm({
+                title: '撤回消息',
+                message: '确定要撤回这条消息吗？',
+                confirmText: '撤回',
+                onConfirm: function() {
+                    const messageDiv = button.closest('.message');
+                    const contentDiv = messageDiv.querySelector('.message-content');
+                    contentDiv.textContent = '【消息已撤回】';
+                    contentDiv.style.color = '#999';
+                    contentDiv.style.fontStyle = 'italic';
+                    button.remove();
+                    showToast('消息已撤回', 'success');
+                }
+            });
         }
 
         function handleChatKeydown(event) {

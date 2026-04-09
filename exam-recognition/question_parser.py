@@ -25,6 +25,9 @@ class QuestionParser:
             
             section_match = self.section_pattern.match(line)
             if section_match:
+                # 保存当前question和section
+                if current_question and current_section:
+                    current_section['questions'].append(current_question)
                 if current_section:
                     parsed_data['sections'].append(current_section)
                 
@@ -39,6 +42,7 @@ class QuestionParser:
             
             question_match = self.question_pattern.match(line)
             if question_match:
+                # 保存当前question
                 if current_question and current_section:
                     current_section['questions'].append(current_question)
                 
@@ -69,7 +73,16 @@ class QuestionParser:
                     'full_text': line
                 })
                 continue
+            
+            # 处理填空题的情况（没有选项的题目）
+            if current_question and not option_match and current_section:
+                # 检查是否是选择题类型
+                section_type = self.identify_question_type(current_section['title'])
+                if section_type != 'choice':
+                    # 对于非选择题，直接添加到内容中
+                    current_question['content'] += ' ' + line
         
+        # 保存最后一个question和section
         if current_question and current_section:
             current_section['questions'].append(current_question)
         if current_section:
@@ -82,7 +95,7 @@ class QuestionParser:
         
         if '选择' in section_title:
             return 'choice'
-        elif '填空' in section_title:
+        elif '填空' in section_title or '拼音' in section_title or '写词语' in section_title:
             return 'fill_blank'
         elif '判断' in section_title:
             return 'judgment'

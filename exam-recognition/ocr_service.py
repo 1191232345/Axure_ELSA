@@ -48,9 +48,12 @@ class OCRService:
             words_result = result.get('words_result', [])
             text_lines = [item['words'] for item in words_result]
             
+            # 后处理OCR结果，修复拼音格式
+            processed_text = self.postprocess_ocr_text('\n'.join(text_lines))
+            
             return {
                 'success': True,
-                'text': '\n'.join(text_lines),
+                'text': processed_text,
                 'words_count': result.get('words_result_num', 0),
                 'raw_result': result
             }
@@ -60,6 +63,69 @@ class OCRService:
                 'error': str(e),
                 'text': ''
             }
+    
+    def postprocess_ocr_text(self, text):
+        """
+        后处理OCR识别结果，修复拼音和括号格式
+        """
+        lines = text.split('\n')
+        processed_lines = []
+        
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            
+            # 处理括号跨行的情况
+            if '(' in line and ')' not in line and i + 1 < len(lines):
+                # 合并下一行的括号
+                next_line = lines[i + 1].strip()
+                if ')' in next_line:
+                    line += next_line
+                    i += 1
+            
+            # 处理括号不完整的情况
+            if '(' in line and ')' not in line:
+                line += ')'  # 补全括号
+            
+            # 修复拼音格式
+            line = self.fix_pinyin_format(line)
+            
+            processed_lines.append(line)
+            i += 1
+        
+        return '\n'.join(processed_lines)
+    
+    def fix_pinyin_format(self, text):
+        """
+        修复拼音格式，处理连写和空格问题
+        """
+        # 常见拼音词汇映射
+        pinyin_mappings = {
+            'xishu': 'xī shū',
+            'zacao': 'zá cǎo',
+            'qingting': 'qīng tíng',
+            'maoyan': 'máo yán',
+            'miaohui': 'miáo huì',
+            'hexie': 'hé xié',
+            'gingting': 'qīng tíng',  # 常见OCR错误
+            'xishū': 'xī shū',
+            'zacǎo': 'zá cǎo',
+            'qīngtíng': 'qīng tíng',
+            'máoyán': 'máo yán',
+            'miáohuì': 'miáo huì',
+            'héxié': 'hé xié',
+            'za cao': 'zá cǎo',
+            'ging ting': 'qīng tíng',
+            'mao yan': 'máo yán',
+            'miao hui': 'miáo huì'
+        }
+        
+        # 替换常见拼音错误
+        for wrong, correct in pinyin_mappings.items():
+            if wrong in text:
+                text = text.replace(wrong, correct)
+        
+        return text
     
     def recognize_multiple_images(self, image_paths):
         results = []

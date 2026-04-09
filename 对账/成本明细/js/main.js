@@ -709,117 +709,110 @@
       
       isSearching = true;
       
-      // 生成任务ID
-      const taskId = `TASK${new Date().getTime()}`;
-      
-
+      // 显示加载状态
+      showBatchModalLoading();
       
       // 显示处理开始提示
-      showNotification('查询任务已开始，系统正在异步处理数据');
+      showNotification('正在查询费用数据，请稍候...');
       
-      // 清除未使用的taskId变量
-      taskId;
+      // 同步查询处理
+      // 生成模拟数据
+      let mockData = [];
+      const customerCodes = ['ZJJS', 'ZJHW', 'ZJWL'];
+      const allFeeTypes = ['出库+快递(YC)', '出库+快递(TMS)', '仓储费', '快递赔付', '库内赔付(错发)', '库内赔付(丢件)', '库内赔付(其他)', '充值', '费用调整'];
       
-      // 关闭批量获取明细弹窗
-      closeBatchFeeModal();
+      // 生成数据量
+      const dataCount = !feeType ? 100 : 50;
       
-      // 模拟异步查询处理
-      setTimeout(() => {
-        // 生成模拟数据
-        let mockData = [];
-        const customerCodes = ['ZJJS', 'ZJHW', 'ZJWL'];
-        const allFeeTypes = ['出库+快递(YC)', '出库+快递(TMS)', '仓储费', '快递赔付', '库内赔付(错发)', '库内赔付(丢件)', '库内赔付(其他)', '充值', '费用调整'];
-        
-        // 生成数据量
-        const dataCount = !feeType ? 100 : 50;
-        
-        // 根据费用类型生成不同的模拟数据
-        for (let i = 1; i <= dataCount; i++) {
-          let item;
-          if (!feeType) {
-            const randomFeeType = allFeeTypes[Math.floor(Math.random() * allFeeTypes.length)];
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: randomFeeType,
-              feeItem: getFeeItemByType(randomFeeType),
-              amount: (Math.random() * 1000).toFixed(2),
-              currency: 'USD'
-            };
-          } else if (feeType.includes('出库+快递')) {
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: feeType,
-              feeItem: feeType.includes('TMS') ? 'TMS出库费' : 'YC出库费',
-              amount: (Math.random() * 1000).toFixed(2),
-              currency: 'USD'
-            };
-          } else if (feeType === '仓储费') {
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: '仓储费',
-              feeItem: '月度仓储费',
-              amount: (Math.random() * 5000).toFixed(2),
-              currency: 'USD'
-            };
-          } else if (feeType.includes('赔付')) {
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: feeType,
-              feeItem: '赔付费用',
-              amount: (Math.random() * 200).toFixed(2),
-              currency: 'USD'
-            };
-          } else if (feeType === '充值') {
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: '充值',
-              feeItem: '账户充值',
-              amount: (Math.random() * 10000).toFixed(2),
-              currency: 'USD'
-            };
-          } else if (feeType === '费用调整') {
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: '费用调整',
-              feeItem: '调整费用',
-              amount: (Math.random() * 500).toFixed(2),
-              currency: 'USD'
-            };
-          } else {
-            item = {
-              id: `batch_${i}`,
-              customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
-              feeType: '其他',
-              feeItem: '其他费用',
-              amount: (Math.random() * 300).toFixed(2),
-              currency: 'USD'
-            };
-          }
-          
-          mockData.push(item);
+      // 根据费用类型生成不同的模拟数据
+      for (let i = 1; i <= dataCount; i++) {
+        let item;
+        if (!feeType) {
+          const randomFeeType = allFeeTypes[Math.floor(Math.random() * allFeeTypes.length)];
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: randomFeeType,
+            feeItem: getFeeItemByType(randomFeeType),
+            amount: (Math.random() * 1000).toFixed(2),
+            currency: 'USD'
+          };
+        } else if (feeType.includes('出库+快递')) {
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: feeType,
+            feeItem: feeType.includes('TMS') ? 'TMS出库费' : 'YC出库费',
+            amount: (Math.random() * 1000).toFixed(2),
+            currency: 'USD'
+          };
+        } else if (feeType === '仓储费') {
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: '仓储费',
+            feeItem: '月度仓储费',
+            amount: (Math.random() * 5000).toFixed(2),
+            currency: 'USD'
+          };
+        } else if (feeType.includes('赔付')) {
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: feeType,
+            feeItem: '赔付费用',
+            amount: (Math.random() * 200).toFixed(2),
+            currency: 'USD'
+          };
+        } else if (feeType === '充值') {
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: '充值',
+            feeItem: '账户充值',
+            amount: (Math.random() * 10000).toFixed(2),
+            currency: 'USD'
+          };
+        } else if (feeType === '费用调整') {
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: '费用调整',
+            feeItem: '调整费用',
+            amount: (Math.random() * 500).toFixed(2),
+            currency: 'USD'
+          };
+        } else {
+          item = {
+            id: `batch_${i}`,
+            customerCode: customerCodes[Math.floor(Math.random() * customerCodes.length)],
+            feeType: '其他',
+            feeItem: '其他费用',
+            amount: (Math.random() * 300).toFixed(2),
+            currency: 'USD'
+          };
         }
         
-        // 保存数据到全局变量，以便下次打开弹窗时显示
-        batchModalData = mockData;
-        batchModalTotalItems = mockData.length;
-        batchModalCurrentPage = 1;
-        
-        // 标记数据已加载
-        batchModalDataLoaded = true;
-        
-        isSearching = false;
-        
-        // 显示处理完成提示
-        showNotification('查询任务已完成，您可以重新打开批量获取费用弹窗查看结果');
-        
-
-      }, 3000); // 模拟处理时间
+        mockData.push(item);
+      }
+      
+      // 保存数据到全局变量
+      batchModalData = mockData;
+      batchModalTotalItems = mockData.length;
+      batchModalCurrentPage = 1;
+      
+      // 标记数据已加载
+      batchModalDataLoaded = true;
+      
+      isSearching = false;
+      
+      // 隐藏加载状态并显示数据
+      hideBatchModalLoading();
+      renderBatchModalTable();
+      updateBatchModalPagination();
+      
+      // 显示处理完成提示
+      showNotification(`查询完成，共找到 ${mockData.length} 条费用数据`);
     }
 
     // 显示加载状态

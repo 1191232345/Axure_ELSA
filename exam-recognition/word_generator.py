@@ -47,11 +47,62 @@ class WordGenerator:
         run.font.bold = True
         
         if question_type == 'choice' and question_data.get('options'):
-            for option in question_data['options']:
-                option_paragraph = self.doc.add_paragraph()
-                option_run = option_paragraph.add_run(f"{option['letter']}. {option['content']}")
-                option_run.font.size = Pt(11)
-                option_paragraph.paragraph_format.left_indent = Inches(0.3)
+            # 处理选择题选项，使用无边框表格实现两列布局
+            options = question_data['options']
+            if len(options) > 0:
+                # 计算列数（最多两列）
+                col_count = min(2, len(options))
+                
+                # 计算行数
+                if len(options) % 2 == 0:
+                    row_count = len(options) // 2
+                else:
+                    row_count = (len(options) // 2) + 1
+                
+                # 创建表格来实现两列布局
+                table = self.doc.add_table(rows=row_count, cols=col_count)
+                
+                # 设置表格为无边框
+                from docx.oxml import OxmlElement
+                from docx.oxml.ns import qn
+                
+                # 移除表格边框
+                tbl = table._element
+                tblBorders = OxmlElement('w:tblBorders')
+                
+                # 定义所有边框为无
+                border_types = ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']
+                for border_type in border_types:
+                    border = OxmlElement(f'w:{border_type}')
+                    border.set(qn('w:val'), 'none')
+                    tblBorders.append(border)
+                
+                tbl.tblPr.append(tblBorders)
+                
+                # 调整表格宽度
+                for row in table.rows:
+                    row.height = Inches(0.3)
+                for col in table.columns:
+                    col.width = Inches(3.0)
+                
+                # 填充选项
+                idx = 0
+                for i in range(row_count):
+                    for j in range(col_count):
+                        if idx < len(options):
+                            cell = table.cell(i, j)
+                            cell.text = f"{options[idx]['letter']}. {options[idx]['content']}"
+                            # 设置单元格字体
+                            for paragraph in cell.paragraphs:
+                                for run in paragraph.runs:
+                                    run.font.size = Pt(11)
+                                    run.font.name = '宋体'
+                                    run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+                            idx += 1
+                        else:
+                            # 空单元格
+                            cell = table.cell(i, j)
+                            cell.text = ''
         
         if question_type in ['fill_blank', 'short_answer', 'calculation', 'application']:
             answer_paragraph = self.doc.add_paragraph()

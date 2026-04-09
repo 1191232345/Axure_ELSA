@@ -168,7 +168,7 @@ if __name__ == '__main__':
         print("\n系统将以演示模式运行,OCR功能不可用\n")
     
     print("启动服务器...")
-    print("访问地址: http://127.0.0.1:5000")
+    print("访问地址: http://127.0.0.1:5001")
     print("=" * 60)
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

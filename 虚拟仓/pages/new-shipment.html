@@ -84,22 +84,6 @@
                     <h4 class="text-md font-semibold text-gray-800 mb-4">产品信息</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="form-group">
-                            <label for="new-shipment-warehouse-type"><span class="required">*</span> 仓库类型</label>
-                            <select id="new-shipment-warehouse-type" class="form-select">
-                                <option value="DE001">主仓</option>
-                                <option value="DE002">渠道仓</option>
-                                <option value="DE003">部门仓</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="new-shipment-warehouse-code"><span class="required">*</span> 仓库代码</label>
-                            <select id="new-shipment-warehouse-code" class="form-select">
-                                <option value="DE001">DE001</option>
-                                <option value="DE002">DE002</option>
-                                <option value="DE003">DE003</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label for="new-shipment-pick-method"><span class="required">*</span> 拣货方式</label>
                             <select id="new-shipment-pick-method" class="form-select disabled">
                             </select>
@@ -112,6 +96,7 @@
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">
                                         <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
                                     </th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">仓库</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">产品代码/SKU</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">出库件数</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">自定义编码</th>
@@ -126,7 +111,19 @@
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
                                     </td>
-                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">ADADAD</td>
+                                    <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                                        <select class="form-select warehouse-select" onchange="handleWarehouseChange(this)">
+                                            <option value="">请选择仓库</option>
+                                            <option value="NBFX渠道仓A">NBFX渠道仓A</option>
+                                            <option value="NBFX渠道仓B">NBFX渠道仓B</option>
+                                            <option value="NBFX渠道仓C">NBFX渠道仓C</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                                        <select class="form-select sku-select" disabled>
+                                            <option value="">请先选择仓库</option>
+                                        </select>
+                                    </td>
                                     <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
                                         <input type="number" class="form-input w-24" min="1" value="1">
                                     </td>
@@ -161,6 +158,128 @@
                     <button class="erp-btn erp-btn-primary" onclick="saveNewShipment()">提交</button>
                 </div>
             </div>
+
+            <script>
+                // 模拟仓库对应的SKU数据
+                const warehouseSkus = {
+                    'NBFX渠道仓A': [
+                        { value: 'ADADAD', text: 'ADADAD - 产品A' },
+                        { value: 'CA008', text: 'CA008 - 产品B' },
+                        { value: 'SKU001', text: 'SKU001 - 产品C' }
+                    ],
+                    'NBFX渠道仓B': [
+                        { value: 'ADADAD', text: 'ADADAD - 产品A' },
+                        { value: 'CA003', text: 'CA003 - 产品D' },
+                        { value: 'SKU002', text: 'SKU002 - 产品E' }
+                    ],
+                    'NBFX渠道仓C': [
+                        { value: 'ADADAD', text: 'ADADAD - 产品A' },
+                        { value: 'SKU003', text: 'SKU003 - 产品F' },
+                        { value: 'SKU004', text: 'SKU004 - 产品G' }
+                    ]
+                };
+
+                // 处理仓库选择变化
+                function handleWarehouseChange(selectElement) {
+                    const selectedWarehouse = selectElement.value;
+                    const row = selectElement.closest('tr');
+                    const skuSelect = row.querySelector('.sku-select');
+                    
+                    // 清空并禁用SKU选择框
+                    skuSelect.innerHTML = '';
+                    skuSelect.disabled = !selectedWarehouse;
+                    
+                    if (selectedWarehouse) {
+                        // 添加默认选项
+                        const defaultOption = document.createElement('option');
+                        defaultOption.value = '';
+                        defaultOption.textContent = '请选择SKU';
+                        skuSelect.appendChild(defaultOption);
+                        
+                        // 添加对应仓库的SKU选项
+                        const skus = warehouseSkus[selectedWarehouse] || [];
+                        skus.forEach(sku => {
+                            const option = document.createElement('option');
+                            option.value = sku.value;
+                            option.textContent = sku.text;
+                            skuSelect.appendChild(option);
+                        });
+                    } else {
+                        // 仓库未选择时的提示
+                        const defaultOption = document.createElement('option');
+                        defaultOption.value = '';
+                        defaultOption.textContent = '请先选择仓库';
+                        skuSelect.appendChild(defaultOption);
+                    }
+                }
+
+                // 添加产品行
+                function addProductRow() {
+                    const tbody = document.getElementById('new-shipment-products');
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'table-hover-row transition-colors duration-150 hover:bg-neutral-50';
+                    
+                    newRow.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
+                        </td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                            <select class="form-select warehouse-select" onchange="handleWarehouseChange(this)">
+                                <option value="">请选择仓库</option>
+                                <option value="NBFX渠道仓A">NBFX渠道仓A</option>
+                                <option value="NBFX渠道仓B">NBFX渠道仓B</option>
+                                <option value="NBFX渠道仓C">NBFX渠道仓C</option>
+                            </select>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-neutral-800 whitespace-nowrap">
+                            <select class="form-select sku-select" disabled>
+                                <option value="">请先选择仓库</option>
+                            </select>
+                        </td>
+                        <td class="px-4 py-3 text-neutral-700 whitespace-nowrap">
+                            <input type="number" class="form-input w-24" min="1" value="1">
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">-</td>
+                        <td class="px-4 py-3 whitespace-nowrap">-</td>
+                        <td class="px-4 py-3 whitespace-nowrap">/</td>
+                        <td class="px-4 py-3 whitespace-nowrap">不包装</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap">
+                            <button class="table-btn text-danger hover:bg-danger/10" onclick="deleteProductRow(this)">删除</button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(newRow);
+                }
+
+                // 删除产品行
+                function deleteProductRow(button) {
+                    const row = button.closest('tr');
+                    const tbody = row.closest('tbody');
+                    
+                    // 确保至少保留一行
+                    if (tbody.children.length > 1) {
+                        row.remove();
+                    } else {
+                        alert('至少需要保留一行产品');
+                    }
+                }
+
+                // 为添加产品按钮添加点击事件
+                document.addEventListener('DOMContentLoaded', function() {
+                    const addButton = document.querySelector('.erp-btn-secondary');
+                    if (addButton) {
+                        addButton.addEventListener('click', addProductRow);
+                    }
+                    
+                    // 为删除按钮添加点击事件
+                    const deleteButtons = document.querySelectorAll('.table-btn.text-danger');
+                    deleteButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            deleteProductRow(this);
+                        });
+                    });
+                });
+            </script>
 
             <!-- 新增出库页面逻辑说明 -->
             <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
@@ -202,22 +321,10 @@
                                         <td class="px-3 py-2 text-gray-600">下拉单选，包含Amazon、eBay、Shopify等</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
-                                        <td class="px-3 py-2 text-gray-600">展示用户有权限的仓库类型</td>
-                                        <td class="px-3 py-2 text-gray-600">warehouse表</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选，包含主仓、渠道仓、备货仓</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
-                                        <td class="px-3 py-2 text-gray-600">根据选择的仓库类型动态加载对应的仓库代码</td>
-                                        <td class="px-3 py-2 text-gray-600">warehouse表</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选，根据仓库类型筛选</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">产品列表</td>
                                         <td class="px-3 py-2 text-gray-600">默认展示一行空产品，等待用户添加</td>
                                         <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">表格展示，支持添加/删除产品</td>
+                                        <td class="px-3 py-2 text-gray-600">表格展示，支持添加/删除产品，每行包含仓库选择和SKU选择</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -258,16 +365,6 @@
                                         <td class="px-3 py-2 text-gray-800">配送渠道</td>
                                         <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                         <td class="px-3 py-2 text-gray-600">选择配送渠道（发现快递/非发现快递），必填</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">选择仓库类型，必填</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">根据仓库类型动态加载，必填</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -420,32 +517,22 @@
                                         <td class="px-3 py-2 text-gray-600">输入联系方式</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库类型</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">数据来源：虚拟仓管理</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓库代码</td>
-                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-                                        <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">
-                                            1、根据仓库类型，筛选仓库<br>
-                                            2、仅展示授权账号可查询的仓库<br>
-                                            3、根据仓库类型，展示不同的仓库
-                                        </td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">拣货方式</td>
                                         <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                         <td class="px-3 py-2 text-gray-600">是</td>
                                         <td class="px-3 py-2 text-gray-600">选择拣货方式</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">产品代码/SKU</td>
-                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-800">仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                         <td class="px-3 py-2 text-gray-600">是</td>
-                                        <td class="px-3 py-2 text-gray-600">显示产品SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">选择仓库，每行独立选择</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品代码/SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+                                        <td class="px-3 py-2 text-gray-600">是</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的仓库动态加载SKU</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">出库件数</td>
