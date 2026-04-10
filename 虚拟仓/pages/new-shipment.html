@@ -33,6 +33,13 @@
                                 <option value="2">非发现快递</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="new-shipment-use-virtual-warehouse">是否使用虚拟仓</label>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="new-shipment-use-virtual-warehouse" class="w-4 h-4 text-primary focus:ring-primary/30 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-600">使用虚拟仓</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -321,6 +328,18 @@
                                         <td class="px-3 py-2 text-gray-600">下拉单选，包含Amazon、eBay、Shopify等</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">配送渠道</td>
+                                        <td class="px-3 py-2 text-gray-600">展示所有支持的配送渠道选项</td>
+                                        <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉单选，包含发现快递、非发现快递</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">是否使用虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">页面加载时默认不勾选</td>
+                                        <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                        <td class="px-3 py-2 text-gray-600">复选框，勾选表示使用虚拟仓</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">产品列表</td>
                                         <td class="px-3 py-2 text-gray-600">默认展示一行空产品，等待用户添加</td>
                                         <td class="px-3 py-2 text-gray-600">无</td>
@@ -365,6 +384,11 @@
                                         <td class="px-3 py-2 text-gray-800">配送渠道</td>
                                         <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                         <td class="px-3 py-2 text-gray-600">选择配送渠道（发现快递/非发现快递），必填</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">是否使用虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">复选框</td>
+                                        <td class="px-3 py-2 text-gray-600">勾选表示使用虚拟仓，非必填</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -473,6 +497,12 @@
                                         <td class="px-3 py-2 text-gray-600">下拉单选框</td>
                                         <td class="px-3 py-2 text-gray-600">是</td>
                                         <td class="px-3 py-2 text-gray-600">选择配送渠道</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">是否使用虚拟仓</td>
+                                        <td class="px-3 py-2 text-gray-600">复选框</td>
+                                        <td class="px-3 py-2 text-gray-600">否</td>
+                                        <td class="px-3 py-2 text-gray-600">勾选表示使用虚拟仓</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">收件人姓名</td>
