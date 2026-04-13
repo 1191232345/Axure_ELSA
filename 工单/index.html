@@ -1027,28 +1027,40 @@
                 </div>
                 
                 <div class="action-card">
-                    <div class="flex flex-wrap justify-start gap-2">
-                        <button class="erp-btn erp-btn-secondary" onclick="handleExport()">
-                            <i class="fa fa-upload mr-1.5"></i> 导出
-                        </button>
-                        <button class="erp-btn erp-btn-secondary" onclick="handleExportDetail()">
-                            <i class="fa fa-file-excel-o mr-1.5"></i> 导出详价
-                        </button>
-                        <button class="erp-btn erp-btn-secondary" onclick="handleBatchAccept()">
-                            <i class="fa fa-check mr-1.5"></i> 批量接受
-                        </button>
-                        <button class="erp-btn erp-btn-secondary" onclick="handleDownloadAttachment()">
-                            <i class="fa fa-download mr-1.5"></i> 下载附件
-                        </button>
-                        <button class="erp-btn erp-btn-secondary" onclick="handleQueryProvider()">
-                            <i class="fa fa-search mr-1.5"></i> 查询服务商
-                        </button>
-                        <button class="erp-btn erp-btn-secondary" onclick="handleBatchModifyAmount()">
-                            <i class="fa fa-edit mr-1.5"></i> 批量修改金额
-                        </button>
-                        <button class="erp-btn erp-btn-success batch-btn" id="batchReplyBtn" disabled onclick="handleBatchReply()">
-                            <i class="fa fa-reply mr-1.5"></i> 批量回复
-                        </button>
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <div class="flex flex-wrap justify-start gap-2">
+                            <button class="erp-btn erp-btn-secondary" onclick="handleExport()">
+                                <i class="fa fa-upload mr-1.5"></i> 导出
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleExportDetail()">
+                                <i class="fa fa-file-excel-o mr-1.5"></i> 导出详价
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchAccept()">
+                                <i class="fa fa-check mr-1.5"></i> 批量接受
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleDownloadAttachment()">
+                                <i class="fa fa-download mr-1.5"></i> 下载附件
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleQueryProvider()">
+                                <i class="fa fa-search mr-1.5"></i> 查询服务商
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchModifyAmount()">
+                                <i class="fa fa-edit mr-1.5"></i> 批量修改金额
+                            </button>
+                            <button class="erp-btn erp-btn-success batch-btn" id="batchReplyBtn" disabled onclick="handleBatchReply()">
+                                <i class="fa fa-reply mr-1.5"></i> 批量回复
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 mr-2">工单数量：</span>
+                                <span class="text-sm font-medium text-primary" id="totalCount">0</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 mr-2">索赔金额：</span>
+                                <span class="text-sm font-medium text-primary" id="totalAmount">$0.00</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1984,21 +1996,7 @@
 
         document.getElementById('uniformReplyContent')?.addEventListener('input', updateCharCount);
 
-        function handleSelectAll(checkbox) {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            checkboxes.forEach(function(cb) {
-                cb.checked = checkbox.checked;
-            });
-            updateBatchButton();
-        }
 
-        function handleRowSelect() {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-            const selectAll = document.getElementById('selectAll');
-            selectAll.checked = checkboxes.length === checkedBoxes.length;
-            updateBatchButton();
-        }
 
         function getSelectedIds() {
             const checkboxes = document.querySelectorAll('.row-checkbox:checked');
@@ -2019,7 +2017,60 @@
             });
             document.getElementById('selectAll').checked = false;
             updateBatchButton();
+            updateStatistics();
         }
+
+        function updateStatistics() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            let count = 0;
+            let amount = 0;
+
+            if (checkedBoxes.length === 0) {
+                // 不勾选时统计所有数据
+                const allRows = document.querySelectorAll('tbody tr');
+                allRows.forEach(function(row) {
+                    count++;
+                    const amountText = row.cells[8]?.textContent || '$0.00';
+                    const amountValue = parseFloat(amountText.replace('$', '')) || 0;
+                    amount += amountValue;
+                });
+            } else {
+                // 勾选时仅统计勾选数据
+                checkedBoxes.forEach(function(checkbox) {
+                    const row = checkbox.closest('tr');
+                    count++;
+                    const amountText = row.cells[8]?.textContent || '$0.00';
+                    const amountValue = parseFloat(amountText.replace('$', '')) || 0;
+                    amount += amountValue;
+                });
+            }
+
+            document.getElementById('totalCount').textContent = count;
+            document.getElementById('totalAmount').textContent = '$' + amount.toFixed(2);
+        }
+
+        function handleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(function(cb) {
+                cb.checked = checkbox.checked;
+            });
+            updateBatchButton();
+            updateStatistics();
+        }
+
+        function handleRowSelect() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            const selectAll = document.getElementById('selectAll');
+            selectAll.checked = checkboxes.length === checkedBoxes.length;
+            updateBatchButton();
+            updateStatistics();
+        }
+
+        // 页面加载时初始化统计
+        window.addEventListener('DOMContentLoaded', function() {
+            updateStatistics();
+        });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
