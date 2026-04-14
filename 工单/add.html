@@ -84,13 +84,41 @@
             padding: 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             background: #fafafa;
+            position: relative;
+            overflow: hidden;
         }
 
         .upload-area:hover {
             border-color: #2a3b7d;
             background: #f0f4ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 59, 125, 0.1);
+        }
+
+        .upload-area.drag-over {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .upload-area i {
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover i {
+            transform: scale(1.1);
+            color: #2a3b7d;
+        }
+
+        .file-item {
+            transition: all 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: #e0e7ff;
+            transform: translateY(-1px);
         }
 
         .btn-primary {
@@ -143,9 +171,97 @@
             font-size: 12px;
             line-height: 1.6;
         }
+
+        .upload-transition {
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
+        }
+
+        .upload-transition.hidden {
+            max-height: 0;
+            opacity: 0;
+            margin: 0;
+        }
+
+        .upload-transition.visible {
+            max-height: 2000px;
+            opacity: 1;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-left: 4px solid #3b82f6;
+            padding: 16px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .notification-content {
+            display: inline-block;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .channel-indicator {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .channel-indicator.fedex {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .channel-indicator.other {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- 通知组件 -->
+    <div id="notification" class="notification">
+        <div class="notification-icon">
+            <i class="fa fa-info-circle text-blue-500"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title" id="notificationTitle">提示</div>
+            <div class="notification-message" id="notificationMessage">消息内容</div>
+        </div>
+    </div>
+    
     <div class="max-w-7xl mx-auto p-6">
         <!-- 标题栏 -->
         <div class="flex items-center justify-between mb-6 bg-white px-6 py-4 rounded-lg shadow-sm">
@@ -170,13 +286,16 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">物流渠道</label>
-                    <select id="channel" class="form-select">
-                        <option value="">请输入</option>
-                        <option value="ups">UPS</option>
-                        <option value="fedex">FedEx</option>
-                        <option value="dhl">DHL</option>
-                        <option value="ems">EMS</option>
-                    </select>
+                    <div class="flex items-center">
+                        <select id="channel" class="form-select flex-1">
+                            <option value="">请输入</option>
+                            <option value="ups">UPS</option>
+                            <option value="fedex">FedEx</option>
+                            <option value="dhl">DHL</option>
+                            <option value="ems">EMS</option>
+                        </select>
+                        <span id="channelIndicator" class="channel-indicator other hidden">标准上传</span>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
@@ -190,7 +309,7 @@
                 <textarea id="description" class="form-textarea" rows="4" placeholder=""></textarea>
                 
                 <!-- 上传按钮和提示信息 -->
-                <div class="mt-3 flex items-start gap-4">
+                <div id="originalUploadArea" class="upload-transition visible mt-3 flex items-start gap-4">
                     <div class="upload-area w-48 h-20 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
                         <i class="fa fa-upload text-gray-400 text-xl mb-1"></i>
                         <span class="text-sm text-gray-500">点击上传</span>
@@ -214,6 +333,96 @@
                 </div>
             </div>
 
+            <!-- 五类附件上传 -->
+            <div id="fedexUploadArea" class="upload-transition hidden mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <label class="block text-sm font-medium text-gray-700">附件上传</label>
+                    <span class="text-xs text-gray-500">请按类别上传相关附件</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- 销售信息附件 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                            1. 销售信息附件
+                            <span class="text-xs text-gray-400 ml-1">(订单、发票等)</span>
+                        </label>
+                        <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('salesFileInput').click()">
+                            <i class="fa fa-upload text-gray-400 text-lg mb-1"></i>
+                            <span class="text-xs text-gray-500">点击或拖拽上传</span>
+                            <input type="file" id="salesFileInput" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                        </div>
+                        <div id="salesFiles" class="mt-2 hidden">
+                            <div class="flex flex-wrap gap-2" id="salesFileList"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 客户聊天附件 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                            2. 客户聊天附件
+                            <span class="text-xs text-gray-400 ml-1">(聊天记录等)</span>
+                        </label>
+                        <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('chatFileInput').click()">
+                            <i class="fa fa-upload text-gray-400 text-lg mb-1"></i>
+                            <span class="text-xs text-gray-500">点击或拖拽上传</span>
+                            <input type="file" id="chatFileInput" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                        </div>
+                        <div id="chatFiles" class="mt-2 hidden">
+                            <div class="flex flex-wrap gap-2" id="chatFileList"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 破损照片 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                            3. 破损照片
+                            <span class="text-xs text-gray-400 ml-1">(货物破损图片)</span>
+                        </label>
+                        <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('damageFileInput').click()">
+                            <i class="fa fa-upload text-gray-400 text-lg mb-1"></i>
+                            <span class="text-xs text-gray-500">点击或拖拽上传</span>
+                            <input type="file" id="damageFileInput" class="hidden" multiple accept=".jpg,.jpeg,.png">
+                        </div>
+                        <div id="damageFiles" class="mt-2 hidden">
+                            <div class="flex flex-wrap gap-2" id="damageFileList"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 证明文件 / 附件单据 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                            4. 证明文件 / 附件单据
+                            <span class="text-xs text-gray-400 ml-1">(相关证明材料)</span>
+                        </label>
+                        <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('proofFileInput').click()">
+                            <i class="fa fa-upload text-gray-400 text-lg mb-1"></i>
+                            <span class="text-xs text-gray-500">点击或拖拽上传</span>
+                            <input type="file" id="proofFileInput" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                        </div>
+                        <div id="proofFiles" class="mt-2 hidden">
+                            <div class="flex flex-wrap gap-2" id="proofFileList"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 通用附件 -->
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-600 mb-2">
+                            5. 通用附件
+                            <span class="text-xs text-gray-400 ml-1">(其他相关文件)</span>
+                        </label>
+                        <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('generalFileInput').click()">
+                            <i class="fa fa-upload text-gray-400 text-lg mb-1"></i>
+                            <span class="text-xs text-gray-500">点击或拖拽上传</span>
+                            <input type="file" id="generalFileInput" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                        </div>
+                        <div id="generalFiles" class="mt-2 hidden">
+                            <div class="flex flex-wrap gap-2" id="generalFileList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 第二行表单字段 -->
             <div class="grid grid-cols-6 gap-6">
                 <div>
@@ -229,7 +438,7 @@
                     <input type="text" id="sku" class="form-input" placeholder="请输入">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">* *实发数量</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">* 实发数量</label>
                     <input type="number" id="quantity" class="form-input" placeholder="请输入">
                 </div>
                 <div>
@@ -254,28 +463,224 @@
     </div>
 
     <script>
-        // 文件上传处理
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const files = e.target.files;
-            if (files.length > 0) {
-                const container = document.getElementById('uploadedFiles');
-                const listContainer = document.getElementById('fileListContainer');
-                
-                listContainer.innerHTML = '';
-                
-                Array.from(files).forEach(function(file, index) {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded text-sm';
-                    fileItem.innerHTML = `
-                        <i class="fa fa-file-o"></i>
-                        <span>${file.name}</span>
-                        <i class="fa fa-times cursor-pointer hover:text-red-500" onclick="this.parentElement.remove()"></i>
-                    `;
-                    listContainer.appendChild(fileItem);
-                });
-                
-                container.classList.remove('hidden');
+        // 检查是否为FedEx
+        function isFedExSelected() {
+            return document.getElementById('channel').value === 'fedex';
+        }
+        
+        // 显示通知
+        function showNotification(title, message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, duration);
+        }
+        
+        // 更新状态指示器
+        function updateChannelIndicator() {
+            const indicator = document.getElementById('channelIndicator');
+            const isFedEx = isFedExSelected();
+            
+            if (isFedEx) {
+                indicator.textContent = '分类上传';
+                indicator.className = 'channel-indicator fedex';
+                indicator.classList.remove('hidden');
+            } else {
+                indicator.textContent = '标准上传';
+                indicator.className = 'channel-indicator other';
+                indicator.classList.remove('hidden');
             }
+        }
+        
+        // 获取文件类型图标
+        function getFileIcon(fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            switch (extension) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'gif':
+                    return 'fa-file-image-o';
+                case 'pdf':
+                    return 'fa-file-pdf-o';
+                case 'doc':
+                case 'docx':
+                    return 'fa-file-word-o';
+                case 'xls':
+                case 'xlsx':
+                    return 'fa-file-excel-o';
+                default:
+                    return 'fa-file-o';
+            }
+        }
+        
+        // 处理文件上传
+        function handleFileUpload(fileInputId, filesContainerId, fileListId) {
+            const fileInput = document.getElementById(fileInputId);
+            const filesContainer = document.getElementById(filesContainerId);
+            const fileList = document.getElementById(fileListId);
+            const uploadArea = fileInput.parentElement;
+            
+            // 添加上传区域的视觉反馈
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('drag-over');
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('drag-over');
+            });
+            
+            // 实现拖放功能
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    // 触发文件输入的change事件
+                    fileInput.files = files;
+                    const event = new Event('change');
+                    fileInput.dispatchEvent(event);
+                }
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    fileList.innerHTML = '';
+                    
+                    Array.from(files).forEach(function(file) {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded text-sm mb-2';
+                        
+                        // 获取文件图标
+                        const fileIcon = getFileIcon(file.name);
+                        
+                        // 根据是否为FedEx决定是否显示下载链接
+                        const isFedEx = isFedExSelected();
+                        const downloadLink = isFedEx ? '' : '<a href="#" class="link-blue hover:text-blue-800 transition-colors">下载</a>';
+                        
+                        // 计算文件大小
+                        let fileSize = '';
+                        if (file.size < 1024) {
+                            fileSize = file.size + ' B';
+                        } else if (file.size < 1024 * 1024) {
+                            fileSize = (file.size / 1024).toFixed(1) + ' KB';
+                        } else {
+                            fileSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                        }
+                        
+                        fileItem.innerHTML = `
+                            <i class="fa ${fileIcon}"></i>
+                            <span class="max-w-[200px] truncate" title="${file.name}">${file.name}</span>
+                            <span class="text-xs text-gray-500">${fileSize}</span>
+                            ${downloadLink}
+                            <i class="fa fa-times cursor-pointer hover:text-red-500 transition-colors" onclick="this.parentElement.remove()"></i>
+                        `;
+                        fileList.appendChild(fileItem);
+                    });
+                    
+                    filesContainer.classList.remove('hidden');
+                }
+            });
+        }
+        
+        // 初始化所有文件上传处理
+        handleFileUpload('fileInput', 'uploadedFiles', 'fileListContainer');
+        handleFileUpload('salesFileInput', 'salesFiles', 'salesFileList');
+        handleFileUpload('chatFileInput', 'chatFiles', 'chatFileList');
+        handleFileUpload('damageFileInput', 'damageFiles', 'damageFileList');
+        handleFileUpload('proofFileInput', 'proofFiles', 'proofFileList');
+        handleFileUpload('generalFileInput', 'generalFiles', 'generalFileList');
+        
+        // 页面加载时初始化附件上传区域的显示状态
+        window.addEventListener('DOMContentLoaded', function() {
+            const isFedEx = isFedExSelected();
+            const originalUploadArea = document.getElementById('originalUploadArea');
+            const fedexUploadArea = document.getElementById('fedexUploadArea');
+            
+            if (isFedEx) {
+                originalUploadArea.classList.remove('visible');
+                originalUploadArea.classList.add('hidden');
+                fedexUploadArea.classList.remove('hidden');
+                fedexUploadArea.classList.add('visible');
+            } else {
+                originalUploadArea.classList.remove('hidden');
+                originalUploadArea.classList.add('visible');
+                fedexUploadArea.classList.remove('visible');
+                fedexUploadArea.classList.add('hidden');
+            }
+            
+            updateChannelIndicator();
+        });
+        
+        // 物流渠道选择事件
+        document.getElementById('channel').addEventListener('change', function() {
+            const isFedEx = isFedExSelected();
+            
+            // 控制附件上传区域的显示和隐藏
+            const originalUploadArea = document.getElementById('originalUploadArea');
+            const fedexUploadArea = document.getElementById('fedexUploadArea');
+            
+            if (isFedEx) {
+                // 隐藏原本的附件上传区域
+                originalUploadArea.classList.remove('visible');
+                originalUploadArea.classList.add('hidden');
+                // 显示五类附件上传区域
+                fedexUploadArea.classList.remove('hidden');
+                setTimeout(function() {
+                    fedexUploadArea.classList.add('visible');
+                }, 10);
+                
+                // 显示通知
+                showNotification('上传模式已切换', '已切换为FedEx分类上传模式，请按类别上传相关附件');
+            } else {
+                // 显示原本的附件上传区域
+                originalUploadArea.classList.remove('hidden');
+                setTimeout(function() {
+                    originalUploadArea.classList.add('visible');
+                }, 10);
+                // 隐藏五类附件上传区域
+                fedexUploadArea.classList.remove('visible');
+                fedexUploadArea.classList.add('hidden');
+                
+                // 显示通知
+                showNotification('上传模式已切换', '已切换为标准上传模式');
+            }
+            
+            // 更新状态指示器
+            updateChannelIndicator();
+            
+            // 更新所有已上传文件的下载链接
+            const fileItems = document.querySelectorAll('.inline-flex.items-center.gap-2.px-3.py-1.5.bg-blue-50.text-blue-600.rounded.text-sm');
+            fileItems.forEach(function(item) {
+                const hasDownloadLink = item.querySelector('a.link-blue');
+                if (isFedEx) {
+                    // 隐藏下载链接
+                    if (hasDownloadLink) {
+                        hasDownloadLink.remove();
+                    }
+                } else {
+                    // 显示下载链接（如果不存在）
+                    if (!hasDownloadLink) {
+                        const timesIcon = item.querySelector('.fa-times');
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = '#';
+                        downloadLink.className = 'link-blue';
+                        downloadLink.textContent = '下载';
+                        item.insertBefore(downloadLink, timesIcon);
+                    }
+                }
+            });
         });
 
         function handleReset() {
@@ -283,8 +688,29 @@
                 document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(function(el) {
                     el.value = '';
                 });
-                document.getElementById('uploadedFiles').classList.add('hidden');
-                document.getElementById('fileListContainer').innerHTML = '';
+                
+                // 重置所有文件上传区域
+                const fileContainers = [
+                    'uploadedFiles', 'salesFiles', 'chatFiles', 
+                    'damageFiles', 'proofFiles', 'generalFiles'
+                ];
+                fileContainers.forEach(function(containerId) {
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.classList.add('hidden');
+                    }
+                });
+                
+                const fileLists = [
+                    'fileListContainer', 'salesFileList', 'chatFileList', 
+                    'damageFileList', 'proofFileList', 'generalFileList'
+                ];
+                fileLists.forEach(function(listId) {
+                    const list = document.getElementById(listId);
+                    if (list) {
+                        list.innerHTML = '';
+                    }
+                });
             }
         }
 
