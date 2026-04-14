@@ -1038,35 +1038,27 @@
                             <button class="erp-btn erp-btn-secondary" onclick="handleExportDetail()">
                                 <i class="fa fa-file-excel-o mr-1.5"></i> 导出详价
                             </button>
-                            <div class="relative group">
-                                <button class="erp-btn erp-btn-secondary flex items-center">
-                                    <i class="fa fa-cog mr-1.5"></i> 批量操作
-                                    <i class="fa fa-angle-down ml-1 text-xs"></i>
-                                </button>
-                                <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleBatchAccept()">
-                                        <i class="fa fa-check mr-2"></i> 批量提交
-                                    </button>
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleDownloadAttachment()">
-                                        <i class="fa fa-download mr-2"></i> 下载附件
-                                    </button>
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleQueryProvider()">
-                                        <i class="fa fa-search mr-2"></i> 查询服务商
-                                    </button>
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleBatchModifyAmount()">
-                                        <i class="fa fa-edit mr-2"></i> 批量修改金额
-                                    </button>
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 batch-btn" id="batchReplyBtn" disabled onclick="handleBatchReply()">
-                                        <i class="fa fa-reply mr-2"></i> 批量回复
-                                    </button>
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleUpdateTracking()">
-                                        <i class="fa fa-truck mr-2"></i> 更新物流轨迹
-                                    </button>
-                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleBatchSign()">
-                                        <i class="fa fa-check mr-2"></i> 批量结案
-                                    </button>
-                                </div>
-                            </div>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchAccept()">
+                                <i class="fa fa-check mr-1.5"></i> 批量提交
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleDownloadAttachment()">
+                                <i class="fa fa-download mr-1.5"></i> 下载附件
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleQueryProvider()">
+                                <i class="fa fa-search mr-1.5"></i> 查询服务商
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchModifyAmount()">
+                                <i class="fa fa-edit mr-1.5"></i> 批量修改金额
+                            </button>
+                            <button class="erp-btn erp-btn-secondary batch-btn" id="batchReplyBtn" disabled onclick="handleBatchReply()">
+                                <i class="fa fa-reply mr-1.5"></i> 批量回复
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleUpdateTracking()">
+                                <i class="fa fa-truck mr-1.5"></i> 更新物流轨迹
+                            </button>
+                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchSign()">
+                                <i class="fa fa-check mr-1.5"></i> 批量结案
+                            </button>
                         </div>
                         <div class="flex items-center gap-4">
                             <div class="flex items-center">
@@ -2212,10 +2204,36 @@
         }
 
         function handleUpdateTracking() {
-            showToast('正在更新物流轨迹...', 'info');
-            setTimeout(function() {
-                showToast('物流轨迹更新成功！', 'success');
-            }, 1000);
+            showConfirm({
+                title: '更新物流轨迹',
+                message: '确定要更新选中工单的物流轨迹吗？',
+                confirmText: '确定更新',
+                onConfirm: function() {
+                    showToast('正在更新物流轨迹...', 'info');
+                    setTimeout(function() {
+                        showToast('物流轨迹更新成功！', 'success');
+                    }, 1000);
+                }
+            });
+        }
+
+        function handleBatchSign() {
+            const selectedRows = document.querySelectorAll('.row-checkbox:checked');
+            if (selectedRows.length === 0) {
+                showToast('请先选择要结案的工单', 'warning');
+                return;
+            }
+            showConfirm({
+                title: '批量结案',
+                message: '确定要将选中的 ' + selectedRows.length + ' 个工单结案吗？结案后将无法恢复。',
+                confirmText: '确定结案',
+                onConfirm: function() {
+                    showToast('正在批量结案...', 'info');
+                    setTimeout(function() {
+                        showToast('批量结案成功！', 'success');
+                    }, 1000);
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
