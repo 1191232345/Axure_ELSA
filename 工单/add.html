@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增工单 - ELSA</title>
+    
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f5f7fa;
+            color: #374151;
+            min-height: 100vh;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #2a3b7d;
+            background: #f0f4ff;
+        }
+
+        .btn-primary {
+            background-color: #F53F3F;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #e03c3c;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #525252;
+            border: 1px solid #d4d4d4;
+            padding: 8px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #a3a3a3;
+            color: #262626;
+        }
+
+        .link-blue {
+            color: #1890ff;
+            text-decoration: none;
+            font-size: 12px;
+            margin-right: 16px;
+        }
+
+        .link-blue:hover {
+            text-decoration: underline;
+        }
+
+        .hint-text {
+            color: #999;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- 标题栏 -->
+        <div class="flex items-center justify-between mb-6 bg-white px-6 py-4 rounded-lg shadow-sm">
+            <h1 class="text-xl font-semibold text-gray-800">新增工单</h1>
+            <button class="btn-primary" onclick="window.location.href='index.html'">
+                关闭
+            </button>
+        </div>
+
+        <!-- 表单内容 -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <!-- 第一行：工单类型、物流渠道、备注 -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">* 工单类型</label>
+                    <select id="orderType" class="form-select">
+                        <option value="">快递索赔-索赔</option>
+                        <option value="claim">快递索赔</option>
+                        <option value="inquiry">快递查询</option>
+                        <option value="complaint">投诉建议</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">物流渠道</label>
+                    <select id="channel" class="form-select">
+                        <option value="">请输入</option>
+                        <option value="ups">UPS</option>
+                        <option value="fedex">FedEx</option>
+                        <option value="dhl">DHL</option>
+                        <option value="ems">EMS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
+                    <input type="text" id="account" class="form-input" placeholder="请输入">
+                </div>
+            </div>
+
+            <!-- 问题描述 -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">* 问题描述</label>
+                <textarea id="description" class="form-textarea" rows="4" placeholder=""></textarea>
+                
+                <!-- 上传按钮和提示信息 -->
+                <div class="mt-3 flex items-start gap-4">
+                    <div class="upload-area w-48 h-20 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa fa-upload text-gray-400 text-xl mb-1"></i>
+                        <span class="text-sm text-gray-500">点击上传</span>
+                        <input type="file" id="fileInput" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                    </div>
+                    
+                    <div class="flex-1 pt-2">
+                        <div class="mb-2">
+                            <a href="#" class="link-blue">《关于物流索赔的说明》</a>
+                            <a href="#" class="link-blue">《关于物流查询的说明》</a>
+                            <a href="#" class="link-blue">《关于投诉建议的说明》</a>
+                            <a href="#" class="link-blue">《常见问题FAQ》</a>
+                        </div>
+                        <p class="hint-text">请填写详细的问题描述，包括订单号、跟踪号、问题描述等必要信息</p>
+                    </div>
+                </div>
+
+                <!-- 已上传文件列表 -->
+                <div id="uploadedFiles" class="mt-3 hidden">
+                    <div class="flex flex-wrap gap-2" id="fileListContainer"></div>
+                </div>
+            </div>
+
+            <!-- 第二行表单字段 -->
+            <div class="grid grid-cols-6 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">* 运单号</label>
+                    <input type="text" id="trackingNo" class="form-input" placeholder="请输入">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">出库单号</label>
+                    <input type="text" id="platformOrderNo" class="form-input" placeholder="请输入">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">SKU</label>
+                    <input type="text" id="sku" class="form-input" placeholder="请输入">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">* *实发数量</label>
+                    <input type="number" id="quantity" class="form-input" placeholder="请输入">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">索赔金额</label>
+                    <input type="number" id="claimAmount" class="form-input" placeholder="$" step="0.01">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">* 币种</label>
+                    <select id="source" class="form-select">
+                        <option value="USD">USD</option>
+                        <option value="CNY">CNY</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div class="mt-6 bg-white px-6 py-4 rounded-lg shadow-sm flex justify-center gap-4">
+            <button class="btn-secondary" onclick="handleReset()">重置</button>
+            <button class="btn-secondary" onclick="handleSubmit()">提交</button>
+        </div>
+    </div>
+
+    <script>
+        // 文件上传处理
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                const container = document.getElementById('uploadedFiles');
+                const listContainer = document.getElementById('fileListContainer');
+                
+                listContainer.innerHTML = '';
+                
+                Array.from(files).forEach(function(file, index) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded text-sm';
+                    fileItem.innerHTML = `
+                        <i class="fa fa-file-o"></i>
+                        <span>${file.name}</span>
+                        <i class="fa fa-times cursor-pointer hover:text-red-500" onclick="this.parentElement.remove()"></i>
+                    `;
+                    listContainer.appendChild(fileItem);
+                });
+                
+                container.classList.remove('hidden');
+            }
+        });
+
+        function handleReset() {
+            if (confirm('确定要重置所有已填写的内容吗？')) {
+                document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(function(el) {
+                    el.value = '';
+                });
+                document.getElementById('uploadedFiles').classList.add('hidden');
+                document.getElementById('fileListContainer').innerHTML = '';
+            }
+        }
+
+        function handleSubmit() {
+            // 表单验证
+            const orderType = document.getElementById('orderType').value;
+            const description = document.getElementById('description').value.trim();
+            const trackingNo = document.getElementById('trackingNo').value.trim();
+            const quantity = document.getElementById('quantity').value;
+            const source = document.getElementById('source').value;
+
+            if (!orderType) {
+                alert('请选择工单类型');
+                return;
+            }
+            
+            if (!description) {
+                alert('请填写问题描述');
+                return;
+            }
+            
+            if (!trackingNo) {
+                alert('请填写运单号');
+                return;
+            }
+            
+            if (!quantity) {
+                alert('请填写*实发数量');
+                return;
+            }
+            
+            if (!source) {
+                alert('请选择币种');
+                return;
+            }
+
+            // 提交成功提示
+            alert('工单提交成功！');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

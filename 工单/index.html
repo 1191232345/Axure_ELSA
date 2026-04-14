@@ -1029,27 +1029,44 @@
                 <div class="action-card">
                     <div class="flex flex-wrap justify-between items-center gap-2">
                         <div class="flex flex-wrap justify-start gap-2">
+                            <button class="erp-btn erp-btn-primary" onclick="window.location.href='add.html'">
+                                <i class="fa fa-plus mr-1.5"></i> 新增
+                            </button>
                             <button class="erp-btn erp-btn-secondary" onclick="handleExport()">
                                 <i class="fa fa-upload mr-1.5"></i> 导出
                             </button>
                             <button class="erp-btn erp-btn-secondary" onclick="handleExportDetail()">
                                 <i class="fa fa-file-excel-o mr-1.5"></i> 导出详价
                             </button>
-                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchAccept()">
-                                <i class="fa fa-check mr-1.5"></i> 批量接受
-                            </button>
-                            <button class="erp-btn erp-btn-secondary" onclick="handleDownloadAttachment()">
-                                <i class="fa fa-download mr-1.5"></i> 下载附件
-                            </button>
-                            <button class="erp-btn erp-btn-secondary" onclick="handleQueryProvider()">
-                                <i class="fa fa-search mr-1.5"></i> 查询服务商
-                            </button>
-                            <button class="erp-btn erp-btn-secondary" onclick="handleBatchModifyAmount()">
-                                <i class="fa fa-edit mr-1.5"></i> 批量修改金额
-                            </button>
-                            <button class="erp-btn erp-btn-success batch-btn" id="batchReplyBtn" disabled onclick="handleBatchReply()">
-                                <i class="fa fa-reply mr-1.5"></i> 批量回复
-                            </button>
+                            <div class="relative group">
+                                <button class="erp-btn erp-btn-secondary flex items-center">
+                                    <i class="fa fa-cog mr-1.5"></i> 批量操作
+                                    <i class="fa fa-angle-down ml-1 text-xs"></i>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleBatchAccept()">
+                                        <i class="fa fa-check mr-2"></i> 批量提交
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleDownloadAttachment()">
+                                        <i class="fa fa-download mr-2"></i> 下载附件
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleQueryProvider()">
+                                        <i class="fa fa-search mr-2"></i> 查询服务商
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleBatchModifyAmount()">
+                                        <i class="fa fa-edit mr-2"></i> 批量修改金额
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 batch-btn" id="batchReplyBtn" disabled onclick="handleBatchReply()">
+                                        <i class="fa fa-reply mr-2"></i> 批量回复
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleUpdateTracking()">
+                                        <i class="fa fa-truck mr-2"></i> 更新物流轨迹
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" onclick="handleBatchSign()">
+                                        <i class="fa fa-check mr-2"></i> 批量结案
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="flex items-center gap-4">
                             <div class="flex items-center">
@@ -1496,6 +1513,110 @@
         </div>
     </div>
     
+    <div id="addWorkorderModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fa fa-plus-circle text-primary mr-2"></i>新增工单
+                </h3>
+                <button class="close-btn" onclick="closeModal('addWorkorderModal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-4">
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">工单类型</label>
+                            <select class="form-select">
+                                <option value="claim">快递索赔</option>
+                                <option value="inquiry">快递查询</option>
+                                <option value="complaint">投诉建议</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">物流渠道</label>
+                            <select class="form-select">
+                                <option value="ups">UPS</option>
+                                <option value="fedex">FedEx</option>
+                                <option value="dhl">DHL</option>
+                                <option value="ems">EMS</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">账号</label>
+                            <input type="text" class="form-input" placeholder="请输入">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">问题描述</label>
+                        <textarea class="form-textarea" rows="3" placeholder="请输入问题描述"></textarea>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">运单号</label>
+                            <input type="text" class="form-input" placeholder="请输入">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">定单号</label>
+                            <input type="text" class="form-input" placeholder="请输入">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                            <input type="text" class="form-input" placeholder="请输入">
+                        </div>
+                        <div class="flex-1 min-w-[100px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">数量</label>
+                            <input type="number" class="form-input" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">索赔金额</label>
+                            <input type="number" class="form-input" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">工单来源</label>
+                            <select class="form-select">
+                                <option value="system">系统</option>
+                                <option value="manual">手动</option>
+                                <option value="customer">客户</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+                            <input type="text" class="form-input" placeholder="请输入">
+                        </div>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">附件</label>
+                            <div class="upload-area" onclick="triggerUpload('add')">
+                                <input type="file" id="addAttachment" class="hidden" multiple accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileSelect(this, 'add')">
+                                <i class="fa fa-cloud-upload text-2xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-600">点击或拖拽文件到此处上传</p>
+                                <p class="text-xs text-gray-400 mt-1">支持 jpg、png、pdf 格式，单个文件不超过 5MB</p>
+                            </div>
+                            <div id="addFileList" class="file-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="flex gap-2">
+                    <button class="erp-btn erp-btn-secondary" onclick="closeModal('addWorkorderModal')">取消</button>
+                    <button class="erp-btn erp-btn-primary" onclick="handleSubmitAddWorkorder()">
+                        <i class="fa fa-save mr-1"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toastContainer" class="toast-container"></div>
 
     <script>
@@ -2076,8 +2197,26 @@
             if (e.key === 'Escape') {
                 closeModal('batchReplyModal');
                 closeModal('confirmDialog');
+                closeModal('addWorkorderModal');
             }
         });
+
+        function openAddWorkorderModal() {
+            openModal('addWorkorderModal');
+        }
+
+        function handleSubmitAddWorkorder() {
+            // 这里可以添加表单验证和提交逻辑
+            showToast('工单新增成功！', 'success');
+            closeModal('addWorkorderModal');
+        }
+
+        function handleUpdateTracking() {
+            showToast('正在更新物流轨迹...', 'info');
+            setTimeout(function() {
+                showToast('物流轨迹更新成功！', 'success');
+            }, 1000);
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('工单管理页面初始化完成');
