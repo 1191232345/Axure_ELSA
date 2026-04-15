@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELSA-出库详情</title>
+  <!-- 引入外部资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary:disabled {
+        @apply opacity-50 cursor-not-allowed bg-gray-50 text-gray-400;
+      }
+      .input-primary {
+        @apply w-full px-4 py-2.5 h-11 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+      }
+      .checkbox-primary {
+        @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/30;
+      }
+      .select-primary {
+        @apply px-4 py-2.5 h-11 rounded-lg border border-border bg-white text-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .form-section {
+        @apply mb-6 pb-4 border-b border-border last:border-0 last:mb-0;
+      }
+      .form-row {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4;
+      }
+      .form-checkbox-row {
+        @apply flex items-center space-x-6 flex-wrap;
+      }
+      .form-checkbox-item {
+        @apply flex items-center space-x-2;
+      }
+      .certificate-table {
+        @apply w-full border-collapse;
+      }
+      .certificate-table th,
+      .certificate-table td {
+        @apply border border-gray-300 px-4 py-3 text-left;
+      }
+      .certificate-table th {
+        @apply bg-gray-50 font-medium;
+      }
+      .detail-card {
+        @apply bg-white rounded shadow-card p-6 mb-4;
+      }
+      .detail-header {
+        @apply flex items-center justify-between mb-4;
+      }
+      .detail-title {
+        @apply text-lg font-semibold text-gray-800;
+      }
+      .detail-grid {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+      }
+      .detail-item {
+        @apply mb-3;
+      }
+      .detail-label {
+        @apply text-sm font-medium text-gray-500 mb-1;
+      }
+      .detail-value {
+        @apply text-sm text-gray-800;
+      }
+      .tab-nav {
+        @apply border-b border-gray-200 mb-4;
+      }
+      .tab-item {
+        @apply px-4 py-3 text-sm font-medium border-b-2 cursor-pointer transition-all;
+      }
+      .tab-item.active {
+        @apply border-primary text-primary;
+      }
+      .tab-item.inactive {
+        @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-neutral-100 text-neutral-800 min-h-screen">
+  <!-- 顶部导航栏 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-semibold">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-1">
+            <a href="../../portal.html" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors">首页</a>
+            <a href="#" class="px-3 py-2 text-sm bg-primary/80 border-b-2 border-white">出库管理</a>
+          </nav>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">zsw</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 二级导航 -->
+    <div class="bg-[#3686da] border-t border-white/10">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center h-10 overflow-x-auto whitespace-nowrap">
+          <a href="#" class="px-3 py-2 text-xs text-white bg-white/10 mr-1 rounded">出库列表</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- 面包屑导航 -->
+    <nav class="text-sm mb-4">
+      <a href="../../portal.html" class="text-primary hover:text-primary-light">首页</a> &gt;
+      <a href="#" class="text-primary hover:text-primary-light">出库管理</a> &gt;
+      <span class="text-gray-500">出库详情</span>
+    </nav>
+
+    <!-- 页面标题 -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-semibold text-gray-800">出库详情 - DEMO-20861712-CLUVKFYDRRPE</h1>
+      <!-- <div class="flex space-x-3">
+        <button class="btn-secondary">
+          <i class="fa fa-arrow-left mr-1"></i> 返回列表
+        </button>
+      </div> -->
+    </div>
+
+    <!-- 订单类型和状态 -->
+    <div class="detail-card mb-4">
+      <div class="flex items-center space-x-8">
+        <div class="detail-item">
+          <div class="detail-label inline-block mr-2">订单类型</div>
+          <div class="detail-value font-medium text-primary inline-block">一件代发</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label inline-block mr-2">订单状态</div>
+          <div class="detail-value font-medium text-warning inline-block">待拣货</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 基础信息卡片 -->
+    <div class="detail-card">
+      <!-- 基础信息 -->
+      <div class="mb-6">
+        <h3 class="detail-title mb-4">基础信息</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">客户代码</div>
+            <div class="detail-value">DEMOKSdemo</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">销售平台</div>
+            <div class="detail-value">LINGWONG渠道</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">参考号</div>
+            <div class="detail-value">10697569084571564</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">配送渠道</div>
+            <div class="detail-value">发现快递</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">物流产品</div>
+            <div class="detail-value">FEDEX_HOME_GROUND</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">分货</div>
+            <div class="detail-value">8</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">计费重</div>
+            <div class="detail-value">56KG</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">实重</div>
+            <div class="detail-value">56KG</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">体积重</div>
+            <div class="detail-value">0.58 INCH</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">仓库代码</div>
+            <div class="detail-value">DE001</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">批次</div>
+            <div class="detail-value">88T82607001</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">提货方式</div>
+            <div class="detail-value">一单一件</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 收件人卡片 -->
+    <div class="detail-card">
+      <div class="mb-6">
+        <h3 class="detail-title mb-4">收件人信息</h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">国家</div>
+            <div class="detail-value">US</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">省州</div>
+            <div class="detail-value">CA</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">城市</div>
+            <div class="detail-value">Los Angeles</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">邮编</div>
+            <div class="detail-value">90001</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">收件人</div>
+            <div class="detail-value">bqyae</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">收件人联系方式</div>
+            <div class="detail-value">1111111111</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">收件人公司</div>
+            <div class="detail-value">-</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">收件人地址1</div>
+            <div class="detail-value">US-CA-dladladw-xxxxxxxxxxxxx</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">收件人地址2</div>
+            <div class="detail-value">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 附件信息卡片 -->
+    <div class="detail-card">
+      <h3 class="detail-title mb-4">附件信息</h3>
+      <div class="flex items-center">
+        <a href="https://dbs.auxuncloud-test.com/preview/20250725/218418059862.pdf" class="text-primary hover:text-primary-light flex items-center">
+          <i class="fa fa-file-pdf-o mr-2"></i>
+          https://dbs.auxuncloud-test.com/preview/20250725/218418059862.pdf
+        </a>
+        <button class="btn-secondary ml-3 text-xs px-3 py-1">
+          查看
+        </button>
+      </div>
+    </div>
+
+    <!-- 产品信息卡片 -->
+    <div class="detail-card">
+      <h3 class="detail-title mb-4">产品信息</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">产品编码SKU</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">出库年数</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">自定义编码</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">产品尺寸</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">重量</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">出库打包方式</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr>
+              <td class="px-4 py-3 text-sm">4242NAD</td>
+              <td class="px-4 py-3 text-sm">1</td>
+              <td class="px-4 py-3 text-sm">AQAQAQA</td>
+              <td class="px-4 py-3 text-sm">50CM*10CM*2CM</td>
+              <td class="px-4 py-3 text-sm">56KG</td>
+              <td class="px-4 py-3 text-sm">个装</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 其他信息卡片 -->
+    <div class="detail-card">
+      <h3 class="detail-title mb-4">其他信息</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">是否保税</div>
+          <div class="detail-value">否</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">爆单可接受金额</div>
+          <div class="detail-value">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">签名</div>
+          <div class="detail-value">否</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">选择安全服务</div>
+          <div class="detail-value">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">平台店铺</div>
+          <div class="detail-value">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">采购ID</div>
+          <div class="detail-value">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">备注</div>
+          <div class="detail-value">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 费用明细卡片 -->
+    <div class="detail-card">
+      <h3 class="detail-title mb-4">费用明细</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">费用明细</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">金额</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">币种</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">计费时间</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <!-- 费用明细内容可以根据需要添加 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // 页面加载完成后的初始化脚本
+    document.addEventListener('DOMContentLoaded', function() {
+      // 可以在这里添加其他需要的脚本
+    });
+  </script>
+</body>
+</html>

@@ -279,20 +279,14 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">* 工单类型</label>
                     <select id="orderType" class="form-select">
                         <option value="">快递索赔-索赔</option>
-                        <option value="claim">快递索赔</option>
-                        <option value="inquiry">快递查询</option>
-                        <option value="complaint">投诉建议</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">物流渠道</label>
                     <div class="flex items-center">
                         <select id="channel" class="form-select flex-1">
-                            <option value="">请输入</option>
-                            <option value="ups">UPS</option>
                             <option value="fedex">FedEx</option>
-                            <option value="dhl">DHL</option>
-                            <option value="ems">EMS</option>
+                            <option value="other">其他</option>
                         </select>
                         <span id="channelIndicator" class="channel-indicator other hidden">标准上传</span>
                     </div>
@@ -344,7 +338,7 @@
                     <!-- 销售信息附件 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-2">
-                            1. 销售信息附件
+                            *销售信息附件
                             <span class="text-xs text-gray-400 ml-1">(订单、发票等)</span>
                         </label>
                         <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('salesFileInput').click()">
@@ -360,7 +354,7 @@
                     <!-- 客户聊天附件 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-2">
-                            2. 客户聊天附件
+                            *客户聊天附件
                             <span class="text-xs text-gray-400 ml-1">(聊天记录等)</span>
                         </label>
                         <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('chatFileInput').click()">
@@ -376,7 +370,7 @@
                     <!-- 破损照片 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-2">
-                            3. 破损照片
+                            *破损照片
                             <span class="text-xs text-gray-400 ml-1">(货物破损图片)</span>
                         </label>
                         <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('damageFileInput').click()">
@@ -392,7 +386,7 @@
                     <!-- 证明文件 / 附件单据 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-2">
-                            4. 证明文件 / 附件单据
+                            *证明文件 / 附件单据
                             <span class="text-xs text-gray-400 ml-1">(相关证明材料)</span>
                         </label>
                         <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('proofFileInput').click()">
@@ -405,10 +399,10 @@
                         </div>
                     </div>
                     
-                    <!-- 通用附件 -->
+                    <!-- 其他附件 -->
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-gray-600 mb-2">
-                            5. 通用附件
+                            其他附件
                             <span class="text-xs text-gray-400 ml-1">(其他相关文件)</span>
                         </label>
                         <div class="upload-area w-full h-16 flex flex-col items-center justify-center" onclick="document.getElementById('generalFileInput').click()">

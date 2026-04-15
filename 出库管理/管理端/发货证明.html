@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELSA-发货证明</title>
+  <!-- 引入外部资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary {
+        @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+      }
+      .btn-secondary:disabled {
+        @apply opacity-50 cursor-not-allowed bg-gray-50 text-gray-400;
+      }
+      .input-primary {
+        @apply w-full px-4 py-2.5 h-11 rounded-lg border border-border bg-white text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+      }
+      .checkbox-primary {
+        @apply w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/30;
+      }
+      .select-primary {
+        @apply px-4 py-2.5 h-11 rounded-lg border border-border bg-white text-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all;
+      }
+      .form-section {
+        @apply mb-6 pb-4 border-b border-border last:border-0 last:mb-0;
+      }
+      .form-row {
+        @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4;
+      }
+      .form-checkbox-row {
+        @apply flex items-center space-x-6 flex-wrap;
+      }
+      .form-checkbox-item {
+        @apply flex items-center space-x-2;
+      }
+      .certificate-table {
+        @apply w-full border-collapse;
+      }
+      .certificate-table th,
+      .certificate-table td {
+        @apply border border-gray-300 px-4 py-3 text-left;
+      }
+      .certificate-table th {
+        @apply bg-gray-50 font-medium;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-neutral-100 text-neutral-800 min-h-screen">
+  <!-- 顶部导航栏 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-semibold">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-1">
+            <a href="../../portal.html" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors">首页</a>
+            <a href="#" class="px-3 py-2 text-sm bg-primary/80 border-b-2 border-white">出库管理</a>
+          </nav>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">zsw</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 二级导航 -->
+    <div class="bg-[#3686da] border-t border-white/10">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center h-10 overflow-x-auto whitespace-nowrap">
+          <a href="#" class="px-3 py-2 text-xs text-white bg-white/10 mr-1 rounded">出库列表</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- 仓库选择卡片（必填项） -->
+    <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex flex-col md:flex-row md:items-center mb-4 md:mb-0">
+            <label class="form-label mr-0 md:mr-2 whitespace-nowrap mb-2 md:mb-0">选择仓库:</label>
+            <select id="warehouse-id" class="select-primary w-[250px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none hover:border-primary/70">
+                    <option value="" selected>请选择仓库</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 发货类型Tab栏 -->
+    <div class="bg-white rounded shadow-card mb-4">
+      <div class="border-b border-gray-200">
+        <nav class="flex space-x-8 px-6">
+          <a href="#" class="border-b-2 border-primary text-primary px-1 py-4 text-sm font-medium">一件代发</a>
+          <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">存储式中转</a>
+          <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">快转</a>
+        </nav>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded shadow-card p-4 mb-6">
+        <div class="flex flex-wrap items-center justify-between mb-4 gap-6">
+            <div class="flex flex-wrap items-center gap-8">
+                <div class="flex flex-col md:flex-row md:items-center mb-4 md:mb-0">
+                    <label class="form-label mr-0 md:mr-2 whitespace-nowrap mb-2 md:mb-0">拣货类型:</label>
+                    <select id="warehouse-id" class="select-primary w-[250px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none hover:border-primary/70">
+                        <option value="" selected>请选择拣货类型</option>
+                    </select>
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center mb-4 md:mb-0">
+                    <label class="form-label mr-0 md:mr-2 whitespace-nowrap mb-2 md:mb-0">客户代码:</label>
+                    <select id="customer-code" class="select-primary w-[250px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none hover:border-primary/70">
+                        <option value="" selected>请选择客户代码</option>
+                    </select>
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center mb-4 md:mb-0">
+                    <label class="form-label mr-0 md:mr-2 whitespace-nowrap mb-2 md:mb-0">配送渠道:</label>
+                    <select id="delivery-channel" class="select-primary w-[250px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none hover:border-primary/70">
+                        <option value="" selected>请选择配送渠道</option>
+                    </select>
+                </div>
+                <div class="flex flex-col md:flex-row md:items-center mb-4 md:mb-0">
+                    <label class="form-label mr-0 md:mr-2 whitespace-nowrap mb-2 md:mb-0">出库单号:</label>
+                    <input type="text" id="order-number" class="input-primary w-[250px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none hover:border-primary/70" placeholder="请输入订单号">
+                </div>
+            </div>
+            <div class="flex-shrink-0">
+              <button id="search-btn" class="btn-primary w-24 h-11 transition-all duration-200 hover:opacity-90 hover:translate-y-[-1px] active:translate-y-0">
+                <i class="fa fa-search mr-1"></i> 搜索
+              </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据表格 -->
+    <div class="bg-white rounded shadow-card p-6 mb-6">
+      <!-- 状态选择Tab栏 -->
+      <div class="mb-6 border-b border-gray-200">
+        <nav class="flex space-x-8">
+            <a href="#" class="border-b-2 border-primary text-primary px-1 py-4 text-sm font-medium">全部</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">已取消</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待确认</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待拣货</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待打印</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待配货</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待复核</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待打托</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">待揽收</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">已出库</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">已送达</a>
+            <a href="#" class="border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 px-1 py-4 text-sm font-medium">问题件</a>
+        </nav>
+      </div>
+      
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex space-x-3">
+            <button id="add-btn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 新增
+            </button>
+            <button id="batch-download-btn" class="btn-secondary" disabled>
+              <i class="fa fa-download mr-1"></i> 下载发货证明
+            </button>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700"><input type="checkbox" class="checkbox-primary"></th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">单号</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">拣货单号</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">仓库</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">SKU及数量</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">客户代码</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">拣货类型</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">配送渠道</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">承运商</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <!-- 示例数据 -->
+            <tr>
+              <td class="px-4 py-3"><input type="checkbox" class="checkbox-primary"></td>
+              <td class="px-4 py-3 text-sm">
+                <p class="text-gray-500">出库单号：HYNB-240126-00069</p>
+                <p class="text-gray-500">参考号：HYNB-240126-0059</p>
+                <p class="text-gray-500">跟踪号：774961396080</p>
+              </td>
+              <td class="px-4 py-3 text-sm">2ADYYWOWIONV2</td>
+              <td class="px-4 py-3 text-sm">DE001</td>
+              <td class="px-4 py-3 text-sm">JF188-WHITE-RT*1</td>
+              <td class="px-4 py-3 text-sm">HYNB</td>
+              <td class="px-4 py-3 text-sm">一单一件</td>
+              <td class="px-4 py-3 text-sm">发现快递</td>
+              <td class="px-4 py-3 text-sm">Fedex</td>
+              <td class="px-4 py-3 text-sm">
+                <button class="download-btn text-primary hover:text-primary-light" data-order="HYDE-2023-001">
+                  <i class="fa fa-eye mr-1"></i> 
+                </button>
+              </td>
+            </tr>
+            <tr>
+               <td class="px-4 py-3"><input type="checkbox" class="checkbox-primary"></td>
+              <td class="px-4 py-3 text-sm">
+                <p class="text-gray-500">出库单号：HYNB-240126-00069</p>
+                <p class="text-gray-500">参考号：HYNB-240126-0059</p>
+                <p class="text-gray-500">跟踪号：774961396080</p>
+              </td>
+              <td class="px-4 py-3 text-sm">2ADYYWOWIONV2</td>
+              <td class="px-4 py-3 text-sm">DE001</td>
+              <td class="px-4 py-3 text-sm">JF188-WHITE-RT*1</td>
+              <td class="px-4 py-3 text-sm">HYNB</td>
+              <td class="px-4 py-3 text-sm">一单一件</td>
+              <td class="px-4 py-3 text-sm">发现快递</td>
+              <td class="px-4 py-3 text-sm">Fedex</td>
+              <td class="px-4 py-3 text-sm">
+                <button class="download-btn text-primary hover:text-primary-light" data-order="HYDE-2023-001">
+                  <i class="fa fa-eye mr-1"></i> 
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3"><input type="checkbox" class="checkbox-primary"></td>
+              <td class="px-4 py-3 text-sm">
+                <p class="text-gray-500">出库单号：HYNB-240126-00069</p>
+                <p class="text-gray-500">参考号：HYNB-240126-0059</p>
+                <p class="text-gray-500">跟踪号：774961396080</p>
+              </td>
+              <td class="px-4 py-3 text-sm">2ADYYWOWIONV2</td>
+              <td class="px-4 py-3 text-sm">DE001</td>
+              <td class="px-4 py-3 text-sm">JF188-WHITE-RT*1</td>
+              <td class="px-4 py-3 text-sm">HYNB</td>
+              <td class="px-4 py-3 text-sm">一单一件</td>
+              <td class="px-4 py-3 text-sm">发现快递</td>
+              <td class="px-4 py-3 text-sm">Fedex</td>
+              <td class="px-4 py-3 text-sm">
+                <button class="download-btn text-primary hover:text-primary-light" data-order="HYDE-2023-001">
+                  <i class="fa fa-eye mr-1"></i> 
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页 -->
+      <div class="flex items-center justify-between mt-6">
+        <div class="text-sm text-gray-500">
+          共 15 条记录，当前第 1 页
+        </div>
+        <div class="flex items-center space-x-1">
+          <button class="px-3 py-1 border rounded text-sm disabled:opacity-50" disabled>上一页</button>
+          <button class="px-3 py-1 border bg-primary text-white rounded text-sm">1</button>
+          <button class="px-3 py-1 border rounded text-sm">2</button>
+          <button class="px-3 py-1 border rounded text-sm">3</button>
+          <button class="px-3 py-1 border rounded text-sm">下一页</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 详情按钮点击事件
+      const downloadBtns = document.querySelectorAll('.download-btn');
+      downloadBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const orderNumber = this.getAttribute('data-order');
+          alert('查看发货证明详情，订单号：' + orderNumber);
+        });
+      });
+      
+        // 批量下载功能
+      const batchDownloadBtn = document.getElementById('batch-download-btn');
+      
+      // 监听复选框变化，控制批量下载按钮状态
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBatchDownloadButton);
+      });
+      
+      function updateBatchDownloadButton() {
+        const checkedBoxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        if (checkedBoxes.length > 0) {
+          batchDownloadBtn.removeAttribute('disabled');
+          batchDownloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+          batchDownloadBtn.setAttribute('disabled', 'disabled');
+          batchDownloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+      }
+      
+      // 批量下载按钮点击事件
+      batchDownloadBtn.addEventListener('click', function() {
+        const checkedBoxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        if (checkedBoxes.length > 0) {
+          alert(`已选择 ${checkedBoxes.length} 项，准备批量下载发货证明...`);
+          // 实际项目中可以获取选中项的订单号，然后调用批量下载接口
+        }
+      });
+      
+      // 新增功能
+      document.getElementById('add-btn').addEventListener('click', function() {
+        alert('新增发货证明功能已触发，在实际项目中会跳转到新增页面或打开新增弹窗');
+      });
+      
+      // 搜索功能
+      document.getElementById('search-btn').addEventListener('click', function() {
+        alert('搜索功能已触发，在实际项目中会根据条件查询数据');
+      });
+    });
+  </script>
+</body>
+</html>

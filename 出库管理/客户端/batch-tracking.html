@@ -1,0 +1,2473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELSA</title>
+    
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            min-height: 100vh;
+        }
+
+        .main-content { display: none; }
+        .main-content.active { display: block; }
+
+        .tabs {
+            display: flex;
+            gap: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+            box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab:hover {
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: white;
+            color: #2a3b7d;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+        }
+
+        .erp-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .erp-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .erp-btn:active {
+            transform: translateY(0);
+        }
+
+        .erp-btn-primary {
+            background-color: #2a3b7d;
+            color: white;
+            border-color: #2a3b7d;
+        }
+
+        .erp-btn-primary:hover {
+            background-color: #3a4ca7;
+            border-color: #3a4ca7;
+        }
+
+        .erp-btn-secondary {
+            background-color: white;
+            color: #525252;
+            border-color: #d4d4d4;
+        }
+
+        .erp-btn-secondary:hover {
+            border-color: #a3a3a3;
+            color: #262626;
+        }
+
+        .erp-btn-warning {
+            background-color: #FF7D00;
+            color: white;
+            border-color: #FF7D00;
+        }
+
+        .erp-btn-warning:hover {
+            background-color: #ff952e;
+            border-color: #ff952e;
+        }
+
+        .erp-btn-danger {
+            background-color: #F53F3F;
+            color: white;
+            border-color: #F53F3F;
+        }
+
+        .erp-btn-danger:hover {
+            background-color: #ff5c5c;
+            border-color: #ff5c5c;
+        }
+
+        .erp-btn-success {
+            background-color: #00B42A;
+            color: white;
+            border-color: #00B42A;
+        }
+
+        .erp-btn-success:hover {
+            background-color: #00cc2e;
+            border-color: #00cc2e;
+        }
+
+        .erp-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1D2129;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .close-btn {
+            background-color: white;
+            color: #2a3b7d;
+            border: 1px solid #E5E7EB;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 400px;
+        }
+
+        .toast-success { background-color: #00B42A; }
+        .toast-error { background-color: #F53F3F; }
+        .toast-warning { background-color: #FF7D00; }
+        .toast-info { background-color: #2a3b7d; }
+
+        .toast-out {
+            animation: toastOut 0.3s ease-in forwards;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .prose { 
+            color: #374151; 
+            line-height: 1.8; 
+            font-size: 0.95rem;
+            max-width: 100%;
+        }
+
+        .prose h1 { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 3px solid #2a3b7d;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .prose h2 { 
+            font-size: 1.4rem; 
+            font-weight: 600; 
+            color: #2a3b7d; 
+            margin: 2.5rem 0 1.2rem; 
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            border-left: 4px solid #2a3b7d;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .prose h3 { 
+            font-size: 1.15rem; 
+            font-weight: 600; 
+            color: #475569; 
+            margin: 2rem 0 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .prose table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin: 1.5rem 0; 
+            font-size: 0.85rem; 
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .prose th { 
+            padding: 0.875rem 1rem; 
+            background: linear-gradient(135deg, #2a3b7d 0%, #4f46e5 100%);
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .prose td { 
+            padding: 0.75rem 1rem; 
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .prose tr:nth-child(even) td { background: #f9fafb; }
+        .prose tr:hover td { background: #f0f4ff; }
+
+        .toc {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .toc-title {
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #2a3b7d;
+        }
+
+        .toc a {
+            display: block;
+            padding: 0.375rem 0.5rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .toc a:hover {
+            background: #f0f4ff;
+            color: #2a3b7d;
+        }
+
+        .table-hover-row:hover {
+            background-color: #f9fafb;
+        }
+
+        .link-text {
+            color: #2a3b7d;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .link-text:hover {
+            color: #3a4ca7;
+            text-decoration: underline;
+        }
+
+        .checkbox-primary {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1D2129;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-title i {
+            color: #2a3b7d;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .stats-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stats-info h4 {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+
+        .stats-info .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1D2129;
+        }
+
+        .filter-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-label {
+            display: block;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.375rem;
+            font-weight: 500;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .search-input-wrapper .form-input {
+            padding-left: 2.25rem;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .data-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-btn {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .table-btn-primary {
+            background: #f0f4ff;
+            color: #2a3b7d;
+            border-color: #d4d8f7;
+        }
+
+        .table-btn-primary:hover {
+            background: #2a3b7d;
+            color: white;
+            border-color: #2a3b7d;
+        }
+
+        .table-hover-row {
+            transition: all 0.2s ease;
+        }
+
+        .table-hover-row:hover {
+            background-color: #f0f4ff !important;
+        }
+
+        .table-hover-row:hover td.sticky {
+            background-color: #f0f4ff !important;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .skeleton-text {
+            height: 14px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-text:last-child {
+            width: 60%;
+            margin-bottom: 0;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #2a3b7d;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .batch-reply-toolbar {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-switch {
+            display: inline-flex;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .mode-btn {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border: none;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .mode-btn.active {
+            background: #2a3b7d;
+            color: white;
+        }
+
+        .reply-section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #2a3b7d;
+            background: #f0f4ff;
+        }
+
+        .upload-area:hover i {
+            color: #2a3b7d;
+        }
+
+        .file-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .file-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: #f0f4ff;
+            border: 1px solid #d4d8f7;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #2a3b7d;
+        }
+
+        .file-item .remove-file {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .file-item .remove-file:hover {
+            opacity: 1;
+        }
+
+        .table-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .reply-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+
+        .reply-table th {
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .reply-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .reply-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .reply-table .order-no {
+            color: #2a3b7d;
+            font-weight: 500;
+        }
+
+        .reply-table .status-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.6875rem;
+            font-weight: 500;
+        }
+
+        .reply-table .reply-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            resize: vertical;
+            min-height: 60px;
+            transition: all 0.2s ease;
+        }
+
+        .reply-table .reply-input:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .reply-table .attach-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6875rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reply-table .attach-btn:hover {
+            border-color: #2a3b7d;
+            color: #2a3b7d;
+        }
+
+        .reply-table .attach-btn.has-file {
+            background: #f0f4ff;
+            border-color: #2a3b7d;
+            color: #2a3b7d;
+        }
+
+        .batch-upload-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .batch-upload-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .batch-upload-card h3 i {
+            color: #2a3b7d;
+        }
+
+        .batch-upload-content {
+            margin-top: 1rem;
+        }
+
+        .batch-upload-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .batch-upload-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+        }
+
+        .batch-upload-section p {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        .tracking-upload-area {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+            margin-bottom: 1rem;
+        }
+
+        .tracking-upload-area:hover {
+            border-color: #2a3b7d;
+            background: #f0f4ff;
+        }
+
+        .tracking-upload-area i {
+            font-size: 2.5rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .tracking-upload-area:hover i {
+            color: #2a3b7d;
+        }
+
+        .tracking-upload-area h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .tracking-upload-area p {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .uploaded-files-list {
+            margin-top: 1rem;
+        }
+
+        .uploaded-file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .uploaded-file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .uploaded-file-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: #2a3b7d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        .uploaded-file-details h6 {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #374151;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .uploaded-file-details p {
+            font-size: 0.6875rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .uploaded-file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .uploaded-file-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6875rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .uploaded-file-actions button:hover {
+            border-color: #2a3b7d;
+            color: #2a3b7d;
+        }
+
+        .batch-upload-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .batch-upload-actions .erp-btn {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .sample-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: #2a3b7d;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .sample-download:hover {
+            color: #3a4ca7;
+            text-decoration: underline;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2a3b7d',
+                        'primary-light': '#3a4ca7',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        dark: '#1D2129',
+                        'light-bg': '#FFFFFF',
+                        'card-bg': '#FFFFFF',
+                        border: '#E5E7EB'
+                    },
+                    boxShadow: {
+                        'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+                        'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+        
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3
+        });
+        
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+                    <div class="mermaid">${code}</div>
+                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+                </div>`;
+            }
+            return `<pre><code class="language-${language}">${code}</code></pre>`;
+        };
+        
+        marked.setOptions({
+            renderer: renderer,
+            breaks: true,
+            gfm: true
+        });
+    </script>
+</head>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+    <div class="tabs fixed bottom-8 right-8 z-40">
+        <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+        <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+        <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+    </div>
+    
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+        <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-lg font-semibold">ELSA</span>
+                    </div>
+                    <nav class="hidden md:ml-10 md:flex md:space-x-6">
+                        <div class="relative group">
+                            <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                                订单管理
+                                <i class="fa fa-angle-down ml-1 text-xs"></i>
+                            </a>
+                            <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                <a href="" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">入库</a>
+                                <a href="" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 bg-gray-100">出库</a>
+                                <a href="" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">批量导入订单</a>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+                            <i class="fa fa-bell-o"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+                        <i class="fa fa-angle-down ml-1 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main id="main-prd" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="prd-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载PRD文档...</p>
+                                    <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载PRD
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <main id="main-testcases" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="testcases-toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="testcases-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载测试用例...</p>
+                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载测试用例
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+        <div class="container mx-auto px-2 py-6">
+            <div id="page-batch-tracking" class="page active">
+                <!-- 出库单卡片 -->
+                <div class="batch-upload-card">
+                    <h3>
+                        出库单
+                    </h3>
+                    <div class="flex flex-nowrap gap-6 overflow-x-auto pb-4">
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-file-excel-o"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">批量创建出库单</span>
+                                    <span class="text-gray-400 ml-2">下载/上传订单批量导入模板</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('outboundCreate', '批量创建出库单', '支持上传Excel文件批量创建出库单', '.xlsx,.xls')">
+                                批量导入出库单
+                            </button>
+                        </div>
+                        
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-paperclip"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">上传附件/面单</span>
+                                    <span class="text-gray-400 ml-2">补充订单所需附件/面单</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('outboundAttachment', '上传附件/面单', '补充订单所需附件/面单', '.xlsx,.xls,.pdf,.jpg,.png')">
+                                导入面单
+                            </button>
+                        </div>
+
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-truck"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">批量上传跟踪号</span>
+                                    <span class="text-gray-400 ml-2">下载出库单模板</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('outbound', '批量上传跟踪号', '支持上传Excel文件批量更新出库单的跟踪号', '.xlsx,.xls', true)">
+                                批量上传
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 中转单卡片 -->
+                <div class="batch-upload-card">
+                    <h3>
+                        中转单
+                    </h3>
+                    <div class="flex flex-nowrap gap-6 overflow-x-auto pb-4">
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-file-excel-o"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">批量创建中转单</span>
+                                    <span class="text-gray-400 ml-2">下载/上传中转单批量导入模板</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('transferCreate', '批量创建中转单', '支持上传Excel文件批量创建中转单', '.xlsx,.xls')">
+                                导入中转单
+                            </button>
+                        </div>
+                        
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-paperclip"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">上传附件/面单</span>
+                                    <span class="text-gray-400 ml-2">补充订单所需附件/面单</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('transferAttachment', '上传附件/面单', '补充订单所需附件/面单', '.xlsx,.xls,.pdf,.jpg,.png')">
+                                导入附件
+                            </button>
+                        </div>
+                        
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-list-alt"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">上传对照表</span>
+                                    <span class="text-gray-400 ml-2">上传对照表</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('transferMapping', '上传对照表', '上传对照表', '.xlsx,.xls')">
+                                导入对照表
+                            </button>
+                        </div>
+
+                        <div class="batch-upload-content border p-4 rounded-md bg-white shadow-sm min-w-[320px] hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center mb-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3 flex-shrink-0">
+                                    <i class="fa fa-truck"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <span class="font-medium text-gray-800">批量上传跟踪号</span>
+                                    <span class="text-gray-400 ml-2">下载中转单模板</span>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('transfer', '批量上传跟踪号', '支持上传Excel文件批量更新中转单的跟踪号', '.xlsx,.xls', true)">
+                                批量上传
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 上传记录 -->
+                <div class="data-card">
+                    <div class="p-4 border-b border-gray-100">
+                        <h3 class="font-semibold text-gray-800 flex items-center">
+                            <i class="fa fa-history text-primary mr-2"></i>上传记录
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-primary/10">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">操作时间</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">操作人</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">业务</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">出库单导入</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">状态</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">关联单号</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold text-primary whitespace-nowrap">备注</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-10-10 22:03:54</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-green-100 text-green-700">完成</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-10-10 22:03:49</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-10-12 18:58:50</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">-</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-08-30 19:25:28</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">-</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-08-31 14:18:19</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">3</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-08-31 14:17:57</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-08-31 14:16:21</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">2</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-600 whitespace-nowrap">2026-08-31 14:15:46</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">demo</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">出库单导入</td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="status-badge bg-yellow-100 text-yellow-700">成功</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">6</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100">
+                        <div class="text-sm text-gray-500">
+                            显示第 <span class="font-medium text-gray-700">1-8</span> 条，共 <span class="font-medium text-gray-700">8</span> 条
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+                                <i class="fa fa-angle-left"></i>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-primary bg-primary text-white rounded font-medium">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-gray-300 rounded hover:bg-gray-50 transition-colors" disabled>
+                                <i class="fa fa-angle-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="confirmDialog" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirmTitle">确认操作</h3>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4">
+                    <i class="fa fa-exclamation-triangle text-4xl text-warning mb-4"></i>
+                    <p class="text-gray-600" id="confirmMessage">确定要执行此操作吗？</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeModal('confirmDialog')">取消</button>
+                <button class="erp-btn erp-btn-primary" id="confirmBtn">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="uploadModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="uploadModalTitle">上传文件</h3>
+                <button class="close-btn" onclick="closeModal('uploadModal')">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="uploadModalDesc" class="text-sm text-gray-600 mb-4"></div>
+                
+                <div id="uploadArea" class="tracking-upload-area cursor-pointer transition-all hover:shadow-md" onclick="triggerModalUpload()">
+                    <input type="file" id="modalFileInput" class="hidden" onchange="handleModalFileSelect(this)">
+                    <i class="fa fa-cloud-upload"></i>
+                    <h5>点击或拖拽文件到此处上传</h5>
+                    <p id="uploadFormatHint">支持 .xlsx, .xls 格式文件</p>
+                </div>
+                
+                <div id="uploadedFileInfo" class="uploaded-files-list mt-4" style="display: none;">
+                    <div class="uploaded-file-item">
+                        <div class="uploaded-file-info">
+                            <div class="uploaded-file-icon">
+                                <i class="fa fa-file-excel-o"></i>
+                            </div>
+                            <div class="uploaded-file-details">
+                                <h6 id="uploadedFileName">文件名.xlsx</h6>
+                                <p id="uploadedFileSize">0 KB</p>
+                            </div>
+                        </div>
+                        <div class="uploaded-file-actions">
+                            <button class="text-red-500 hover:text-red-700 transition-colors" onclick="removeUploadedFile()">
+                                <i class="fa fa-times"></i> 移除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="uploadProgress" class="mt-4" style="display: none;">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="uploadProgressBar" class="bg-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <span id="uploadProgressText">0%</span> - 正在上传文件
+                    </p>
+                </div>
+                
+                <div id="uploadResult" class="mt-4" style="display: none;">
+                    <div class="uploaded-file-item">
+                        <div class="uploaded-file-info">
+                            <div id="uploadResultIcon" class="uploaded-file-icon" style="background: #00B42A;">
+                                <i class="fa fa-check"></i>
+                            </div>
+                            <div class="uploaded-file-details">
+                                <h6 id="uploadResultTitle">上传成功</h6>
+                                <p id="uploadResultMessage">文件已成功上传</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex justify-between items-center">
+                    <a href="#" id="downloadTemplateLink" class="text-blue-500 hover:text-blue-700 transition-colors flex items-center" onclick="downloadTemplateInModal()">
+                        <i class="fa fa-download mr-1"></i> 下载模板
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeModal('uploadModal')">关闭</button>
+                <button id="uploadSubmitBtn" class="erp-btn erp-btn-primary" onclick="submitUpload()">
+                    <i class="fa fa-upload mr-1.5"></i> 确认上传
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        let prdLoaded = false;
+        let testCasesLoaded = false;
+        let uploadedFiles = { 
+            outbound: null, 
+            transfer: null,
+            outboundCreate: null,
+            outboundAttachment: null,
+            transferCreate: null,
+            transferAttachment: null,
+            transferMapping: null
+        };
+
+        function switchMainTab(tab) {
+            document.querySelectorAll('.main-content').forEach(function(content) {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            const targetContent = document.getElementById('main-' + tab);
+            if (targetContent) {
+                targetContent.classList.add('active');
+                targetContent.style.display = 'block';
+            }
+            const targetTab = document.getElementById('tab-' + tab);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            if (tab === 'prd' && !prdLoaded) {
+                loadPRD();
+            } else if (tab === 'testcases' && !testCasesLoaded) {
+                loadTestCases();
+            }
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            if (modalId === 'uploadModal') {
+                resetUploadModal();
+            }
+        }
+
+        let currentUploadType = '';
+        let currentUploadFile = null;
+        let isTrackingUpload = false;
+
+        function openUploadModal(type, title, desc, accept, tracking = false) {
+            currentUploadType = type;
+            isTrackingUpload = tracking;
+            currentUploadFile = null;
+            
+            document.getElementById('uploadModalTitle').textContent = title;
+            document.getElementById('uploadModalDesc').textContent = desc;
+            document.getElementById('uploadFormatHint').textContent = '支持 ' + accept + ' 格式文件';
+            document.getElementById('modalFileInput').accept = accept;
+            
+            resetUploadModal();
+            openModal('uploadModal');
+        }
+
+        function resetUploadModal() {
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('uploadedFileInfo').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadResult').style.display = 'none';
+            document.getElementById('uploadSubmitBtn').disabled = false;
+            document.getElementById('modalFileInput').value = '';
+            currentUploadFile = null;
+        }
+
+        function triggerModalUpload() {
+            document.getElementById('modalFileInput').click();
+        }
+
+        function handleModalFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            currentUploadFile = file;
+            
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('uploadedFileInfo').style.display = 'block';
+            document.getElementById('uploadedFileName').textContent = file.name;
+            document.getElementById('uploadedFileSize').textContent = formatFileSize(file.size);
+        }
+
+        function removeUploadedFile() {
+            currentUploadFile = null;
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('uploadedFileInfo').style.display = 'none';
+            document.getElementById('modalFileInput').value = '';
+        }
+
+        function submitUpload() {
+            if (!currentUploadFile) {
+                showToast('请先选择要上传的文件', 'warning');
+                return;
+            }
+            
+            document.getElementById('uploadSubmitBtn').disabled = true;
+            document.getElementById('uploadedFileInfo').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'block';
+            
+            simulateModalUpload();
+        }
+
+        function simulateModalUpload() {
+            let progress = 0;
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressText = document.getElementById('uploadProgressText');
+            
+            const interval = setInterval(function() {
+                progress += 5;
+                if (progressBar) {
+                    progressBar.style.width = progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = progress + '%';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(function() {
+                        showUploadSuccess();
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function showUploadSuccess() {
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadResult').style.display = 'block';
+            
+            const typeNames = {
+                'outboundCreate': '出库单',
+                'outboundAttachment': '面单',
+                'outbound': '出库单跟踪号',
+                'transferCreate': '中转单',
+                'transferAttachment': '附件',
+                'transferMapping': '对照表',
+                'transfer': '中转单跟踪号'
+            };
+            
+            const typeName = typeNames[currentUploadType] || '文件';
+            document.getElementById('uploadResultTitle').textContent = '上传成功';
+            document.getElementById('uploadResultMessage').textContent = `${typeName}已成功上传`;
+            
+            showToast(`${typeName}上传成功！`, 'success');
+            
+            setTimeout(function() {
+                closeModal('uploadModal');
+            }, 2000);
+        }
+
+        function downloadTemplateInModal() {
+            if (currentUploadType === 'outbound' || currentUploadType === 'transfer') {
+                downloadSample(currentUploadType);
+            } else {
+                downloadTemplate(currentUploadType);
+            }
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function loadPRD() {
+            if (prdLoaded) return;
+            const prdContentDiv = document.getElementById('prd-content');
+            if (typeof marked === 'undefined') {
+                prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'prd.md', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const markdown = xhr.responseText;
+                        const html = marked.parse(markdown);
+                        prdContentDiv.innerHTML = html;
+                        generateTOC();
+                        if (window.mermaid) {
+                            setTimeout(function() {
+                                mermaid.init(undefined, prdContentDiv.querySelectorAll('.mermaid'));
+                            }, 100);
+                        }
+                        prdLoaded = true;
+                    } else {
+                        prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-gray-500">PRD文档不存在，请创建 prd.md 文件</p></div>';
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function loadTestCases() {
+            if (testCasesLoaded) return;
+            const testCasesContentDiv = document.getElementById('testcases-content');
+            if (typeof marked === 'undefined') {
+                testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'test-cases.md', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const markdown = xhr.responseText;
+                        const html = marked.parse(markdown);
+                        testCasesContentDiv.innerHTML = html;
+                        generateTestCasesTOC();
+                        if (window.mermaid) {
+                            setTimeout(function() {
+                                mermaid.init(undefined, testCasesContentDiv.querySelectorAll('.mermaid'));
+                            }, 100);
+                        }
+                        testCasesLoaded = true;
+                    } else {
+                        testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-gray-500">测试用例文档不存在，请创建 test-cases.md 文件</p></div>';
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function generateTOC() {
+            const tocNav = document.getElementById('toc-nav');
+            const headings = document.querySelectorAll('#prd-content h1, #prd-content h2, #prd-content h3');
+            let tocHTML = '';
+            headings.forEach(function(heading, index) {
+                const id = 'heading-' + index;
+                heading.id = id;
+                const level = parseInt(heading.tagName.substring(1));
+                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+            });
+            tocNav.innerHTML = tocHTML;
+        }
+
+        function generateTestCasesTOC() {
+            const tocNav = document.getElementById('testcases-toc-nav');
+            const headings = document.querySelectorAll('#testcases-content h1, #testcases-content h2, #testcases-content h3');
+            let tocHTML = '';
+            headings.forEach(function(heading, index) {
+                const id = 'testcases-heading-' + index;
+                heading.id = id;
+                const level = parseInt(heading.tagName.substring(1));
+                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+            });
+            tocNav.innerHTML = tocHTML;
+        }
+
+        function showToast(message, type) {
+            type = type || 'info';
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            const iconMap = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            toast.innerHTML = '<i class="fa ' + iconMap[type] + '"></i><span>' + message + '</span>';
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.classList.add('toast-out');
+                setTimeout(function() {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function showConfirm(options) {
+            document.getElementById('confirmTitle').textContent = options.title || '确认操作';
+            document.getElementById('confirmMessage').textContent = options.message || '确定要执行此操作吗？';
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.textContent = options.confirmText || '确定';
+            confirmBtn.onclick = function() {
+                closeModal('confirmDialog');
+                if (options.onConfirm) {
+                    options.onConfirm();
+                }
+            };
+            openModal('confirmDialog');
+        }
+
+        // 触发跟踪号文件上传
+        function triggerTrackingUpload(type) {
+            document.getElementById(type + 'TrackingFile').click();
+        }
+
+        // 初始化拖拽上传功能
+        function initDragAndDrop() {
+            const uploadAreas = document.querySelectorAll('.tracking-upload-area');
+            uploadAreas.forEach(function(area) {
+                const type = area.querySelector('input[type="file"]').id.replace('TrackingFile', '');
+                
+                area.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    area.style.borderColor = '#2a3b7d';
+                    area.style.backgroundColor = '#f0f4ff';
+                });
+                
+                area.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    area.style.borderColor = '#e5e7eb';
+                    area.style.backgroundColor = '#fafafa';
+                });
+                
+                area.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    area.style.borderColor = '#e5e7eb';
+                    area.style.backgroundColor = '#fafafa';
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const file = files[0];
+                        handleFileDrop(file, type);
+                    }
+                });
+            });
+        }
+
+        // 处理文件拖拽
+        function handleFileDrop(file, type) {
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                showToast('请上传Excel格式的文件', 'warning');
+                return;
+            }
+            
+            uploadedFiles[type] = file;
+            renderFileList(type, file);
+            showToast('文件选择成功', 'success');
+        }
+
+        // 处理跟踪号文件选择
+        function handleTrackingFileSelect(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                showToast('请上传Excel格式的文件', 'warning');
+                input.value = '';
+                return;
+            }
+            
+            uploadedFiles[type] = file;
+            renderFileList(type, file);
+            showToast('文件选择成功', 'success');
+        }
+
+        // 渲染文件列表
+        function renderFileList(type, file) {
+            const container = document.getElementById(type + 'FileList');
+            if (!container) return;
+            
+            const html = `
+                <div class="uploaded-file-item">
+                    <div class="uploaded-file-info">
+                        <div class="uploaded-file-icon">
+                            <i class="fa fa-file-excel-o"></i>
+                        </div>
+                        <div class="uploaded-file-details">
+                            <h6>${file.name}</h6>
+                            <p>${formatFileSize(file.size)}</p>
+                        </div>
+                    </div>
+                    <div class="uploaded-file-actions">
+                        <button onclick="removeFile('${type}')">
+                            <i class="fa fa-times"></i> 移除
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 移除文件
+        function removeFile(type) {
+            uploadedFiles[type] = null;
+            const container = document.getElementById(type + 'FileList');
+            if (container) {
+                container.innerHTML = '';
+            }
+            document.getElementById(type + 'TrackingFile').value = '';
+            showToast('文件已移除', 'info');
+        }
+
+        // 下载模板
+        function downloadSample(type) {
+            const fileName = type === 'outbound' ? '出库单跟踪号模板.xlsx' : '中转单跟踪号模板.xlsx';
+            showToast(`正在下载${type === 'outbound' ? '出库单' : '中转单'}模板...`, 'info');
+            setTimeout(function() {
+                showToast('模板下载成功', 'success');
+            }, 1000);
+        }
+
+        // 批量上传
+        function handleBatchUpload(type) {
+            const file = uploadedFiles[type];
+            if (!file) {
+                showToast('请先选择要上传的文件', 'warning');
+                return;
+            }
+            
+            showConfirm({
+                title: '批量上传确认',
+                message: `确定要批量上传${type === 'outbound' ? '出库单' : '中转单'}的跟踪号吗？`,
+                confirmText: '确定上传',
+                onConfirm: function() {
+                    showUploadProgress(type);
+                    simulateUploadProcess(type, file);
+                }
+            });
+        }
+
+        // 显示上传进度
+        function showUploadProgress(type) {
+            const container = document.getElementById(type + 'FileList');
+            if (container) {
+                container.innerHTML = `
+                    <div class="uploaded-file-item">
+                        <div class="uploaded-file-info">
+                            <div class="uploaded-file-icon">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                            <div class="uploaded-file-details">
+                                <h6>正在上传文件...</h6>
+                                <p>处理中，请稍候...</p>
+                            </div>
+                        </div>
+                        <div class="uploaded-file-actions">
+                            <button onclick="cancelUpload('${type}')" disabled>
+                                <i class="fa fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="${type}ProgressBar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <span id="${type}ProgressText">0%</span> - 正在处理文件
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // 模拟上传过程
+        function simulateUploadProcess(type, file) {
+            let progress = 0;
+            const progressBar = document.getElementById(type + 'ProgressBar');
+            const progressText = document.getElementById(type + 'ProgressText');
+            
+            const interval = setInterval(function() {
+                progress += 5;
+                if (progressBar) {
+                    progressBar.style.width = progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = progress + '%';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(function() {
+                        showUploadResult(type, true);
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        // 显示上传结果
+        function showUploadResult(type, success) {
+            const container = document.getElementById(type + 'FileList');
+            if (container) {
+                if (success) {
+                    container.innerHTML = `
+                        <div class="uploaded-file-item">
+                            <div class="uploaded-file-info">
+                                <div class="uploaded-file-icon" style="background: #00B42A;">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div class="uploaded-file-details">
+                                    <h6>上传成功</h6>
+                                    <p>${type === 'outbound' ? '出库单' : '中转单'}跟踪号已批量更新</p>
+                                </div>
+                            </div>
+                            <div class="uploaded-file-actions">
+                                <button onclick="clearUpload('${type}')">
+                                    <i class="fa fa-times"></i> 完成
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    showToast(`${type === 'outbound' ? '出库单' : '中转单'}跟踪号上传成功！`, 'success');
+                } else {
+                    container.innerHTML = `
+                        <div class="uploaded-file-item">
+                            <div class="uploaded-file-info">
+                                <div class="uploaded-file-icon" style="background: #F53F3F;">
+                                    <i class="fa fa-times"></i>
+                                </div>
+                                <div class="uploaded-file-details">
+                                    <h6>上传失败</h6>
+                                    <p>文件处理过程中出现错误</p>
+                                </div>
+                            </div>
+                            <div class="uploaded-file-actions">
+                                <button onclick="clearUpload('${type}')">
+                                    <i class="fa fa-times"></i> 重试
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    showToast('上传失败，请检查文件格式后重试', 'error');
+                }
+            }
+        }
+
+        // 取消上传
+        function cancelUpload(type) {
+            showToast('上传已取消', 'info');
+            clearUpload(type);
+        }
+
+        // 清空上传
+        function clearUpload(type) {
+            uploadedFiles[type] = null;
+            const container = document.getElementById(type + 'FileList');
+            if (container) {
+                container.innerHTML = '';
+            }
+            document.getElementById(type + 'TrackingFile').value = '';
+            showToast('已清空上传文件', 'info');
+        }
+
+        // 触发文件上传
+        function triggerUpload(type) {
+            document.getElementById(type + 'File').click();
+        }
+
+        // 处理文件选择
+        function handleFileSelect(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 检查文件格式
+            const allowedExtensions = type.includes('Attachment') 
+                ? ['.xlsx', '.xls', '.pdf', '.jpg', '.png']
+                : ['.xlsx', '.xls'];
+            
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowedExtensions.includes(fileExtension)) {
+                showToast('请上传正确格式的文件', 'warning');
+                input.value = '';
+                return;
+            }
+            
+            uploadedFiles[type] = file;
+            renderFileList(type, file);
+            showToast('文件选择成功', 'success');
+        }
+
+        // 下载模板
+        function downloadTemplate(type) {
+            let fileName = '';
+            let message = '';
+            
+            switch(type) {
+                case 'outboundCreate':
+                    fileName = '订单批量导入模板.xlsx';
+                    message = '订单批量导入模板';
+                    break;
+                case 'transferCreate':
+                    fileName = '中转单批量导入模板.xlsx';
+                    message = '中转单批量导入模板';
+                    break;
+                default:
+                    fileName = '模板.xlsx';
+                    message = '模板';
+            }
+            
+            showToast(`正在下载${message}...`, 'info');
+            setTimeout(function() {
+                showToast(`${message}下载成功`, 'success');
+            }, 1000);
+        }
+
+        // 处理上传
+        function handleUpload(type) {
+            const file = uploadedFiles[type];
+            if (!file) {
+                showToast('请先选择要上传的文件', 'warning');
+                return;
+            }
+            
+            let uploadType = '';
+            switch(type) {
+                case 'outboundCreate':
+                    uploadType = '批量导入出库单';
+                    break;
+                case 'outboundAttachment':
+                    uploadType = '导入面单';
+                    break;
+                case 'transferCreate':
+                    uploadType = '导入中转单';
+                    break;
+                case 'transferAttachment':
+                    uploadType = '导入附件';
+                    break;
+                case 'transferMapping':
+                    uploadType = '导入对照表';
+                    break;
+                default:
+                    uploadType = '上传文件';
+            }
+            
+            showConfirm({
+                title: '上传确认',
+                message: `确定要${uploadType}吗？`,
+                confirmText: '确定上传',
+                onConfirm: function() {
+                    showUploadProgress(type);
+                    simulateUploadProcess(type, file);
+                }
+            });
+        }
+
+        // 清空文件
+        function clearFile(type) {
+            uploadedFiles[type] = null;
+            const container = document.getElementById(type + 'FileList');
+            if (container) {
+                container.innerHTML = '';
+            }
+            document.getElementById(type + 'File').value = '';
+            showToast('已清空上传文件', 'info');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('批量上传跟踪号页面初始化完成');
+            initDragAndDrop();
+        });
+    </script>
+
+    <!-- 逻辑说明 -->
+    <div class="bg-white rounded shadow-card mt-4 overflow-hidden" style="max-width: 1200px; margin: 20px auto;">
+        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('batchTracking')">
+            <div class="flex items-center">
+                <i class="fa fa-book text-primary mr-2"></i>
+                <span class="font-semibold text-primary">逻辑说明</span>
+                <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+            </div>
+            <i class="fa fa-chevron-down text-primary transition-transform" id="batchTracking-logic-icon"></i>
+        </div>
+        <div id="batchTracking-logic-content">
+            <!-- 初始化页面（数据展示逻辑） -->
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">上传区域展示</td>
+                                <td class="px-3 py-2 text-gray-600">展示出库单和中转单的上传功能入口</td>
+                                <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                <td class="px-3 py-2 text-gray-600">水平排列，支持横向滚动</td>
+                                <td class="px-3 py-2 text-gray-600">每个区域包含图标、标题、说明和按钮</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">上传记录列表</td>
+                                <td class="px-3 py-2 text-gray-600">展示历史上传操作记录</td>
+                                <td class="px-3 py-2 text-gray-600">上传记录表</td>
+                                <td class="px-3 py-2 text-gray-600">按操作时间倒序排列，分页展示</td>
+                                <td class="px-3 py-2 text-gray-600">默认显示前8条记录</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 按钮逻辑 -->
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">批量导入出库单</td>
+                                <td class="px-3 py-2 text-gray-600">出库单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择Excel文件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">验证文件格式，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">导入面单</td>
+                                <td class="px-3 py-2 text-gray-600">出库单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择附件或面单文件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">支持多格式文件，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">批量上传（出库单跟踪号）</td>
+                                <td class="px-3 py-2 text-gray-600">出库单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择Excel文件批量更新跟踪号</td>
+                                <td class="px-3 py-2 text-gray-600">建议先下载模板</td>
+                                <td class="px-3 py-2 text-gray-600">验证文件格式和内容，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">导入中转单</td>
+                                <td class="px-3 py-2 text-gray-600">中转单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择Excel文件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">验证文件格式，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">导入附件</td>
+                                <td class="px-3 py-2 text-gray-600">中转单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择附件文件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">支持多格式文件，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">导入对照表</td>
+                                <td class="px-3 py-2 text-gray-600">中转单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择对照表文件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">验证文件格式，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">批量上传（中转单跟踪号）</td>
+                                <td class="px-3 py-2 text-gray-600">中转单卡片</td>
+                                <td class="px-3 py-2 text-gray-600">打开上传弹窗，选择Excel文件批量更新跟踪号</td>
+                                <td class="px-3 py-2 text-gray-600">建议先下载模板</td>
+                                <td class="px-3 py-2 text-gray-600">验证文件格式和内容，上传成功后刷新记录列表</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">下载模板</td>
+                                <td class="px-3 py-2 text-gray-600">上传弹窗左下角</td>
+                                <td class="px-3 py-2 text-gray-600">下载对应功能的Excel模板文件</td>
+                                <td class="px-3 py-2 text-gray-600">无</td>
+                                <td class="px-3 py-2 text-gray-600">下载模板文件到本地</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">确认上传</td>
+                                <td class="px-3 py-2 text-gray-600">上传弹窗底部</td>
+                                <td class="px-3 py-2 text-gray-600">提交选择的文件进行上传</td>
+                                <td class="px-3 py-2 text-gray-600">已选择文件</td>
+                                <td class="px-3 py-2 text-gray-600">显示上传进度，成功后关闭弹窗并刷新记录列表</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 属性取值逻辑（上传记录表） -->
+            <div class="p-4 border-b border-gray-100">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（上传记录表）
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">操作时间</td>
+                                <td class="px-3 py-2 text-gray-600">上传操作的时间戳</td>
+                                <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                <td class="px-3 py-2 text-gray-600">上传时自动记录</td>
+                                <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">操作人</td>
+                                <td class="px-3 py-2 text-gray-600">执行上传操作的用户</td>
+                                <td class="px-3 py-2 text-gray-600">系统获取</td>
+                                <td class="px-3 py-2 text-gray-600">当前登录用户</td>
+                                <td class="px-3 py-2 text-gray-600">文本显示</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">业务</td>
+                                <td class="px-3 py-2 text-gray-600">上传操作所属业务类型</td>
+                                <td class="px-3 py-2 text-gray-600">系统判断</td>
+                                <td class="px-3 py-2 text-gray-600">根据上传功能自动判断</td>
+                                <td class="px-3 py-2 text-gray-600">出库/中转</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">出库单导入</td>
+                                <td class="px-3 py-2 text-gray-600">上传操作的具体类型</td>
+                                <td class="px-3 py-2 text-gray-600">系统判断</td>
+                                <td class="px-3 py-2 text-gray-600">根据上传按钮自动判断</td>
+                                <td class="px-3 py-2 text-gray-600">出库单导入/导入面单/批量上传跟踪号等</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">状态</td>
+                                <td class="px-3 py-2 text-gray-600">上传操作的处理状态</td>
+                                <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                <td class="px-3 py-2 text-gray-600">根据处理结果自动设置</td>
+                                <td class="px-3 py-2 text-gray-600">成功/完成/失败（带颜色徽章）</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">关联单号</td>
+                                <td class="px-3 py-2 text-gray-600">上传操作关联的单号数量</td>
+                                <td class="px-3 py-2 text-gray-600">系统统计</td>
+                                <td class="px-3 py-2 text-gray-600">统计上传文件中包含的单号数量</td>
+                                <td class="px-3 py-2 text-gray-600">数字，无数据显示"-" </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">备注</td>
+                                <td class="px-3 py-2 text-gray-600">上传操作的补充说明</td>
+                                <td class="px-3 py-2 text-gray-600">系统生成/用户输入</td>
+                                <td class="px-3 py-2 text-gray-600">异常情况时记录错误信息</td>
+                                <td class="px-3 py-2 text-gray-600">文本显示，无内容显示"-"</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 属性取值逻辑（上传弹窗） -->
+            <div class="p-4">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（上传弹窗）
+                </h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200 rounded">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">弹窗标题</td>
+                                <td class="px-3 py-2 text-gray-600">显示当前上传功能的名称</td>
+                                <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                <td class="px-3 py-2 text-gray-600">根据点击的上传按钮自动设置</td>
+                                <td class="px-3 py-2 text-gray-600">文本显示</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">弹窗描述</td>
+                                <td class="px-3 py-2 text-gray-600">显示上传功能的说明</td>
+                                <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                <td class="px-3 py-2 text-gray-600">根据上传功能自动设置</td>
+                                <td class="px-3 py-2 text-gray-600">文本显示</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">上传区域</td>
+                                <td class="px-3 py-2 text-gray-600">支持点击和拖拽上传文件</td>
+                                <td class="px-3 py-2 text-gray-600">用户操作</td>
+                                <td class="px-3 py-2 text-gray-600">支持点击选择或拖拽文件到区域</td>
+                                <td class="px-3 py-2 text-gray-600">虚线边框区域，带图标和提示文字</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">文件格式提示</td>
+                                <td class="px-3 py-2 text-gray-600">显示支持的文件格式</td>
+                                <td class="px-3 py-2 text-gray-600">系统配置</td>
+                                <td class="px-3 py-2 text-gray-600">根据上传功能自动设置</td>
+                                <td class="px-3 py-2 text-gray-600">文本显示，如"支持 .xlsx, .xls 格式文件"</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">已选文件信息</td>
+                                <td class="px-3 py-2 text-gray-600">显示已选择文件的名称和大小</td>
+                                <td class="px-3 py-2 text-gray-600">系统获取</td>
+                                <td class="px-3 py-2 text-gray-600">从选择的文件中获取</td>
+                                <td class="px-3 py-2 text-gray-600">文件名 + 文件大小（KB/MB）</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">上传进度条</td>
+                                <td class="px-3 py-2 text-gray-600">显示文件上传进度</td>
+                                <td class="px-3 py-2 text-gray-600">系统计算</td>
+                                <td class="px-3 py-2 text-gray-600">根据上传进度实时更新</td>
+                                <td class="px-3 py-2 text-gray-600">进度条 + 百分比</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-gray-800">上传结果</td>
+                                <td class="px-3 py-2 text-gray-600">显示上传成功或失败信息</td>
+                                <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                <td class="px-3 py-2 text-gray-600">根据上传结果自动设置</td>
+                                <td class="px-3 py-2 text-gray-600">成功：绿色图标 + 成功消息；失败：红色图标 + 错误消息</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePrdLogic(moduleId) {
+            const content = document.getElementById(moduleId + '-logic-content');
+            const icon = document.getElementById(moduleId + '-logic-icon');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(-90deg)';
+            }
+        }
+    </script>
+</body>
+</html>
