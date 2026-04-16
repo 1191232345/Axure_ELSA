@@ -164,6 +164,8 @@
                     <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
                     <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
                     <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -173,6 +175,8 @@
                     <td class="px-3 py-2 text-gray-600">键盘输入/手工选择/系统生成</td>
                     <td class="px-3 py-2 text-gray-600">[取值规则说明]</td>
                     <td class="px-3 py-2 text-gray-600">文本显示/数字/日期格式</td>
+                    <td class="px-3 py-2 text-gray-600">32/64/128/256/512</td>
+                    <td class="px-3 py-2 text-gray-600">字符型/数值型/枚举型/DATE/DATETIME</td>
                 </tr>
                 <!-- 更多行... -->
             </tbody>
@@ -198,6 +202,8 @@
                     <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
                     <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
                     <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -207,6 +213,8 @@
                     <td class="px-3 py-2 text-gray-600">键盘输入/手工选择/系统生成</td>
                     <td class="px-3 py-2 text-gray-600">[取值规则说明]</td>
                     <td class="px-3 py-2 text-gray-600">文本显示/数字/日期格式</td>
+                    <td class="px-3 py-2 text-gray-600">32/64/128/256/512</td>
+                    <td class="px-3 py-2 text-gray-600">字符型/数值型/枚举型/DATE/DATETIME</td>
                 </tr>
                 <!-- 更多行... -->
             </tbody>
@@ -214,6 +222,28 @@
     </div>
 </div>
 ```
+
+### 5.3 字段取值说明
+
+#### 存储长度
+
+| 存储长度 | 适用场景 |
+|----------|----------|
+| 32 | 短文本，如编码、状态值、简短名称 |
+| 64 | 中短文本，如名称、标题、简短描述 |
+| 128 | 中等长度文本，如详细名称、路径 |
+| 256 | 较长文本，如描述、备注、摘要 |
+| 512 | 长文本，如详细说明、JSON数据片段 |
+
+#### 属性存储类型
+
+| 存储类型 | 说明 | 示例 |
+|----------|------|------|
+| 字符型 | 文本字符串，用于存储名称、描述、编码等文本内容 | 仓库名称、SKU编码、备注说明 |
+| 数值型 | 数字类型，用于存储数量、金额、百分比等数值 | 库存数量、单价、折扣率 |
+| 枚举型 | 预定义的固定值集合，用于状态、类型等有限选项 | 状态（启用/禁用）、类型（A/B/C） |
+| DATE | 日期类型，仅存储年月日，格式：YYYY-MM-DD | 创建日期、生效日期、到期日期 |
+| DATETIME | 日期时间类型，存储年月日时分秒，格式：YYYY-MM-DD HH:mm:ss | 创建时间、更新时间、操作时间 |
 
 ## 6. 完整逻辑说明示例
 
@@ -347,6 +377,8 @@
                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -356,6 +388,8 @@
                             <td class="px-3 py-2 text-gray-600">系统配置</td>
                             <td class="px-3 py-2 text-gray-600">直接取值</td>
                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                            <td class="px-3 py-2 text-gray-600">32</td>
+                            <td class="px-3 py-2 text-gray-600">字符型</td>
                         </tr>
                         <tr class="hover:bg-gray-50">
                             <td class="px-3 py-2 text-gray-800">仓库名称</td>
@@ -363,6 +397,8 @@
                             <td class="px-3 py-2 text-gray-600">系统配置</td>
                             <td class="px-3 py-2 text-gray-600">直接取值</td>
                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                            <td class="px-3 py-2 text-gray-600">64</td>
+                            <td class="px-3 py-2 text-gray-600">字符型</td>
                         </tr>
                         <tr class="hover:bg-gray-50">
                             <td class="px-3 py-2 text-gray-800">关联收费项</td>
@@ -370,6 +406,8 @@
                             <td class="px-3 py-2 text-gray-600">系统计算</td>
                             <td class="px-3 py-2 text-gray-600">统计该仓库关联的费用项数量</td>
                             <td class="px-3 py-2 text-gray-600">数字</td>
+                            <td class="px-3 py-2 text-gray-600">32</td>
+                            <td class="px-3 py-2 text-gray-600">数值型</td>
                         </tr>
                     </tbody>
                 </table>
