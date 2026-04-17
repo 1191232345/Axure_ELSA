@@ -1,0 +1,2836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平台订单管理 - ELSA</title>
+    
+    <!-- CDN 资源 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <!-- 内联样式 -->
+    <style>
+        /* 主内容区域切换 */
+        .main-content { display: none; }
+        .main-content.active { display: block; }
+
+        /* Body 基础样式 */
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            min-height: 100vh;
+        }
+
+        /* PRD Markdown 渲染样式 */
+        .prose { 
+            color: #374151; 
+            line-height: 1.8; 
+            font-size: 0.95rem;
+            max-width: 100%;
+        }
+
+        .prose h1 { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 1.5rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 3px solid #2a3b7d;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .prose h2 { 
+            font-size: 1.4rem; 
+            font-weight: 600; 
+            color: #2a3b7d; 
+            margin: 2.5rem 0 1.2rem; 
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            border-left: 4px solid #2a3b7d;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .prose h3 { 
+            font-size: 1.15rem; 
+            font-weight: 600; 
+            color: #475569; 
+            margin: 2rem 0 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .prose h4 { 
+            font-size: 1rem; 
+            font-weight: 600; 
+            color: #2a3b7d; 
+            margin: 1.5rem 0 0.5rem; 
+        }
+
+        .prose p { margin-bottom: 1rem; color: #4b5563; }
+        .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
+        .prose li { margin-bottom: 0.5rem; color: #4b5563; }
+        .prose li::marker { color: #2a3b7d; }
+
+        /* 增强表格样式 */
+        .prose table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin: 1.5rem 0; 
+            font-size: 0.85rem; 
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .prose th { 
+            padding: 0.875rem 1rem; 
+            background: linear-gradient(135deg, #2a3b7d 0%, #4f46e5 100%);
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            border: none;
+            white-space: nowrap;
+        }
+
+        .prose th:first-child { border-top-left-radius: 12px; }
+        .prose th:last-child { border-top-right-radius: 12px; }
+
+        .prose td { 
+            padding: 0.75rem 1rem; 
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .prose tr:last-child td { border-bottom: none; }
+        .prose tr:nth-child(even) td { background: #f9fafb; }
+        .prose tr:hover td { background: #f0f4ff; }
+
+        /* 代码块样式 */
+        .prose pre { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            padding: 1.25rem; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+            border: 1px solid #334155;
+            overflow-x: auto; 
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .prose code { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #dc2626;
+            padding: 0.2rem 0.4rem; 
+            border-radius: 4px; 
+            font-size: 0.875em;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .prose pre code { 
+            background: none; 
+            padding: 0; 
+            color: #e2e8f0;
+        }
+
+        .prose blockquote { 
+            border-left: 4px solid #2a3b7d; 
+            padding: 1rem 1.5rem; 
+            margin: 1.5rem 0; 
+            color: #64748b;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        .prose strong { 
+            color: #1e293b; 
+            font-weight: 700;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+        }
+
+        .prose a { 
+            color: #2a3b7d; 
+            text-decoration: none;
+            border-bottom: 1px solid #2a3b7d;
+            transition: all 0.2s;
+        }
+
+        .prose a:hover { 
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+        }
+
+        /* 标签样式 */
+        .prose .badge { 
+            display: inline-block; 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 9999px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            margin: 0.125rem;
+        }
+
+        .prose .badge-p0 { 
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .prose .badge-p1 { 
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+
+        /* 分隔线 */
+        .prose hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #2a3b7d, transparent);
+            margin: 2.5rem 0;
+        }
+
+        /* 目录导航样式 */
+        .toc {
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .toc-title {
+            font-weight: 600;
+            color: #2a3b7d;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #2a3b7d;
+        }
+
+        .toc a {
+            display: block;
+            padding: 0.375rem 0.5rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .toc a:hover {
+            background: #f0f4ff;
+            color: #2a3b7d;
+        }
+
+        .toc-level-2 {
+            padding-left: 0;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .toc-level-2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #2a3b7d;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .toc-level-2:hover::before,
+        .toc-level-2.active::before {
+            opacity: 1;
+        }
+
+        .toc-level-3 {
+            padding-left: 1.5rem;
+            font-size: 0.8rem;
+            color: #64748b;
+            position: relative;
+        }
+
+        .toc-level-3::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 12px;
+            width: 4px;
+            height: 4px;
+            background: #94a3b8;
+            border-radius: 50%;
+        }
+
+        /* 目录折叠功能样式 */
+        .toc-item {
+            position: relative;
+        }
+
+        .toc-toggle {
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .toc-toggle:hover {
+            color: #2a3b7d;
+        }
+
+        .toc-toggle.collapsed {
+            transform: translateY(-50%) rotate(-90deg);
+        }
+
+        .toc-children {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .toc-children.collapsed {
+            max-height: 0;
+        }
+
+        /* 切换标签样式 - 固定在右下角 */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+            box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab:hover {
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: white;
+            color: #2a3b7d;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+        }
+
+        /* 搜索卡片 */
+        .search-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .search-card .search-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-card .search-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-card .search-label {
+            font-size: 12px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .search-card .search-buttons {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        /* 操作卡片 */
+        .action-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .action-card .action-buttons {
+            display: flex;
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 768px) {
+            .search-card .search-fields {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-card .search-field {
+                width: 100%;
+            }
+            
+            .search-card .search-buttons {
+                margin-left: 0;
+                width: 100%;
+                justify-content: stretch;
+            }
+            
+            .search-card .search-buttons .erp-btn {
+                flex: 1;
+            }
+            
+            .action-card .action-buttons {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* ERP 按钮样式 */
+        .erp-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .erp-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .erp-btn:active {
+            transform: translateY(0);
+        }
+
+        .erp-btn-primary {
+            background-color: #2a3b7d;
+            color: white;
+            border-color: #2a3b7d;
+        }
+
+        .erp-btn-primary:hover {
+            background-color: #3a4ca7;
+            border-color: #3a4ca7;
+        }
+
+        .erp-btn-secondary {
+            background-color: white;
+            color: #525252;
+            border-color: #d4d4d4;
+        }
+
+        .erp-btn-secondary:hover {
+            border-color: #a3a3a3;
+            color: #262626;
+        }
+
+        .erp-btn-warning {
+            background-color: #FF7D00;
+            color: white;
+            border-color: #FF7D00;
+        }
+
+        .erp-btn-warning:hover {
+            background-color: #ff952e;
+            border-color: #ff952e;
+        }
+
+        .erp-btn-danger {
+            background-color: #F53F3F;
+            color: white;
+            border-color: #F53F3F;
+        }
+
+        .erp-btn-danger:hover {
+            background-color: #ff5c5c;
+            border-color: #ff5c5c;
+        }
+
+        .erp-btn-success {
+            background-color: #00B42A;
+            color: white;
+            border-color: #00B42A;
+        }
+
+        .erp-btn-success:hover {
+            background-color: #00cc2e;
+            border-color: #00cc2e;
+        }
+
+        /* 表格内按钮 */
+        .table-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .table-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 表格样式 */
+        .table-hover-row:hover {
+            background-color: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1D2129;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .close-btn {
+            background-color: white;
+            color: #2a3b7d;
+            border: 1px solid #E5E7EB;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group .required {
+            color: #F53F3F;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .form-select:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        .form-input:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1D2129;
+            background-color: white;
+            transition: all 0.2s ease;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #2a3b7d;
+            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
+        }
+
+        /* Mermaid图表放大预览样式 */
+        .mermaid {
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+        }
+
+        .mermaid:hover {
+            transform: scale(1.02);
+        }
+
+        .mermaid-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .mermaid-modal.active {
+            display: flex;
+        }
+
+        .mermaid-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 95%;
+            max-height: 95%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalZoomIn 0.3s ease-out;
+        }
+
+        @keyframes modalZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .mermaid-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            color: #374151;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .mermaid-modal-close:hover {
+            background: #e5e7eb;
+            transform: rotate(90deg);
+        }
+
+        .mermaid-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            background: rgba(42, 59, 125, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .mermaid-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .mermaid-container:hover .mermaid-hint {
+            opacity: 1;
+        }
+
+        /* 页面切换动画 */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* 订单状态标签 */
+        .order-status-tabs {
+            display: flex;
+            gap: 1px;
+            background: #ffffff;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            padding: 2px;
+        }
+
+        .order-status-tab {
+            padding: 6px 12px;
+            border: none;
+            background: white;
+            color: #6b7280;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+
+        .order-status-tab.active {
+            background: #2a3b7d;
+            color: white;
+        }
+
+        .order-status-tab:hover:not(.active) {
+            background: #f3f4f6;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 16px;
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-info {
+            margin-right: auto;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .pagination-select {
+            padding: 4px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .pagination-btn {
+            padding: 4px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: white;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .pagination-btn.active {
+            background: #2a3b7d;
+            color: white;
+            border-color: #2a3b7d;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 操作按钮组 */
+        .operation-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 表格样式增强 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        /* 订单状态徽章 */
+        .badge-processing {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* Toast消息容器 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 400px;
+        }
+
+        .toast-success { background-color: #00B42A; }
+        .toast-error { background-color: #F53F3F; }
+        .toast-warning { background-color: #FF7D00; }
+        .toast-info { background-color: #2a3b7d; }
+
+        .toast-out {
+            animation: toastOut 0.3s ease-in forwards;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* 全局加载遮罩 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2a3b7d;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-left: 12px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* 确认对话框 */
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .confirm-dialog.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .confirm-dialog-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .confirm-dialog-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .confirm-dialog-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .confirm-dialog-icon.danger {
+            background: #fee2e2;
+            color: #F53F3F;
+        }
+
+        .confirm-dialog-icon.warning {
+            background: #fef3c7;
+            color: #FF7D00;
+        }
+
+        .confirm-dialog-icon.info {
+            background: #dbeafe;
+            color: #2a3b7d;
+        }
+
+        .confirm-dialog-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1D2129;
+        }
+
+        .confirm-dialog-message {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .confirm-dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 上传模态框样式 */
+        .upload-template-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .upload-template-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .upload-template-info i {
+            color: #2a3b7d;
+        }
+
+        .upload-area {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        .upload-area:hover {
+            border-color: #2a3b7d;
+            background: #f9fafb;
+        }
+
+        .upload-area.dragover {
+            border-color: #2a3b7d;
+            background: #dbeafe;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .upload-result {
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .upload-result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #15803d;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .upload-result-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .upload-result-item {
+            display: flex;
+            font-size: 14px;
+        }
+
+        .upload-result-label {
+            color: #6b7280;
+            min-width: 80px;
+        }
+
+        .upload-result-value {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .upload-tips {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .upload-tips h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #d97706;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .upload-tips ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .upload-tips li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .upload-tips li:before {
+            content: "•";
+            color: #d97706;
+            font-weight: bold;
+        }
+    </style>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2a3b7d',
+                        'primary-light': '#3a4ca7',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        dark: '#1D2129',
+                        'light-bg': '#FFFFFF',
+                        'card-bg': '#FFFFFF',
+                        border: '#E5E7EB'
+                    },
+                    boxShadow: {
+                        'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+                        'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+        
+        // 初始化Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3
+        });
+        
+        // 配置Marked
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
+                    <div class="mermaid">${code}</div>
+                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
+                </div>`;
+            }
+            return `<pre><code class="language-${language}">${code}</code></pre>`;
+        };
+        
+        marked.setOptions({
+            renderer: renderer,
+            breaks: true,
+            gfm: true
+        });
+    </script>
+</head>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+    <!-- 切换标签 - 固定在右下角 -->
+    <div class="tabs fixed bottom-8 right-8 z-40">
+        <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+        <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+        <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+    </div>
+    
+    <!-- Header 导航 -->
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+        <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-lg font-semibold">ELSA</span>
+                    </div>
+                    <nav class="hidden md:ml-10 md:flex md:space-x-6">
+                        <div class="relative group">
+                            <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                                平台订单管理
+                                <i class="fa fa-angle-down ml-1 text-xs"></i>
+                            </a>
+                        </div>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+                            <i class="fa fa-bell-o"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="ml-2 text-sm hidden sm:inline-block">用户名</span>
+                        <i class="fa fa-angle-down ml-1 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- PRD 内容区域 -->
+    <main id="main-prd" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="prd-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载PRD文档...</p>
+                                    <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载PRD
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Mermaid 图表放大预览模态框 -->
+    <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+        <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+            <button class="mermaid-modal-close" onclick="closeMermaidModal()">
+                <i class="fa fa-times"></i>
+            </button>
+            <div class="mermaid-modal-title">
+                <i class="fa fa-sitemap mr-2"></i>流程图预览
+            </div>
+            <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+        </div>
+    </div>
+    
+    <!-- 测试用例内容区域 -->
+    <main id="main-testcases" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="testcases-toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="testcases-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载测试用例文档...</p>
+                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载测试用例
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 原型页面 -->
+    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+        <div class="container mx-auto px-2 py-6">
+            <!-- 页面内容区域 -->
+            <div id="page-order-management" class="page active">
+                
+                <!-- 搜索卡片：只包含筛选条件和搜索/重置按钮 -->
+                <div class="search-card">
+                    <div class="search-fields">
+                        <div class="search-field">
+                            <label class="search-label">仓库</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="warehouse1">仓库1</option>
+                                <option value="warehouse2">仓库2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">出库单号</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="outbound1">出库单1</option>
+                                <option value="outbound2">出库单2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">请输入</label>
+                            <input type="text" class="form-input w-48" placeholder="请输入">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">平台订单号</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="platform1">平台订单1</option>
+                                <option value="platform2">平台订单2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">请输入</label>
+                            <input type="text" class="form-input w-48" placeholder="请输入">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">附加信息</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="info1">信息1</option>
+                                <option value="info2">信息2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">请输入专属编号或货号</label>
+                            <input type="text" class="form-input w-48" placeholder="请输入专属编号或货号">
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">所有账号</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="account1">账号1</option>
+                                <option value="account2">账号2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">平台发货方式</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="method1">方式1</option>
+                                <option value="method2">方式2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">平台渠道</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="channel1">渠道1</option>
+                                <option value="channel2">渠道2</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label class="search-label">平台标记发货</label>
+                            <select class="form-select w-48">
+                                <option value="">请选择</option>
+                                <option value="yes">是</option>
+                                <option value="no">否</option>
+                            </select>
+                        </div>
+                        <div class="search-buttons">
+                            <button class="erp-btn erp-btn-secondary flex items-center justify-center">
+                                <i class="fa fa-refresh mr-1.5"></i> 重置
+                            </button>
+                            <button class="erp-btn erp-btn-primary flex items-center justify-center">
+                                <i class="fa fa-search mr-1.5"></i> 搜索
+                            </button>
+                            <button class="erp-btn erp-btn-secondary flex items-center justify-center">
+                                <i class="fa fa-filter mr-1.5"></i> 展开
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 订单状态标签 -->
+                <div class="order-status-tabs">
+                    <button class="order-status-tab active">全部 (113 条记录)</button>
+                    <button class="order-status-tab">待生成订单</button>
+                    <button class="order-status-tab">待获取账号</button>
+                    <button class="order-status-tab">已生成</button>
+                    <button class="order-status-tab">问题件</button>
+                    <button class="order-status-tab">废弃</button>
+                </div>
+                
+                <!-- 操作卡片：单独放置，包含主操作按钮 -->
+                <div class="action-card">
+                    <div class="action-buttons">
+                        <button class="erp-btn erp-btn-secondary" onclick="showLoading('导出中...'); setTimeout(hideLoading, 2000);">
+                            <i class="fa fa-download mr-1.5"></i> 导出
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="showLoading('拉单中...'); setTimeout(hideLoading, 1500);">
+                            <i class="fa fa-refresh mr-1.5"></i> 手动拉单
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="showConfirmDialog({title: '推送确认', message: '确定要推送选中的订单吗？', type: 'info', onConfirm: function() { showToast('推送成功', 'success'); }});">
+                            <i class="fa fa-paper-plane mr-1.5"></i> 推送
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="showConfirmDialog({title: '批量修改', message: '确定要批量修改选中的订单吗？', type: 'warning', onConfirm: function() { showToast('修改成功', 'success'); }});">
+                            <i class="fa fa-pencil mr-1.5"></i> 批量修改
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="openWaybillUploadModal();">
+                            <i class="fa fa-file-text-o mr-1.5"></i> 批量上传面单
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="openTrackingUploadModal();">
+                            <i class="fa fa-barcode mr-1.5"></i> 批量上传跟踪号
+                        </button>
+                        <button class="erp-btn erp-btn-danger" onclick="showConfirmDialog({title: '作废确认', message: '确定要作废选中的订单吗？此操作不可撤销！', type: 'danger', onConfirm: function() { showToast('作废成功', 'success'); }});">
+                            <i class="fa fa-trash mr-1.5"></i> 作废
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="showLoading('获取订单中...'); setTimeout(function() { hideLoading(); showToast('获取订单成功', 'success'); }, 2000);">
+                            <i class="fa fa-key mr-1.5"></i> 获取订单
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 数据表格区域 -->
+                <div class="bg-white rounded shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" class="form-checkbox h-4 w-4 text-primary"></th>
+                                    <th>订单详情</th>
+                                    <th>订单组</th>
+                                    <th>收件人信息</th>
+                                    <th>配送信息</th>
+                                    <th>平台发货方式</th>
+                                    <th>订单状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-hover-row">
+                                    <td><input type="checkbox" class="form-checkbox h-4 w-4 text-primary"></td>
+                                    <td>
+                                        <div>订单编号: ERP0202404-FBN9VP7PEMJ</div>
+                                        <div>平台订单号: 1144960856397947</div>
+                                        <div>平台: Amazon</div>
+                                        <div>订单状态: <span class="status-badge badge-processing">待处理</span></div>
+                                    </td>
+                                    <td>
+                                        <div>平台识别码: OU8Y0GQN-WH</div>
+                                        <div>渠道识别码: OU8Y0GQN-WH</div>
+                                        <div>渠道: 1</div>
+                                        <div>渠道: 1</div>
+                                    </td>
+                                    <td>
+                                        <div>国家: US</div>
+                                        <div>州: GA</div>
+                                        <div>城市: 萨凡纳</div>
+                                        <div>收件人: EPWORTH</div>
+                                    </td>
+                                    <td>
+                                        <div>平台发货方式: -</div>
+                                        <div>平台配送: -</div>
+                                        <div>平台渠道: -</div>
+                                        <div>需要揽收: 否</div>
+                                    </td>
+                                    <td>-</td>
+                                    <td>
+                                        <span class="status-badge badge-success">已获取</span>
+                                    </td>
+                                    <td>
+                                        <div>创建时间: 2024-04-10 02:22</div>
+                                        <div>更新时间: -</div>
+                                    </td>
+                                    <td>
+                                        <div class="operation-buttons">
+                                            <button class="table-btn text-primary">
+                                                <i class="fa fa-pencil"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 分页 -->
+                    <div class="pagination">
+                        <div class="pagination-info">共 113 条</div>
+                        <select class="pagination-select">
+                            <option value="10">10/页</option>
+                            <option value="20">20/页</option>
+                            <option value="50">50/页</option>
+                        </select>
+                        <button class="pagination-btn" disabled>
+                            <i class="fa fa-angle-left"></i>
+                        </button>
+                        <button class="pagination-btn active">1</button>
+                        <button class="pagination-btn">2</button>
+                        <button class="pagination-btn">3</button>
+                        <button class="pagination-btn">4</button>
+                        <button class="pagination-btn">5</button>
+                        <button class="pagination-btn">6</button>
+                        <span>...</span>
+                        <button class="pagination-btn">14</button>
+                        <button class="pagination-btn">
+                            <i class="fa fa-angle-right"></i>
+                        </button>
+                        <div class="pagination-info">前往 1 页</div>
+                    </div>
+                </div>
+                
+                <!-- 逻辑说明区域 -->
+                <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                    <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('order')">
+                        <div class="flex items-center">
+                            <i class="fa fa-book text-primary mr-2"></i>
+                            <span class="font-semibold text-primary">逻辑说明</span>
+                            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                        </div>
+                        <i class="fa fa-chevron-down text-primary transition-transform" id="order-logic-icon"></i>
+                    </div>
+                    <div id="order-logic-content" class="hidden">
+                        <!-- 初始化页面（数据展示逻辑） -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">订单列表加载</td>
+                                            <td class="px-3 py-2 text-gray-600">页面加载时展示所有订单</td>
+                                            <td class="px-3 py-2 text-gray-600">订单主表</td>
+                                            <td class="px-3 py-2 text-gray-600">按创建时间倒序排列，每页显示10条</td>
+                                            <td class="px-3 py-2 text-gray-600">默认展示授权账号所在部门的订单</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">订单状态统计</td>
+                                            <td class="px-3 py-2 text-gray-600">统计各状态的订单数量</td>
+                                            <td class="px-3 py-2 text-gray-600">订单主表</td>
+                                            <td class="px-3 py-2 text-gray-600">显示在状态标签上</td>
+                                            <td class="px-3 py-2 text-gray-600">实时统计</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓库下拉选项</td>
+                                            <td class="px-3 py-2 text-gray-600">加载所有可用仓库</td>
+                                            <td class="px-3 py-2 text-gray-600">仓库配置表</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">仅显示授权仓库</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 检索条件 -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-search text-primary mr-2"></i>检索条件
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">仓库</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据选择仓库精确筛选</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">出库单号</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框 + 文本输入</td>
+                                            <td class="px-3 py-2 text-gray-600">支持模糊搜索</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台订单号</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框 + 文本输入</td>
+                                            <td class="px-3 py-2 text-gray-600">支持模糊搜索</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">附加信息</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据选择附加信息精确筛选</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">专属编号或货号</td>
+                                            <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">支持模糊搜索</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">所有账号</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据选择账号精确筛选</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台发货方式</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据选择发货方式精确筛选</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台渠道</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据选择渠道精确筛选</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台标记发货</td>
+                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                                            <td class="px-3 py-2 text-gray-600">根据选择是/否精确筛选</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 按钮逻辑 -->
+                        <div class="p-4 border-b border-gray-100">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">搜索</td>
+                                            <td class="px-3 py-2 text-gray-600">搜索区域</td>
+                                            <td class="px-3 py-2 text-gray-600">根据条件筛选数据</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">显示筛选结果，更新分页</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">重置</td>
+                                            <td class="px-3 py-2 text-gray-600">搜索区域</td>
+                                            <td class="px-3 py-2 text-gray-600">清空搜索条件</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">显示全部数据，重置分页</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">导出</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">导出当前筛选条件下的订单数据</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">下载Excel文件</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">手动拉单</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">手动从平台拉取最新订单</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">刷新列表，显示拉取结果</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">推送</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">将选中订单推送到下游系统</td>
+                                            <td class="px-3 py-2 text-gray-600">至少选中一条订单</td>
+                                            <td class="px-3 py-2 text-gray-600">刷新列表，显示推送结果</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">批量修改</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">批量修改选中订单的信息</td>
+                                            <td class="px-3 py-2 text-gray-600">至少选中一条订单</td>
+                                            <td class="px-3 py-2 text-gray-600">打开批量修改弹窗</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">作废</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">作废选中订单</td>
+                                            <td class="px-3 py-2 text-gray-600">至少选中一条订单</td>
+                                            <td class="px-3 py-2 text-gray-600">显示确认对话框，刷新列表</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">获取订单</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">获取选中订单的详细信息</td>
+                                            <td class="px-3 py-2 text-gray-600">至少选中一条订单</td>
+                                            <td class="px-3 py-2 text-gray-600">刷新列表，显示获取结果</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">批量上传面单</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">批量上传面单文件</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">打开面单上传弹窗，显示上传结果</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">批量上传跟踪号</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">批量上传跟踪号文件</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">打开跟踪号上传弹窗，显示上传结果</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">编辑</td>
+                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                            <td class="px-3 py-2 text-gray-600">打开订单编辑弹窗</td>
+                                            <td class="px-3 py-2 text-gray-600">无</td>
+                                            <td class="px-3 py-2 text-gray-600">保存后刷新列表</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 属性取值逻辑 -->
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm border border-gray-200 rounded">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">订单编号</td>
+                                            <td class="px-3 py-2 text-gray-600">系统自动生成的订单唯一标识</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">ERP+日期+随机字符串</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">32</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台订单号</td>
+                                            <td class="px-3 py-2 text-gray-600">从平台获取的原始订单号</td>
+                                            <td class="px-3 py-2 text-gray-600">平台接口</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台</td>
+                                            <td class="px-3 py-2 text-gray-600">订单来源平台</td>
+                                            <td class="px-3 py-2 text-gray-600">平台接口</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">32</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">订单状态</td>
+                                            <td class="px-3 py-2 text-gray-600">订单处理进度状态</td>
+                                            <td class="px-3 py-2 text-gray-600">系统计算</td>
+                                            <td class="px-3 py-2 text-gray-600">根据处理进度自动更新</td>
+                                            <td class="px-3 py-2 text-gray-600">状态徽章</td>
+                                            <td class="px-3 py-2 text-gray-600">16</td>
+                                            <td class="px-3 py-2 text-gray-600">枚举型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">平台识别码</td>
+                                            <td class="px-3 py-2 text-gray-600">平台生成的唯一识别码</td>
+                                            <td class="px-3 py-2 text-gray-600">平台接口</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">渠道识别码</td>
+                                            <td class="px-3 py-2 text-gray-600">渠道生成的唯一识别码</td>
+                                            <td class="px-3 py-2 text-gray-600">渠道接口</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">收件人信息</td>
+                                            <td class="px-3 py-2 text-gray-600">收件人姓名、地址、联系方式</td>
+                                            <td class="px-3 py-2 text-gray-600">平台接口</td>
+                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">多行文本</td>
+                                            <td class="px-3 py-2 text-gray-600">512</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">创建时间</td>
+                                            <td class="px-3 py-2 text-gray-600">订单创建时间</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">订单创建时自动记录</td>
+                                            <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm</td>
+                                            <td class="px-3 py-2 text-gray-600">-</td>
+                                            <td class="px-3 py-2 text-gray-600">DATETIME</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">更新时间</td>
+                                            <td class="px-3 py-2 text-gray-600">订单最后更新时间</td>
+                                            <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                            <td class="px-3 py-2 text-gray-600">订单更新时自动记录</td>
+                                            <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm</td>
+                                            <td class="px-3 py-2 text-gray-600">-</td>
+                                            <td class="px-3 py-2 text-gray-600">DATETIME</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Toast消息容器 -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <!-- 全局加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">加载中...</span>
+    </div>
+    
+    <!-- 确认对话框 -->
+    <div id="confirmDialog" class="confirm-dialog">
+        <div class="confirm-dialog-content">
+            <div class="confirm-dialog-header">
+                <div class="confirm-dialog-icon danger">
+                    <i class="fa fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="confirm-dialog-title">确认操作</h3>
+            </div>
+            <p class="confirm-dialog-message">确定要执行此操作吗？</p>
+            <div class="confirm-dialog-buttons">
+                <button class="erp-btn erp-btn-secondary" onclick="closeConfirmDialog()">取消</button>
+                <button class="erp-btn erp-btn-danger" id="confirmDialogBtn">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 批量上传面单模态框 -->
+    <div id="waybillUploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">批量上传面单</h3>
+                <button class="modal-close" onclick="closeWaybillUploadModal()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area">
+                    <div class="upload-area-content" id="waybillUploadArea">
+                        <i class="fa fa-cloud-upload upload-icon"></i>
+                        <p class="upload-text">点击或拖拽文件到此处上传</p>
+                        <p class="upload-hint">支持 .xlsx、.xls、.csv 格式，文件大小不超过 10MB</p>
+                        <input type="file" id="waybillUploadFileInput" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleWaybillFileSelect(event)">
+                    </div>
+                </div>
+                
+                <div class="upload-result" id="waybillUploadResult" style="display: none;">
+                    <div class="upload-result-header">
+                        <i class="fa fa-check-circle"></i>
+                        <span>文件上传成功</span>
+                    </div>
+                    <div class="upload-result-details">
+                        <div class="upload-result-item">
+                            <span class="upload-result-label">文件名：</span>
+                            <span class="upload-result-value" id="waybillUploadFileName">-</span>
+                        </div>
+                        <div class="upload-result-item">
+                            <span class="upload-result-label">文件大小：</span>
+                            <span class="upload-result-value" id="waybillUploadFileSize">-</span>
+                        </div>
+                        <div class="upload-result-item">
+                            <span class="upload-result-label">数据行数：</span>
+                            <span class="upload-result-value" id="waybillUploadRowCount">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-tips">
+                    <h4><i class="fa fa-lightbulb-o"></i> 上传说明</h4>
+                    <ul>
+                        <li>通过‘跟踪号’或‘出库单号’或‘平台订单号’命名</li>
+                        <li>单次上传不超过 100 条数据</li>
+                        <li>上传过程中请勿关闭浏览器</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeWaybillUploadModal()">取消</button>
+                <button class="erp-btn erp-btn-primary" id="waybillUploadSubmitBtn" onclick="submitWaybillUpload()" disabled>
+                    <i class="fa fa-upload mr-1.5"></i> 开始上传
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 批量上传跟踪号模态框 -->
+    <div id="trackingUploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">批量上传跟踪号</h3>
+                <button class="modal-close" onclick="closeTrackingUploadModal()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-template-section">
+                    <div class="upload-template-info">
+                        <i class="fa fa-info-circle"></i>
+                        <span>请先下载模板，按照模板格式填写数据后上传</span>
+                    </div>
+                    <button class="erp-btn erp-btn-secondary" onclick="downloadTrackingTemplate()">
+                        <i class="fa fa-download mr-1.5"></i> 下载模板
+                    </button>
+                </div>
+                
+                <div class="upload-area">
+                    <div class="upload-area-content" id="trackingUploadArea">
+                        <i class="fa fa-cloud-upload upload-icon"></i>
+                        <p class="upload-text">点击或拖拽文件到此处上传</p>
+                        <p class="upload-hint">支持 .xlsx、.xls、.csv 格式，文件大小不超过 10MB</p>
+                        <input type="file" id="trackingUploadFileInput" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleTrackingFileSelect(event)">
+                    </div>
+                </div>
+                
+                <div class="upload-result" id="trackingUploadResult" style="display: none;">
+                    <div class="upload-result-header">
+                        <i class="fa fa-check-circle"></i>
+                        <span>文件上传成功</span>
+                    </div>
+                    <div class="upload-result-details">
+                        <div class="upload-result-item">
+                            <span class="upload-result-label">文件名：</span>
+                            <span class="upload-result-value" id="trackingUploadFileName">-</span>
+                        </div>
+                        <div class="upload-result-item">
+                            <span class="upload-result-label">文件大小：</span>
+                            <span class="upload-result-value" id="trackingUploadFileSize">-</span>
+                        </div>
+                        <div class="upload-result-item">
+                            <span class="upload-result-label">数据行数：</span>
+                            <span class="upload-result-value" id="trackingUploadRowCount">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeTrackingUploadModal()">取消</button>
+                <button class="erp-btn erp-btn-primary" id="trackingUploadSubmitBtn" onclick="submitTrackingUpload()" disabled>
+                    <i class="fa fa-upload mr-1.5"></i> 开始上传
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        let currentPage = 1;
+        let pageSize = 10;
+        let currentStatus = 'all';
+        let prdLoaded = false;
+        let testCasesLoaded = false;
+
+        function switchMainTab(tab) {
+            document.querySelectorAll('.main-content').forEach(function(content) {
+                content.classList.remove('active');
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            const targetContent = document.getElementById('main-' + tab);
+            if (targetContent) {
+                targetContent.classList.add('active');
+                targetContent.style.display = 'block';
+            }
+            const targetTab = document.getElementById('tab-' + tab);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            if (tab === 'prd' && !prdLoaded) {
+                loadPRD();
+            } else if (tab === 'testcases' && !testCasesLoaded) {
+                loadTestCases();
+            }
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function openMermaidModal(container) {
+            const mermaidDiv = container.querySelector('.mermaid');
+            if (!mermaidDiv) return;
+            const modal = document.getElementById('mermaidModal');
+            const modalContent = document.getElementById('mermaidModalContent');
+            modalContent.innerHTML = mermaidDiv.innerHTML;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (window.mermaid) {
+                mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
+            }
+        }
+
+        function closeMermaidModal(event) {
+            if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
+                return;
+            }
+            const modal = document.getElementById('mermaidModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function showToast(message, type) {
+            type = type || 'info';
+            const container = document.getElementById('toastContainer');
+            if (!container) {
+                createToastContainer();
+            }
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            const iconMap = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            toast.innerHTML = '<i class="fa ' + iconMap[type] + '"></i><span>' + message + '</span>';
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.classList.add('toast-out');
+                setTimeout(function() {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toastContainer';
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        function showLoading(message) {
+            const loadingEl = document.getElementById('loadingOverlay');
+            if (loadingEl) {
+                if (message) {
+                    loadingEl.querySelector('.loading-text').textContent = message;
+                }
+                loadingEl.classList.add('show');
+            }
+        }
+
+        function hideLoading() {
+            const loadingEl = document.getElementById('loadingOverlay');
+            if (loadingEl) {
+                loadingEl.classList.remove('show');
+            }
+        }
+
+        function showConfirmDialog(options) {
+            const dialog = document.getElementById('confirmDialog');
+            const titleEl = dialog.querySelector('.confirm-dialog-title');
+            const messageEl = dialog.querySelector('.confirm-dialog-message');
+            const confirmBtn = document.getElementById('confirmDialogBtn');
+            const iconDiv = dialog.querySelector('.confirm-dialog-icon');
+            
+            titleEl.textContent = options.title || '确认操作';
+            messageEl.textContent = options.message || '确定要执行此操作吗？';
+            
+            confirmBtn.textContent = options.confirmText || '确定';
+            confirmBtn.className = 'erp-btn';
+            
+            if (options.type === 'danger') {
+                confirmBtn.classList.add('erp-btn-danger');
+                iconDiv.className = 'confirm-dialog-icon danger';
+            } else if (options.type === 'warning') {
+                confirmBtn.classList.add('erp-btn-warning');
+                iconDiv.className = 'confirm-dialog-icon warning';
+            } else {
+                confirmBtn.classList.add('erp-btn-primary');
+                iconDiv.className = 'confirm-dialog-icon info';
+            }
+            
+            confirmBtn.onclick = function() {
+                closeConfirmDialog();
+                if (options.onConfirm) {
+                    options.onConfirm();
+                }
+            };
+            
+            dialog.classList.add('show');
+        }
+
+        function closeConfirmDialog() {
+            const dialog = document.getElementById('confirmDialog');
+            dialog.classList.remove('show');
+        }
+
+        function openWaybillUploadModal() {
+            const modal = document.getElementById('waybillUploadModal');
+            const uploadArea = document.getElementById('waybillUploadArea');
+            const uploadResult = document.getElementById('waybillUploadResult');
+            const submitBtn = document.getElementById('waybillUploadSubmitBtn');
+            
+            uploadArea.style.display = 'block';
+            uploadResult.style.display = 'none';
+            submitBtn.disabled = true;
+            document.getElementById('waybillUploadFileInput').value = '';
+            
+            modal.classList.add('show');
+        }
+
+        function closeWaybillUploadModal() {
+            const modal = document.getElementById('waybillUploadModal');
+            modal.classList.remove('show');
+        }
+
+        function handleWaybillFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                               'application/vnd.ms-excel', 
+                               'text/csv'];
+            const maxSize = 10 * 1024 * 1024;
+            
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+                showToast('文件格式不支持，请上传 .xlsx、.xls 或 .csv 文件', 'error');
+                event.target.value = '';
+                return;
+            }
+            
+            if (file.size > maxSize) {
+                showToast('文件大小超过 10MB，请压缩后重新上传', 'error');
+                event.target.value = '';
+                return;
+            }
+            
+            displayWaybillUploadResult(file);
+        }
+
+        function displayWaybillUploadResult(file) {
+            const uploadArea = document.getElementById('waybillUploadArea');
+            const uploadResult = document.getElementById('waybillUploadResult');
+            const submitBtn = document.getElementById('waybillUploadSubmitBtn');
+            
+            document.getElementById('waybillUploadFileName').textContent = file.name;
+            document.getElementById('waybillUploadFileSize').textContent = formatFileSize(file.size);
+            document.getElementById('waybillUploadRowCount').textContent = Math.floor(Math.random() * 100) + 1;
+            
+            uploadArea.style.display = 'none';
+            uploadResult.style.display = 'block';
+            submitBtn.disabled = false;
+        }
+
+        function submitWaybillUpload() {
+            const submitBtn = document.getElementById('waybillUploadSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1.5"></i> 上传中...';
+            
+            showLoading('正在处理面单文件...');
+            
+            setTimeout(() => {
+                hideLoading();
+                closeWaybillUploadModal();
+                showToast('面单上传成功', 'success');
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa fa-upload mr-1.5"></i> 开始上传';
+            }, 2000);
+        }
+
+        function openTrackingUploadModal() {
+            const modal = document.getElementById('trackingUploadModal');
+            const uploadArea = document.getElementById('trackingUploadArea');
+            const uploadResult = document.getElementById('trackingUploadResult');
+            const submitBtn = document.getElementById('trackingUploadSubmitBtn');
+            
+            uploadArea.style.display = 'block';
+            uploadResult.style.display = 'none';
+            submitBtn.disabled = true;
+            document.getElementById('trackingUploadFileInput').value = '';
+            
+            modal.classList.add('show');
+        }
+
+        function closeTrackingUploadModal() {
+            const modal = document.getElementById('trackingUploadModal');
+            modal.classList.remove('show');
+        }
+
+        function downloadTrackingTemplate() {
+            showToast('正在下载跟踪号上传模板...', 'info');
+            setTimeout(() => {
+                showToast('模板下载成功', 'success');
+            }, 1000);
+        }
+
+        function handleTrackingFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                               'application/vnd.ms-excel', 
+                               'text/csv'];
+            const maxSize = 10 * 1024 * 1024;
+            
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+                showToast('文件格式不支持，请上传 .xlsx、.xls 或 .csv 文件', 'error');
+                event.target.value = '';
+                return;
+            }
+            
+            if (file.size > maxSize) {
+                showToast('文件大小超过 10MB，请压缩后重新上传', 'error');
+                event.target.value = '';
+                return;
+            }
+            
+            displayTrackingUploadResult(file);
+        }
+
+        function displayTrackingUploadResult(file) {
+            const uploadArea = document.getElementById('trackingUploadArea');
+            const uploadResult = document.getElementById('trackingUploadResult');
+            const submitBtn = document.getElementById('trackingUploadSubmitBtn');
+            
+            document.getElementById('trackingUploadFileName').textContent = file.name;
+            document.getElementById('trackingUploadFileSize').textContent = formatFileSize(file.size);
+            document.getElementById('trackingUploadRowCount').textContent = Math.floor(Math.random() * 100) + 1;
+            
+            uploadArea.style.display = 'none';
+            uploadResult.style.display = 'block';
+            submitBtn.disabled = false;
+        }
+
+        function submitTrackingUpload() {
+            const submitBtn = document.getElementById('trackingUploadSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1.5"></i> 上传中...';
+            
+            showLoading('正在处理跟踪号文件...');
+            
+            setTimeout(() => {
+                hideLoading();
+                closeTrackingUploadModal();
+                showToast('跟踪号上传成功', 'success');
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa fa-upload mr-1.5"></i> 开始上传';
+            }, 2000);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function handleSearch() {
+            const searchParams = collectSearchParams();
+            showLoading('搜索中...');
+            setTimeout(function() {
+                hideLoading();
+                showToast('搜索完成', 'success');
+                console.log('搜索参数:', searchParams);
+            }, 500);
+        }
+
+        function collectSearchParams() {
+            return {
+                warehouse: document.getElementById('searchWarehouse').value,
+                outboundNo: document.getElementById('searchOutboundNo').value,
+                outboundInput: document.getElementById('searchOutboundInput').value,
+                platformOrder: document.getElementById('searchPlatformOrder').value,
+                platformInput: document.getElementById('searchPlatformInput').value,
+                additionalInfo: document.getElementById('searchAdditionalInfo').value,
+                skuCode: document.getElementById('searchSkuCode').value,
+                account: document.getElementById('searchAccount').value,
+                shippingMethod: document.getElementById('searchShippingMethod').value,
+                channel: document.getElementById('searchChannel').value,
+                markShipped: document.getElementById('searchMarkShipped').value,
+                page: currentPage,
+                pageSize: pageSize
+            };
+        }
+
+        function handleReset() {
+            showConfirmDialog({
+                title: '重置确认',
+                message: '确定要重置所有搜索条件吗？',
+                type: 'warning',
+                confirmText: '重置',
+                onConfirm: function() {
+                    document.querySelectorAll('.search-card input, .search-card select').forEach(function(input) {
+                        if (input.type === 'checkbox' || input.type === 'radio') {
+                            input.checked = false;
+                        } else {
+                            input.value = '';
+                        }
+                    });
+                    currentPage = 1;
+                    showToast('搜索条件已重置', 'info');
+                }
+            });
+        }
+
+        function toggleAdvancedFilter() {
+            showToast('展开更多筛选条件', 'info');
+        }
+
+        function handleStatusTab(btn, status) {
+            document.querySelectorAll('.order-status-tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            btn.classList.add('active');
+            currentStatus = status;
+            showLoading('加载中...');
+            setTimeout(function() {
+                hideLoading();
+                showToast('已切换到状态: ' + status, 'success');
+            }, 300);
+        }
+
+        function handleExport() {
+            showConfirmDialog({
+                title: '导出确认',
+                message: '确定要导出当前筛选条件下的订单数据吗？',
+                type: 'info',
+                confirmText: '导出',
+                onConfirm: function() {
+                    showLoading('导出中...');
+                    setTimeout(function() {
+                        hideLoading();
+                        showToast('导出成功！', 'success');
+                    }, 1000);
+                }
+            });
+        }
+
+        function handleManualPull() {
+            showConfirmDialog({
+                title: '手动拉单',
+                message: '确定要从平台手动拉取最新订单吗？',
+                type: 'info',
+                confirmText: '拉取',
+                onConfirm: function() {
+                    showLoading('拉单中...');
+                    setTimeout(function() {
+                        hideLoading();
+                        showToast('拉单成功！', 'success');
+                    }, 1500);
+                }
+            });
+        }
+
+        function handlePush() {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.length === 0) {
+                showToast('请先选择要推送的订单', 'warning');
+                return;
+            }
+            showConfirmDialog({
+                title: '推送确认',
+                message: '确定要推送选中的 ' + selectedIds.length + ' 条订单吗？',
+                type: 'info',
+                confirmText: '推送',
+                onConfirm: function() {
+                    showLoading('推送中...');
+                    setTimeout(function() {
+                        hideLoading();
+                        showToast('推送成功！', 'success');
+                    }, 1000);
+                }
+            });
+        }
+
+        function handleBatchEdit() {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.length === 0) {
+                showToast('请先选择要修改的订单', 'warning');
+                return;
+            }
+            showToast('打开批量修改弹窗，选中 ' + selectedIds.length + ' 条订单', 'info');
+        }
+
+        function handleDiscard() {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.length === 0) {
+                showToast('请先选择要作废的订单', 'warning');
+                return;
+            }
+            showConfirmDialog({
+                title: '作废确认',
+                message: '确定要作废选中的 ' + selectedIds.length + ' 条订单吗？此操作不可恢复！',
+                type: 'danger',
+                confirmText: '作废',
+                onConfirm: function() {
+                    showLoading('作废中...');
+                    setTimeout(function() {
+                        hideLoading();
+                        showToast('作废成功！', 'success');
+                    }, 800);
+                }
+            });
+        }
+
+        function handleGetOrder() {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.length === 0) {
+                showToast('请先选择要获取的订单', 'warning');
+                return;
+            }
+            showLoading('获取订单信息中...');
+            setTimeout(function() {
+                hideLoading();
+                showToast('获取成功！', 'success');
+            }, 1000);
+        }
+
+        function handleEdit(id) {
+            showToast('打开订单编辑弹窗，订单ID: ' + id, 'info');
+        }
+
+        function getSelectedIds() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            return Array.from(checkboxes).map(function(cb) {
+                return cb.dataset.id;
+            });
+        }
+
+        function handleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(function(cb) {
+                cb.checked = checkbox.checked;
+            });
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > 14) return;
+            currentPage = page;
+            showLoading('加载中...');
+            setTimeout(function() {
+                hideLoading();
+                showToast('已跳转到第 ' + page + ' 页', 'info');
+            }, 300);
+        }
+
+        function handlePageSizeChange(size) {
+            pageSize = parseInt(size);
+            currentPage = 1;
+            showLoading('加载中...');
+            setTimeout(function() {
+                hideLoading();
+                showToast('每页显示 ' + size + ' 条', 'info');
+            }, 300);
+        }
+
+        function loadPRD() {
+            if (prdLoaded) return;
+            const prdContentDiv = document.getElementById('prd-content');
+            if (typeof marked === 'undefined') {
+                prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'prd.md', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const markdown = xhr.responseText;
+                    const html = marked.parse(markdown);
+                    prdContentDiv.innerHTML = html;
+                    generateTOC();
+                    if (window.mermaid) {
+                        setTimeout(function() {
+                            mermaid.init(undefined, prdContentDiv.querySelectorAll('.mermaid'));
+                        }, 100);
+                    }
+                    prdLoaded = true;
+                }
+            };
+            xhr.send();
+        }
+
+        function loadTestCases() {
+            if (testCasesLoaded) return;
+            const testCasesContentDiv = document.getElementById('testcases-content');
+            if (typeof marked === 'undefined') {
+                testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'test-cases.md', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const markdown = xhr.responseText;
+                    const html = marked.parse(markdown);
+                    testCasesContentDiv.innerHTML = html;
+                    generateTestCasesTOC();
+                    if (window.mermaid) {
+                        setTimeout(function() {
+                            mermaid.init(undefined, testCasesContentDiv.querySelectorAll('.mermaid'));
+                        }, 100);
+                    }
+                    testCasesLoaded = true;
+                }
+            };
+            xhr.send();
+        }
+
+        function generateTOC() {
+            const tocNav = document.getElementById('toc-nav');
+            const headings = document.querySelectorAll('#prd-content h1, #prd-content h2, #prd-content h3');
+            let tocHTML = '';
+            headings.forEach(function(heading, index) {
+                const id = 'heading-' + index;
+                heading.id = id;
+                const level = parseInt(heading.tagName.substring(1));
+                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+            });
+            tocNav.innerHTML = tocHTML;
+        }
+
+        function generateTestCasesTOC() {
+            const tocNav = document.getElementById('testcases-toc-nav');
+            const headings = document.querySelectorAll('#testcases-content h1, #testcases-content h2, #testcases-content h3');
+            let tocHTML = '';
+            headings.forEach(function(heading, index) {
+                const id = 'testcases-heading-' + index;
+                heading.id = id;
+                const level = parseInt(heading.tagName.substring(1));
+                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
+                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
+            });
+            tocNav.innerHTML = tocHTML;
+        }
+
+        function togglePrdLogic(module) {
+            const content = document.getElementById(module + '-logic-content');
+            const icon = document.getElementById(module + '-logic-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMermaidModal();
+                closeConfirmDialog();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.order-status-tab').forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.order-status-tab').forEach(function(t) {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            const waybillUploadArea = document.getElementById('waybillUploadArea');
+            const waybillUploadFileInput = document.getElementById('waybillUploadFileInput');
+            
+            waybillUploadArea.addEventListener('click', function() {
+                waybillUploadFileInput.click();
+            });
+            
+            waybillUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                waybillUploadArea.classList.add('dragover');
+            });
+            
+            waybillUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                waybillUploadArea.classList.remove('dragover');
+            });
+            
+            waybillUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                waybillUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    waybillUploadFileInput.files = files;
+                    handleWaybillFileSelect({ target: { files: files } });
+                }
+            });
+            
+            const trackingUploadArea = document.getElementById('trackingUploadArea');
+            const trackingUploadFileInput = document.getElementById('trackingUploadFileInput');
+            
+            trackingUploadArea.addEventListener('click', function() {
+                trackingUploadFileInput.click();
+            });
+            
+            trackingUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                trackingUploadArea.classList.add('dragover');
+            });
+            
+            trackingUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                trackingUploadArea.classList.remove('dragover');
+            });
+            
+            trackingUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                trackingUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    trackingUploadFileInput.files = files;
+                    handleTrackingFileSelect({ target: { files: files } });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
