@@ -1,0 +1,31 @@
+{
+    "pageId": "demo_test",
+    "version": "1.0.0",
+    "lastUpdate": "2026-04-20T05:15:25.281Z",
+    "listData": [
+        {
+            "id": 4,
+            "sku": "SKU004",
+            "name": "测试产品D",
+            "price": 399,
+            "stock": 20,
+            "status": "Active"
+        },
+        {
+            "id": 5,
+            "sku": "SKU005",
+            "name": "测试产品E",
+            "price": 499,
+            "stock": 10,
+            "status": "Inactive"
+        },
+        {
+            "id": 6,
+            "sku": "123",
+            "name": "123",
+            "price": 123,
+            "stock": 123,
+            "status": "Active"
+        }
+    ]
+}

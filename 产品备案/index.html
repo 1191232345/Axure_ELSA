@@ -1049,6 +1049,33 @@
         .logic-icon.rotated {
             transform: rotate(180deg);
         }
+
+        /* 配置按钮样式 */
+        .config-toggle-btn {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 100;
+            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(42, 59, 125, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .config-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(42, 59, 125, 0.4);
+        }
     </style>
     
     <!-- Tailwind 配置 -->
@@ -1107,6 +1134,12 @@
     </script>
 </head>
 <body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+    <!-- 配置模式按钮 - 跳转到配置页面 -->
+    <a href="config.html" class="config-toggle-btn" id="configToggleBtn">
+        <i class="fa fa-cog"></i>
+        <span>配置模式</span>
+    </a>
+
     <!-- 切换标签 - 固定在右下角 -->
     <div class="tabs fixed bottom-8 right-8 z-40">
         <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
@@ -1621,21 +1654,105 @@
     
     <!-- JavaScript -->
     <script>
-        // 产品数据 - 从localStorage读取或使用默认数据
+        // ==================== 数据持久化管理器 ====================
+        const DataManager = {
+            storagePrefix: 'erp_prototype_',
+            
+            save: function(key, data) {
+                try {
+                    localStorage.setItem(this.storagePrefix + key, JSON.stringify(data));
+                    return true;
+                } catch (e) {
+                    console.error('保存数据失败:', e);
+                    return false;
+                }
+            },
+            
+            load: function(key, defaultValue) {
+                try {
+                    const data = localStorage.getItem(this.storagePrefix + key);
+                    return data ? JSON.parse(data) : defaultValue;
+                } catch (e) {
+                    console.error('加载数据失败:', e);
+                    return defaultValue;
+                }
+            },
+            
+            remove: function(key) {
+                localStorage.removeItem(this.storagePrefix + key);
+            },
+            
+            clear: function() {
+                Object.keys(localStorage)
+                    .filter(key => key.startsWith(this.storagePrefix))
+                    .forEach(key => localStorage.removeItem(key));
+            }
+        };
+
+        // ==================== 列表数据管理器 ====================
+        const ListDataManager = {
+            getListData: function(pageId) {
+                return DataManager.load('listData_' + pageId, null);
+            },
+            
+            saveListData: function(pageId, data) {
+                DataManager.save('listData_' + pageId, data);
+            },
+            
+            addRow: function(pageId, row) {
+                const data = this.getListData(pageId) || [];
+                row.id = row.id || Date.now();
+                data.push(row);
+                this.saveListData(pageId, data);
+                return row;
+            },
+            
+            updateRow: function(pageId, sku, updates) {
+                const data = this.getListData(pageId) || [];
+                const index = data.findIndex(row => row.sku === sku);
+                if (index !== -1) {
+                    data[index] = { ...data[index], ...updates };
+                    this.saveListData(pageId, data);
+                    return data[index];
+                }
+                return null;
+            },
+            
+            deleteRow: function(pageId, sku) {
+                const data = this.getListData(pageId) || [];
+                const filtered = data.filter(row => row.sku !== sku);
+                this.saveListData(pageId, filtered);
+                return filtered.length < data.length;
+            },
+            
+            batchDelete: function(pageId, skus) {
+                const data = this.getListData(pageId) || [];
+                const filtered = data.filter(row => !skus.includes(row.sku));
+                this.saveListData(pageId, filtered);
+                return filtered.length;
+            }
+        };
+
+        // ==================== 配置数据管理器 ====================
+        const ConfigManager = {
+            getConfig: function(pageId) {
+                return DataManager.load('config_' + pageId, null);
+            },
+            
+            saveConfig: function(pageId, config) {
+                DataManager.save('config_' + pageId, config);
+            }
+        };
+
+        // ==================== 页面数据 ====================
+        const PAGE_ID = 'product_filing';
         let products = [];
         let prdLoaded = false;
         let testCasesLoaded = false;
 
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProducts();
-            renderProductTable();
-        });
-
-        // 加载产品数据
-        function loadProducts() {
-            // 强制使用新的产品数据，确保状态值正确
-            products = [
+        // 获取默认产品数据
+        function getDefaultProducts() {
+            return [
                 {
                     sku: 'AAAAAA',
                     client: 'DEMO',
@@ -1679,8 +1796,45 @@
                     status: 'Inactive'
                 }
             ];
-            localStorage.setItem('products', JSON.stringify(products));
         }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            renderProductTable();
+        });
+
+        // 加载产品数据 - 从localStorage读取或使用默认数据
+        function loadProducts() {
+            const savedProducts = ListDataManager.getListData(PAGE_ID);
+            if (savedProducts && savedProducts.length > 0) {
+                products = savedProducts;
+            } else {
+                products = getDefaultProducts();
+                ListDataManager.saveListData(PAGE_ID, products);
+            }
+        }
+        
+        // 保存产品数据
+        function saveProducts() {
+            ListDataManager.saveListData(PAGE_ID, products);
+        }
+
+        // ==================== 配置加载功能 ====================
+        
+        function loadConfigFromStorage() {
+            const saved = ConfigManager.getConfig(PAGE_ID);
+            if (saved) {
+                if (saved.pageTitle) {
+                    document.title = saved.pageTitle + ' - ELSA';
+                }
+            }
+        }
+
+        // 页面加载时尝试加载保存的配置
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfigFromStorage();
+        });
 
         // 主标签切换
         function switchMainTab(tab) {
@@ -1912,7 +2066,7 @@
         function deleteProduct(sku) {
             if (confirm('确定要删除这个产品吗？')) {
                 products = products.filter(function(p) { return p.sku !== sku; });
-                localStorage.setItem('products', JSON.stringify(products));
+                saveProducts();
                 renderProductTable();
                 toast('删除成功');
             }
@@ -1921,6 +2075,67 @@
         // 编辑产品
         function editProduct(sku) {
             window.location.href = 'edit.html?sku=' + sku;
+        }
+        
+        // 导出数据
+        function exportData() {
+            const config = ConfigManager.getConfig(PAGE_ID);
+            const exportData = {
+                pageId: PAGE_ID,
+                config: config,
+                listData: products,
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = PAGE_ID + '_data_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            toast('导出成功');
+        }
+        
+        // 导入数据
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importData = JSON.parse(e.target.result);
+                    
+                    if (importData.listData && Array.isArray(importData.listData)) {
+                        products = importData.listData;
+                        saveProducts();
+                        renderProductTable();
+                        toast('导入成功，共 ' + products.length + ' 条数据');
+                    } else {
+                        toast('导入失败：文件格式错误');
+                    }
+                } catch (err) {
+                    toast('导入失败：文件格式错误');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        // 重置数据
+        function resetData() {
+            if (!confirm('确定要重置所有数据吗？此操作不可恢复。')) return;
+            
+            DataManager.remove('listData_' + PAGE_ID);
+            DataManager.remove('config_' + PAGE_ID);
+            
+            products = getDefaultProducts();
+            saveProducts();
+            renderProductTable();
+            
+            toast('数据已重置');
         }
 
         // 筛选数据

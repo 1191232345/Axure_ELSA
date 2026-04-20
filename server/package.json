@@ -1,0 +1,21 @@
+{
+  "name": "elsa-prototype-server",
+  "version": "1.0.0",
+  "description": "ELSA 原型开发服务器 - pm2 后台运行",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop elsa-prototype",
+    "pm2:restart": "pm2 restart elsa-prototype",
+    "pm2:logs": "pm2 logs elsa-prototype",
+    "pm2:status": "pm2 status"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "pm2": "^5.3.0"
+  }
+}

@@ -82,6 +82,13 @@
             logLevel: 3
         });
         
+        // 数据持久化配置 - 创建原型时自动生成
+        const DATA_CONFIG = {
+            pageId: '[page_id]',           // 页面唯一标识，如 'product_filing'
+            dataFile: 'data/[page_id]-data.json',  // 数据文件路径
+            version: '1.0.0'
+        };
+        
         // 配置Marked
         const renderer = new marked.Renderer();
         renderer.code = function(code, language) {

@@ -2,6 +2,8 @@
 
 本文件包含TOB产品的完整 CSS 样式定义，确保所有模块样式一致性。
 
+**注意：交互状态样式（悬停、聚焦、按下、禁用等）请参考 [08-interaction-states.md](08-interaction-states.md)**
+
 ## 1. 页面基础样式
 
 ```css
@@ -321,7 +323,7 @@ body {
 }
 ```
 
-## 4. 切换标签样式（关键）
+## 4. 切换标签样式
 
 ```css
 /* 切换标签样式 - 固定在右下角 */
@@ -360,11 +362,9 @@ body {
 }
 ```
 
-## 5. 卡片布局规范（重要）
+## 5. 卡片布局规范
 
 ### 5.1 搜索卡片
-
-搜索卡片只包含筛选条件和搜索/重置按钮，不包含主操作按钮。
 
 ```css
 /* 搜索卡片 */
@@ -404,8 +404,6 @@ body {
 
 ### 5.2 操作卡片
 
-操作卡片单独放置，包含主操作按钮（新增、导出、批量操作等）。
-
 ```css
 /* 操作卡片 */
 .action-card {
@@ -423,59 +421,7 @@ body {
 }
 ```
 
-### 5.3 完整布局示例
-
-```html
-<!-- 搜索卡片：只包含筛选条件和搜索/重置按钮 -->
-<div class="search-card">
-    <div class="search-fields">
-        <div class="search-field">
-            <label class="search-label">状态</label>
-            <select class="form-select w-48">
-                <option value="">全部</option>
-                <option value="active">启用</option>
-                <option value="inactive">禁用</option>
-            </select>
-        </div>
-        <div class="search-field">
-            <label class="search-label">关键词</label>
-            <input type="text" class="form-input w-48" placeholder="请输入关键词">
-        </div>
-        <div class="search-buttons">
-            <button class="erp-btn erp-btn-secondary">
-                <i class="fa fa-refresh mr-1.5"></i> 重置
-            </button>
-            <button class="erp-btn erp-btn-primary">
-                <i class="fa fa-search mr-1.5"></i> 搜索
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- 操作卡片：包含主操作按钮 -->
-<div class="action-card">
-    <div class="action-buttons">
-        <button class="erp-btn erp-btn-primary">
-            <i class="fa fa-plus mr-1.5"></i> 新增
-        </button>
-        <button class="erp-btn erp-btn-secondary">
-            <i class="fa fa-upload mr-1.5"></i> 导出
-        </button>
-        <button class="erp-btn erp-btn-danger batch-btn" disabled>
-            <i class="fa fa-trash mr-1.5"></i> 批量删除
-        </button>
-    </div>
-</div>
-
-<!-- 数据表格 -->
-<div class="table-card">
-    <table class="data-table">
-        ...
-    </table>
-</div>
-```
-
-### 5.4 按钮位置规则
+### 5.3 按钮位置规则
 
 | 按钮类型 | 位置 | 说明 |
 |----------|------|------|
@@ -484,9 +430,8 @@ body {
 | 新增 | 操作卡片左侧 | 主操作按钮，使用主按钮样式 |
 | 导出 | 操作卡片左侧 | 次要操作，使用次要按钮样式 |
 | 批量操作 | 操作卡片左侧 | 需要选中数据后启用 |
-| 导入 | 操作卡片左侧 | 次要操作 |
 
-### 5.5 响应式布局
+### 5.4 响应式布局
 
 ```css
 /* 响应式布局 */
@@ -518,6 +463,8 @@ body {
 
 ## 6. 按钮样式
 
+**注意：按钮交互状态（悬停、按下、禁用、加载）请参考 [08-interaction-states.md](08-interaction-states.md)**
+
 ```css
 /* ERP 按钮样式 */
 .erp-btn {
@@ -533,25 +480,10 @@ body {
     text-decoration: none;
 }
 
-.erp-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.erp-btn:active {
-    transform: translateY(0);
-}
-
 .erp-btn-primary {
     background-color: #2a3b7d;
     color: white;
     border-color: #2a3b7d;
-}
-
-.erp-btn-primary:hover {
-    background-color: #3a4ca7;
-    border-color: #3a4ca7;
 }
 
 .erp-btn-secondary {
@@ -560,20 +492,10 @@ body {
     border-color: #d4d4d4;
 }
 
-.erp-btn-secondary:hover {
-    border-color: #a3a3a3;
-    color: #262626;
-}
-
 .erp-btn-warning {
     background-color: #FF7D00;
     color: white;
     border-color: #FF7D00;
-}
-
-.erp-btn-warning:hover {
-    background-color: #ff952e;
-    border-color: #ff952e;
 }
 
 .erp-btn-danger {
@@ -582,20 +504,10 @@ body {
     border-color: #F53F3F;
 }
 
-.erp-btn-danger:hover {
-    background-color: #ff5c5c;
-    border-color: #ff5c5c;
-}
-
 .erp-btn-success {
     background-color: #00B42A;
     color: white;
     border-color: #00B42A;
-}
-
-.erp-btn-success:hover {
-    background-color: #00cc2e;
-    border-color: #00cc2e;
 }
 
 /* 表格内按钮 */
@@ -607,11 +519,6 @@ body {
     border: none;
     cursor: pointer;
     background: transparent;
-}
-
-.table-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 ```
 
@@ -635,6 +542,8 @@ body {
 ```
 
 ## 8. 模态框样式
+
+**注意：模态框交互状态和动画请参考 [08-interaction-states.md](08-interaction-states.md)**
 
 ```css
 /* 模态框样式 */
@@ -718,6 +627,8 @@ body {
 
 ## 9. 表单样式
 
+**注意：输入框交互状态（悬停、聚焦、禁用、错误）请参考 [08-interaction-states.md](08-interaction-states.md)**
+
 ```css
 /* 表单样式 */
 .form-group {
@@ -748,17 +659,6 @@ body {
     cursor: pointer;
 }
 
-.form-select:focus {
-    outline: none;
-    border-color: #2a3b7d;
-    box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-}
-
-.form-select:disabled {
-    background-color: #f3f4f6;
-    cursor: not-allowed;
-}
-
 .form-input {
     width: 100%;
     padding: 8px 12px;
@@ -768,17 +668,6 @@ body {
     color: #1D2129;
     background-color: white;
     transition: all 0.2s ease;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: #2a3b7d;
-    box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-}
-
-.form-input:disabled {
-    background-color: #f3f4f6;
-    cursor: not-allowed;
 }
 
 .form-textarea {
@@ -792,12 +681,6 @@ body {
     transition: all 0.2s ease;
     resize: vertical;
     min-height: 80px;
-}
-
-.form-textarea:focus {
-    outline: none;
-    border-color: #2a3b7d;
-    box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
 }
 ```
 
