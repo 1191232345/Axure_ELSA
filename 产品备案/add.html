@@ -10,6 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 公共资源 -->
+    <link rel="stylesheet" href="/common/css/common.css">
+    <script src="/common/js/common.js"></script>
+    
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -680,11 +684,24 @@
     </div>
 
     <script>
+        const DATA_CONFIG = {
+            pageId: 'product_filing',
+            dataFile: '产品备案/data/product_filing-data.json',
+            apiBase: 'http://localhost:3100/api/data',
+            version: '1.0.0'
+        };
+        
+        let products = [];
+
         function goBack() {
             window.location.href = 'index.html';
         }
 
-        function saveProduct() {
+        async function saveProduct() {
+            APIDataManager.init(DATA_CONFIG);
+            const result = await APIDataManager.loadData();
+            products = result.success ? (result.data || []) : [];
+            
             var code = document.getElementById('formSku').value;
             if (!code) {
                 showToast('请填写SKU');
@@ -701,6 +718,7 @@
             }
 
             var product = {
+                id: Date.now(),
                 sku: document.getElementById('formSku').value || generateSKU(),
                 code: code,
                 nameZh: document.getElementById('formNameZh').value,
@@ -730,12 +748,13 @@
                 origin: document.getElementById('formOrigin').value,
                 materialDesc: document.getElementById('formMaterialDesc').value,
                 client: 'DEMO',
-                status: 'Active'
+                status: 'Active',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             };
 
-            var products = JSON.parse(localStorage.getItem('products') || '[]');
             products.push(product);
-            localStorage.setItem('products', JSON.stringify(products));
+            await APIDataManager.saveData(products);
 
             showToast('保存成功');
             setTimeout(function() {

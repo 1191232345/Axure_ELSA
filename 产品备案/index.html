@@ -13,1070 +13,10 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     
-    <!-- 内联样式 -->
-    <style>
-        /* 主内容区域切换 */
-        .main-content { display: none; }
-        .main-content.active { display: block; }
-
-        /* Body 基础样式 */
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: #f9fafb;
-            color: #374151;
-            min-height: 100vh;
-        }
-
-        /* PRD Markdown 渲染样式 */
-        .prose { 
-            color: #374151; 
-            line-height: 1.8; 
-            font-size: 0.95rem;
-            max-width: 100%;
-        }
-
-        .prose h1 { 
-            font-size: 2rem; 
-            font-weight: 700; 
-            color: #1e293b; 
-            margin-bottom: 1.5rem; 
-            padding-bottom: 1rem; 
-            border-bottom: 3px solid #2a3b7d;
-            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .prose h2 { 
-            font-size: 1.4rem; 
-            font-weight: 600; 
-            color: #2a3b7d; 
-            margin: 2.5rem 0 1.2rem; 
-            padding: 0.75rem 1rem;
-            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
-            border-left: 4px solid #2a3b7d;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .prose h3 { 
-            font-size: 1.15rem; 
-            font-weight: 600; 
-            color: #475569; 
-            margin: 2rem 0 0.75rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .prose h4 { 
-            font-size: 1rem; 
-            font-weight: 600; 
-            color: #2a3b7d; 
-            margin: 1.5rem 0 0.5rem; 
-        }
-
-        .prose p { margin-bottom: 1rem; color: #4b5563; }
-        .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
-        .prose li { margin-bottom: 0.5rem; color: #4b5563; }
-        .prose li::marker { color: #2a3b7d; }
-
-        /* 增强表格样式 */
-        .prose table { 
-            width: 100%; 
-            border-collapse: separate; 
-            border-spacing: 0;
-            margin: 1.5rem 0; 
-            font-size: 0.85rem; 
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .prose th { 
-            padding: 0.875rem 1rem; 
-            background: linear-gradient(135deg, #2a3b7d 0%, #4f46e5 100%);
-            color: white;
-            font-weight: 600;
-            text-align: left;
-            border: none;
-            white-space: nowrap;
-        }
-
-        .prose th:first-child { border-top-left-radius: 12px; }
-        .prose th:last-child { border-top-right-radius: 12px; }
-
-        .prose td { 
-            padding: 0.75rem 1rem; 
-            border: none;
-            border-bottom: 1px solid #e5e7eb;
-            background: white;
-        }
-
-        .prose tr:last-child td { border-bottom: none; }
-        .prose tr:nth-child(even) td { background: #f9fafb; }
-        .prose tr:hover td { background: #f0f4ff; }
-
-        /* 代码块样式 */
-        .prose pre { 
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
-            padding: 1.25rem; 
-            border-radius: 12px; 
-            font-size: 0.8rem; 
-            border: 1px solid #334155;
-            overflow-x: auto; 
-            margin: 1.5rem 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .prose code { 
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: #dc2626;
-            padding: 0.2rem 0.4rem; 
-            border-radius: 4px; 
-            font-size: 0.875em;
-            font-family: 'Monaco', 'Menlo', monospace;
-        }
-
-        .prose pre code { 
-            background: none; 
-            padding: 0; 
-            color: #e2e8f0;
-        }
-
-        .prose blockquote { 
-            border-left: 4px solid #2a3b7d; 
-            padding: 1rem 1.5rem; 
-            margin: 1.5rem 0; 
-            color: #64748b;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-radius: 0 8px 8px 0;
-            font-style: italic;
-        }
-
-        .prose strong { 
-            color: #1e293b; 
-            font-weight: 700;
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            padding: 0.1rem 0.3rem;
-            border-radius: 4px;
-        }
-
-        .prose a { 
-            color: #2a3b7d; 
-            text-decoration: none;
-            border-bottom: 1px solid #2a3b7d;
-            transition: all 0.2s;
-        }
-
-        .prose a:hover { 
-            color: #4f46e5;
-            border-bottom-color: #4f46e5;
-        }
-
-        /* 标签样式 */
-        .prose .badge { 
-            display: inline-block; 
-            padding: 0.25rem 0.75rem; 
-            border-radius: 9999px; 
-            font-size: 0.75rem; 
-            font-weight: 600;
-            margin: 0.125rem;
-        }
-
-        .prose .badge-p0 { 
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
-            color: #dc2626;
-            border: 1px solid #fca5a5;
-        }
-
-        .prose .badge-p1 { 
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
-            color: #d97706;
-            border: 1px solid #fcd34d;
-        }
-
-        /* 分隔线 */
-        .prose hr {
-            border: none;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #2a3b7d, transparent);
-            margin: 2.5rem 0;
-        }
-
-        /* 目录导航样式 */
-        .toc {
-            position: sticky;
-            top: 100px;
-            max-height: calc(100vh - 150px);
-            overflow-y: auto;
-            padding: 1rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .toc-title {
-            font-weight: 600;
-            color: #2a3b7d;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #2a3b7d;
-        }
-
-        .toc a {
-            display: block;
-            padding: 0.375rem 0.5rem;
-            color: #6b7280;
-            text-decoration: none;
-            font-size: 0.875rem;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-
-        .toc a:hover {
-            background: #f0f4ff;
-            color: #2a3b7d;
-        }
-
-        .toc-level-2 {
-            padding-left: 0;
-            font-weight: 500;
-            position: relative;
-        }
-
-        .toc-level-2::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: #2a3b7d;
-            border-radius: 3px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .toc-level-2:hover::before,
-        .toc-level-2.active::before {
-            opacity: 1;
-        }
-
-        .toc-level-3 {
-            padding-left: 1.5rem;
-            font-size: 0.8rem;
-            color: #64748b;
-            position: relative;
-        }
-
-        .toc-level-3::before {
-            content: '';
-            position: absolute;
-            left: 0.75rem;
-            top: 12px;
-            width: 4px;
-            height: 4px;
-            background: #94a3b8;
-            border-radius: 50%;
-        }
-
-        /* 切换标签样式 - 固定在右下角 */
-        .tabs {
-            display: flex;
-            gap: 2px;
-            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
-            padding: 4px;
-            border-radius: 12px;
-            width: fit-content;
-            box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
-        }
-
-        .tab {
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .tab:hover {
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .tab.active {
-            background: white;
-            color: #2a3b7d;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            font-weight: 600;
-        }
-
-        /* ERP 按钮样式 */
-        .erp-btn {
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .erp-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .erp-btn:active {
-            transform: translateY(0);
-        }
-
-        .erp-btn-primary {
-            background-color: #2a3b7d;
-            color: white;
-            border-color: #2a3b7d;
-        }
-
-        .erp-btn-primary:hover {
-            background-color: #3a4ca7;
-            border-color: #3a4ca7;
-        }
-
-        .erp-btn-secondary {
-            background-color: white;
-            color: #525252;
-            border-color: #d4d4d4;
-        }
-
-        .erp-btn-secondary:hover {
-            border-color: #a3a3a3;
-            color: #262626;
-        }
-
-        .erp-btn-warning {
-            background-color: #FF7D00;
-            color: white;
-            border-color: #FF7D00;
-        }
-
-        .erp-btn-warning:hover {
-            background-color: #ff952e;
-            border-color: #ff952e;
-        }
-
-        .erp-btn-danger {
-            background-color: #F53F3F;
-            color: white;
-            border-color: #F53F3F;
-        }
-
-        .erp-btn-danger:hover {
-            background-color: #ff5c5c;
-            border-color: #ff5c5c;
-        }
-
-        .erp-btn-success {
-            background-color: #00B42A;
-            color: white;
-            border-color: #00B42A;
-        }
-
-        .erp-btn-success:hover {
-            background-color: #00cc2e;
-            border-color: #00cc2e;
-        }
-
-        /* 表格内按钮 */
-        .table-btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-        }
-
-        .table-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 表格样式 */
-        .table-hover-row:hover {
-            background-color: #f9fafb;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            border-radius: 9999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-        }
-
-        /* 模态框样式 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            transform: translateY(-20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.show .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1D2129;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .modal-footer {
-            padding: 16px 20px;
-            border-top: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        .close-btn {
-            background-color: white;
-            color: #2a3b7d;
-            border: 1px solid #E5E7EB;
-            border-radius: 4px;
-            padding: 8px 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .close-btn:hover {
-            background-color: #f9fafb;
-        }
-
-        /* 全页面弹窗样式 */
-        .page-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            padding: 20px;
-        }
-
-        .page-modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .page-modal-container {
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-            width: 100%;
-            max-width: 1200px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            transform: scale(0.95) translateY(-10px);
-            transition: transform 0.3s ease;
-        }
-
-        .page-modal-overlay.show .page-modal-container {
-            transform: scale(1) translateY(0);
-        }
-
-        .page-modal-header {
-            padding: 16px 24px;
-            background: white;
-            border-bottom: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .page-modal-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1D2129;
-            display: flex;
-            align-items: center;
-        }
-
-        .page-modal-close-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: none;
-            color: #86909C;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .page-modal-close-btn:hover {
-            background: #F2F3F5;
-            color: #4E5969;
-        }
-
-        .page-modal-body {
-            padding: 24px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .page-modal-footer {
-            padding: 12px 24px;
-            background: white;
-            border-top: 1px solid #E5E7EB;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-radius: 0 0 8px 8px;
-        }
-
-        /* 表单分区样式 */
-        .form-section {
-            background: white;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border: 1px solid #E5E7EB;
-        }
-
-        .form-section-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid #E5E7EB;
-            font-size: 14px;
-            font-weight: 600;
-            color: #2a3b7d;
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, #fafbff 0%, #f5f7ff 100%);
-        }
-
-        .form-section-content {
-            padding: 16px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .form-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .form-col {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .form-col-3 {
-            flex: 3;
-        }
-
-        .form-col-full {
-            width: 100%;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 13px;
-            color: #4E5969;
-            margin-bottom: 6px;
-            font-weight: 400;
-        }
-
-        .text-danger {
-            color: #F53F3F;
-        }
-
-        /* 尺寸输入组 */
-        .size-input-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .size-input {
-            flex: 1;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .size-separator {
-            color: #86909C;
-            font-size: 14px;
-            user-select: none;
-        }
-
-        .size-unit-select {
-            width: 70px;
-            flex-shrink: 0;
-        }
-
-        /* 上传区域样式 */
-        .upload-area {
-            width: 100%;
-            max-width: 300px;
-            height: 80px;
-            border: 1px dashed #D9D9D9;
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: #FAFAFA;
-        }
-
-        .upload-area:hover {
-            border-color: #2a3b7d;
-            background: #f0f4ff;
-        }
-
-        .upload-icon {
-            font-size: 18px;
-            color: #BFBFBF;
-            margin-bottom: 4px;
-        }
-
-        .upload-area:hover .upload-icon {
-            color: #2a3b7d;
-        }
-
-        .upload-hint {
-            font-size: 13px;
-            color: #86909C;
-        }
-
-        .file-list {
-            margin-top: 8px;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 6px 10px;
-            background: #F7F8FA;
-            border-radius: 4px;
-            margin-top: 6px;
-            font-size: 13px;
-            color: #4E5969;
-        }
-
-        .file-item i {
-            color: #2a3b7d;
-            margin-right: 8px;
-        }
-
-        .file-item .file-remove {
-            margin-left: auto;
-            color: #C9CDD4;
-            cursor: pointer;
-            padding: 2px 6px;
-        }
-
-        .file-item .file-remove:hover {
-            color: #F53F3F;
-        }
-
-        /* 图片上传区域样式 */
-        .image-upload-area {
-            display: inline-flex;
-            align-items: center;
-            gap: 16px;
-            cursor: pointer;
-        }
-
-        .image-upload-box {
-            width: 80px;
-            height: 80px;
-            border: 1px dashed #D9D9D9;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #FAFAFA;
-            transition: all 0.2s ease;
-        }
-
-        .image-upload-area:hover .image-upload-box {
-            border-color: #2a3b7d;
-            background: #f0f4ff;
-        }
-
-        .image-upload-icon {
-            font-size: 22px;
-            color: #BFBFBF;
-        }
-
-        .image-upload-area:hover .image-upload-icon {
-            color: #2a3b7d;
-        }
-
-        .image-upload-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .image-count {
-            font-size: 14px;
-            color: #86909C;
-        }
-
-        .image-upload-tip {
-            font-size: 12px;
-            color: #C9CDD4;
-            margin-top: 8px;
-        }
-
-        .image-preview-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .image-preview-item {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #E5E7EB;
-        }
-
-        .image-preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .image-preview-item .image-remove {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 20px;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 11px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .image-preview-item:hover .image-remove {
-            opacity: 1;
-        }
-
-        /* 表单样式 */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 6px;
-        }
-
-        .form-group .required {
-            color: #F53F3F;
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #E5E7EB;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1D2129;
-            background-color: white;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .form-select:focus {
-            outline: none;
-            border-color: #2a3b7d;
-            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-        }
-
-        .form-select:disabled {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #E5E7EB;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1D2129;
-            background-color: white;
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #2a3b7d;
-            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-        }
-
-        .form-input:disabled {
-            background-color: #f3f4f6;
-            cursor: not-allowed;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #E5E7EB;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1D2129;
-            background-color: white;
-            transition: all 0.2s ease;
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-textarea:focus {
-            outline: none;
-            border-color: #2a3b7d;
-            box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-        }
-
-        /* Mermaid图表放大预览样式 */
-        .mermaid {
-            cursor: zoom-in;
-            transition: transform 0.3s ease;
-        }
-
-        .mermaid:hover {
-            transform: scale(1.02);
-        }
-
-        .mermaid-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .mermaid-modal.active {
-            display: flex;
-        }
-
-        .mermaid-modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 95%;
-            max-height: 95%;
-            overflow: auto;
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: modalZoomIn 0.3s ease-out;
-        }
-
-        @keyframes modalZoomIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .mermaid-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            color: #374151;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        .mermaid-modal-close:hover {
-            background: #e5e7eb;
-            transform: rotate(90deg);
-        }
-
-        .mermaid-hint {
-            position: absolute;
-            bottom: 10px;
-            right: 15px;
-            background: rgba(42, 59, 125, 0.9);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .mermaid-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .mermaid-container:hover .mermaid-hint {
-            opacity: 1;
-        }
-
-        /* 页面切换动画 */
-        .page {
-            display: none;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* 逻辑说明区域样式 */
-        .logic-section {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .logic-section.expanded {
-            max-height: 5000px;
-        }
-
-        .logic-icon {
-            transition: transform 0.3s ease;
-        }
-
-        .logic-icon.rotated {
-            transform: rotate(180deg);
-        }
-
-        /* 配置按钮样式 */
-        .config-toggle-btn {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 100;
-            background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 4px 15px rgba(42, 59, 125, 0.3);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-        }
-
-        .config-toggle-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(42, 59, 125, 0.4);
-        }
-    </style>
+    <!-- 公共样式 -->
+    <link rel="stylesheet" href="/common/css/common.css">
+    <!-- 模块样式 -->
+    <link rel="stylesheet" href="css/styles.css">
     
     <!-- Tailwind 配置 -->
     <script>
@@ -1104,9 +44,8 @@
                     }
                 }
             }
-        }
+        };
         
-        // 初始化Mermaid
         mermaid.initialize({
             startOnLoad: true,
             theme: 'default',
@@ -1114,33 +53,24 @@
             logLevel: 3
         });
         
-        // 配置Marked
         const renderer = new marked.Renderer();
         renderer.code = function(code, language) {
             if (language === 'mermaid') {
-                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
-                    <div class="mermaid">${code}</div>
-                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
-                </div>`;
+                return '<div class="mermaid-container" onclick="openMermaidModal(this)"><div class="mermaid">' + code + '</div><span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span></div>';
             }
-            return `<pre><code class="language-${language}">${code}</code></pre>`;
+            return '<pre><code class="language-' + language + '">' + code + '</code></pre>';
         };
-        
-        marked.setOptions({
-            renderer: renderer,
-            breaks: true,
-            gfm: true
-        });
+        marked.setOptions({ renderer: renderer, breaks: true, gfm: true });
     </script>
 </head>
 <body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
-    <!-- 配置模式按钮 - 跳转到配置页面 -->
-    <a href="config.html" class="config-toggle-btn" id="configToggleBtn">
+    <!-- 配置模式按钮 -->
+    <a href="config.html" class="config-toggle-btn">
         <i class="fa fa-cog"></i>
         <span>配置模式</span>
     </a>
 
-    <!-- 切换标签 - 固定在右下角 -->
+    <!-- 切换标签 -->
     <div class="tabs fixed bottom-8 right-8 z-40">
         <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
         <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
@@ -1162,7 +92,7 @@
                                 <i class="fa fa-angle-down ml-1 text-xs"></i>
                             </a>
                             <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100" data-page="product-filing">产品备案</a>
+                                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">产品备案</a>
                             </div>
                         </div>
                     </nav>
@@ -1189,25 +119,13 @@
             <div class="flex gap-6">
                 <aside class="w-64 flex-shrink-0 hidden lg:block">
                     <div class="toc sticky top-4">
-                        <div class="toc-title">
-                            <i class="fa fa-list-alt mr-2"></i>目录导航
-                        </div>
+                        <div class="toc-title"><i class="fa fa-list-alt mr-2"></i>目录导航</div>
                         <div id="toc-nav"></div>
                     </div>
                 </aside>
                 <div class="flex-1 min-w-0">
                     <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
-                        <div id="prd-content" class="prose max-w-none">
-                            <div class="text-center py-16">
-                                <div class="animate-pulse">
-                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
-                                    <p class="text-lg text-gray-500">正在加载PRD文档...</p>
-                                    <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
-                                        <i class="fa fa-refresh mr-2"></i>手动加载PRD
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="prd-content" class="prose max-w-none"></div>
                     </div>
                 </div>
             </div>
@@ -1220,25 +138,13 @@
             <div class="flex gap-6">
                 <aside class="w-64 flex-shrink-0 hidden lg:block">
                     <div class="toc sticky top-4">
-                        <div class="toc-title">
-                            <i class="fa fa-list-alt mr-2"></i>目录导航
-                        </div>
+                        <div class="toc-title"><i class="fa fa-list-alt mr-2"></i>目录导航</div>
                         <div id="testcases-toc-nav"></div>
                     </div>
                 </aside>
                 <div class="flex-1 min-w-0">
                     <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
-                        <div id="testcases-content" class="prose max-w-none">
-                            <div class="text-center py-16">
-                                <div class="animate-pulse">
-                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
-                                    <p class="text-lg text-gray-500">正在加载测试用例...</p>
-                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
-                                        <i class="fa fa-refresh mr-2"></i>手动加载测试用例
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="testcases-content" class="prose max-w-none"></div>
                     </div>
                 </div>
             </div>
@@ -1251,9 +157,7 @@
             <button class="mermaid-modal-close" onclick="closeMermaidModal()">
                 <i class="fa fa-times"></i>
             </button>
-            <div class="mermaid-modal-title">
-                <i class="fa fa-sitemap mr-2"></i>流程图预览
-            </div>
+            <div class="mermaid-modal-title"><i class="fa fa-sitemap mr-2"></i>流程图预览</div>
             <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
         </div>
     </div>
@@ -1261,390 +165,272 @@
     <!-- 原型页面 -->
     <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
         <div class="container mx-auto px-2 py-6">
-            <!-- 页面内容区域 -->
-            <div id="page-product-filing" class="page active">
-                
-                <!-- 搜索卡片：只包含筛选条件和搜索/重置按钮 -->
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                        <!-- 筛选条件 -->
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="text-xs text-neutral-600 mr-2">SKU</label>
-                            <input type="text" id="filterSku" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入SKU">
-                        </div>
-                        
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="text-xs text-neutral-600 mr-2">客户代码</label>
-                            <select id="filterClient" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                                <option value="">全部</option>
-                                <option value="DEMO">DEMO</option>
-                                <option value="VIP">VIP</option>
-                            </select>
-                        </div>
-                        
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="text-xs text-neutral-600 mr-2">产品名称</label>
-                            <input type="text" id="filterName" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="中文名/英文名">
-                        </div>
-                        
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="text-xs text-neutral-600 mr-2">自定义编码</label>
-                            <input type="text" id="filterCode" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入编码">
-                        </div>
-                        
-                        <!-- 搜索/重置按钮：放在搜索卡片右侧 -->
-                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
-                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="resetFilters()">
-                                <i class="fa fa-refresh mr-1.5"></i> 重置
-                            </button>
-                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="filterData()">
-                                <i class="fa fa-search mr-1.5"></i> 搜索
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 操作卡片：单独放置，包含主操作按钮 -->
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="flex justify-start gap-3">
-                        <a href="add.html" class="erp-btn erp-btn-primary">
-                            <i class="fa fa-plus mr-1.5"></i> 新增
-                        </a>
-                        <button class="erp-btn erp-btn-secondary" onclick="batchImport()">
-                            <i class="fa fa-upload mr-1.5"></i> 批量导入
-                        </button>
-                        <button class="erp-btn erp-btn-secondary" onclick="batchEditSize()">
-                            <i class="fa fa-edit mr-1.5"></i> 批量编辑尺寸
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 数据表格区域 -->
-                <div class="bg-white rounded shadow-card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">
-                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                                    </th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">SKU</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">客户代码</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">自定义编码</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">产品类型</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">中文名</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">英文名</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">申报价值</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">尺寸(cm)</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">重量(g)</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">不规则标记</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">状态</th>
-                                    <th class="py-3 px-4 text-left font-medium text-gray-700">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="productTableBody" class="divide-y divide-neutral-200">
-                                <!-- 数据将通过JavaScript动态填充 -->
-                            </tbody>
-                        </table>
+            <!-- 搜索卡片 -->
+            <div class="bg-white rounded shadow-card p-4 mb-4">
+                <div id="filterContainer" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div class="flex items-center w-full sm:w-auto">
+                        <label class="text-xs text-neutral-600 mr-2">SKU</label>
+                        <input type="text" id="filterSku" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入SKU">
                     </div>
                     
-                    <!-- 表格底部统计 -->
-                    <div class="px-4 py-3 border-t border-neutral-200 bg-gray-50">
-                        <div class="flex justify-between items-center text-sm text-gray-600">
-                            <span>共 <span id="totalCount">0</span> 条记录</span>
-                        </div>
+                    <div class="flex items-center w-full sm:w-auto">
+                        <label class="text-xs text-neutral-600 mr-2">客户代码</label>
+                        <select id="filterClient" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                            <option value="">全部</option>
+                            <option value="DEMO">DEMO</option>
+                            <option value="VIP">VIP</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center w-full sm:w-auto">
+                        <label class="text-xs text-neutral-600 mr-2">产品名称</label>
+                        <input type="text" id="filterName" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="中文名/英文名">
+                    </div>
+                    
+                    <div class="flex items-center w-full sm:w-auto">
+                        <label class="text-xs text-neutral-600 mr-2">自定义编码</label>
+                        <input type="text" id="filterCode" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入编码">
+                    </div>
+                    
+                    <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                        <button class="erp-btn erp-btn-secondary" onclick="resetFilters()">
+                            <i class="fa fa-refresh mr-1.5"></i> 重置
+                        </button>
+                        <button class="erp-btn erp-btn-primary" onclick="filterData()">
+                            <i class="fa fa-search mr-1.5"></i> 搜索
+                        </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- 操作卡片 -->
+            <div class="bg-white rounded shadow-card p-4 mb-4">
+                <div id="buttonContainer" class="flex justify-start gap-3">
+                    <a href="add.html" class="erp-btn erp-btn-primary">
+                        <i class="fa fa-plus mr-1.5"></i> 新增
+                    </a>
+                    <button class="erp-btn erp-btn-secondary" onclick="batchImport()">
+                        <i class="fa fa-upload mr-1.5"></i> 批量导入
+                    </button>
+                    <button class="erp-btn erp-btn-secondary" onclick="batchEditSize()">
+                        <i class="fa fa-edit mr-1.5"></i> 批量编辑尺寸
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 数据表格 -->
+            <div class="bg-white rounded shadow-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-neutral-200 text-sm table-auto">
+                        <thead class="bg-gray-50">
+                            <tr id="tableHeaderRow">
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">SKU</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">客户代码</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">自定义编码</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">产品类型</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">中文名</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">英文名</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">申报价值</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">尺寸(cm)</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">重量(g)</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">不规则标记</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">状态</th>
+                                <th class="py-3 px-4 text-left font-medium text-gray-700">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody" class="divide-y divide-neutral-200"></tbody>
+                    </table>
+                </div>
                 
-                <!-- 逻辑说明区域 -->
-                <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
-                    <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('product')">
-                        <div class="flex items-center">
-                            <i class="fa fa-book text-primary mr-2"></i>
-                            <span class="font-semibold text-primary">逻辑说明</span>
-                            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
-                        </div>
-                        <i class="fa fa-chevron-down text-primary transition-transform logic-icon" id="product-logic-icon"></i>
+                <div class="px-4 py-3 border-t border-neutral-200 bg-gray-50">
+                    <div class="flex justify-between items-center text-sm text-gray-600">
+                        <span>共 <span id="totalCount">0</span> 条记录</span>
                     </div>
-                    <div id="product-logic-content" class="logic-section">
-                        <!-- 初始化页面（数据展示逻辑） -->
-                        <div class="p-4 border-b border-gray-100">
-                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
-                            </h4>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm border border-gray-200 rounded">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100">
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">产品列表加载</td>
-                                            <td class="px-3 py-2 text-gray-600">页面加载时展示所有产品备案信息</td>
-                                            <td class="px-3 py-2 text-gray-600">产品备案表</td>
-                                            <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
-                                            <td class="px-3 py-2 text-gray-600">每页显示20条记录</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">状态显示</td>
-                                            <td class="px-3 py-2 text-gray-600">根据产品状态显示不同颜色徽章</td>
-                                            <td class="px-3 py-2 text-gray-600">产品备案表</td>
-                                            <td class="px-3 py-2 text-gray-600">已发布=绿色，未发布=灰色</td>
-                                            <td class="px-3 py-2 text-gray-600">-</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                </div>
+            </div>
+            
+            <!-- 逻辑说明 -->
+            <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('product')">
+                    <div class="flex items-center">
+                        <i class="fa fa-book text-primary mr-2"></i>
+                        <span class="font-semibold text-primary">逻辑说明</span>
+                        <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                    </div>
+                    <i class="fa fa-chevron-down text-primary transition-transform logic-icon" id="product-logic-icon"></i>
+                </div>
+                <div id="product-logic-content" class="logic-section">
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品列表加载</td>
+                                        <td class="px-3 py-2 text-gray-600">页面加载时展示所有产品备案信息</td>
+                                        <td class="px-3 py-2 text-gray-600">产品备案表</td>
+                                        <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
+                                        <td class="px-3 py-2 text-gray-600">每页显示20条记录</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">删除</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">弹出确认对话框</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">确认后删除，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">批量导入</td>
+                                        <td class="px-3 py-2 text-gray-600">操作卡片左侧</td>
+                                        <td class="px-3 py-2 text-gray-600">打开文件选择对话框</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">选择文件后导入，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">批量编辑尺寸</td>
+                                        <td class="px-3 py-2 text-gray-600">操作卡片左侧</td>
+                                        <td class="px-3 py-2 text-gray-600">打开文件选择对话框</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">选择文件后更新，刷新列表</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
 
-                        <!-- 检索条件 -->
-                        <div class="p-4 border-b border-gray-100">
-                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa fa-search text-primary mr-2"></i>检索条件
-                            </h4>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm border border-gray-200 rounded">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100">
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">SKU</td>
-                                            <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                            <td class="px-3 py-2 text-gray-600">精准匹配</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">客户代码</td>
-                                            <td class="px-3 py-2 text-gray-600">下拉选择框</td>
-                                            <td class="px-3 py-2 text-gray-600">精准匹配</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">产品名称</td>
-                                            <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                            <td class="px-3 py-2 text-gray-600">模糊匹配（中文名或英文名）</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">自定义编码</td>
-                                            <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                            <td class="px-3 py-2 text-gray-600">模糊匹配</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 按钮逻辑 -->
-                        <div class="p-4 border-b border-gray-100">
-                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
-                            </h4>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm border border-gray-200 rounded">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100">
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">搜索</td>
-                                            <td class="px-3 py-2 text-gray-600">搜索卡片右侧</td>
-                                            <td class="px-3 py-2 text-gray-600">收集筛选条件，调用查询接口</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">更新表格数据，重置分页</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">重置</td>
-                                            <td class="px-3 py-2 text-gray-600">搜索卡片右侧</td>
-                                            <td class="px-3 py-2 text-gray-600">清空所有筛选条件</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">显示全部数据</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">新增</td>
-                                            <td class="px-3 py-2 text-gray-600">操作卡片左侧</td>
-                                            <td class="px-3 py-2 text-gray-600">打开新增产品弹窗</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">填写表单后保存，刷新列表</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">编辑</td>
-                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
-                                            <td class="px-3 py-2 text-gray-600">打开编辑产品弹窗，填充当前数据</td>
-                                            <td class="px-3 py-2 text-gray-600">
-                                                1、状态 = 已发布，不允许编辑尺寸和重量信息<br>
-                                                2、状态 = 未发布，允许编辑所有信息
-                                            </td>
-                                            <td class="px-3 py-2 text-gray-600">修改后保存，刷新列表</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">复制</td>
-                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
-                                            <td class="px-3 py-2 text-gray-600">打开复制产品弹窗，填充当前数据（除SKU）</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">填写新SKU后保存，刷新列表</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">删除</td>
-                                            <td class="px-3 py-2 text-gray-600">每行操作列</td>
-                                            <td class="px-3 py-2 text-gray-600">弹出确认对话框</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">确认后删除，刷新列表</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">批量导入</td>
-                                            <td class="px-3 py-2 text-gray-600">操作卡片左侧</td>
-                                            <td class="px-3 py-2 text-gray-600">打开文件选择对话框</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">选择文件后导入，刷新列表</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">批量编辑尺寸</td>
-                                            <td class="px-3 py-2 text-gray-600">操作卡片左侧</td>
-                                            <td class="px-3 py-2 text-gray-600">打开文件选择对话框</td>
-                                            <td class="px-3 py-2 text-gray-600">无</td>
-                                            <td class="px-3 py-2 text-gray-600">选择文件后更新，刷新列表</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- 属性取值逻辑 -->
-                        <div class="p-4">
-                            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                                <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
-                            </h4>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full text-sm border border-gray-200 rounded">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
-                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-100">
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">SKU</td>
-                                            <td class="px-3 py-2 text-gray-600">产品唯一标识</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">必填，唯一性校验</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">64</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">客户代码</td>
-                                            <td class="px-3 py-2 text-gray-600">客户标识</td>
-                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
-                                            <td class="px-3 py-2 text-gray-600">必填，从客户列表选择</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">32</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">自定义编码</td>
-                                            <td class="px-3 py-2 text-gray-600">产品自定义编码</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">必填</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">64</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">产品类型</td>
-                                            <td class="px-3 py-2 text-gray-600">产品分类</td>
-                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
-                                            <td class="px-3 py-2 text-gray-600">必填，从类型列表选择</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">32</td>
-                                            <td class="px-3 py-2 text-gray-600">枚举型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">中文名</td>
-                                            <td class="px-3 py-2 text-gray-600">产品中文名称</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">可选</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">128</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">英文名</td>
-                                            <td class="px-3 py-2 text-gray-600">产品英文名称</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">可选</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">128</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">申报价值</td>
-                                            <td class="px-3 py-2 text-gray-600">产品申报价值</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">必填，数字</td>
-                                            <td class="px-3 py-2 text-gray-600">数字+货币</td>
-                                            <td class="px-3 py-2 text-gray-600">10,2</td>
-                                            <td class="px-3 py-2 text-gray-600">数值型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">尺寸</td>
-                                            <td class="px-3 py-2 text-gray-600">产品尺寸（长x宽x高）</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">可选，格式：数字x数字x数字</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">32</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">重量</td>
-                                            <td class="px-3 py-2 text-gray-600">产品重量（克）</td>
-                                            <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                            <td class="px-3 py-2 text-gray-600">可选，数字</td>
-                                            <td class="px-3 py-2 text-gray-600">数字</td>
-                                            <td class="px-3 py-2 text-gray-600">10</td>
-                                            <td class="px-3 py-2 text-gray-600">数值型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">不规则标记</td>
-                                            <td class="px-3 py-2 text-gray-600">不规则标记标识</td>
-                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
-                                            <td class="px-3 py-2 text-gray-600">可选，从不规则标记列表选择</td>
-                                            <td class="px-3 py-2 text-gray-600">文本</td>
-                                            <td class="px-3 py-2 text-gray-600">64</td>
-                                            <td class="px-3 py-2 text-gray-600">字符型</td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-3 py-2 text-gray-800">状态</td>
-                                            <td class="px-3 py-2 text-gray-600">产品状态</td>
-                                            <td class="px-3 py-2 text-gray-600">手工选择</td>
-                                            <td class="px-3 py-2 text-gray-600">已发布/未发布</td>
-                                            <td class="px-3 py-2 text-gray-600">徽章</td>
-                                            <td class="px-3 py-2 text-gray-600">16</td>
-                                            <td class="px-3 py-2 text-gray-600">枚举型</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">SKU</td>
+                                        <td class="px-3 py-2 text-gray-600">产品唯一标识</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">必填，唯一性校验</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">64</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">客户标识</td>
+                                        <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                        <td class="px-3 py-2 text-gray-600">必填，从客户列表选择</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">产品自定义编码</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">必填</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">64</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">产品类型</td>
+                                        <td class="px-3 py-2 text-gray-600">产品分类</td>
+                                        <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                        <td class="px-3 py-2 text-gray-600">必填，从类型列表选择</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">枚举型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">中文名</td>
+                                        <td class="px-3 py-2 text-gray-600">产品中文名称</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">可选</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">128</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">英文名</td>
+                                        <td class="px-3 py-2 text-gray-600">产品英文名称</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">可选</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">128</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">申报价值</td>
+                                        <td class="px-3 py-2 text-gray-600">产品申报价值</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">必填，数字</td>
+                                        <td class="px-3 py-2 text-gray-600">数字+货币</td>
+                                        <td class="px-3 py-2 text-gray-600">10,2</td>
+                                        <td class="px-3 py-2 text-gray-600">数值型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">尺寸</td>
+                                        <td class="px-3 py-2 text-gray-600">产品尺寸（长x宽x高）</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">可选，格式：数字x数字x数字</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">重量</td>
+                                        <td class="px-3 py-2 text-gray-600">产品重量（克）</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">可选，数字</td>
+                                        <td class="px-3 py-2 text-gray-600">数字</td>
+                                        <td class="px-3 py-2 text-gray-600">10</td>
+                                        <td class="px-3 py-2 text-gray-600">数值型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">不规则标记</td>
+                                        <td class="px-3 py-2 text-gray-600">不规则标记标识</td>
+                                        <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                        <td class="px-3 py-2 text-gray-600">可选，从不规则标记列表选择</td>
+                                        <td class="px-3 py-2 text-gray-600">文本</td>
+                                        <td class="px-3 py-2 text-gray-600">64</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">状态</td>
+                                        <td class="px-3 py-2 text-gray-600">产品状态</td>
+                                        <td class="px-3 py-2 text-gray-600">手工选择</td>
+                                        <td class="px-3 py-2 text-gray-600">已发布/未发布</td>
+                                        <td class="px-3 py-2 text-gray-600">徽章</td>
+                                        <td class="px-3 py-2 text-gray-600">16</td>
+                                        <td class="px-3 py-2 text-gray-600">枚举型</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1652,578 +438,9 @@
         </div>
     </main>
     
-    <!-- JavaScript -->
-    <script>
-        // ==================== 数据持久化管理器 ====================
-        const DataManager = {
-            storagePrefix: 'erp_prototype_',
-            
-            save: function(key, data) {
-                try {
-                    localStorage.setItem(this.storagePrefix + key, JSON.stringify(data));
-                    return true;
-                } catch (e) {
-                    console.error('保存数据失败:', e);
-                    return false;
-                }
-            },
-            
-            load: function(key, defaultValue) {
-                try {
-                    const data = localStorage.getItem(this.storagePrefix + key);
-                    return data ? JSON.parse(data) : defaultValue;
-                } catch (e) {
-                    console.error('加载数据失败:', e);
-                    return defaultValue;
-                }
-            },
-            
-            remove: function(key) {
-                localStorage.removeItem(this.storagePrefix + key);
-            },
-            
-            clear: function() {
-                Object.keys(localStorage)
-                    .filter(key => key.startsWith(this.storagePrefix))
-                    .forEach(key => localStorage.removeItem(key));
-            }
-        };
-
-        // ==================== 列表数据管理器 ====================
-        const ListDataManager = {
-            getListData: function(pageId) {
-                return DataManager.load('listData_' + pageId, null);
-            },
-            
-            saveListData: function(pageId, data) {
-                DataManager.save('listData_' + pageId, data);
-            },
-            
-            addRow: function(pageId, row) {
-                const data = this.getListData(pageId) || [];
-                row.id = row.id || Date.now();
-                data.push(row);
-                this.saveListData(pageId, data);
-                return row;
-            },
-            
-            updateRow: function(pageId, sku, updates) {
-                const data = this.getListData(pageId) || [];
-                const index = data.findIndex(row => row.sku === sku);
-                if (index !== -1) {
-                    data[index] = { ...data[index], ...updates };
-                    this.saveListData(pageId, data);
-                    return data[index];
-                }
-                return null;
-            },
-            
-            deleteRow: function(pageId, sku) {
-                const data = this.getListData(pageId) || [];
-                const filtered = data.filter(row => row.sku !== sku);
-                this.saveListData(pageId, filtered);
-                return filtered.length < data.length;
-            },
-            
-            batchDelete: function(pageId, skus) {
-                const data = this.getListData(pageId) || [];
-                const filtered = data.filter(row => !skus.includes(row.sku));
-                this.saveListData(pageId, filtered);
-                return filtered.length;
-            }
-        };
-
-        // ==================== 配置数据管理器 ====================
-        const ConfigManager = {
-            getConfig: function(pageId) {
-                return DataManager.load('config_' + pageId, null);
-            },
-            
-            saveConfig: function(pageId, config) {
-                DataManager.save('config_' + pageId, config);
-            }
-        };
-
-        // ==================== 页面数据 ====================
-        const PAGE_ID = 'product_filing';
-        let products = [];
-        let prdLoaded = false;
-        let testCasesLoaded = false;
-
-        // 获取默认产品数据
-        function getDefaultProducts() {
-            return [
-                {
-                    sku: 'AAAAAA',
-                    client: 'DEMO',
-                    code: 'PROD-001',
-                    type: 'Electronics',
-                    nameZh: '测试产品1',
-                    nameEn: 'Test Product 1',
-                    value: 100,
-                    currency: 'EUR',
-                    size: '10 x 10 x 10',
-                    weight: 500,
-                    forbidden: '标准',
-                    status: 'Active'
-                },
-                {
-                    sku: 'BDBDBD',
-                    client: 'VIP',
-                    code: 'PROD-002',
-                    type: 'Clothing',
-                    nameZh: '测试产品2',
-                    nameEn: 'Test Product 2',
-                    value: 50,
-                    currency: 'EUR',
-                    size: '20 x 15 x 5',
-                    weight: 200,
-                    forbidden: '标准',
-                    status: 'Active'
-                },
-                {
-                    sku: 'CDCDCD',
-                    client: 'DEMO',
-                    code: 'PROD-003',
-                    type: 'Home',
-                    nameZh: '测试产品3',
-                    nameEn: 'Test Product 3',
-                    value: 200,
-                    currency: 'EUR',
-                    size: '30 x 30 x 20',
-                    weight: 1000,
-                    forbidden: '异型',
-                    status: 'Inactive'
-                }
-            ];
-        }
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProducts();
-            renderProductTable();
-        });
-
-        // 加载产品数据 - 从localStorage读取或使用默认数据
-        function loadProducts() {
-            const savedProducts = ListDataManager.getListData(PAGE_ID);
-            if (savedProducts && savedProducts.length > 0) {
-                products = savedProducts;
-            } else {
-                products = getDefaultProducts();
-                ListDataManager.saveListData(PAGE_ID, products);
-            }
-        }
-        
-        // 保存产品数据
-        function saveProducts() {
-            ListDataManager.saveListData(PAGE_ID, products);
-        }
-
-        // ==================== 配置加载功能 ====================
-        
-        function loadConfigFromStorage() {
-            const saved = ConfigManager.getConfig(PAGE_ID);
-            if (saved) {
-                if (saved.pageTitle) {
-                    document.title = saved.pageTitle + ' - ELSA';
-                }
-            }
-        }
-
-        // 页面加载时尝试加载保存的配置
-        document.addEventListener('DOMContentLoaded', function() {
-            loadConfigFromStorage();
-        });
-
-        // 主标签切换
-        function switchMainTab(tab) {
-            document.querySelectorAll('.main-content').forEach(function(content) {
-                content.classList.remove('active');
-                content.style.display = 'none';
-            });
-            document.querySelectorAll('.tab').forEach(function(t) {
-                t.classList.remove('active');
-            });
-            const targetContent = document.getElementById('main-' + tab);
-            if (targetContent) {
-                targetContent.classList.add('active');
-                targetContent.style.display = 'block';
-            }
-            const targetTab = document.getElementById('tab-' + tab);
-            if (targetTab) {
-                targetTab.classList.add('active');
-            }
-            if (tab === 'prd' && !prdLoaded) {
-                loadPRD();
-            } else if (tab === 'testcases' && !testCasesLoaded) {
-                loadTestCases();
-            }
-        }
-
-        // 模态框操作
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        }
-
-        function closeModalOnOverlay(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                event.target.classList.remove('show');
-                document.body.style.overflow = '';
-            }
-        }
-
-        // Mermaid图表放大预览
-        function openMermaidModal(container) {
-            const mermaidDiv = container.querySelector('.mermaid');
-            if (!mermaidDiv) return;
-            const modal = document.getElementById('mermaidModal');
-            const modalContent = document.getElementById('mermaidModalContent');
-            modalContent.innerHTML = mermaidDiv.innerHTML;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            if (window.mermaid) {
-                mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
-            }
-        }
-
-        function closeMermaidModal(event) {
-            if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
-                return;
-            }
-            const modal = document.getElementById('mermaidModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // 加载PRD文档
-        function loadPRD() {
-            if (prdLoaded) return;
-            const prdContentDiv = document.getElementById('prd-content');
-            if (typeof marked === 'undefined') {
-                prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
-                return;
-            }
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'prd.md', true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const markdown = xhr.responseText;
-                        const html = marked.parse(markdown);
-                        prdContentDiv.innerHTML = html;
-                        generateTOC();
-                        if (window.mermaid) {
-                            setTimeout(function() {
-                                mermaid.init(undefined, prdContentDiv.querySelectorAll('.mermaid'));
-                            }, 100);
-                        }
-                    } else {
-                        prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-gray-500">PRD文档不存在，请创建prd.md文件</p></div>';
-                    }
-                    prdLoaded = true;
-                }
-            };
-            xhr.send();
-        }
-
-        function loadTestCases() {
-            if (testCasesLoaded) return;
-            const testCasesContentDiv = document.getElementById('testcases-content');
-            if (typeof marked === 'undefined') {
-                testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
-                return;
-            }
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'test-cases.md', true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const markdown = xhr.responseText;
-                        const html = marked.parse(markdown);
-                        testCasesContentDiv.innerHTML = html;
-                        generateTestCasesTOC();
-                        if (window.mermaid) {
-                            setTimeout(function() {
-                                mermaid.init(undefined, testCasesContentDiv.querySelectorAll('.mermaid'));
-                            }, 100);
-                        }
-                    } else {
-                        testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-gray-500">测试用例文档不存在，请创建test-cases.md文件</p></div>';
-                    }
-                    testCasesLoaded = true;
-                }
-            };
-            xhr.send();
-        }
-
-        // 生成目录导航
-        function generateTOC() {
-            const tocNav = document.getElementById('toc-nav');
-            const headings = document.querySelectorAll('#prd-content h1, #prd-content h2, #prd-content h3');
-            let tocHTML = '';
-            headings.forEach(function(heading, index) {
-                const id = 'heading-' + index;
-                heading.id = id;
-                const level = parseInt(heading.tagName.substring(1));
-                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
-                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
-            });
-            tocNav.innerHTML = tocHTML;
-        }
-
-        function generateTestCasesTOC() {
-            const tocNav = document.getElementById('testcases-toc-nav');
-            const headings = document.querySelectorAll('#testcases-content h1, #testcases-content h2, #testcases-content h3');
-            let tocHTML = '';
-            headings.forEach(function(heading, index) {
-                const id = 'testcases-heading-' + index;
-                heading.id = id;
-                const level = parseInt(heading.tagName.substring(1));
-                const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
-                tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
-            });
-            tocNav.innerHTML = tocHTML;
-        }
-
-        // 切换逻辑说明展开/收起
-        function togglePrdLogic(module) {
-            const content = document.getElementById(module + '-logic-content');
-            const icon = document.getElementById(module + '-logic-icon');
-            if (content.classList.contains('expanded')) {
-                content.classList.remove('expanded');
-                if (icon) icon.classList.remove('rotated');
-            } else {
-                content.classList.add('expanded');
-                if (icon) icon.classList.add('rotated');
-            }
-        }
-
-        // ESC键关闭模态框
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeMermaidModal();
-            }
-        });
-
-        // 渲染产品表格
-        function renderProductTable() {
-            const tableBody = document.getElementById('productTableBody');
-            const totalCount = document.getElementById('totalCount');
-            
-            tableBody.innerHTML = '';
-            
-            products.forEach(function(product) {
-                const row = document.createElement('tr');
-                row.className = 'table-hover-row';
-                
-                row.innerHTML = '<td class="py-3 px-4"><input type="checkbox" class="product-checkbox" data-sku="' + product.sku + '"></td>' +
-                    '<td class="py-3 px-4">' + product.sku + '</td>' +
-                    '<td class="py-3 px-4">' + product.client + '</td>' +
-                    '<td class="py-3 px-4">' + product.code + '</td>' +
-                    '<td class="py-3 px-4">' + product.type + '</td>' +
-                    '<td class="py-3 px-4">' + product.nameZh + '</td>' +
-                    '<td class="py-3 px-4">' + product.nameEn + '</td>' +
-                    '<td class="py-3 px-4">' + product.value + ' ' + product.currency + '</td>' +
-                    '<td class="py-3 px-4">' + product.size + '</td>' +
-                    '<td class="py-3 px-4">' + product.weight + '</td>' +
-                    '<td class="py-3 px-4">' + (product.forbidden || '-') + '</td>' +
-                    '<td class="py-3 px-4"><span class="status-badge ' + getStatusClass(product.status) + '">' + product.status + '</span></td>' +
-                    '<td class="py-3 px-4 text-right"><div class="flex justify-end gap-2">' +
-                    '<button class="text-primary hover:text-blue-600" onclick="editProduct(\'' + product.sku + '\')"><i class="fa fa-edit"></i></button>' +
-                    '<button class="text-danger hover:text-red-600" onclick="deleteProduct(\'' + product.sku + '\')"><i class="fa fa-trash"></i></button>' +
-                    '</div></td>';
-                
-                tableBody.appendChild(row);
-            });
-            
-            totalCount.textContent = products.length;
-        }
-
-        // 获取状态对应的CSS类
-        function getStatusClass(status) {
-            switch(status) {
-                case 'Active': return 'bg-green-100 text-green-800';
-                case 'Inactive': return 'bg-gray-100 text-gray-800';
-                case 'Pending': return 'bg-yellow-100 text-yellow-800';
-                default: return 'bg-gray-100 text-gray-800';
-            }
-        }
-
-        // 删除产品
-        function deleteProduct(sku) {
-            if (confirm('确定要删除这个产品吗？')) {
-                products = products.filter(function(p) { return p.sku !== sku; });
-                saveProducts();
-                renderProductTable();
-                toast('删除成功');
-            }
-        }
-
-        // 编辑产品
-        function editProduct(sku) {
-            window.location.href = 'edit.html?sku=' + sku;
-        }
-        
-        // 导出数据
-        function exportData() {
-            const config = ConfigManager.getConfig(PAGE_ID);
-            const exportData = {
-                pageId: PAGE_ID,
-                config: config,
-                listData: products,
-                exportTime: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = PAGE_ID + '_data_' + new Date().toISOString().split('T')[0] + '.json';
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            toast('导出成功');
-        }
-        
-        // 导入数据
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importData = JSON.parse(e.target.result);
-                    
-                    if (importData.listData && Array.isArray(importData.listData)) {
-                        products = importData.listData;
-                        saveProducts();
-                        renderProductTable();
-                        toast('导入成功，共 ' + products.length + ' 条数据');
-                    } else {
-                        toast('导入失败：文件格式错误');
-                    }
-                } catch (err) {
-                    toast('导入失败：文件格式错误');
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-        
-        // 重置数据
-        function resetData() {
-            if (!confirm('确定要重置所有数据吗？此操作不可恢复。')) return;
-            
-            DataManager.remove('listData_' + PAGE_ID);
-            DataManager.remove('config_' + PAGE_ID);
-            
-            products = getDefaultProducts();
-            saveProducts();
-            renderProductTable();
-            
-            toast('数据已重置');
-        }
-
-        // 筛选数据
-        function filterData() {
-            const skuFilter = document.getElementById('filterSku').value.toLowerCase();
-            const clientFilter = document.getElementById('filterClient').value;
-            const nameFilter = document.getElementById('filterName').value.toLowerCase();
-            const codeFilter = document.getElementById('filterCode').value.toLowerCase();
-            
-            const filteredProducts = products.filter(function(product) {
-                return (
-                    (skuFilter === '' || product.sku.toLowerCase().includes(skuFilter)) &&
-                    (clientFilter === '' || product.client === clientFilter) &&
-                    (nameFilter === '' || product.nameZh.toLowerCase().includes(nameFilter) || product.nameEn.toLowerCase().includes(nameFilter)) &&
-                    (codeFilter === '' || product.code.toLowerCase().includes(codeFilter))
-                );
-            });
-            
-            const tableBody = document.getElementById('productTableBody');
-            const totalCount = document.getElementById('totalCount');
-            
-            tableBody.innerHTML = '';
-            
-            filteredProducts.forEach(function(product) {
-                const row = document.createElement('tr');
-                row.className = 'table-hover-row';
-                
-                row.innerHTML = '<td class="py-3 px-4"><input type="checkbox" class="product-checkbox" data-sku="' + product.sku + '"></td>' +
-                    '<td class="py-3 px-4">' + product.sku + '</td>' +
-                    '<td class="py-3 px-4">' + product.client + '</td>' +
-                    '<td class="py-3 px-4">' + product.code + '</td>' +
-                    '<td class="py-3 px-4">' + product.type + '</td>' +
-                    '<td class="py-3 px-4">' + product.nameZh + '</td>' +
-                    '<td class="py-3 px-4">' + product.nameEn + '</td>' +
-                    '<td class="py-3 px-4">' + product.value + ' ' + product.currency + '</td>' +
-                    '<td class="py-3 px-4">' + product.size + '</td>' +
-                    '<td class="py-3 px-4">' + product.weight + '</td>' +
-                    '<td class="py-3 px-4">' + (product.forbidden || '-') + '</td>' +
-                    '<td class="py-3 px-4"><span class="status-badge ' + getStatusClass(product.status) + '">' + product.status + '</span></td>' +
-                    '<td class="py-3 px-4 text-right"><div class="flex justify-end gap-2">' +
-                    '<button class="text-primary hover:text-blue-600" onclick="editProduct(\'' + product.sku + '\')"><i class="fa fa-edit"></i></button>' +
-                    '<button class="text-danger hover:text-red-600" onclick="deleteProduct(\'' + product.sku + '\')"><i class="fa fa-trash"></i></button>' +
-                    '</div></td>';
-                
-                tableBody.appendChild(row);
-            });
-            
-            totalCount.textContent = filteredProducts.length;
-        }
-
-        // 重置筛选条件
-        function resetFilters() {
-            document.getElementById('filterSku').value = '';
-            document.getElementById('filterClient').value = '';
-            document.getElementById('filterName').value = '';
-            document.getElementById('filterCode').value = '';
-            renderProductTable();
-        }
-
-        // 全选/取消全选
-        function toggleSelectAll() {
-            const selectAll = document.getElementById('selectAll');
-            const checkboxes = document.querySelectorAll('.product-checkbox');
-            checkboxes.forEach(function(checkbox) {
-                checkbox.checked = selectAll.checked;
-            });
-        }
-
-        // 批量导入
-        function batchImport() {
-            toast('批量导入功能开发中');
-        }
-
-        // 批量编辑尺寸
-        function batchEditSize() {
-            toast('批量编辑尺寸功能开发中');
-        }
-
-        // Toast消息提示
-        function toast(message) {
-            const toastEl = document.createElement('div');
-            toastEl.className = 'fixed top-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-pulse';
-            toastEl.textContent = message;
-            document.body.appendChild(toastEl);
-            setTimeout(function() {
-                toastEl.remove();
-            }, 3000);
-        }
-    </script>
+    <!-- 公共JS -->
+    <script src="/common/js/common.js"></script>
+    <!-- 模块JS -->
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -6,6 +6,8 @@
     <title>可视化配置 - 产品备案管理</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <!-- 公共JS -->
+    <script src="/common/js/common.js"></script>
     <style>
         * {
             margin: 0;
@@ -853,9 +855,15 @@
             }
         };
 
+        const DATA_CONFIG = {
+            pageId: 'product_filing',
+            dataFile: '产品备案/data/product_filing-data.json',
+            apiBase: 'http://localhost:3100/api/data',
+            version: '1.0.0'
+        };
+        
         const PAGE_ID = 'product_filing';
         const STORAGE_KEY = 'config_' + PAGE_ID;
-        const LIST_DATA_KEY = 'listData_' + PAGE_ID;
         
         let pageConfig = {
             pageTitle: '产品备案管理',
@@ -906,8 +914,9 @@
         let draggedItem = null;
         let draggedType = null;
 
-        function init() {
-            loadConfigFromStorage();
+        async function init() {
+            APIDataManager.init(DATA_CONFIG);
+            await loadConfigFromStorage();
             loadConfigToPanel();
         }
 
@@ -919,16 +928,22 @@
             document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
         }
 
-        function loadConfigFromStorage() {
+        async function loadConfigFromStorage() {
             const saved = DataManager.load(STORAGE_KEY, null);
             if (saved) {
                 pageConfig = saved;
             }
+            const result = await APIDataManager.loadData();
+            if (result.success && result.data && result.data.length > 0) {
+                pageConfig.listData = result.data;
+            }
         }
 
-        function saveConfigToStorage() {
+        async function saveConfigToStorage() {
             DataManager.save(STORAGE_KEY, pageConfig);
-            DataManager.save(LIST_DATA_KEY, pageConfig.listData);
+            if (pageConfig.listData && pageConfig.listData.length > 0) {
+                await APIDataManager.saveData(pageConfig.listData);
+            }
         }
 
         function loadConfigToPanel() {
@@ -1173,7 +1188,7 @@
             }
         }
 
-        function handleDrop(event, type, targetId) {
+        async function handleDrop(event, type, targetId) {
             event.preventDefault();
             const target = event.target.closest('.config-item-row');
             if (target) {
@@ -1211,6 +1226,9 @@
             }[type];
             
             renderFunc();
+            await saveConfigToStorage();
+            toast('排序已保存');
+            
             draggedItem = null;
             draggedType = null;
         }
@@ -1321,7 +1339,7 @@
             renderListDataConfig();
         }
 
-        function addListDataRow() {
+        async function addListDataRow() {
             const newId = Math.max(...pageConfig.listData.map(d => d.id), 0) + 1;
             const newRow = { id: newId };
             
@@ -1335,17 +1353,22 @@
             
             pageConfig.listData.unshift(newRow);
             listDataPage.current = 1;
+            await APIDataManager.saveData(pageConfig.listData);
             renderListDataConfig();
         }
 
-        function updateListDataRow(id, field, value) {
+        async function updateListDataRow(id, field, value) {
             const item = pageConfig.listData.find(d => d.id === id);
-            if (item) item[field] = value;
+            if (item) {
+                item[field] = value;
+                await APIDataManager.saveData(pageConfig.listData);
+            }
         }
 
-        function deleteListDataRow(id) {
+        async function deleteListDataRow(id) {
             if (confirm('确定要删除这条数据吗？')) {
                 pageConfig.listData = pageConfig.listData.filter(d => d.id !== id);
+                await APIDataManager.saveData(pageConfig.listData);
                 renderListDataConfig();
             }
         }
@@ -1371,15 +1394,18 @@
             document.getElementById('configFileInput').click();
         }
 
-        function handleConfigImport(event) {
+        async function handleConfigImport(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const config = JSON.parse(e.target.result);
                     pageConfig = config;
+                    if (pageConfig.listData && pageConfig.listData.length > 0) {
+                        await APIDataManager.saveData(pageConfig.listData);
+                    }
                     loadConfigToPanel();
                     toast('配置已导入！');
                 } catch (error) {
@@ -1393,16 +1419,15 @@
         function resetConfig() {
             if (confirm('确定要重置为默认配置吗？此操作不可撤销。')) {
                 DataManager.remove(STORAGE_KEY);
-                DataManager.remove(LIST_DATA_KEY);
                 location.reload();
             }
         }
 
-        function saveAndApply() {
+        async function saveAndApply() {
             pageConfig.pageTitle = document.getElementById('configPageTitle').value;
             pageConfig.moduleName = document.getElementById('configModuleName').value;
             
-            saveConfigToStorage();
+            await saveConfigToStorage();
             toast('配置已保存！');
             
             setTimeout(() => {

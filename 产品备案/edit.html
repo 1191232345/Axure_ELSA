@@ -10,6 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 公共资源 -->
+    <link rel="stylesheet" href="/common/css/common.css">
+    <script src="/common/js/common.js"></script>
+    
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -687,6 +691,14 @@
     </div>
 
     <script>
+        const DATA_CONFIG = {
+            pageId: 'product_filing',
+            dataFile: '产品备案/data/product_filing-data.json',
+            apiBase: 'http://localhost:3100/api/data',
+            version: '1.0.0'
+        };
+        
+        let products = [];
         let currentProduct = null;
 
         function goBack() {
@@ -700,7 +712,11 @@
             return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
         }
 
-        function loadProductData() {
+        async function loadProductData() {
+            APIDataManager.init(DATA_CONFIG);
+            const result = await APIDataManager.loadData();
+            products = result.success ? (result.data || []) : [];
+            
             const sku = getUrlParameter('sku');
             if (!sku) {
                 showToast('产品SKU不能为空');
@@ -710,7 +726,6 @@
                 return;
             }
 
-            const products = JSON.parse(localStorage.getItem('products') || '[]');
             currentProduct = products.find(function(p) { return p.sku === sku; });
 
             if (!currentProduct) {
@@ -721,14 +736,12 @@
                 return;
             }
 
-            // 填充表单数据
             document.getElementById('formType').value = currentProduct.type || 'DEMO';
             document.getElementById('formNameZh').value = currentProduct.nameZh || '';
             document.getElementById('formNameEn').value = currentProduct.nameEn || '';
             document.getElementById('formSku').value = currentProduct.sku || '';
             document.getElementById('formEuCode').value = currentProduct.euCode || '';
             
-            // 尺寸信息
             if (currentProduct.size) {
                 const sizeParts = currentProduct.size.split(' ');
                 if (sizeParts.length === 2) {
@@ -775,7 +788,7 @@
             document.getElementById('formWeightUnit').disabled = isActive;
         }
 
-        function updateProduct() {
+        async function updateProduct() {
             var code = document.getElementById('formSku').value;
             if (!code) {
                 showToast('请填写SKU');
@@ -792,6 +805,7 @@
             }
 
             var updatedProduct = {
+                id: currentProduct.id,
                 sku: document.getElementById('formSku').value || generateSKU(),
                 code: code,
                 nameZh: document.getElementById('formNameZh').value,
@@ -819,15 +833,15 @@
                 origin: document.getElementById('formOrigin').value,
                 materialDesc: document.getElementById('formMaterialDesc').value,
                 client: currentProduct.client || 'DEMO',
-                status: currentProduct.status || 'Active'
+                status: currentProduct.status || 'Active',
+                updatedAt: new Date().toISOString()
             };
 
-            var products = JSON.parse(localStorage.getItem('products') || '[]');
             var index = products.findIndex(function(p) { return p.sku === updatedProduct.sku; });
             
             if (index !== -1) {
                 products[index] = updatedProduct;
-                localStorage.setItem('products', JSON.stringify(products));
+                await APIDataManager.saveData(products);
                 showToast('更新成功');
                 setTimeout(function() {
                     window.location.href = 'index.html';
