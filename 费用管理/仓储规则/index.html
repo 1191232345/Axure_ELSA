@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仓储规则 - ELSA</title>
+
+  <!-- CDN 资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            'card': '0 4px 16px rgba(27, 58, 75, 0.08)',
+            'card-hover': '0 8px 32px rgba(27, 58, 75, 0.1)',
+            'dropdown': '0 4px 16px rgba(27, 58, 75, 0.1)',
+            'header': '0 1px 3px rgba(27, 58, 75, 0.06)',
+            'accent': '0 4px 20px rgba(232, 168, 56, 0.15)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- 模块样式 -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <!-- 头部导航 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-display font-semibold tracking-wide">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                费用管理
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">仓储规则</a>
+                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-dark hover:bg-hover">批量获取费用</a>
+              </div>
+            </div>
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                对账
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/对账/成本明细/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">成本明细</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 原型/PRD/测试用例 Tab -->
+  <div class="tabs">
+    <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+    <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+    <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+  </div>
+
+  <!-- PRD 内容区域 -->
+  <main id="main-prd" class="main-content">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+        <div class="text-center py-16">
+          <i class="fa fa-file-text-o text-5xl text-primary mb-4"></i>
+          <p class="text-lg text-text-muted">PRD文档待补充</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 测试用例内容区域 -->
+  <main id="main-testcases" class="main-content">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+        <div class="text-center py-16">
+          <i class="fa fa-check-square-o text-5xl text-primary mb-4"></i>
+          <p class="text-lg text-text-muted">测试用例待补充</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 原型内容区域 -->
+  <main id="main-prototype" class="main-content active">
+    <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+
+      <!-- 筛选区域 -->
+      <div class="filter-section animate-fade-in-up">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-display font-semibold text-dark">检索条件</h3>
+        </div>
+
+        <div class="filter-grid" id="filterContainer">
+          <div class="filter-item">
+            <label>仓库代码</label>
+            <input type="text" id="filterWarehouseCode" placeholder="">
+          </div>
+          <div class="filter-item">
+            <label>客户代码</label>
+            <select id="filterCustomerCode">
+              <option value="">请选择</option>
+              <option value="DEMO - demo">DEMO - demo</option>
+              <option value="VIP001">VIP001</option>
+              <option value="COLD001">COLD001</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>仓储等级</label>
+            <select id="filterStorageLevel">
+              <option value="">请选择</option>
+              <option value="自定义">自定义</option>
+              <option value="标准">标准</option>
+              <option value="VIP">VIP</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>规则名称</label>
+            <input type="text" id="filterRuleName" placeholder="请输入">
+          </div>
+          <div class="filter-item">
+            <label>发布状态</label>
+            <select id="filterPublishStatus">
+              <option value="">请选择</option>
+              <option value="published">已发布</option>
+              <option value="draft">草稿</option>
+              <option value="cancelled">已作废</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>结算周期</label>
+            <select id="filterSettlementCycle">
+              <option value="">请选择</option>
+              <option value="日结">日结</option>
+              <option value="周结">周结</option>
+              <option value="月结">月结</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button id="btnReset" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-refresh mr-1"></i> 重置
+          </button>
+          <button id="btnSearch" class="erp-btn erp-btn-primary">
+            <i class="fa fa-search mr-1"></i> 搜索
+          </button>
+        </div>
+      </div>
+
+      <!-- 表格区域 -->
+      <div class="table-section animate-fade-in-up stagger-1">
+        <!-- 操作按钮 -->
+        <div class="table-toolbar" id="buttonContainer">
+          <button id="btnBatchSetExpiry" class="erp-btn erp-btn-primary">
+            <i class="fa fa-calendar mr-1"></i> 批量设置有效期
+          </button>
+          <button id="btnBatchPublish" class="erp-btn erp-btn-primary">
+            <i class="fa fa-check-circle mr-1"></i> 批量发布
+          </button>
+          <button id="btnBatchCancel" class="erp-btn erp-btn-danger">
+            <i class="fa fa-ban mr-1"></i> 批量失效
+          </button>
+          <button id="btnCreate" class="erp-btn erp-btn-success">
+            <i class="fa fa-plus mr-1"></i> 创建
+          </button>
+          <button id="btnExport" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-download mr-1"></i> 导出
+          </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr id="tableHeaderRow">
+                <th style="width:40px;"><input type="checkbox" class="row-checkbox" id="selectAll"></th>
+                <th>规则名称</th>
+                <th>仓储等级</th>
+                <th>仓库</th>
+                <th>结算周期</th>
+                <th>币种</th>
+                <th>计费类型</th>
+                <th>客户代码</th>
+                <th>有效期</th>
+                <th>发布状态</th>
+                <th>人员</th>
+                <th>备注</th>
+                <th>时间</th>
+                <th style="width:60px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination-bar">
+          <div class="pagination-info">
+            共 <span id="totalCount">0</span> 条
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <select id="pageSize" class="pagination-size">
+              <option value="10">10条/页</option>
+              <option value="20">20条/页</option>
+              <option value="50">50条/页</option>
+            </select>
+            <div class="pagination-pages" id="pageButtons">
+            </div>
+            <div class="page-jump">
+              <span>前往</span>
+              <input type="number" id="pageInput" min="1">
+              <span>页</span>
+              <button class="page-btn" onclick="goToPageInput()" style="margin-left:4px;">确定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 配置模式按钮 -->
+  <a href="config.html" class="config-toggle-btn" id="configToggleBtn">
+    <i class="fa fa-cog"></i>
+    <span>配置模式</span>
+  </a>
+
+  <!-- 模块 JS -->
+  <script src="js/main.js"></script>
+</body>
+</html>

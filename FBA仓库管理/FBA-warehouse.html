@@ -134,6 +134,144 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="main-testcases" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title">
+                            <i class="fa fa-list-alt mr-2"></i>目录导航
+                        </div>
+                        <div id="testcases-toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="testcases-content" class="prose max-w-none">
+                            <div class="text-center py-16">
+                                <div class="animate-pulse">
+                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+                                    <p class="text-lg text-gray-500">正在加载测试用例...</p>
+                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
+                                        <i class="fa fa-refresh mr-2"></i>手动加载测试用例
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+        <div class="container mx-auto px-4 py-6">
+            <div id="page-batch-tracking" class="page active">
+                <div class="page-title">
+                    <i class="fa fa-list-alt"></i> FBA仓库
+                </div>
+
+                <div class="filter-card">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="filter-label">FBA仓库代码</label>
+                            <select class="form-select w-full sm:w-44">
+                                <option value="DEMO">DEMO</option>
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="filter-label">FBA仓库名称</label>
+                            <input type="text" class="form-input w-full sm:w-44" placeholder="">
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="handleReset()">
+                                重置
+                            </button>
+                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="handleSearch()">
+                                查询
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <div class="flex justify-start gap-3">
+                        <button class="erp-btn erp-btn-primary" onclick="handleAdd()">
+                            <i class="fa fa-plus mr-1.5"></i> 新增
+                        </button>
+                        <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('fbaWarehouse', '导入FBA仓库', '支持上传Excel文件导入FBA仓库', '.xlsx,.xls')">
+                            <i class="fa fa-upload mr-1.5"></i> 导入
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm table-auto">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">FBA仓库代码</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">FBA仓库名称</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">详细地址</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">国家</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">省/州</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">城市</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">邮编</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">联系电话</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">创建人</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">创建时间</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">更新人</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">更新时间</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 whitespace-nowrap">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trackingTableBody" class="bg-white divide-y divide-gray-100">
+                                <tr class="table-hover-row">
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">DEMO</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">DEMO</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1568 N Linden Ave</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">US</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">CA</td>
+                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">North Dallas</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">95286</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1234567890</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">Admin</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">2025/1/1 12:00</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">Admin</td>
+                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">2025/1/1 12:00</td>
+                                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                                        <button class="table-btn text-primary hover:text-primary-light mr-1" title="编辑" onclick="handleEdit(this)">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                        <button class="table-btn text-danger hover:text-red-600" title="删除" onclick="handleDelete(this)">
+                                            <i class="fa fa-trash-o"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100">
+                        <div class="text-sm text-gray-500">
+                            共 <span class="font-medium text-gray-700">1</span> 条
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+                                <i class="fa fa-angle-left"></i>
+                            </button>
+                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-primary bg-primary text-white rounded font-medium">1</button>
+                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
+                                <i class="fa fa-angle-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 逻辑说明 -->
                 <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
@@ -290,6 +428,8 @@
                                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
                                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
                                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
@@ -297,57 +437,73 @@
                                             <td class="px-3 py-2 text-gray-800">FBA仓库代码</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库的唯一标识</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填，唯一</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">FBA仓库名称</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库的名称</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">128</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">详细地址</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库的详细地址</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">256</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">国家</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库所在国家</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">省/州</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库所在省/州</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">城市</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库所在城市</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">邮编</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库所在邮编</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">32</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">联系电话</td>
                                             <td class="px-3 py-2 text-gray-600">FBA仓库联系电话</td>
                                             <td class="px-3 py-2 text-gray-600">用户输入</td>
-                                            <td class="px-3 py-2 text-gray-600">直接取值</td>
+                                            <td class="px-3 py-2 text-gray-600">选填</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">32</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">创建人</td>
@@ -355,6 +511,8 @@
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">当前登录用户</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">创建时间</td>
@@ -362,6 +520,8 @@
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">当前系统时间</td>
                                             <td class="px-3 py-2 text-gray-600">YYYY/MM/DD HH:MM</td>
+                                            <td class="px-3 py-2 text-gray-600">-</td>
+                                            <td class="px-3 py-2 text-gray-600">DATETIME</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">更新人</td>
@@ -369,6 +529,8 @@
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">当前登录用户</td>
                                             <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">更新时间</td>
@@ -376,6 +538,8 @@
                                             <td class="px-3 py-2 text-gray-600">系统生成</td>
                                             <td class="px-3 py-2 text-gray-600">当前系统时间</td>
                                             <td class="px-3 py-2 text-gray-600">YYYY/MM/DD HH:MM</td>
+                                            <td class="px-3 py-2 text-gray-600">-</td>
+                                            <td class="px-3 py-2 text-gray-600">DATETIME</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -396,6 +560,8 @@
                                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
                                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
                                             <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                                            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-100">
@@ -405,6 +571,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填，唯一</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">FBA仓库名称</td>
@@ -412,6 +580,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">128</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">详细地址</td>
@@ -419,6 +589,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">256</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">国家</td>
@@ -426,6 +598,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">省/州</td>
@@ -433,6 +607,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">城市</td>
@@ -440,6 +616,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">64</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">邮编</td>
@@ -447,6 +625,8 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">必填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">32</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">联系电话</td>
@@ -454,148 +634,12 @@
                                             <td class="px-3 py-2 text-gray-600">键盘输入</td>
                                             <td class="px-3 py-2 text-gray-600">选填</td>
                                             <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                            <td class="px-3 py-2 text-gray-600">32</td>
+                                            <td class="px-3 py-2 text-gray-600">字符型</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <main id="main-testcases" class="main-content" style="display: none;">
-        <div class="container mx-auto px-4 py-8">
-            <div class="flex gap-6">
-                <aside class="w-64 flex-shrink-0 hidden lg:block">
-                    <div class="toc sticky top-4">
-                        <div class="toc-title">
-                            <i class="fa fa-list-alt mr-2"></i>目录导航
-                        </div>
-                        <div id="testcases-toc-nav"></div>
-                    </div>
-                </aside>
-                <div class="flex-1 min-w-0">
-                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
-                        <div id="testcases-content" class="prose max-w-none">
-                            <div class="text-center py-16">
-                                <div class="animate-pulse">
-                                    <i class="fa fa-spinner fa-spin text-5xl text-primary mb-4"></i>
-                                    <p class="text-lg text-gray-500">正在加载测试用例...</p>
-                                    <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light transition-colors">
-                                        <i class="fa fa-refresh mr-2"></i>手动加载测试用例
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
-        <div class="container mx-auto px-4 py-6">
-            <div id="page-batch-tracking" class="page active">
-                <div class="page-title">
-                    <i class="fa fa-list-alt"></i> FBA仓库
-                </div>
-
-                <div class="filter-card">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="filter-label">FBA仓库代码</label>
-                            <select class="form-select w-full sm:w-44">
-                                <option value="DEMO">DEMO</option>
-                                <option value="">全部</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center w-full sm:w-auto">
-                            <label class="filter-label">FBA仓库名称</label>
-                            <input type="text" class="form-input w-full sm:w-44" placeholder="">
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
-                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="handleReset()">
-                                重置
-                            </button>
-                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="handleSearch()">
-                                查询
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-card">
-                    <div class="flex justify-start gap-3">
-                        <button class="erp-btn erp-btn-primary" onclick="handleAdd()">
-                            <i class="fa fa-plus mr-1.5"></i> 新增
-                        </button>
-                        <button class="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors" onclick="openUploadModal('fbaWarehouse', '导入FBA仓库', '支持上传Excel文件导入FBA仓库', '.xlsx,.xls')">
-                            <i class="fa fa-upload mr-1.5"></i> 导入
-                        </button>
-                    </div>
-                </div>
-
-                <div class="data-card">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm table-auto">
-                            <thead class="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">FBA仓库代码</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">FBA仓库名称</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">详细地址</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">国家</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">省/州</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">城市</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">邮编</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">联系电话</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">创建人</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">创建时间</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">更新人</th>
-                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">更新时间</th>
-                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 whitespace-nowrap">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="trackingTableBody" class="bg-white divide-y divide-gray-100">
-                                <tr class="table-hover-row">
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">DEMO</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1568 N Linden Ave</td>
-                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">US</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">CA</td>
-                                    <td class="px-4 py-3 text-gray-500 whitespace-nowrap">North Dallas</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">95286</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">1234567890</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">Admin</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">2025/1/1 12:00</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">Admin</td>
-                                    <td class="px-4 py-3 text-gray-700 whitespace-nowrap">2025/1/1 12:00</td>
-                                    <td class="px-4 py-3 text-center whitespace-nowrap">
-                                        <button class="table-btn text-primary hover:text-primary-light mr-1" title="编辑" onclick="handleEdit(this)">
-                                            <i class="fa fa-edit"></i>
-                                        </button>
-                                        <button class="table-btn text-danger hover:text-red-600" title="删除" onclick="handleDelete(this)">
-                                            <i class="fa fa-trash-o"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-100">
-                        <div class="text-sm text-gray-500">
-                            共 <span class="font-medium text-gray-700">1</span> 条
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
-                                <i class="fa fa-angle-left"></i>
-                            </button>
-                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-primary bg-primary text-white rounded font-medium">1</button>
-                            <button class="w-8 h-8 flex items-center justify-center text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled>
-                                <i class="fa fa-angle-right"></i>
-                            </button>
                         </div>
                     </div>
                 </div>

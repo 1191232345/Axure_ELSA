@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>价卡查询 - ELSA客户中心</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <span class="text-lg font-semibold tracking-wide">ELSA 客户中心</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-white/70">当前客户：</span>
+          <select id="customerSelector" class="bg-primary-light text-white border border-white/20 rounded px-3 py-1 text-sm outline-none cursor-pointer">
+            <option value="DEMO - demo">DEMO - demo</option>
+            <option value="VIP001">VIP001</option>
+            <option value="COLD001">COLD001</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-6 max-w-[1400px]">
+    
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-dark mb-2">我的价卡</h1>
+      <p class="text-text-secondary text-sm">查看您账户下所有有效的仓储费率规则</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa fa-credit-card"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" id="totalCountStat">0</div>
+          <div class="stat-label">价卡总数</div>
+        </div>
+      </div>
+      <div class="stat-card stat-success">
+        <div class="stat-icon"><i class="fa fa-check-circle"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" id="activeCountStat">0</div>
+          <div class="stat-label">生效中</div>
+        </div>
+      </div>
+      <div class="stat-card stat-warning">
+        <div class="stat-icon"><i class="fa fa-clock-o"></i></div>
+        <div class="stat-content">
+          <div class="stat-value" id="expiringCountStat">0</div>
+          <div class="stat-label">即将到期</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-grid">
+        <div class="filter-item">
+          <label>仓库代码</label>
+          <input type="text" id="filterWarehouseCode" placeholder="请输入仓库代码">
+        </div>
+        <div class="filter-item">
+          <label>仓储等级</label>
+          <select id="filterStorageLevel">
+            <option value="">全部</option>
+            <option value="自定义">自定义</option>
+            <option value="标准">标准</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>规则名称</label>
+          <input type="text" id="filterRuleName" placeholder="请输入规则名称">
+        </div>
+        <div class="filter-item">
+          <label>结算周期</label>
+          <select id="filterSettlementCycle">
+            <option value="">全部</option>
+            <option value="日结">日结</option>
+            <option value="周结">周结</option>
+            <option value="月结">月结</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button id="btnReset" class="erp-btn erp-btn-secondary">
+          <i class="fa fa-refresh mr-1"></i> 重置
+        </button>
+        <button id="btnSearch" class="erp-btn erp-btn-primary">
+          <i class="fa fa-search mr-1"></i> 搜索
+        </button>
+      </div>
+    </div>
+
+    <div class="table-section">
+      <div class="table-toolbar">
+        <span class="table-title">价卡列表</span>
+        <button id="btnExport" class="erp-btn erp-btn-secondary">
+          <i class="fa fa-download mr-1"></i> 导出价卡
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>规则名称</th>
+              <th>仓储等级</th>
+              <th>仓库</th>
+              <th>结算周期</th>
+              <th>币种</th>
+              <th>计费类型</th>
+              <th>有效期</th>
+              <th>状态</th>
+              <th style="width:60px;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar">
+        <div class="pagination-info">
+          共 <span id="totalCount">0</span> 条
+        </div>
+        <div class="pagination-right">
+          <select id="pageSize" class="pagination-size">
+            <option value="10">10条/页</option>
+            <option value="20">20条/页</option>
+            <option value="50">50条/页</option>
+          </select>
+          <div class="pagination-pages" id="pageButtons"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-white border-t border-border-light mt-8 py-6">
+    <div class="container mx-auto px-4 text-center text-text-muted text-sm">
+      <p>© 2025 ELSA 海外仓管理系统 - 客户服务中心</p>
+      <p class="mt-1">如有疑问请联系您的专属客服经理</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
