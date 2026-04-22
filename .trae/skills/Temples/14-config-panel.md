@@ -87,23 +87,97 @@
 
 在主页面 `<script>` 标签内添加：
 
+> **⚠️ 重要：STORAGE_KEY 必须与配置页面的 STORAGE_KEY 完全一致！**
+> 如果配置页面使用 `DataManager`（带 `erp_prototype_` 前缀），主页面也必须使用带前缀的 key。
+> 如果配置页面直接使用 `localStorage.setItem(STORAGE_KEY, ...)`，主页面也使用相同的 key。
+
 ```javascript
 // 配置加载功能
+// ⚠️ 此 key 必须与 config.html 中保存时使用的 key 完全一致
 const STORAGE_KEY = 'pageConfig_[模块名称]';
+
+let pageConfig = null;
 
 function loadConfigFromStorage() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         try {
-            const pageConfig = JSON.parse(saved);
+            pageConfig = JSON.parse(saved);
             if (pageConfig.pageTitle) {
                 document.title = pageConfig.pageTitle + ' - ELSA';
             }
-            // 可根据需要扩展更多配置应用逻辑
+            applyFiltersConfig(pageConfig.filters || []);
+            applyColumnsConfig(pageConfig.columns || []);
+            applyButtonsConfig(pageConfig.buttons || []);
         } catch (e) {
             console.error('加载配置失败', e);
+            pageConfig = null;
         }
     }
+}
+
+function applyFiltersConfig(filters) {
+    const container = document.getElementById('filterContainer');
+    if (!container || filters.length === 0) return;
+    
+    const filterHtml = filters.map(function(filter) {
+        if (filter.type === 'select') {
+            const options = (filter.options || '').split(',').map(function(opt) {
+                return '<option value="' + opt + '">' + opt + '</option>';
+            }).join('');
+            return '<div class="flex items-center w-full sm:w-auto">' +
+                '<label class="text-xs text-neutral-600 mr-2">' + filter.label + '</label>' +
+                '<select id="filter' + filter.field.charAt(0).toUpperCase() + filter.field.slice(1) + '" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">' + options + '</select>' +
+            '</div>';
+        } else {
+            return '<div class="flex items-center w-full sm:w-auto">' +
+                '<label class="text-xs text-neutral-600 mr-2">' + filter.label + '</label>' +
+                '<input type="text" id="filter' + filter.field.charAt(0).toUpperCase() + filter.field.slice(1) + '" placeholder="' + (filter.placeholder || '') + '" class="w-full sm:w-48 pl-3 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">' +
+            '</div>';
+        }
+    }).join('');
+    
+    container.innerHTML = filterHtml + 
+        '<div class="flex gap-2 w-full sm:w-auto sm:ml-auto">' +
+            '<button class="erp-btn erp-btn-secondary" onclick="resetFilters()"><i class="fa fa-refresh mr-1.5"></i> 重置</button>' +
+            '<button class="erp-btn erp-btn-primary" onclick="filterData()"><i class="fa fa-search mr-1.5"></i> 搜索</button>' +
+        '</div>';
+}
+
+function applyColumnsConfig(columns) {
+    const headerRow = document.getElementById('tableHeaderRow');
+    if (!headerRow || columns.length === 0) return;
+    
+    const headerHtml = columns.filter(function(col) { return col.visible !== false; }).map(function(col) {
+        return '<th class="py-3 px-4 text-left font-medium text-gray-700" style="width:' + col.width + 'px;text-align:' + col.align + '">' + col.label + '</th>';
+    }).join('');
+    
+    headerRow.innerHTML = '<th class="py-3 px-4 text-left font-medium text-gray-700"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>' + headerHtml;
+}
+
+function applyButtonsConfig(buttons) {
+    const container = document.getElementById('buttonContainer');
+    if (!container || buttons.length === 0) return;
+    
+    const buttonHtml = buttons.filter(function(btn) { return btn.visible !== false; }).map(function(btn) {
+        const btnClass = btn.type === 'primary' ? 'erp-btn-primary' : 'erp-btn-secondary';
+        if (btn.action === 'add') {
+            return '<a href="add.html" class="erp-btn ' + btnClass + '"><i class="fa ' + btn.icon + ' mr-1.5"></i> ' + btn.label + '</a>';
+        } else {
+            return '<button class="erp-btn ' + btnClass + '" onclick="' + btn.action + '()"><i class="fa ' + btn.icon + ' mr-1.5"></i> ' + btn.label + '</button>';
+        }
+    }).join('');
+    
+    container.innerHTML = buttonHtml;
+}
+
+function resetFilters() {
+    const filterConfigs = pageConfig && pageConfig.filters ? pageConfig.filters : getDefaultConfig().filters;
+    filterConfigs.forEach(function(filter) {
+        const el = document.getElementById('filter' + filter.field.charAt(0).toUpperCase() + filter.field.slice(1));
+        if (el) el.value = '';
+    });
+    renderProductTable();
 }
 
 // 页面加载时尝试加载保存的配置
@@ -334,9 +408,10 @@ body {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    transition: all 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
     cursor: move;
     user-select: none;
+    position: relative;
 }
 
 .config-item-row:hover {
@@ -345,31 +420,89 @@ body {
 }
 
 .config-item-row.dragging {
-    opacity: 0.5;
+    opacity: 0.9;
+    transform: scale(1.02) rotate(1deg);
+    box-shadow: 0 15px 35px rgba(42, 59, 125, 0.3);
+    border: 2px solid var(--primary);
+    background: white !important;
+    z-index: 1000;
+    transition: none;
+}
+
+.config-item-row.drag-placeholder {
+    opacity: 0.3;
     background: #e0e7ff !important;
-    border: 2px dashed var(--primary);
+    border: 2px dashed var(--primary) !important;
 }
 
-.config-item-row.drag-over {
-    border-top: 2px solid var(--primary);
+.config-item-row.shift-up {
+    transform: translateY(calc(var(--shift-amount, 52px) * -1));
 }
 
-.config-item-row.drag-over-bottom {
-    border-bottom: 2px solid var(--primary);
+.config-item-row.shift-down {
+    transform: translateY(var(--shift-amount, 52px));
+}
+
+.config-item-row.drop-indicator {
+    position: relative;
+}
+
+.config-item-row.drop-indicator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), #667eea);
+    border-radius: 2px;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(42, 59, 125, 0.5);
+}
+
+.config-item-row.drop-indicator-top::before {
+    top: -3px;
+}
+
+.config-item-row.drop-indicator-bottom::before {
+    bottom: -3px;
 }
 
 .config-drag-handle {
     cursor: grab;
     color: #9ca3af;
-    padding: 4px;
+    padding: 6px 8px;
+    margin: -6px -8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .config-drag-handle:hover {
     color: var(--primary);
+    background: rgba(42, 59, 125, 0.1);
 }
 
 .config-drag-handle:active {
     cursor: grabbing;
+    background: rgba(42, 59, 125, 0.15);
+}
+
+.config-drag-handle i {
+    font-size: 14px;
+}
+
+.config-item-list {
+    position: relative;
+}
+
+.config-item-list.dragging-active .config-item-row {
+    pointer-events: none;
+}
+
+.config-item-list.dragging-active .config-item-row.dragging {
+    pointer-events: auto;
 }
 
 .config-item-row input,
@@ -975,6 +1108,9 @@ let listDataPage = {
 // 拖拽相关变量
 let draggedItem = null;
 let draggedType = null;
+let draggedElementHeight = 0;
+let draggedOriginalIndex = -1;
+let currentInsertIndex = -1;
 
 // 标签页切换
 function switchTab(tab) {
@@ -1032,6 +1168,7 @@ function renderFilterItems() {
     container.innerHTML = pageConfig.filters.map((item) => `
         <div class="config-item-row" data-id="${item.id}" data-type="filter" draggable="true" 
              ondragstart="handleDragStart(event, 'filter', ${item.id})" 
+             ondragend="handleDragEnd(event)"
              ondragover="handleDragOver(event)" 
              ondragleave="handleDragLeave(event)" 
              ondrop="handleDrop(event, 'filter', ${item.id})">
@@ -1078,6 +1215,7 @@ function renderColumnItems() {
     container.innerHTML = pageConfig.columns.map((item) => `
         <div class="config-item-row" data-id="${item.id}" data-type="column" draggable="true"
              ondragstart="handleDragStart(event, 'column', ${item.id})" 
+             ondragend="handleDragEnd(event)"
              ondragover="handleDragOver(event)" 
              ondragleave="handleDragLeave(event)" 
              ondrop="handleDrop(event, 'column', ${item.id})">
@@ -1130,6 +1268,7 @@ function renderButtonItems() {
     container.innerHTML = pageConfig.buttons.map((item) => `
         <div class="config-item-row" data-id="${item.id}" data-type="button" draggable="true"
              ondragstart="handleDragStart(event, 'button', ${item.id})" 
+             ondragend="handleDragEnd(event)"
              ondragover="handleDragOver(event)" 
              ondragleave="handleDragLeave(event)" 
              ondrop="handleDrop(event, 'button', ${item.id})">
@@ -1183,6 +1322,7 @@ function renderStatusItems() {
     container.innerHTML = pageConfig.statuses.map((item) => `
         <div class="config-item-row" data-id="${item.id}" data-type="status" draggable="true"
              ondragstart="handleDragStart(event, 'status', ${item.id})" 
+             ondragend="handleDragEnd(event)"
              ondragover="handleDragOver(event)" 
              ondragleave="handleDragLeave(event)" 
              ondrop="handleDrop(event, 'status', ${item.id})">
@@ -1224,50 +1364,174 @@ function deleteStatusItem(id) {
 function handleDragStart(event, type, id) {
     draggedItem = id;
     draggedType = type;
-    event.target.classList.add('dragging');
+    
+    const row = event.target.closest('.config-item-row');
+    const container = row.parentElement;
+    
+    row.classList.add('dragging');
+    container.classList.add('dragging-active');
+    
     event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(id));
+    
+    const ghostEl = document.createElement('div');
+    ghostEl.style.width = '1px';
+    ghostEl.style.height = '1px';
+    ghostEl.style.opacity = '0';
+    document.body.appendChild(ghostEl);
+    event.dataTransfer.setDragImage(ghostEl, 0, 0);
+    setTimeout(() => ghostEl.remove(), 0);
+    
+    draggedElementHeight = row.offsetHeight;
+    draggedOriginalIndex = Array.from(container.querySelectorAll('.config-item-row')).indexOf(row);
+    
+    setTimeout(() => {
+        row.style.opacity = '0.9';
+    }, 0);
 }
 
 function handleDragOver(event) {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    const target = event.target.closest('.config-item-row');
-    if (target && !target.classList.contains('dragging')) {
-        const rect = target.getBoundingClientRect();
+    
+    if (!draggedItem || !draggedType) return;
+    
+    const configKey = { 'filter': 'filters', 'column': 'columns', 'button': 'buttons', 'status': 'statuses' }[draggedType];
+    
+    const containerId = 'config' + configKey.charAt(0).toUpperCase() + configKey.slice(1);
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const rows = Array.from(container.querySelectorAll('.config-item-row'));
+    const draggedRow = container.querySelector('.dragging');
+    if (!draggedRow) return;
+    
+    let targetIndex = -1;
+    const mouseY = event.clientY;
+    
+    rows.forEach((row, index) => {
+        if (row.classList.contains('dragging')) return;
+        
+        const rect = row.getBoundingClientRect();
         const midY = rect.top + rect.height / 2;
-        target.classList.remove('drag-over', 'drag-over-bottom');
-        target.classList.add(event.clientY < midY ? 'drag-over' : 'drag-over-bottom');
+        
+        if (mouseY < midY) {
+            if (targetIndex === -1) targetIndex = index;
+        }
+    });
+    
+    if (targetIndex === -1) {
+        targetIndex = rows.length - 1;
+    }
+    
+    currentInsertIndex = targetIndex;
+    
+    rows.forEach((row, index) => {
+        row.classList.remove('shift-up', 'shift-down', 'drop-indicator', 'drop-indicator-top', 'drop-indicator-bottom');
+        row.style.removeProperty('--shift-amount');
+        
+        if (row.classList.contains('dragging')) return;
+        
+        row.style.setProperty('--shift-amount', (draggedElementHeight + 8) + 'px');
+        
+        if (draggedOriginalIndex < targetIndex) {
+            if (index > draggedOriginalIndex && index <= targetIndex) {
+                row.classList.add('shift-up');
+            }
+        } else if (draggedOriginalIndex > targetIndex) {
+            if (index >= targetIndex && index < draggedOriginalIndex) {
+                row.classList.add('shift-down');
+            }
+        }
+    });
+    
+    const indicatorRow = rows[targetIndex];
+    if (indicatorRow && !indicatorRow.classList.contains('dragging')) {
+        indicatorRow.classList.add('drop-indicator', 'drop-indicator-top');
+    } else if (targetIndex === rows.length - 1) {
+        const lastRow = rows[rows.length - 1];
+        if (lastRow && !lastRow.classList.contains('dragging')) {
+            lastRow.classList.add('drop-indicator', 'drop-indicator-bottom');
+        }
     }
 }
 
 function handleDragLeave(event) {
-    const target = event.target.closest('.config-item-row');
-    if (target) target.classList.remove('drag-over', 'drag-over-bottom');
+    const container = event.target.closest('.config-item-list');
+    const related = event.relatedTarget?.closest('.config-item-list');
+    
+    if (container && container !== related) {
+        clearDragStyles(container);
+    }
+}
+
+function clearDragStyles(container) {
+    if (!container) return;
+    
+    container.querySelectorAll('.config-item-row').forEach(row => {
+        row.classList.remove('shift-up', 'shift-down', 'drop-indicator', 'drop-indicator-top', 'drop-indicator-bottom');
+        row.style.removeProperty('--shift-amount');
+    });
+}
+
+function handleDragEnd(event) {
+    const row = event.target.closest('.config-item-row');
+    const container = row?.parentElement;
+    
+    if (row) {
+        row.classList.remove('dragging');
+        row.style.opacity = '';
+        row.style.transform = '';
+    }
+    
+    if (container) {
+        container.classList.remove('dragging-active');
+        clearDragStyles(container);
+    }
+    
+    draggedItem = null;
+    draggedType = null;
+    draggedElementHeight = 0;
+    draggedOriginalIndex = -1;
+    currentInsertIndex = -1;
 }
 
 function handleDrop(event, type, targetId) {
     event.preventDefault();
-    const target = event.target.closest('.config-item-row');
-    if (target) target.classList.remove('drag-over', 'drag-over-bottom');
     
-    if (draggedItem === targetId || draggedType !== type) return;
+    if (draggedItem === targetId || draggedType !== type || currentInsertIndex === -1) {
+        handleDragEnd(event);
+        return;
+    }
     
     const configKey = { 'filter': 'filters', 'column': 'columns', 'button': 'buttons', 'status': 'statuses' }[type];
     const list = pageConfig[configKey];
     const draggedIndex = list.findIndex(item => item.id === draggedItem);
-    const targetIndex = list.findIndex(item => item.id === targetId);
     
-    if (draggedIndex === -1 || targetIndex === -1) return;
+    if (draggedIndex === -1) {
+        handleDragEnd(event);
+        return;
+    }
     
     const [draggedObj] = list.splice(draggedIndex, 1);
-    const rect = target.getBoundingClientRect();
-    const insertIndex = event.clientY < rect.top + rect.height / 2 ? targetIndex : targetIndex + 1;
-    list.splice(insertIndex > draggedIndex ? insertIndex - 1 : insertIndex, 0, draggedObj);
+    
+    let insertIndex = currentInsertIndex;
+    if (draggedIndex < currentInsertIndex) {
+        insertIndex = currentInsertIndex - 1;
+    } else {
+        insertIndex = currentInsertIndex;
+    }
+    
+    insertIndex = Math.max(0, Math.min(insertIndex, list.length));
+    list.splice(insertIndex, 0, draggedObj);
     
     const renderFunc = { 'filter': renderFilterItems, 'column': renderColumnItems, 'button': renderButtonItems, 'status': renderStatusItems }[type];
     renderFunc();
+    
     draggedItem = null;
     draggedType = null;
+    draggedOriginalIndex = -1;
+    currentInsertIndex = -1;
 }
 
 // 列表数据管理
