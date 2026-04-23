@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>仓储规则 - ELSA</title>
+  <title>操作费规则 - ELSA</title>
 
   <!-- CDN 资源 -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -74,8 +74,8 @@
                 <i class="fa fa-angle-down ml-1 text-xs"></i>
               </a>
               <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">仓储规则</a>
-                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
+                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">操作费规则</a>
                 <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-dark hover:bg-hover">批量获取费用</a>
               </div>
             </div>
@@ -149,8 +149,15 @@
 
         <div class="filter-grid" id="filterContainer">
           <div class="filter-item">
-            <label>仓库代码</label>
-            <input type="text" id="filterWarehouseCode" placeholder="">
+            <label>仓库</label>
+            <select id="filterWarehouseCode">
+              <option value="">请选择</option>
+              <option value="CB001">CB001</option>
+              <option value="WH002">WH002</option>
+              <option value="CB002">CB002</option>
+              <option value="CL001">CL001</option>
+              <option value="EC001">EC001</option>
+            </select>
           </div>
           <div class="filter-item">
             <label>客户代码</label>
@@ -162,17 +169,28 @@
             </select>
           </div>
           <div class="filter-item">
-            <label>仓储等级</label>
-            <select id="filterStorageLevel">
+            <label>规则名称</label>
+            <input type="text" id="filterRuleName" placeholder="请输入">
+          </div>
+          <div class="filter-item">
+            <label>配送渠道</label>
+            <select id="filterDeliveryChannel">
+              <option value="">请选择</option>
+              <option value="SPOIRET">SPOIRET</option>
+              <option value="FEDEX">FEDEX</option>
+              <option value="USPS">USPS</option>
+              <option value="UPS">UPS</option>
+              <option value="DHL">DHL</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>操作费等级</label>
+            <select id="filterOperatingFeeLevel">
               <option value="">请选择</option>
               <option value="自定义">自定义</option>
               <option value="标准">标准</option>
               <option value="VIP">VIP</option>
             </select>
-          </div>
-          <div class="filter-item">
-            <label>规则名称</label>
-            <input type="text" id="filterRuleName" placeholder="请输入">
           </div>
           <div class="filter-item">
             <label>发布状态</label>
@@ -183,14 +201,13 @@
               <option value="cancelled">已作废</option>
             </select>
           </div>
-          <div class="filter-item">
-            <label>结算周期</label>
-            <select id="filterSettlementCycle">
-              <option value="">请选择</option>
-              <option value="日结">日结</option>
-              <option value="周结">周结</option>
-              <option value="月结">月结</option>
-            </select>
+          <div class="filter-item" style="grid-column: span 2;">
+            <label>创建时间</label>
+            <div style="display:flex;gap:8px;">
+              <input type="date" id="filterCreateTimeStart" placeholder="开始日期" style="flex:1;">
+              <span style="color:var(--color-text-muted);display:flex;align-items:center;">-</span>
+              <input type="date" id="filterCreateTimeEnd" placeholder="结束日期" style="flex:1;">
+            </div>
           </div>
         </div>
 
@@ -232,15 +249,12 @@
               <tr id="tableHeaderRow">
                 <th style="width:40px;"><input type="checkbox" class="row-checkbox" id="selectAll"></th>
                 <th>规则名称</th>
-                <th>仓储等级</th>
                 <th>仓库</th>
-                <th>结算周期</th>
-                <th>币种</th>
-                <th>计费类型</th>
                 <th>客户代码</th>
+                <th>物流产品</th>
+                <th>操作费等级</th>
                 <th>有效期</th>
                 <th>发布状态</th>
-                <th>人员</th>
                 <th>备注</th>
                 <th>时间</th>
                 <th style="width:60px;">操作</th>

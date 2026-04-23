@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可视化配置 - 操作费规则</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f7fa; min-height: 100vh; }
+        :root { --primary: #2a3b7d; --primary-light: #4a5b9d; --primary-dark: #1a2b5d; }
+
+        .config-header { background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%); color: white; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(42, 59, 125, 0.2); }
+        .config-header-left { display: flex; align-items: center; gap: 16px; }
+        .config-header-title { font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .config-header-title i { font-size: 26px; }
+        .config-header-subtitle { font-size: 14px; opacity: 0.85; }
+        .config-header-actions { display: flex; gap: 12px; }
+        .config-header-btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .config-header-btn.back { background: rgba(255, 255, 255, 0.2); color: white; }
+        .config-header-btn.back:hover { background: rgba(255, 255, 255, 0.3); }
+        .config-header-btn.primary { background: white; color: var(--primary); }
+        .config-header-btn.primary:hover { background: #f0f4ff; transform: translateY(-1px); }
+
+        .config-container { max-width: 1400px; margin: 0 auto; padding: 24px; padding-bottom: 100px; }
+        .config-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        @media (max-width: 1200px) { .config-grid { grid-template-columns: 1fr; } }
+
+        .config-section { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); overflow: hidden; }
+        .config-section-header { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+        .config-section-title { font-size: 16px; font-weight: 600; color: #1f2937; display: flex; align-items: center; gap: 10px; }
+        .config-section-title i { color: var(--primary); font-size: 18px; }
+        .config-section-body { padding: 20px; }
+
+        .config-form-group { margin-bottom: 16px; }
+        .config-form-group:last-child { margin-bottom: 0; }
+        .config-label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+        .config-input { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
+        .config-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1); }
+
+        .config-item-list { display: flex; flex-direction: column; gap: 8px; }
+        .config-item-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease; cursor: move; user-select: none; position: relative; }
+        .config-item-row:hover { background: #f3f4f6; border-color: #d1d5db; }
+        .config-item-row.dragging { opacity: 0.9; transform: scale(1.02) rotate(1deg); box-shadow: 0 15px 35px rgba(42, 59, 125, 0.3); border: 2px solid var(--primary); background: white !important; z-index: 1000; transition: none; }
+        .config-item-row.drag-placeholder { opacity: 0.3; background: #e0e7ff !important; border: 2px dashed var(--primary) !important; }
+        .config-item-row.shift-up { transform: translateY(calc(var(--shift-amount, 52px) * -1)); }
+        .config-item-row.shift-down { transform: translateY(var(--shift-amount, 52px)); }
+        .config-item-row.drop-indicator { position: relative; }
+        .config-item-row.drop-indicator::before { content: ''; position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--primary), #667eea); border-radius: 2px; pointer-events: none; box-shadow: 0 0 10px rgba(42, 59, 125, 0.5); }
+        .config-item-row.drop-indicator-top::before { top: -3px; }
+        .config-item-row.drop-indicator-bottom::before { bottom: -3px; }
+        .config-drag-handle { cursor: grab; color: #9ca3af; padding: 6px 8px; margin: -6px -8px; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .config-drag-handle:hover { color: var(--primary); background: rgba(42, 59, 125, 0.1); }
+        .config-drag-handle:active { cursor: grabbing; background: rgba(42, 59, 125, 0.15); }
+        .config-drag-handle i { font-size: 14px; }
+        .config-item-list { position: relative; }
+        .config-item-list.dragging-active .config-item-row { pointer-events: none; }
+        .config-item-list.dragging-active .config-item-row.dragging { pointer-events: auto; }
+        .config-item-row input, .config-item-row select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; transition: all 0.2s; }
+        .config-item-row input:focus, .config-item-row select:focus { outline: none; border-color: var(--primary); }
+        .config-item-row input[type="text"] { flex: 1; min-width: 80px; }
+        .config-item-row select { min-width: 90px; }
+        .config-item-row input[type="number"] { width: 70px; }
+        .config-item-row input[type="color"] { width: 32px; height: 32px; padding: 0; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; }
+        .config-item-actions { display: flex; gap: 4px; margin-left: auto; }
+        .config-item-btn { width: 28px; height: 28px; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 12px; }
+        .config-item-btn.delete { background: #fee2e2; color: #dc2626; }
+        .config-item-btn.delete:hover { background: #fecaca; }
+        .config-checkbox-group { display: flex; align-items: center; gap: 6px; }
+        .config-checkbox { width: 16px; height: 16px; cursor: pointer; }
+        .config-add-btn { width: 100%; padding: 10px; border: 2px dashed #d1d5db; border-radius: 8px; background: white; color: #6b7280; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; margin-top: 12px; }
+        .config-add-btn:hover { border-color: var(--primary); color: var(--primary); background: #f0f4ff; }
+
+        .config-tabs { display: flex; gap: 4px; padding: 4px; background: #f3f4f6; border-radius: 8px; margin-bottom: 20px; }
+        .config-tab { padding: 8px 16px; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #6b7280; transition: all 0.2s; }
+        .config-tab:hover { color: #374151; }
+        .config-tab.active { background: white; color: var(--primary); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .config-tab-content { display: none; }
+        .config-tab-content.active { display: block; }
+
+        .config-list-section { grid-column: 1 / -1; }
+        .config-list-toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
+        .config-list-search { flex: 1; padding: 10px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+        .config-list-search:focus { outline: none; border-color: var(--primary); }
+        .config-list-table-wrapper { max-height: 400px; overflow: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .config-list-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .config-list-table th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 1; }
+        .config-list-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+        .config-list-table tr:hover td { background: #f9fafb; }
+        .config-list-table input, .config-list-table select { width: 100%; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; }
+        .config-list-table input:focus, .config-list-table select:focus { outline: none; border-color: var(--primary); }
+        .config-list-btn { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .config-list-btn.delete { background: #fee2e2; color: #dc2626; }
+        .config-list-btn.delete:hover { background: #fecaca; }
+        .config-list-empty { text-align: center; padding: 60px; color: #9ca3af; }
+        .config-list-empty i { font-size: 48px; margin-bottom: 16px; display: block; }
+
+        .config-pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+        .config-pagination-info { font-size: 13px; color: #6b7280; }
+        .config-pagination-pages { display: flex; gap: 6px; }
+        .config-pagination-btn { padding: 6px 12px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .config-pagination-btn:hover { background: #f3f4f6; }
+        .config-pagination-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .config-pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .config-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e5e7eb; padding: 16px 40px; display: flex; justify-content: flex-end; gap: 12px; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05); }
+        .config-footer-btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+        .config-footer-btn.secondary { background: #f3f4f6; color: #374151; }
+        .config-footer-btn.secondary:hover { background: #e5e7eb; }
+        .config-footer-btn.primary { background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%); color: white; }
+        .config-footer-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(42, 59, 125, 0.3); }
+
+        .config-toast { position: fixed; top: 20px; right: 20px; padding: 14px 20px; background: #10b981; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transform: translateX(120%); transition: transform 0.3s ease; z-index: 1000; display: flex; align-items: center; gap: 10px; }
+        .config-toast.show { transform: translateX(0); }
+        .config-toast.error { background: #ef4444; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="config-header">
+        <div class="config-header-left">
+            <div>
+                <div class="config-header-title">
+                    <i class="fa fa-magic"></i>
+                    <span>可视化配置中心</span>
+                </div>
+                <div class="config-header-subtitle">操作费规则 - 配置页面元素和数据</div>
+            </div>
+        </div>
+        <div class="config-header-actions">
+            <button class="config-header-btn back" onclick="goBack()">
+                <i class="fa fa-arrow-left"></i>
+                <span>返回主页面</span>
+            </button>
+            <button class="config-header-btn primary" onclick="saveAndApply()">
+                <i class="fa fa-check"></i>
+                <span>保存并应用</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="config-container">
+        <div class="config-tabs">
+            <button class="config-tab active" onclick="switchTab('basic')">
+                <i class="fa fa-cog"></i> 基础配置
+            </button>
+            <button class="config-tab" onclick="switchTab('data')">
+                <i class="fa fa-database"></i> 数据管理
+            </button>
+            <button class="config-tab" onclick="switchTab('import')">
+                <i class="fa fa-exchange-alt"></i> 导入导出
+            </button>
+        </div>
+
+        <!-- 基础配置 Tab -->
+        <div id="tabBasic" class="config-tab-content active">
+            <div class="config-grid">
+                <!-- 页面配置 -->
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-file-text-o"></i>
+                            <span>页面配置</span>
+                        </div>
+                    </div>
+                    <div class="config-section-body">
+                        <div class="config-form-group">
+                            <label class="config-label">页面标题</label>
+                            <input type="text" class="config-input" id="configPageTitle" value="操作费规则" placeholder="请输入页面标题">
+                        </div>
+                        <div class="config-form-group">
+                            <label class="config-label">模块名称</label>
+                            <input type="text" class="config-input" id="configModuleName" value="操作费规则" placeholder="请输入模块名称">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 筛选条件配置 -->
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-filter"></i>
+                            <span>筛选条件配置</span>
+                        </div>
+                        <button class="config-add-btn" style="width: auto; margin-top: 0; padding: 6px 12px;" onclick="addFilterItem()">
+                            <i class="fa fa-plus"></i> 添加
+                        </button>
+                    </div>
+                    <div class="config-section-body">
+                        <div class="config-item-list" id="configFilters"></div>
+                    </div>
+                </div>
+
+                <!-- 表格列配置 -->
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-table"></i>
+                            <span>表格列配置</span>
+                        </div>
+                        <button class="config-add-btn" style="width: auto; margin-top: 0; padding: 6px 12px;" onclick="addColumnItem()">
+                            <i class="fa fa-plus"></i> 添加
+                        </button>
+                    </div>
+                    <div class="config-section-body">
+                        <div class="config-item-list" id="configColumns"></div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮配置 -->
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-mouse-pointer"></i>
+                            <span>操作按钮配置</span>
+                        </div>
+                        <button class="config-add-btn" style="width: auto; margin-top: 0; padding: 6px 12px;" onclick="addButtonItem()">
+                            <i class="fa fa-plus"></i> 添加
+                        </button>
+                    </div>
+                    <div class="config-section-body">
+                        <div class="config-item-list" id="configButtons"></div>
+                    </div>
+                </div>
+
+                <!-- 状态徽章配置 -->
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-tags"></i>
+                            <span>状态徽章配置</span>
+                        </div>
+                        <button class="config-add-btn" style="width: auto; margin-top: 0; padding: 6px 12px;" onclick="addStatusItem()">
+                            <i class="fa fa-plus"></i> 添加
+                        </button>
+                    </div>
+                    <div class="config-section-body">
+                        <div class="config-item-list" id="configStatuses"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据管理 Tab -->
+        <div id="tabData" class="config-tab-content">
+            <div class="config-section config-list-section">
+                <div class="config-section-header">
+                    <div class="config-section-title">
+                        <i class="fa fa-database"></i>
+                        <span>列表数据管理</span>
+                    </div>
+                    <button class="config-add-btn" style="width: auto; margin-top: 0; padding: 6px 12px;" onclick="addListDataRow()">
+                        <i class="fa fa-plus"></i> 添加数据
+                    </button>
+                </div>
+                <div class="config-section-body">
+                    <div class="config-list-toolbar">
+                        <input type="text" class="config-list-search" id="configListSearch" placeholder="搜索数据..." oninput="filterListData()">
+                    </div>
+                    <div class="config-list-table-wrapper">
+                        <div id="configListDataContainer"></div>
+                    </div>
+                    <div class="config-pagination">
+                        <div class="config-pagination-info">
+                            共 <span id="configListTotal">0</span> 条数据
+                        </div>
+                        <div class="config-pagination-pages" id="configListPages"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导入导出 Tab -->
+        <div id="tabImport" class="config-tab-content">
+            <div class="config-grid">
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-download"></i>
+                            <span>导出配置</span>
+                        </div>
+                    </div>
+                    <div class="config-section-body">
+                        <p style="color: #6b7280; margin-bottom: 16px;">将当前配置导出为 JSON 文件，方便备份或分享给他人。</p>
+                        <button class="config-footer-btn primary" onclick="exportConfig()">
+                            <i class="fa fa-download"></i>
+                            <span>导出配置文件</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <div class="config-section-header">
+                        <div class="config-section-title">
+                            <i class="fa fa-upload"></i>
+                            <span>导入配置</span>
+                        </div>
+                    </div>
+                    <div class="config-section-body">
+                        <p style="color: #6b7280; margin-bottom: 16px;">从 JSON 文件导入配置，将覆盖当前配置。</p>
+                        <input type="file" id="configFileInput" accept=".json" style="display: none;" onchange="handleConfigImport(event)">
+                        <button class="config-footer-btn secondary" onclick="importConfig()">
+                            <i class="fa fa-upload"></i>
+                            <span>选择配置文件</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="config-toast" id="configToast">
+        <i class="fa fa-check-circle"></i>
+        <span id="configToastText">操作成功</span>
+    </div>
+
+    <script>
+        // 存储键名
+        const STORAGE_KEY = 'pageConfig_操作费规则';
+
+        // 默认配置数据
+        let pageConfig = {
+            pageTitle: '操作费规则',
+            moduleName: '操作费规则',
+            filters: [
+                { id: 1, label: '仓库', field: 'warehouseCode', type: 'select', placeholder: '请选择', options: 'CB001,WH002,CB002,CL001,EC001' },
+                { id: 2, label: '客户代码', field: 'customerCode', type: 'select', placeholder: '请选择', options: 'DEMO - demo,VIP001,COLD001' },
+                { id: 3, label: '规则名称', field: 'ruleName', type: 'text', placeholder: '请输入' },
+                { id: 4, label: '配送渠道', field: 'deliveryChannel', type: 'select', placeholder: '请选择', options: 'SPOIRET,FEDEX,USPS,UPS,DHL' },
+                { id: 5, label: '操作费等级', field: 'operatingFeeLevel', type: 'select', placeholder: '请选择', options: '自定义,标准,VIP' },
+                { id: 6, label: '发布状态', field: 'publishStatus', type: 'select', placeholder: '请选择', options: '已发布,草稿,已作废' }
+            ],
+            columns: [
+                { id: 1, label: '规则名称', field: 'ruleName', width: '150', align: 'left', visible: true },
+                { id: 2, label: '仓库', field: 'warehouseCode', width: '100', align: 'left', visible: true },
+                { id: 3, label: '客户代码', field: 'customerCode', width: '140', align: 'left', visible: true },
+                { id: 4, label: '物流产品', field: 'logisticsProduct', width: '160', align: 'left', visible: true },
+                { id: 5, label: '操作费等级', field: 'operatingFeeLevel', width: '100', align: 'left', visible: true },
+                { id: 6, label: '有效期', field: 'validityPeriod', width: '240', align: 'left', visible: true },
+                { id: 7, label: '发布状态', field: 'publishStatus', width: '90', align: 'center', visible: true },
+                { id: 8, label: '备注', field: 'remark', width: '120', align: 'left', visible: true },
+                { id: 9, label: '时间', field: 'updateTime', width: '160', align: 'left', visible: true }
+            ],
+            buttons: [
+                { id: 1, label: '批量设置有效期', type: 'primary', icon: 'fa-calendar', visible: true, action: 'batchSetExpiry' },
+                { id: 2, label: '批量发布', type: 'primary', icon: 'fa-check-circle', visible: true, action: 'batchPublish' },
+                { id: 3, label: '批量失效', type: 'danger', icon: 'fa-ban', visible: true, action: 'batchCancel' },
+                { id: 4, label: '创建', type: 'success', icon: 'fa-plus', visible: true, action: 'createRule' },
+                { id: 5, label: '导出', type: 'secondary', icon: 'fa-download', visible: true, action: 'exportData' }
+            ],
+            statuses: [
+                { id: 1, label: '已发布', value: 'published', color: '#096dd9', bgColor: '#e6f7ff' },
+                { id: 2, label: '草稿', value: 'draft', color: '#d46b08', bgColor: '#fff7e6' },
+                { id: 3, label: '已作废', value: 'cancelled', color: '#cf1322', bgColor: '#fff1f0' }
+            ],
+            listData: []
+        };
+
+        // 列表数据分页配置
+        let listDataPage = { current: 1, pageSize: 5, total: 0, filtered: [] };
+
+        // 拖拽相关变量
+        let draggedItem = null, draggedType = null, draggedElementHeight = 0, draggedOriginalIndex = -1, currentInsertIndex = -1;
+
+        // 标签页切换
+        function switchTab(tab) {
+            document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.config-tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.config-tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+        }
+
+        // 返回主页面
+        function goBack() { window.location.href = 'index.html'; }
+
+        // 保存并应用配置
+        function saveAndApply() {
+            pageConfig.pageTitle = document.getElementById('configPageTitle').value;
+            pageConfig.moduleName = document.getElementById('configModuleName').value;
+            saveConfigToStorage();
+            toast('配置已保存！');
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        }
+
+        // Toast 提示
+        function toast(message, type = 'success') {
+            const toastEl = document.getElementById('configToast');
+            const textEl = document.getElementById('configToastText');
+            textEl.textContent = message;
+            toastEl.className = 'config-toast show' + (type === 'error' ? ' error' : '');
+            setTimeout(() => { toastEl.classList.remove('show'); }, 3000);
+        }
+
+        // 加载配置到面板
+        function loadConfigToPanel() {
+            document.getElementById('configPageTitle').value = pageConfig.pageTitle;
+            document.getElementById('configModuleName').value = pageConfig.moduleName;
+            renderFilterItems();
+            renderColumnItems();
+            renderButtonItems();
+            renderStatusItems();
+            renderListDataConfig();
+        }
+
+        // 渲染筛选条件项
+        function renderFilterItems() {
+            const container = document.getElementById('configFilters');
+            container.innerHTML = pageConfig.filters.map((item) => `
+                <div class="config-item-row" data-id="${item.id}" data-type="filter" draggable="true"
+                     ondragstart="handleDragStart(event, 'filter', ${item.id})"
+                     ondragend="handleDragEnd(event)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event, 'filter', ${item.id})">
+                    <span class="config-drag-handle"><i class="fa fa-grip-vertical"></i></span>
+                    <input type="text" value="${item.label}" placeholder="标签名" onchange="updateFilterItem(${item.id}, 'label', this.value)">
+                    <select onchange="updateFilterItem(${item.id}, 'type', this.value)">
+                        <option value="text" ${item.type === 'text' ? 'selected' : ''}>文本框</option>
+                        <option value="select" ${item.type === 'select' ? 'selected' : ''}>下拉框</option>
+                        <option value="date" ${item.type === 'date' ? 'selected' : ''}>日期</option>
+                    </select>
+                    <input type="text" value="${item.placeholder || item.options || ''}" placeholder="占位符/选项" onchange="updateFilterItem(${item.id}, this.previousElementSibling.value === 'select' ? 'options' : 'placeholder', this.value)">
+                    <div class="config-item-actions">
+                        <button class="config-item-btn delete" onclick="deleteFilterItem(${item.id})" title="删除"><i class="fa fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addFilterItem() {
+            const newId = Math.max(...pageConfig.filters.map(f => f.id), 0) + 1;
+            pageConfig.filters.push({ id: newId, label: '新筛选', field: 'field' + newId, type: 'text', placeholder: '请输入' });
+            renderFilterItems();
+        }
+        function updateFilterItem(id, key, value) {
+            const item = pageConfig.filters.find(f => f.id === id);
+            if (item) item[key] = value;
+        }
+        function deleteFilterItem(id) {
+            pageConfig.filters = pageConfig.filters.filter(f => f.id !== id);
+            renderFilterItems();
+        }
+
+        // 渲染表格列项
+        function renderColumnItems() {
+            const container = document.getElementById('configColumns');
+            container.innerHTML = pageConfig.columns.map((item) => `
+                <div class="config-item-row" data-id="${item.id}" data-type="column" draggable="true"
+                     ondragstart="handleDragStart(event, 'column', ${item.id})"
+                     ondragend="handleDragEnd(event)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event, 'column', ${item.id})">
+                    <span class="config-drag-handle"><i class="fa fa-grip-vertical"></i></span>
+                    <input type="text" value="${item.label}" placeholder="列名" style="width: 100px; flex: none;" onchange="updateColumnItem(${item.id}, 'label', this.value)">
+                    <input type="text" value="${item.field}" placeholder="字段名" style="width: 100px; flex: none;" onchange="updateColumnItem(${item.id}, 'field', this.value)">
+                    <input type="number" value="${item.width}" placeholder="宽度" style="width: 70px;" onchange="updateColumnItem(${item.id}, 'width', this.value)">
+                    <select onchange="updateColumnItem(${item.id}, 'align', this.value)">
+                        <option value="left" ${item.align === 'left' ? 'selected' : ''}>左</option>
+                        <option value="center" ${item.align === 'center' ? 'selected' : ''}>中</option>
+                        <option value="right" ${item.align === 'right' ? 'selected' : ''}>右</option>
+                    </select>
+                    <div class="config-checkbox-group">
+                        <input type="checkbox" class="config-checkbox" ${item.visible ? 'checked' : ''} onchange="updateColumnItem(${item.id}, 'visible', this.checked)">
+                        <span style="font-size: 12px; color: #6b7280;">显示</span>
+                    </div>
+                    <div class="config-item-actions">
+                        <button class="config-item-btn delete" onclick="deleteColumnItem(${item.id})" title="删除"><i class="fa fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addColumnItem() {
+            const newId = Math.max(...pageConfig.columns.map(c => c.id), 0) + 1;
+            pageConfig.columns.push({ id: newId, label: '新列', field: 'field' + newId, width: '100', align: 'left', visible: true });
+            renderColumnItems();
+        }
+        function updateColumnItem(id, key, value) {
+            const item = pageConfig.columns.find(c => c.id === id);
+            if (item) item[key] = value;
+        }
+        function deleteColumnItem(id) {
+            pageConfig.columns = pageConfig.columns.filter(c => c.id !== id);
+            renderColumnItems();
+        }
+
+        // 渲染按钮项
+        function renderButtonItems() {
+            const container = document.getElementById('configButtons');
+            container.innerHTML = pageConfig.buttons.map((item) => `
+                <div class="config-item-row" data-id="${item.id}" data-type="button" draggable="true"
+                     ondragstart="handleDragStart(event, 'button', ${item.id})"
+                     ondragend="handleDragEnd(event)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event, 'button', ${item.id})">
+                    <span class="config-drag-handle"><i class="fa fa-grip-vertical"></i></span>
+                    <input type="text" value="${item.label}" placeholder="按钮名" style="width: 100px; flex: none;" onchange="updateButtonItem(${item.id}, 'label', this.value)">
+                    <select onchange="updateButtonItem(${item.id}, 'type', this.value)">
+                        <option value="primary" ${item.type === 'primary' ? 'selected' : ''}>主按钮</option>
+                        <option value="secondary" ${item.type === 'secondary' ? 'selected' : ''}>次要按钮</option>
+                        <option value="warning" ${item.type === 'warning' ? 'selected' : ''}>警告按钮</option>
+                        <option value="danger" ${item.type === 'danger' ? 'selected' : ''}>危险按钮</option>
+                        <option value="success" ${item.type === 'success' ? 'selected' : ''}>成功按钮</option>
+                    </select>
+                    <input type="text" value="${item.icon || ''}" placeholder="图标类名" style="width: 100px; flex: none;" onchange="updateButtonItem(${item.id}, 'icon', this.value)">
+                    <div class="config-checkbox-group">
+                        <input type="checkbox" class="config-checkbox" ${item.visible ? 'checked' : ''} onchange="updateButtonItem(${item.id}, 'visible', this.checked)">
+                        <span style="font-size: 12px; color: #6b7280;">显示</span>
+                    </div>
+                    <div class="config-item-actions">
+                        <button class="config-item-btn delete" onclick="deleteButtonItem(${item.id})" title="删除"><i class="fa fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addButtonItem() {
+            const newId = Math.max(...pageConfig.buttons.map(b => b.id), 0) + 1;
+            pageConfig.buttons.push({ id: newId, label: '新按钮', type: 'secondary', icon: 'fa-cog', visible: true, action: 'action' + newId });
+            renderButtonItems();
+        }
+        function updateButtonItem(id, key, value) {
+            const item = pageConfig.buttons.find(b => b.id === id);
+            if (item) item[key] = value;
+        }
+        function deleteButtonItem(id) {
+            pageConfig.buttons = pageConfig.buttons.filter(b => b.id !== id);
+            renderButtonItems();
+        }
+
+        // 渲染状态项
+        function renderStatusItems() {
+            const container = document.getElementById('configStatuses');
+            container.innerHTML = pageConfig.statuses.map((item) => `
+                <div class="config-item-row" data-id="${item.id}" data-type="status" draggable="true"
+                     ondragstart="handleDragStart(event, 'status', ${item.id})"
+                     ondragend="handleDragEnd(event)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event, 'status', ${item.id})">
+                    <span class="config-drag-handle"><i class="fa fa-grip-vertical"></i></span>
+                    <input type="text" value="${item.label}" placeholder="状态名" style="width: 80px; flex: none;" onchange="updateStatusItem(${item.id}, 'label', this.value)">
+                    <input type="text" value="${item.value}" placeholder="值" style="width: 80px; flex: none;" onchange="updateStatusItem(${item.id}, 'value', this.value)">
+                    <input type="color" value="${item.color}" style="width: 40px; height: 28px; border: none; cursor: pointer;" onchange="updateStatusItem(${item.id}, 'color', this.value)" title="文字颜色">
+                    <input type="color" value="${item.bgColor}" style="width: 40px; height: 28px; border: none; cursor: pointer;" onchange="updateStatusItem(${item.id}, 'bgColor', this.value)" title="背景颜色">
+                    <div class="config-item-actions">
+                        <button class="config-item-btn delete" onclick="deleteStatusItem(${item.id})" title="删除"><i class="fa fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addStatusItem() {
+            const newId = Math.max(...pageConfig.statuses.map(s => s.id), 0) + 1;
+            pageConfig.statuses.push({ id: newId, label: '新状态', value: 'status' + newId, color: '#2a3b7d', bgColor: '#e0e7ff' });
+            renderStatusItems();
+        }
+        function updateStatusItem(id, key, value) {
+            const item = pageConfig.statuses.find(s => s.id === id);
+            if (item) item[key] = value;
+        }
+        function deleteStatusItem(id) {
+            pageConfig.statuses = pageConfig.statuses.filter(s => s.id !== id);
+            renderStatusItems();
+        }
+
+        // 拖拽功能
+        function handleDragStart(event, type, id) {
+            draggedItem = id; draggedType = type;
+            const row = event.target.closest('.config-item-row');
+            const container = row.parentElement;
+            row.classList.add('dragging');
+            container.classList.add('dragging-active');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', String(id));
+            const ghostEl = document.createElement('div');
+            ghostEl.style.width = '1px'; ghostEl.style.height = '1px'; ghostEl.style.opacity = '0';
+            document.body.appendChild(ghostEl);
+            event.dataTransfer.setDragImage(ghostEl, 0, 0);
+            setTimeout(() => ghostEl.remove(), 0);
+            draggedElementHeight = row.offsetHeight;
+            draggedOriginalIndex = Array.from(container.querySelectorAll('.config-item-row')).indexOf(row);
+            setTimeout(() => { row.style.opacity = '0.9'; }, 0);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            if (!draggedItem || !draggedType) return;
+            const configKey = { 'filter': 'filters', 'column': 'columns', 'button': 'buttons', 'status': 'statuses' }[draggedType];
+            const containerId = 'config' + configKey.charAt(0).toUpperCase() + configKey.slice(1);
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const rows = Array.from(container.querySelectorAll('.config-item-row'));
+            const draggedRow = container.querySelector('.dragging');
+            if (!draggedRow) return;
+            let targetIndex = -1;
+            const mouseY = event.clientY;
+            rows.forEach((row, index) => {
+                if (row.classList.contains('dragging')) return;
+                const rect = row.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (mouseY < midY) { if (targetIndex === -1) targetIndex = index; }
+            });
+            if (targetIndex === -1) targetIndex = rows.length - 1;
+            currentInsertIndex = targetIndex;
+            rows.forEach((row, index) => {
+                row.classList.remove('shift-up', 'shift-down', 'drop-indicator', 'drop-indicator-top', 'drop-indicator-bottom');
+                row.style.removeProperty('--shift-amount');
+                if (row.classList.contains('dragging')) return;
+                row.style.setProperty('--shift-amount', (draggedElementHeight + 8) + 'px');
+                if (draggedOriginalIndex < targetIndex) { if (index > draggedOriginalIndex && index <= targetIndex) row.classList.add('shift-up'); }
+                else if (draggedOriginalIndex > targetIndex) { if (index >= targetIndex && index < draggedOriginalIndex) row.classList.add('shift-down'); }
+            });
+            const indicatorRow = rows[targetIndex];
+            if (indicatorRow && !indicatorRow.classList.contains('dragging')) indicatorRow.classList.add('drop-indicator', 'drop-indicator-top');
+            else if (targetIndex === rows.length - 1) { const lastRow = rows[rows.length - 1]; if (lastRow && !lastRow.classList.contains('dragging')) lastRow.classList.add('drop-indicator', 'drop-indicator-bottom'); }
+        }
+
+        function handleDragLeave(event) {
+            const container = event.target.closest('.config-item-list');
+            const related = event.relatedTarget?.closest('.config-item-list');
+            if (container && container !== related) clearDragStyles(container);
+        }
+
+        function clearDragStyles(container) {
+            if (!container) return;
+            container.querySelectorAll('.config-item-row').forEach(row => {
+                row.classList.remove('shift-up', 'shift-down', 'drop-indicator', 'drop-indicator-top', 'drop-indicator-bottom');
+                row.style.removeProperty('--shift-amount');
+            });
+        }
+
+        function handleDragEnd(event) {
+            const row = event.target.closest('.config-item-row');
+            const container = row?.parentElement;
+            if (row) { row.classList.remove('dragging'); row.style.opacity = ''; row.style.transform = ''; }
+            if (container) { container.classList.remove('dragging-active'); clearDragStyles(container); }
+            draggedItem = null; draggedType = null; draggedElementHeight = 0; draggedOriginalIndex = -1; currentInsertIndex = -1;
+        }
+
+        function handleDrop(event, type, targetId) {
+            event.preventDefault();
+            if (draggedItem === targetId || draggedType !== type || currentInsertIndex === -1) { handleDragEnd(event); return; }
+            const configKey = { 'filter': 'filters', 'column': 'columns', 'button': 'buttons', 'status': 'statuses' }[type];
+            const list = pageConfig[configKey];
+            const draggedIndex = list.findIndex(item => item.id === draggedItem);
+            if (draggedIndex === -1) { handleDragEnd(event); return; }
+            const [draggedObj] = list.splice(draggedIndex, 1);
+            let insertIndex = currentInsertIndex;
+            if (draggedIndex < currentInsertIndex) insertIndex = currentInsertIndex - 1;
+            insertIndex = Math.max(0, Math.min(insertIndex, list.length));
+            list.splice(insertIndex, 0, draggedObj);
+            const renderFunc = { 'filter': renderFilterItems, 'column': renderColumnItems, 'button': renderButtonItems, 'status': renderStatusItems }[type];
+            renderFunc();
+            draggedItem = null; draggedType = null; draggedOriginalIndex = -1; currentInsertIndex = -1;
+        }
+
+        // 列表数据管理
+        function renderListDataConfig() {
+            const container = document.getElementById('configListDataContainer');
+            const searchTerm = document.getElementById('configListSearch').value.toLowerCase();
+            listDataPage.filtered = pageConfig.listData.filter(item => Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm)));
+            listDataPage.total = listDataPage.filtered.length;
+            const start = (listDataPage.current - 1) * listDataPage.pageSize;
+            const pageData = listDataPage.filtered.slice(start, start + listDataPage.pageSize);
+            if (pageData.length === 0) {
+                container.innerHTML = `<div class="config-list-empty"><i class="fa fa-inbox"></i>暂无数据</div>`;
+            } else {
+                const visibleColumns = pageConfig.columns.filter(c => c.visible && c.field !== 'actions');
+                container.innerHTML = `
+                    <table class="config-list-table">
+                        <thead><tr><th style="width: 40px;">#</th>${visibleColumns.map(col => `<th>${col.label}</th>`).join('')}<th style="width: 80px;">操作</th></tr></thead>
+                        <tbody>
+                            ${pageData.map((item, idx) => `
+                                <tr>
+                                    <td>${start + idx + 1}</td>
+                                    ${visibleColumns.map(col => `
+                                        <td>
+                                            ${col.field === 'status' ?
+                                                `<select onchange="updateListDataRow(${item.id}, 'status', this.value)">${pageConfig.statuses.map(s => `<option value="${s.value}" ${item.status === s.value ? 'selected' : ''}>${s.label}</option>`).join('')}</select>` :
+                                                `<input type="text" value="${item[col.field] || ''}" onchange="updateListDataRow(${item.id}, '${col.field}', this.value)">`
+                                            }
+                                        </td>
+                                    `).join('')}
+                                    <td><button class="config-list-btn delete" onclick="deleteListDataRow(${item.id})"><i class="fa fa-trash"></i></button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            document.getElementById('configListTotal').textContent = listDataPage.total;
+            renderListDataPagination();
+        }
+
+        function renderListDataPagination() {
+            const totalPages = Math.ceil(listDataPage.total / listDataPage.pageSize);
+            const pagesContainer = document.getElementById('configListPages');
+            if (totalPages <= 1) { pagesContainer.innerHTML = ''; return; }
+            let html = `<button class="config-pagination-btn" onclick="goToListDataPage(${listDataPage.current - 1})" ${listDataPage.current === 1 ? 'disabled' : ''}><i class="fa fa-chevron-left"></i></button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= listDataPage.current - 1 && i <= listDataPage.current + 1)) html += `<button class="config-pagination-btn ${i === listDataPage.current ? 'active' : ''}" onclick="goToListDataPage(${i})">${i}</button>`;
+                else if (i === listDataPage.current - 2 || i === listDataPage.current + 2) html += `<span style="padding: 4px 8px;">...</span>`;
+            }
+            html += `<button class="config-pagination-btn" onclick="goToListDataPage(${listDataPage.current + 1})" ${listDataPage.current === totalPages ? 'disabled' : ''}><i class="fa fa-chevron-right"></i></button>`;
+            pagesContainer.innerHTML = html;
+        }
+
+        function goToListDataPage(page) {
+            const totalPages = Math.ceil(listDataPage.total / listDataPage.pageSize);
+            if (page < 1 || page > totalPages) return;
+            listDataPage.current = page;
+            renderListDataConfig();
+        }
+        function filterListData() { listDataPage.current = 1; renderListDataConfig(); }
+        function addListDataRow() {
+            const newId = Math.max(...pageConfig.listData.map(d => d.id), 0) + 1;
+            const newRow = { id: newId };
+            pageConfig.columns.forEach(col => { if (col.field !== 'actions') newRow[col.field] = ''; });
+            newRow.status = pageConfig.statuses[0]?.value || '';
+            pageConfig.listData.unshift(newRow);
+            listDataPage.current = 1;
+            renderListDataConfig();
+        }
+        function updateListDataRow(id, field, value) {
+            const item = pageConfig.listData.find(d => d.id === id);
+            if (item) item[field] = value;
+        }
+        function deleteListDataRow(id) {
+            if (confirm('确定要删除这条数据吗？')) {
+                pageConfig.listData = pageConfig.listData.filter(d => d.id !== id);
+                renderListDataConfig();
+            }
+        }
+
+        // 导出配置
+        function exportConfig() {
+            const configJson = JSON.stringify(pageConfig, null, 2);
+            const blob = new Blob([configJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `config-${pageConfig.moduleName}-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('配置已导出！');
+        }
+
+        // 导入配置
+        function importConfig() { document.getElementById('configFileInput').click(); }
+        function handleConfigImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try { pageConfig = JSON.parse(e.target.result); loadConfigToPanel(); toast('配置已导入！'); }
+                catch (error) { toast('配置文件格式错误！', 'error'); }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // 保存配置到本地存储
+        function saveConfigToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(pageConfig)); }
+
+        // 从本地存储加载配置
+        function loadConfigFromStorage() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) { try { pageConfig = JSON.parse(saved); } catch (e) { console.error('加载配置失败', e); } }
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfigFromStorage();
+            loadConfigToPanel();
+        });
+    </script>
+</body>
+</html>
