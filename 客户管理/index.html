@@ -79,7 +79,7 @@
     .form-select { width: 100%; padding: 8px 12px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 14px; color: #1D2129; background-color: white; transition: all 0.2s ease; cursor: pointer; }
     .form-select:focus { outline: none; border-color: #2a3b7d; box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1); }
 
-    /* 关联渠道按钮 */
+    /* 渠道按钮 */
     .related-channels-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 4px; font-size: 13px; font-weight: 500; background-color: rgba(42, 59, 125, 0.08); color: #2a3b7d; border: 1px solid rgba(42, 59, 125, 0.15); cursor: pointer; transition: all 0.2s ease; }
     .related-channels-btn:hover { background-color: rgba(42, 59, 125, 0.15); border-color: rgba(42, 59, 125, 0.25); }
     .related-channels-btn i { font-size: 12px; }
@@ -162,8 +162,8 @@
         <div class="prose max-w-none">
           <h2 class="text-xl font-semibold text-primary mb-4">功能说明</h2>
           <p class="text-gray-600 mb-4">客户档案模块用于管理所有客户信息，支持筛选、查询、导出等操作。</p>
-          <h3 class="text-lg font-semibold text-gray-700 mb-3">关联渠道功能</h3>
-          <p class="text-gray-600 mb-4">在客户列表中新增"关联渠道"列，点击可查看该客户关联的所有渠道信息。</p>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">渠道功能</h3>
+          <p class="text-gray-600 mb-4">在客户列表中新增"渠道"列，点击可查看该客户关联的所有渠道信息。</p>
         </div>
       </div>
     </div>
@@ -187,9 +187,9 @@
           <tbody class="divide-y divide-gray-200">
             <tr>
               <td class="px-4 py-3">TC-001</td>
-              <td class="px-4 py-3">查看关联渠道</td>
+              <td class="px-4 py-3">查看渠道</td>
               <td class="px-4 py-3"><span class="status-badge bg-red-100 text-red-700">P0</span></td>
-              <td class="px-4 py-3">点击"关联渠道"按钮</td>
+              <td class="px-4 py-3">点击"渠道"按钮</td>
               <td class="px-4 py-3">弹出模态框显示渠道列表</td>
             </tr>
           </tbody>
@@ -229,7 +229,7 @@
               </select>
             </div>
             <div class="flex items-center gap-2">
-              <label class="text-xs text-neutral-600 whitespace-nowrap w-16">关联渠道</label>
+              <label class="text-xs text-neutral-600 whitespace-nowrap w-16">渠道</label>
               <div class="cascade-select-group flex-1">
                 <select id="filterChannelLevel1" class="form-select" onchange="handleChannelLevel1Change()">
                   <option value="">全部</option>
@@ -284,7 +284,7 @@
                 <th class="px-4 py-3 text-left font-medium text-gray-700">联系方式</th>
                 <th class="px-4 py-3 text-right font-medium text-gray-700">订单数量</th>
                 <th class="px-4 py-3 text-right font-medium text-gray-700">订单金额</th>
-                <th class="px-4 py-3 text-center font-medium text-gray-700">关联渠道</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-700">渠道</th>
                 <th class="px-4 py-3 text-left font-medium text-gray-700">创建时间</th>
                 <th class="px-4 py-3 text-center font-medium text-gray-700">操作</th>
               </tr>
@@ -313,7 +313,7 @@
         </div>
         <div id="logicContent" class="logic-content hidden">
           <div class="space-y-3 text-sm text-gray-600">
-            <p><strong>1. 关联渠道列：</strong>点击"关联渠道"按钮，弹出模态框展示该客户关联的所有渠道信息（渠道名称、渠道代码、类型、状态、区域、负责人）。</p>
+            <p><strong>1. 渠道列：</strong>点击"渠道"按钮，弹出模态框展示该客户关联的所有渠道信息（渠道名称、渠道代码、类型、状态、区域、负责人）。</p>
             <p><strong>2. 状态切换：</strong>启用/禁用状态通过下拉选择控制，禁用后客户无法下单。</p>
             <p><strong>3. 批量操作：</strong>勾选多行后可进行批量删除或导出。</p>
             <p><strong>4. 分页逻辑：</strong>默认每页10条，支持页码跳转。</p>
@@ -368,12 +368,12 @@
     </div>
   </div>
 
-  <!-- 关联渠道预览模态框 -->
+  <!-- 渠道预览模态框 -->
   <div id="relatedChannelsModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
     <div class="modal-content" style="max-width: 700px;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3 class="modal-title">
-          <i class="fa fa-sitemap mr-2 text-primary"></i>关联渠道
+          <i class="fa fa-sitemap mr-2 text-primary"></i>渠道
         </h3>
         <button class="close-btn" onclick="closeModal('relatedChannelsModal')">
           <i class="fa fa-times"></i>
@@ -641,7 +641,7 @@
       }
     }
 
-    // ========== 关联渠道预览 ==========
+    // ========== 渠道预览 ==========
     function openRelatedChannelsModal(customerCode, customerName) {
       const channels = relatedChannelsData[customerCode] || [];
       const infoDiv = document.getElementById('relatedChannelsInfo');
@@ -654,7 +654,7 @@
             <span class="font-semibold text-primary">${customerName}</span>
           </div>
           <div>
-            <span class="text-sm text-gray-600">关联渠道：</span>
+            <span class="text-sm text-gray-600">渠道：</span>
             <span class="font-semibold">${channels.length} 个</span>
           </div>
         </div>
@@ -664,7 +664,7 @@
         listDiv.innerHTML = `
           <div class="text-center py-8">
             <i class="fa fa-inbox text-4xl text-gray-300 mb-3"></i>
-            <p class="text-gray-500">暂无关联渠道</p>
+            <p class="text-gray-500">暂无渠道</p>
           </div>
         `;
       } else {
@@ -683,7 +683,7 @@
     }
 
     function exportRelatedChannels() {
-      alert('关联渠道列表已导出！');
+      alert('渠道列表已导出！');
     }
 
     // ========== 逻辑说明折叠 ==========
