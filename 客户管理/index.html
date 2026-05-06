@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户档案 - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            'primary-light': '#3a4ca7',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            'light-bg': '#FFFFFF',
+            'card-bg': '#FFFFFF',
+            border: '#E5E7EB'
+          },
+          boxShadow: {
+            'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+            'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+            'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="/common/css/common.css">
+
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f9fafb; color: #374151; min-height: 100vh; }
+
+    /* ERP 按钮 */
+    .erp-btn { padding: 6px 12px; border-radius: 4px; font-size: 14px; transition: all 0.2s ease; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none; }
+    .erp-btn-primary { background-color: #2a3b7d; color: white; border-color: #2a3b7d; }
+    .erp-btn-primary:hover { background-color: #3a4ca7; }
+    .erp-btn-secondary { background-color: white; color: #525252; border-color: #d4d4d4; }
+    .erp-btn-secondary:hover { background-color: #f9fafb; }
+    .erp-btn-danger { background-color: #F53F3F; color: white; border-color: #F53F3F; }
+    .erp-btn-danger:hover { background-color: #e02e2e; }
+    .erp-btn-success { background-color: #00B42A; color: white; border-color: #00B42A; }
+    .erp-btn-success:hover { background-color: #009e24; }
+
+    /* 表格 */
+    .table-hover-row:hover { background-color: #f9fafb; }
+    .status-badge { padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; font-weight: 500; }
+
+    /* 模态框 */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+    .modal-content { background-color: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; transform: translateY(-20px); transition: transform 0.3s ease; }
+    .modal-overlay.show .modal-content { transform: translateY(0); }
+    .modal-header { padding: 20px; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 18px; font-weight: 600; color: #1D2129; }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 16px 20px; border-top: 1px solid #E5E7EB; display: flex; justify-content: flex-end; gap: 12px; }
+    .close-btn { background-color: white; color: #2a3b7d; border: 1px solid #E5E7EB; border-radius: 4px; padding: 8px 16px; cursor: pointer; transition: all 0.2s ease; }
+    .close-btn:hover { background-color: #f9fafb; }
+
+    /* 表单 */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    .form-group .required { color: #F53F3F; }
+    .form-input { width: 100%; padding: 8px 12px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 14px; color: #1D2129; background-color: white; transition: all 0.2s ease; }
+    .form-input:focus { outline: none; border-color: #2a3b7d; box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1); }
+    .form-select { width: 100%; padding: 8px 12px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 14px; color: #1D2129; background-color: white; transition: all 0.2s ease; cursor: pointer; }
+    .form-select:focus { outline: none; border-color: #2a3b7d; box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1); }
+
+    /* 关联渠道按钮 */
+    .related-channels-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 4px; font-size: 13px; font-weight: 500; background-color: rgba(42, 59, 125, 0.08); color: #2a3b7d; border: 1px solid rgba(42, 59, 125, 0.15); cursor: pointer; transition: all 0.2s ease; }
+    .related-channels-btn:hover { background-color: rgba(42, 59, 125, 0.15); border-color: rgba(42, 59, 125, 0.25); }
+    .related-channels-btn i { font-size: 12px; }
+
+    /* 渠道卡片 */
+    .channel-card { background: #f9fafb; border: 1px solid #E5E7EB; border-radius: 8px; padding: 16px; transition: all 0.2s ease; }
+    .channel-card:hover { border-color: #2a3b7d; box-shadow: 0 2px 8px rgba(42, 59, 125, 0.08); }
+
+    /* 级联选择器 */
+    .cascade-select-group { display: flex; gap: 8px; align-items: center; }
+    .cascade-select-group .form-select { min-width: 120px; }
+
+    /* 分页 */
+    .pagination-btn { padding: 6px 12px; font-size: 14px; border: 1px solid #E5E7EB; border-radius: 4px; background: white; color: #374151; cursor: pointer; transition: all 0.2s ease; }
+    .pagination-btn:hover:not(:disabled) { background: #f9fafb; border-color: #2a3b7d; color: #2a3b7d; }
+    .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination-btn.active { background: #2a3b7d; color: white; border-color: #2a3b7d; }
+
+    /* 搜索卡片 */
+    .search-card { background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); padding: 16px; margin-bottom: 16px; }
+    .action-card { background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); padding: 16px; margin-bottom: 16px; }
+
+    /* 表格操作按钮 */
+    .table-btn { padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 4px; transition: all 0.2s ease; border: none; cursor: pointer; background: transparent; color: #2a3b7d; }
+    .table-btn:hover { background: rgba(42, 59, 125, 0.08); }
+    .table-btn-danger { color: #F53F3F; }
+    .table-btn-danger:hover { background: rgba(245, 63, 63, 0.08); }
+
+    /* 逻辑说明 */
+    .logic-section { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-top: 16px; overflow: hidden; }
+    .logic-header { padding: 12px 16px; background: linear-gradient(135deg, rgba(42,59,125,0.05) 0%, rgba(42,59,125,0.1) 100%); border-bottom: 1px solid rgba(42,59,125,0.1); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .logic-content { padding: 16px; }
+
+    /* 标签页 */
+    .tabs { display: flex; gap: 2px; background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%); padding: 4px; border-radius: 12px; width: fit-content; box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3); position: fixed; bottom: 32px; right: 32px; z-index: 40; }
+    .tab { padding: 10px 20px; border: none; background: transparent; color: rgba(255, 255, 255, 0.7); font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tab:hover { color: white; transform: translateY(-1px); }
+    .tab.active { background: white; color: #2a3b7d; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); font-weight: 600; }
+
+    .main-content { display: none; }
+    .main-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- 切换标签 -->
+  <div class="tabs">
+    <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+    <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+    <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+  </div>
+
+  <!-- Header 导航 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center gap-6">
+          <span class="text-lg font-semibold">ELSA</span>
+          <nav class="hidden md:flex items-center gap-1 text-sm">
+            <a href="#" class="px-3 py-2 rounded hover:bg-white/10 transition-colors">客户档案</a>
+            <a href="#" class="px-3 py-2 rounded hover:bg-white/10 transition-colors">订单列表</a>
+            <a href="#" class="px-3 py-2 rounded hover:bg-white/10 transition-colors">库存管理</a>
+          </nav>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+            <i class="fa fa-bell text-sm"></i>
+          </button>
+          <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-medium">A</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PRD 内容区域 -->
+  <main id="main-prd" class="main-content">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+        <h1 class="text-2xl font-bold text-primary mb-6">客户档案 - PRD</h1>
+        <div class="prose max-w-none">
+          <h2 class="text-xl font-semibold text-primary mb-4">功能说明</h2>
+          <p class="text-gray-600 mb-4">客户档案模块用于管理所有客户信息，支持筛选、查询、导出等操作。</p>
+          <h3 class="text-lg font-semibold text-gray-700 mb-3">关联渠道功能</h3>
+          <p class="text-gray-600 mb-4">在客户列表中新增"关联渠道"列，点击可查看该客户关联的所有渠道信息。</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 测试用例区域 -->
+  <main id="main-testcases" class="main-content">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h1 class="text-2xl font-bold text-primary mb-6">测试用例</h1>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left">用例编号</th>
+              <th class="px-4 py-3 text-left">用例名称</th>
+              <th class="px-4 py-3 text-left">优先级</th>
+              <th class="px-4 py-3 text-left">操作步骤</th>
+              <th class="px-4 py-3 text-left">预期结果</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr>
+              <td class="px-4 py-3">TC-001</td>
+              <td class="px-4 py-3">查看关联渠道</td>
+              <td class="px-4 py-3"><span class="status-badge bg-red-100 text-red-700">P0</span></td>
+              <td class="px-4 py-3">点击"关联渠道"按钮</td>
+              <td class="px-4 py-3">弹出模态框显示渠道列表</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- 原型页面 -->
+  <main id="main-prototype" class="main-content active">
+    <div class="container mx-auto px-4 py-6">
+
+      <!-- 页面标题 -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-dark">客户档案</h1>
+        <p class="text-gray-500 text-sm mt-1">客户管理 - 客户信息列表</p>
+      </div>
+
+      <!-- 搜索卡片 -->
+      <div class="search-card">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 w-full">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-neutral-600 whitespace-nowrap w-16">客户代码</label>
+              <input type="text" id="filterCustomerCode" placeholder="请输入" class="form-input flex-1">
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-neutral-600 whitespace-nowrap w-16">客户名称</label>
+              <input type="text" id="filterCustomerName" placeholder="请输入" class="form-input flex-1">
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-neutral-600 whitespace-nowrap w-16">状态</label>
+              <select id="filterStatus" class="form-select flex-1">
+                <option value="">全部</option>
+                <option value="active">启用</option>
+                <option value="inactive">禁用</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-neutral-600 whitespace-nowrap w-16">关联渠道</label>
+              <div class="cascade-select-group flex-1">
+                <select id="filterChannelLevel1" class="form-select" onchange="handleChannelLevel1Change()">
+                  <option value="">全部</option>
+                  <option value="zybq">zybq</option>
+                  <option value="fx">fx快递</option>
+                </select>
+                <select id="filterChannelLevel2" class="form-select">
+                  <option value="">请选择</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2 w-full lg:w-auto">
+            <button class="erp-btn erp-btn-secondary flex-1 lg:flex-none" onclick="handleReset()">
+              <i class="fa fa-refresh mr-1.5"></i> 重置
+            </button>
+            <button class="erp-btn erp-btn-primary flex-1 lg:flex-none" onclick="handleSearch()">
+              <i class="fa fa-search mr-1.5"></i> 搜索
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作卡片 -->
+      <div class="action-card">
+        <div class="flex justify-start gap-3">
+          <button class="erp-btn erp-btn-primary" onclick="openAddModal()">
+            <i class="fa fa-plus mr-1.5"></i> 新增
+          </button>
+          <button class="erp-btn erp-btn-success" onclick="handleExport()">
+            <i class="fa fa-upload mr-1.5"></i> 批量导出
+          </button>
+          <button class="erp-btn erp-btn-danger batch-btn" disabled onclick="handleBatchDelete()">
+            <i class="fa fa-trash mr-1.5"></i> 批量删除
+          </button>
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="bg-white rounded shadow-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-neutral-200 text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left">
+                  <input type="checkbox" id="selectAll" onchange="handleSelectAll()">
+                </th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">客户代码</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">客户名称</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">状态</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">联系人</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">联系方式</th>
+                <th class="px-4 py-3 text-right font-medium text-gray-700">订单数量</th>
+                <th class="px-4 py-3 text-right font-medium text-gray-700">订单金额</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-700">关联渠道</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">创建时间</th>
+                <th class="px-4 py-3 text-center font-medium text-gray-700">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-neutral-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 分页 -->
+      <div class="flex justify-between items-center mt-4 px-2">
+        <div class="text-sm text-gray-500">
+          共 <span id="totalCount">0</span> 条记录
+        </div>
+        <div id="pagination" class="flex gap-1"></div>
+      </div>
+
+      <!-- 逻辑说明 -->
+      <div class="logic-section">
+        <div class="logic-header" onclick="toggleLogic()">
+          <div class="flex items-center">
+            <i class="fa fa-book text-primary mr-2"></i>
+            <span class="font-semibold text-primary">逻辑说明</span>
+          </div>
+          <i class="fa fa-chevron-down text-primary transition-transform" id="logicIcon"></i>
+        </div>
+        <div id="logicContent" class="logic-content hidden">
+          <div class="space-y-3 text-sm text-gray-600">
+            <p><strong>1. 关联渠道列：</strong>点击"关联渠道"按钮，弹出模态框展示该客户关联的所有渠道信息（渠道名称、渠道代码、类型、状态、区域、负责人）。</p>
+            <p><strong>2. 状态切换：</strong>启用/禁用状态通过下拉选择控制，禁用后客户无法下单。</p>
+            <p><strong>3. 批量操作：</strong>勾选多行后可进行批量删除或导出。</p>
+            <p><strong>4. 分页逻辑：</strong>默认每页10条，支持页码跳转。</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 新增/编辑模态框 -->
+  <div id="formModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">新增客户</h3>
+        <button class="close-btn" onclick="closeModal('formModal')">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="dataForm">
+          <input type="hidden" id="editId">
+          <div class="form-group">
+            <label>客户代码 <span class="required">*</span></label>
+            <input type="text" id="formCustomerCode" class="form-input" placeholder="请输入客户代码" required>
+          </div>
+          <div class="form-group">
+            <label>客户名称 <span class="required">*</span></label>
+            <input type="text" id="formCustomerName" class="form-input" placeholder="请输入客户名称" required>
+          </div>
+          <div class="form-group">
+            <label>联系人 <span class="required">*</span></label>
+            <input type="text" id="formContact" class="form-input" placeholder="请输入联系人姓名" required>
+          </div>
+          <div class="form-group">
+            <label>联系方式 <span class="required">*</span></label>
+            <input type="text" id="formPhone" class="form-input" placeholder="请输入手机号或邮箱" required>
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <select id="formStatus" class="form-select">
+              <option value="active">启用</option>
+              <option value="inactive">禁用</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="erp-btn erp-btn-secondary" onclick="closeModal('formModal')">取消</button>
+        <button class="erp-btn erp-btn-primary" onclick="handleSave()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关联渠道预览模态框 -->
+  <div id="relatedChannelsModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal-content" style="max-width: 700px;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa fa-sitemap mr-2 text-primary"></i>关联渠道
+        </h3>
+        <button class="close-btn" onclick="closeModal('relatedChannelsModal')">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="relatedChannelsInfo" class="mb-4 pb-3 border-b border-gray-200"></div>
+        <div id="relatedChannelsList" class="space-y-3"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="erp-btn erp-btn-secondary" onclick="closeModal('relatedChannelsModal')">关闭</button>
+        <button class="erp-btn erp-btn-primary" onclick="exportRelatedChannels()">
+          <i class="fa fa-download mr-1"></i>导出列表
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/common/js/common.js"></script>
+  <script>
+    // ========== 数据 ==========
+    const customerData = [
+      { id: 1, code: 'C10001', name: '深圳市科技有限公司', status: 'active', contact: '张三', phone: '13800138001', orderCount: 156, orderAmount: 456800, createTime: '2023-01-15 09:30:00' },
+      { id: 2, code: 'C10002', name: '广州贸易发展有限公司', status: 'active', contact: '李四', phone: '13900139002', orderCount: 89, orderAmount: 234500, createTime: '2023-02-20 14:20:00' },
+      { id: 3, code: 'C10003', name: '上海进出口有限公司', status: 'inactive', contact: '王五', phone: '13700137003', orderCount: 234, orderAmount: 678900, createTime: '2023-03-10 11:00:00' },
+      { id: 4, code: 'C10004', name: '北京电子商务公司', status: 'active', contact: '赵六', phone: '13600136004', orderCount: 67, orderAmount: 189000, createTime: '2023-04-05 16:45:00' },
+      { id: 5, code: 'C10005', name: '杭州网络科技有限公司', status: 'active', contact: '孙七', phone: '13500135005', orderCount: 198, orderAmount: 567000, createTime: '2023-05-12 08:15:00' },
+      { id: 6, code: 'C10006', name: '成都物流有限公司', status: 'active', contact: '周八', phone: '13400134006', orderCount: 45, orderAmount: 123000, createTime: '2023-06-18 13:30:00' },
+      { id: 7, code: 'C10007', name: '武汉制造有限公司', status: 'inactive', contact: '吴九', phone: '13300133007', orderCount: 312, orderAmount: 890000, createTime: '2023-07-22 10:00:00' },
+      { id: 8, code: 'C10008', name: '南京贸易有限公司', status: 'active', contact: '郑十', phone: '13200132008', orderCount: 78, orderAmount: 234000, createTime: '2023-08-30 15:20:00' },
+    ];
+
+    // 级联选择器数据
+    const channelCascadeData = {
+      'zybq': ['ZYBQ'],
+      'fx': ['Fedex_Home_Ground', 'UPS']
+    };
+
+    const relatedChannelsData = {
+      'C10001': ['Fedex_Home_Ground', 'UPS', 'ZYBQ'],
+      'C10002': ['Fedex_Home_Ground', 'UPS'],
+      'C10003': ['UPS', 'ZYBQ'],
+      'C10004': ['Fedex_Home_Ground'],
+      'C10005': ['ZYBQ'],
+      'C10006': ['Fedex_Home_Ground', 'UPS', 'ZYBQ'],
+      'C10007': ['UPS'],
+      'C10008': ['Fedex_Home_Ground', 'ZYBQ']
+    };
+
+    let currentPage = 1;
+    const pageSize = 10;
+    let selectedIds = new Set();
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      renderTable();
+      renderPagination();
+    });
+
+    // ========== Tab 切换 ==========
+    function switchMainTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.querySelectorAll('.main-content').forEach(m => m.classList.remove('active'));
+      document.getElementById('main-' + tab).classList.add('active');
+    }
+
+    // ========== 渲染表格 ==========
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageData = customerData.slice(start, end);
+
+      tbody.innerHTML = pageData.map(item => {
+        const relatedCount = relatedChannelsData[item.code] ? relatedChannelsData[item.code].length : 0;
+        return `
+          <tr class="table-hover-row">
+            <td class="px-4 py-3">
+              <input type="checkbox" value="${item.id}" onchange="handleRowSelect(this)" ${selectedIds.has(item.id) ? 'checked' : ''}>
+            </td>
+            <td class="px-4 py-3 font-medium text-primary">${item.code}</td>
+            <td class="px-4 py-3">${item.name}</td>
+            <td class="px-4 py-3">
+              ${item.status === 'active'
+                ? '<span class="status-badge bg-green-100 text-green-700">启用</span>'
+                : '<span class="status-badge bg-red-100 text-red-700">禁用</span>'}
+            </td>
+            <td class="px-4 py-3">${item.contact}</td>
+            <td class="px-4 py-3 text-gray-600">${item.phone}</td>
+            <td class="px-4 py-3 text-right">${item.orderCount}</td>
+            <td class="px-4 py-3 text-right font-medium">$${item.orderAmount.toLocaleString()}</td>
+            <td class="px-4 py-3 text-center">
+              <button class="related-channels-btn" onclick="openRelatedChannelsModal('${item.code}', '${item.name}')">
+                <i class="fa fa-sitemap"></i>
+                <span>${relatedCount} 个</span>
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </td>
+            <td class="px-4 py-3 text-gray-500">${item.createTime}</td>
+            <td class="px-4 py-3 text-center">
+              <button class="table-btn mr-2" onclick="handleEdit(${item.id})">
+                <i class="fa fa-edit mr-1"></i>编辑
+              </button>
+              <button class="table-btn table-btn-danger" onclick="handleDelete(${item.id})">
+                <i class="fa fa-trash mr-1"></i>删除
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('totalCount').textContent = customerData.length;
+    }
+
+    // ========== 分页 ==========
+    function renderPagination() {
+      const totalPages = Math.ceil(customerData.length / pageSize);
+      const pagination = document.getElementById('pagination');
+      let html = '';
+
+      html += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fa fa-angle-left"></i></button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      html += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fa fa-angle-right"></i></button>`;
+
+      pagination.innerHTML = html;
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(customerData.length / pageSize);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      renderTable();
+      renderPagination();
+    }
+
+    // ========== 选择行 ==========
+    function handleSelectAll() {
+      const checkboxes = document.querySelectorAll('#tableBody input[type="checkbox"]');
+      const selectAll = document.getElementById('selectAll');
+      checkboxes.forEach(cb => {
+        cb.checked = selectAll.checked;
+        if (selectAll.checked) {
+          selectedIds.add(parseInt(cb.value));
+        } else {
+          selectedIds.delete(parseInt(cb.value));
+        }
+      });
+      updateBatchBtn();
+    }
+
+    function handleRowSelect(checkbox) {
+      const id = parseInt(checkbox.value);
+      if (checkbox.checked) {
+        selectedIds.add(id);
+      } else {
+        selectedIds.delete(id);
+      }
+      updateBatchBtn();
+    }
+
+    function updateBatchBtn() {
+      const batchBtn = document.querySelector('.batch-btn');
+      batchBtn.disabled = selectedIds.size === 0;
+    }
+
+    // ========== 级联选择器 ==========
+    function handleChannelLevel1Change() {
+      const level1 = document.getElementById('filterChannelLevel1').value;
+      const level2Select = document.getElementById('filterChannelLevel2');
+      
+      level2Select.innerHTML = '<option value="">请选择</option>';
+      
+      if (level1 && channelCascadeData[level1]) {
+        channelCascadeData[level1].forEach(channel => {
+          const option = document.createElement('option');
+          option.value = channel;
+          option.textContent = channel;
+          level2Select.appendChild(option);
+        });
+      }
+    }
+
+    // ========== 搜索/重置 ==========
+    function handleSearch() {
+      alert('搜索功能：根据筛选条件查询客户数据');
+    }
+
+    function handleReset() {
+      document.getElementById('filterCustomerCode').value = '';
+      document.getElementById('filterCustomerName').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterChannelLevel1').value = '';
+      document.getElementById('filterChannelLevel2').innerHTML = '<option value="">请选择</option>';
+      currentPage = 1;
+      renderTable();
+      renderPagination();
+    }
+
+    // ========== 新增/编辑/删除 ==========
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '新增客户';
+      document.getElementById('dataForm').reset();
+      document.getElementById('editId').value = '';
+      openModal('formModal');
+    }
+
+    function handleEdit(id) {
+      const item = customerData.find(c => c.id === id);
+      if (!item) return;
+      document.getElementById('modalTitle').textContent = '编辑客户';
+      document.getElementById('editId').value = item.id;
+      document.getElementById('formCustomerCode').value = item.code;
+      document.getElementById('formCustomerName').value = item.name;
+      document.getElementById('formContact').value = item.contact;
+      document.getElementById('formPhone').value = item.phone;
+      document.getElementById('formStatus').value = item.status;
+      openModal('formModal');
+    }
+
+    function handleSave() {
+      closeModal('formModal');
+      alert('保存成功！');
+      renderTable();
+    }
+
+    function handleDelete(id) {
+      if (confirm('确定要删除该客户吗？')) {
+        alert('删除成功！');
+      }
+    }
+
+    function handleBatchDelete() {
+      if (confirm(`确定要删除选中的 ${selectedIds.size} 个客户吗？`)) {
+        alert('批量删除成功！');
+        selectedIds.clear();
+        updateBatchBtn();
+        renderTable();
+      }
+    }
+
+    function handleExport() {
+      alert('导出成功！');
+    }
+
+    // ========== 模态框 ==========
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function closeModalOnOverlay(event) {
+      if (event.target.classList.contains('modal-overlay')) {
+        event.target.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // ========== 关联渠道预览 ==========
+    function openRelatedChannelsModal(customerCode, customerName) {
+      const channels = relatedChannelsData[customerCode] || [];
+      const infoDiv = document.getElementById('relatedChannelsInfo');
+      const listDiv = document.getElementById('relatedChannelsList');
+
+      infoDiv.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-sm text-gray-600">客户：</span>
+            <span class="font-semibold text-primary">${customerName}</span>
+          </div>
+          <div>
+            <span class="text-sm text-gray-600">关联渠道：</span>
+            <span class="font-semibold">${channels.length} 个</span>
+          </div>
+        </div>
+      `;
+
+      if (channels.length === 0) {
+        listDiv.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fa fa-inbox text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">暂无关联渠道</p>
+          </div>
+        `;
+      } else {
+        listDiv.innerHTML = `
+          <div class="flex flex-wrap gap-2">
+            ${channels.map(channel => `
+              <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-primary/8 text-primary font-medium text-sm border border-primary/15">
+                <i class="fa fa-sitemap mr-1.5 text-xs"></i>${channel}
+              </span>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      openModal('relatedChannelsModal');
+    }
+
+    function exportRelatedChannels() {
+      alert('关联渠道列表已导出！');
+    }
+
+    // ========== 逻辑说明折叠 ==========
+    function toggleLogic() {
+      const content = document.getElementById('logicContent');
+      const icon = document.getElementById('logicIcon');
+      content.classList.toggle('hidden');
+      icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+  </script>
+</body>
+</html>
