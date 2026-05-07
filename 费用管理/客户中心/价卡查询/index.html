@@ -74,8 +74,9 @@
       <div class="stat-card">
         <div class="stat-icon"><i class="fa fa-credit-card"></i></div>
         <div class="stat-content">
-          <div class="stat-value" id="totalCountStat">0</div>
+          <div class="stat-value" id="cardCountStat">0</div>
           <div class="stat-label">价卡总数</div>
+          <div class="stat-sublabel">共 <span id="versionCountStat">0</span> 个版本</div>
         </div>
       </div>
       <div class="stat-card stat-success">
@@ -83,6 +84,7 @@
         <div class="stat-content">
           <div class="stat-value" id="activeCountStat">0</div>
           <div class="stat-label">生效中</div>
+          <div class="stat-sublabel" id="activeNamesStat">-</div>
         </div>
       </div>
       <div class="stat-card stat-warning">
@@ -90,11 +92,21 @@
         <div class="stat-content">
           <div class="stat-value" id="expiringCountStat">0</div>
           <div class="stat-label">即将到期</div>
+          <div class="stat-sublabel">30天内到期</div>
         </div>
       </div>
     </div>
 
     <div class="filter-section">
+      <div class="quick-time-filter">
+        <span class="quick-time-label">快速筛选：</span>
+        <button class="quick-time-btn active" data-value="all">全部</button>
+        <button class="quick-time-btn" data-value="current_month">本月</button>
+        <button class="quick-time-btn" data-value="current_quarter">本季度</button>
+        <button class="quick-time-btn" data-value="last_3_months">近3个月</button>
+        <button class="quick-time-btn" data-value="last_6_months">近6个月</button>
+        <button class="quick-time-btn" data-value="current_year">今年</button>
+      </div>
       <div class="filter-grid">
         <div class="filter-item">
           <label>价卡类型</label>
@@ -107,21 +119,29 @@
           </select>
         </div>
         <div class="filter-item">
+          <label>价卡名称</label>
+          <input type="text" id="filterRuleName" placeholder="请输入价卡名称">
+        </div>
+        <div class="filter-item">
           <label>仓库代码</label>
           <input type="text" id="filterWarehouseCode" placeholder="请输入仓库代码">
         </div>
         <div class="filter-item">
-          <label>规则名称</label>
-          <input type="text" id="filterRuleName" placeholder="请输入规则名称">
-        </div>
-        <div class="filter-item">
-          <label>状态</label>
-          <select id="filterStatus">
+          <label>版本状态</label>
+          <select id="filterVersionStatus">
             <option value="">全部</option>
             <option value="active">生效中</option>
-            <option value="expiring">即将到期</option>
             <option value="expired">已过期</option>
+            <option value="future">待生效</option>
           </select>
+        </div>
+        <div class="filter-item">
+          <label>有效期开始</label>
+          <input type="date" id="filterValidFrom">
+        </div>
+        <div class="filter-item">
+          <label>有效期结束</label>
+          <input type="date" id="filterValidTo">
         </div>
       </div>
       <div class="filter-actions">
@@ -137,39 +157,25 @@
     <div class="table-section">
       <div class="table-toolbar">
         <span class="table-title">价卡列表</span>
-        <button id="btnExport" class="erp-btn erp-btn-secondary">
-          <i class="fa fa-download mr-1"></i> 导出价卡
-        </button>
+        <div class="toolbar-actions">
+          <button id="btnExport" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-download mr-1"></i> 导出价卡
+          </button>
+        </div>
       </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>价卡类型</th>
-              <th>规则名称</th>
-              <th>仓库</th>
-              <th>费用明细</th>
-              <th>币种</th>
-              <th>有效期</th>
-              <th>状态</th>
-              <th style="width:60px;">操作</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-          </tbody>
-        </table>
+      <div id="priceCardContainer" class="table-container">
       </div>
 
       <div class="pagination-bar">
         <div class="pagination-info">
-          共 <span id="totalCount">0</span> 条
+          共 <span id="totalCount">0</span> 张价卡
         </div>
         <div class="pagination-right">
           <select id="pageSize" class="pagination-size">
-            <option value="10">10条/页</option>
-            <option value="20">20条/页</option>
-            <option value="50">50条/页</option>
+            <option value="10">10张/页</option>
+            <option value="20">20张/页</option>
+            <option value="50">50张/页</option>
           </select>
           <div class="pagination-pages" id="pageButtons"></div>
         </div>
@@ -178,13 +184,497 @@
 
   </main>
 
-  <footer class="bg-white border-t border-border-light mt-8 py-6">
-    <div class="container mx-auto px-4 text-center text-text-muted text-sm">
-      <p>© 2025 ELSA 海外仓管理系统 - 客户服务中心</p>
-      <p class="mt-1">如有疑问请联系您的专属客服经理</p>
+  <div class="logic-section">
+    <div class="logic-header" onclick="toggleLogic()">
+      <div class="logic-header-left">
+        <i class="fa fa-book"></i>
+        <span class="logic-title">逻辑说明</span>
+        <span class="logic-hint">(点击展开/收起)</span>
+      </div>
+      <i class="fa fa-chevron-down logic-icon" id="logicIcon"></i>
     </div>
-  </footer>
+    <div class="logic-content" id="logicContent">
+      
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-database"></i>初始化页面（数据展示逻辑）
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>逻辑项</th>
+              <th>说明</th>
+              <th>数据来源</th>
+              <th>展示规则</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>价卡总数统计</td>
+              <td>统计当前客户的价卡数量（按价卡ID去重）</td>
+              <td>价卡版本表</td>
+              <td>显示数字，每个价卡只计数一次</td>
+              <td>同一价卡的不同版本只计为1张价卡</td>
+            </tr>
+            <tr>
+              <td>版本总数统计</td>
+              <td>统计当前客户所有价卡版本的总数量</td>
+              <td>价卡版本表</td>
+              <td>显示数字，包含所有状态版本</td>
+              <td>同一价卡的不同版本分别计数</td>
+            </tr>
+            <tr>
+              <td>生效中价卡名称</td>
+              <td>显示当前生效的价卡名称列表</td>
+              <td>价卡版本表</td>
+              <td>去重显示价卡名称，多个用顿号分隔</td>
+              <td>只显示状态为"生效中"的价卡名称</td>
+            </tr>
+            <tr>
+              <td>即将到期统计</td>
+              <td>统计30天内即将到期的生效价卡数量</td>
+              <td>价卡版本表</td>
+              <td>显示数字</td>
+              <td>只统计状态为"生效中"且有效期结束时间在30天内的版本</td>
+            </tr>
+            <tr>
+              <td>价卡列表加载</td>
+              <td>加载当前客户的所有价卡，每个价卡只显示一条记录</td>
+              <td>价卡版本表</td>
+              <td>优先显示生效中的版本，若无则显示最新版本；按版本号倒序排列</td>
+              <td>点击"版本"按钮可查看该价卡的所有历史版本</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-search"></i>检索条件
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>检索项</th>
+              <th>输入方式</th>
+              <th>逻辑说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>快速时间筛选</td>
+              <td>按钮组</td>
+              <td>全部/本月/本季度/近3个月/近6个月/今年，点击后自动填充有效期筛选条件并执行搜索</td>
+            </tr>
+            <tr>
+              <td>价卡类型</td>
+              <td>下拉选择框</td>
+              <td>精确匹配价卡类型字段（仓储费/运费/操作费/其他费用）</td>
+            </tr>
+            <tr>
+              <td>价卡名称</td>
+              <td>文本输入框</td>
+              <td>模糊匹配价卡名称，支持部分关键词搜索</td>
+            </tr>
+            <tr>
+              <td>仓库代码</td>
+              <td>文本输入框</td>
+              <td>模糊匹配仓库代码，支持部分关键词搜索</td>
+            </tr>
+            <tr>
+              <td>版本状态</td>
+              <td>下拉选择框</td>
+              <td>精确匹配版本状态（生效中/已过期/待生效），筛选出该状态的价卡</td>
+            </tr>
+            <tr>
+              <td>有效期开始</td>
+              <td>日期选择器</td>
+              <td>筛选有效期结束时间大于等于所选日期的价卡</td>
+            </tr>
+            <tr>
+              <td>有效期结束</td>
+              <td>日期选择器</td>
+              <td>筛选有效期开始时间小于等于所选日期的价卡</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-mouse-pointer"></i>按钮逻辑
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>按钮</th>
+              <th>位置</th>
+              <th>触发动作</th>
+              <th>前置条件</th>
+              <th>后续操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>价卡名称/价格预览</td>
+              <td>每行价卡名称/价格预览列</td>
+              <td>点击打开价卡详情弹窗，展示价卡完整信息</td>
+              <td>无</td>
+              <td>关闭弹窗后无其他操作</td>
+            </tr>
+            <tr>
+              <td>版本</td>
+              <td>每行操作列</td>
+              <td>打开版本历史弹窗，展示该价卡所有版本的列表</td>
+              <td>无</td>
+              <td>可在弹窗内查看各版本详情、提取价格、进行版本对比</td>
+            </tr>
+            <tr>
+              <td>费用重计</td>
+              <td>每行操作列</td>
+              <td>打开费用重计弹窗，选择时间段和费用类型后重新计算费用</td>
+              <td>无</td>
+              <td>提交后提示"费用重算任务已提交，请稍后查看结果"</td>
+            </tr>
+            <tr>
+              <td>版本对比</td>
+              <td>版本历史弹窗内</td>
+              <td>打开版本对比弹窗，展示该价卡所有版本的价格对比</td>
+              <td>价卡需有2个及以上版本</td>
+              <td>关闭弹窗后无其他操作</td>
+            </tr>
+            <tr>
+              <td>提取价格</td>
+              <td>版本历史弹窗内（仅历史版本显示）</td>
+              <td>打开提取价格弹窗，选择时间范围后提取该版本价格</td>
+              <td>仅versionStatus='expired'的历史版本显示</td>
+              <td>提交后提示"价格提取成功"</td>
+            </tr>
+            <tr>
+              <td>导出价卡</td>
+              <td>列表工具栏</td>
+              <td>打开导出弹窗，选择格式（CSV/Excel/PDF）、内容和范围后导出</td>
+              <td>无</td>
+              <td>下载对应格式文件，文件名格式：我的价卡_客户代码_日期.扩展名</td>
+            </tr>
+            <tr>
+              <td>重置</td>
+              <td>搜索区域</td>
+              <td>清空所有筛选条件，重置快速时间筛选为"全部"</td>
+              <td>无</td>
+              <td>显示当前客户的所有价卡</td>
+            </tr>
+            <tr>
+              <td>搜索</td>
+              <td>搜索区域</td>
+              <td>根据筛选条件查询数据</td>
+              <td>无</td>
+              <td>显示筛选结果，重置分页到第1页</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-list-alt"></i>属性取值逻辑（主表）
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>说明</th>
+              <th>数据来源</th>
+              <th>取值规则</th>
+              <th>显示格式</th>
+              <th>存储长度</th>
+              <th>属性存储类型</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>价卡ID</td>
+              <td>价卡唯一标识，同一价卡的不同版本共享此ID</td>
+              <td>系统生成</td>
+              <td>格式：PC+3位数字，如PC001</td>
+              <td>文本显示</td>
+              <td>32</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>版本ID</td>
+              <td>价卡版本唯一标识</td>
+              <td>系统生成</td>
+              <td>格式：价卡ID-V+版本号，如PC001-V1</td>
+              <td>文本显示</td>
+              <td>64</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>版本号</td>
+              <td>价卡的版本序号</td>
+              <td>系统生成</td>
+              <td>数字递增，从1开始</td>
+              <td>V+数字，如V1、V2</td>
+              <td>4</td>
+              <td>数值型</td>
+            </tr>
+            <tr>
+              <td>价卡名称</td>
+              <td>价卡的名称</td>
+              <td>手工输入</td>
+              <td>同一价卡的不同版本名称相同</td>
+              <td>文本显示</td>
+              <td>128</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>价卡类型</td>
+              <td>价卡的类型分类</td>
+              <td>手工选择</td>
+              <td>枚举值：storage/shipping/operation/other</td>
+              <td>仓储费/运费/操作费/其他费用</td>
+              <td>32</td>
+              <td>枚举型</td>
+            </tr>
+            <tr>
+              <td>版本状态</td>
+              <td>价卡版本的当前状态</td>
+              <td>系统计算</td>
+              <td>根据有效期自动计算：当前时间在有效期内=active，已过期=expired，未生效=future</td>
+              <td>生效中/已过期/待生效</td>
+              <td>32</td>
+              <td>枚举型</td>
+            </tr>
+            <tr>
+              <td>发布类型</td>
+              <td>价卡版本的发布方式</td>
+              <td>手工选择</td>
+              <td>manual=手动发布，auto=有效期自动衔接</td>
+              <td>手动发布/自动衔接</td>
+              <td>32</td>
+              <td>枚举型</td>
+            </tr>
+            <tr>
+              <td>有效期开始</td>
+              <td>价卡版本的生效开始时间</td>
+              <td>手工选择</td>
+              <td>日期时间格式</td>
+              <td>YYYY-MM-DD HH:mm:ss</td>
+              <td>19</td>
+              <td>DATETIME</td>
+            </tr>
+            <tr>
+              <td>有效期结束</td>
+              <td>价卡版本的生效结束时间</td>
+              <td>手工选择</td>
+              <td>日期时间格式</td>
+              <td>YYYY-MM-DD HH:mm:ss</td>
+              <td>19</td>
+              <td>DATETIME</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-list-alt"></i>属性取值逻辑（提取价格弹窗）
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>说明</th>
+              <th>数据来源</th>
+              <th>取值规则</th>
+              <th>显示格式</th>
+              <th>存储长度</th>
+              <th>属性存储类型</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>价卡版本</td>
+              <td>显示当前操作的价卡版本</td>
+              <td>系统填充</td>
+              <td>自动填充，不可编辑</td>
+              <td>价卡名称 V版本号</td>
+              <td>128</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>有效期</td>
+              <td>显示当前版本的有效期</td>
+              <td>系统填充</td>
+              <td>自动填充，不可编辑</td>
+              <td>YYYY-MM-DD HH:mm:ss ~ YYYY-MM-DD HH:mm:ss</td>
+              <td>64</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>应用时间范围</td>
+              <td>选择提取价格应用的时间范围</td>
+              <td>手工选择</td>
+              <td>必填，开始日期≤结束日期</td>
+              <td>YYYY-MM-DD</td>
+              <td>10</td>
+              <td>DATE</td>
+            </tr>
+            <tr>
+              <td>备注说明</td>
+              <td>提取价格的备注信息</td>
+              <td>手工输入</td>
+              <td>选填，最多256字符</td>
+              <td>文本显示</td>
+              <td>256</td>
+              <td>字符型</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-list-alt"></i>属性取值逻辑（费用重计弹窗）
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>说明</th>
+              <th>数据来源</th>
+              <th>取值规则</th>
+              <th>显示格式</th>
+              <th>存储长度</th>
+              <th>属性存储类型</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>价卡名称</td>
+              <td>显示当前操作的价卡名称</td>
+              <td>系统填充</td>
+              <td>自动填充，不可编辑</td>
+              <td>文本显示</td>
+              <td>128</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>币种</td>
+              <td>显示价卡的币种</td>
+              <td>系统填充</td>
+              <td>自动填充，不可编辑</td>
+              <td>CNY/USD等</td>
+              <td>16</td>
+              <td>字符型</td>
+            </tr>
+            <tr>
+              <td>版本有效期参考</td>
+              <td>显示该价卡所有版本的有效期</td>
+              <td>系统填充</td>
+              <td>自动填充，不可编辑，按版本号升序排列</td>
+              <td>表格形式展示版本号、有效期、状态</td>
+              <td>-</td>
+              <td>表格型</td>
+            </tr>
+            <tr>
+              <td>重算时间范围</td>
+              <td>选择需要重算费用的时间范围</td>
+              <td>手工选择</td>
+              <td>必填，开始日期≤结束日期</td>
+              <td>YYYY-MM-DD</td>
+              <td>10</td>
+              <td>DATE</td>
+            </tr>
+            <tr>
+              <td>重算类型</td>
+              <td>选择需要重算的费用类型</td>
+              <td>手工选择</td>
+              <td>必填，枚举值：storage/shipping/operation/all</td>
+              <td>仓储费/运费/操作费/全部费用</td>
+              <td>32</td>
+              <td>枚举型</td>
+            </tr>
+            <tr>
+              <td>备注说明</td>
+              <td>重算费用的备注信息</td>
+              <td>手工输入</td>
+              <td>选填，最多256字符</td>
+              <td>文本显示</td>
+              <td>256</td>
+              <td>字符型</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logic-block">
+        <h4 class="logic-block-title">
+          <i class="fa fa-list-alt"></i>属性取值逻辑（补收账单弹窗）
+        </h4>
+        <table class="logic-table">
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>说明</th>
+              <th>数据来源</th>
+              <th>取值规则</th>
+              <th>显示格式</th>
+              <th>存储长度</th>
+              <th>属性存储类型</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>补收时间范围</td>
+              <td>选择需要补收账单的时间范围</td>
+              <td>手工选择</td>
+              <td>必填，开始日期≤结束日期</td>
+              <td>YYYY-MM-DD</td>
+              <td>10</td>
+              <td>DATE</td>
+            </tr>
+            <tr>
+              <td>补收原因</td>
+              <td>选择补收账单的原因</td>
+              <td>手工选择</td>
+              <td>必填，枚举值：price_adjustment/billing_error/missing_period/other</td>
+              <td>价格调整回溯/账单错误修正/遗漏期间补录/其他原因</td>
+              <td>32</td>
+              <td>枚举型</td>
+            </tr>
+            <tr>
+              <td>备注说明</td>
+              <td>补收账单的备注信息</td>
+              <td>手工输入</td>
+              <td>选填，最多256字符</td>
+              <td>文本显示</td>
+              <td>256</td>
+              <td>字符型</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
 
   <script src="js/main.js"></script>
+  <script>
+    function toggleLogic() {
+      const content = document.getElementById('logicContent');
+      const icon = document.getElementById('logicIcon');
+      
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.style.transform = 'rotate(0deg)';
+      } else {
+        content.style.display = 'none';
+        icon.style.transform = 'rotate(-90deg)';
+      }
+    }
+  </script>
 </body>
 </html>

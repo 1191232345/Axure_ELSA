@@ -237,52 +237,62 @@
         <div class="indicator-card relative">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="text-gray-500 text-sm">日均入库单</span>
+              <span class="text-gray-500 text-sm">当天入库单</span>
               <button class="relative group">
                 <i class="fa fa-question-circle text-gray-400 hover:text-primary text-sm"></i>
                 <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[240px] max-w-[300px] bottom-full left-0 mb-2 pointer-events-none text-left">
-                  <div class="font-semibold mb-2 text-white text-sm text-left">日均入库单</div>
+                  <div class="font-semibold mb-2 text-white text-sm text-left">当天入库单</div>
                   <div class="text-gray-300 leading-relaxed mb-2 text-left">
-                    统计指定时间范围内，平均每天创建的入库订单数量。
+                    统计当天创建的入库订单数量，实时反映当日入库业务量。
                   </div>
                   <div class="text-gray-300 leading-relaxed text-left">
-                    <strong>计算方式：</strong>入库单总数 ÷ 统计天数。
+                    <strong>计算方式：</strong>统计当天0点至当前时间创建的所有入库单数量。
                   </div>
                   <div class="absolute top-full left-4 border-8 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
             </div>
             <div class="flex items-center gap-2">
-              <i class="fa fa-calendar text-primary text-xl"></i>
+              <i class="fa fa-clock-o text-primary text-xl"></i>
             </div>
           </div>
-          <div class="text-2xl font-bold mb-1" id="avgInboundOrder">41.6</div>
-          <div class="text-xs text-gray-500">单/天</div>
+          <div class="text-2xl font-bold mb-1" id="todayInboundOrder">52</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-success" id="todayInboundTrend">
+              <i class="fa fa-arrow-up mr-1"></i>较昨日 +8.3%
+            </span>
+            <span class="text-xs text-gray-500">今日实时</span>
+          </div>
         </div>
         <div class="indicator-card relative">
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="text-gray-500 text-sm">日均出库单</span>
+              <span class="text-gray-500 text-sm">当天出库单</span>
               <button class="relative group">
                 <i class="fa fa-question-circle text-gray-400 hover:text-primary text-sm"></i>
                 <div class="absolute z-50 hidden group-hover:block bg-gray-900 text-white text-xs rounded-lg px-4 py-3 shadow-xl whitespace-normal min-w-[240px] max-w-[300px] bottom-full left-0 mb-2 pointer-events-none text-left">
-                  <div class="font-semibold mb-2 text-white text-sm text-left">日均出库单</div>
+                  <div class="font-semibold mb-2 text-white text-sm text-left">当天出库单</div>
                   <div class="text-gray-300 leading-relaxed mb-2 text-left">
-                    统计指定时间范围内，平均每天创建的出库订单数量。
+                    统计当天创建的出库订单数量，实时反映当日出库业务量。
                   </div>
                   <div class="text-gray-300 leading-relaxed text-left">
-                    <strong>计算方式：</strong>出库单总数 ÷ 统计天数。
+                    <strong>计算方式：</strong>统计当天0点至当前时间创建的所有出库单数量。
                   </div>
                   <div class="absolute top-full left-4 border-8 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
             </div>
             <div class="flex items-center gap-2">
-              <i class="fa fa-calendar text-success text-xl"></i>
+              <i class="fa fa-clock-o text-success text-xl"></i>
             </div>
           </div>
-          <div class="text-2xl font-bold mb-1" id="avgOutboundOrder">128.5</div>
-          <div class="text-xs text-gray-500">单/天</div>
+          <div class="text-2xl font-bold mb-1" id="todayOutboundOrder">148</div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-success" id="todayOutboundTrend">
+              <i class="fa fa-arrow-up mr-1"></i>较昨日 +5.6%
+            </span>
+            <span class="text-xs text-gray-500">今日实时</span>
+          </div>
         </div>
       </div>
 
@@ -4197,6 +4207,18 @@
           current: 3856,
           previous: 3560,
           trend: 8.3
+        },
+        today: {
+          inbound: {
+            current: 52,
+            yesterday: 48,
+            trend: 8.3
+          },
+          outbound: {
+            current: 148,
+            yesterday: 140,
+            trend: 5.6
+          }
         }
       },
       // 仓库维度数据
@@ -4539,8 +4561,10 @@
       const outboundCountEl = document.getElementById('outboundOrderCount');
       const inboundTrendEl = document.getElementById('inboundOrderTrend');
       const outboundTrendEl = document.getElementById('outboundOrderTrend');
-      const avgInboundEl = document.getElementById('avgInboundOrder');
-      const avgOutboundEl = document.getElementById('avgOutboundOrder');
+      const todayInboundEl = document.getElementById('todayInboundOrder');
+      const todayOutboundEl = document.getElementById('todayOutboundOrder');
+      const todayInboundTrendEl = document.getElementById('todayInboundTrend');
+      const todayOutboundTrendEl = document.getElementById('todayOutboundTrend');
 
       if (inboundCountEl) {
         inboundCountEl.textContent = orderData.summary.inbound.current.toLocaleString();
@@ -4564,13 +4588,27 @@
         `;
         outboundTrendEl.className = `text-xs ${isPositive ? 'text-success' : 'text-danger'}`;
       }
-      if (avgInboundEl) {
-        const avg = (orderData.summary.inbound.current / 30).toFixed(1);
-        avgInboundEl.textContent = avg;
+      if (todayInboundEl) {
+        todayInboundEl.textContent = orderData.summary.today.inbound.current.toLocaleString();
       }
-      if (avgOutboundEl) {
-        const avg = (orderData.summary.outbound.current / 30).toFixed(1);
-        avgOutboundEl.textContent = avg;
+      if (todayOutboundEl) {
+        todayOutboundEl.textContent = orderData.summary.today.outbound.current.toLocaleString();
+      }
+      if (todayInboundTrendEl) {
+        const trend = orderData.summary.today.inbound.trend;
+        const isPositive = trend > 0;
+        todayInboundTrendEl.innerHTML = `
+          <i class="fa fa-arrow-${isPositive ? 'up' : 'down'} mr-1"></i>较昨日 ${isPositive ? '+' : ''}${trend.toFixed(1)}%
+        `;
+        todayInboundTrendEl.className = `text-xs ${isPositive ? 'text-success' : 'text-danger'}`;
+      }
+      if (todayOutboundTrendEl) {
+        const trend = orderData.summary.today.outbound.trend;
+        const isPositive = trend > 0;
+        todayOutboundTrendEl.innerHTML = `
+          <i class="fa fa-arrow-${isPositive ? 'up' : 'down'} mr-1"></i>较昨日 ${isPositive ? '+' : ''}${trend.toFixed(1)}%
+        `;
+        todayOutboundTrendEl.className = `text-xs ${isPositive ? 'text-success' : 'text-danger'}`;
       }
     }
 
