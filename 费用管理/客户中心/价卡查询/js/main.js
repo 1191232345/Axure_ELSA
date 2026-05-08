@@ -24,13 +24,15 @@ const VERSION_STATUS_MAP = {
 document.addEventListener('DOMContentLoaded', async function() {
   await loadData();
   bindEvents();
+  loadLogicDescription();
 });
 
 async function loadData() {
   try {
-    const resp = await fetch('data/price-card-data.json');
+    const resp = await fetch('data/price-card-query-data.json');
     if (resp.ok) {
-      allData = await resp.json();
+      const jsonData = await resp.json();
+      allData = jsonData.priceCards || [];
     } else {
       throw new Error('加载失败');
     }
@@ -48,67 +50,33 @@ async function loadData() {
 function getDefaultData() {
   return [
     {
-      priceCardId: "PC001",
-      versionId: "PC001-V1",
-      versionNumber: 1,
-      ruleName: "标准仓储",
-      priceCardType: "storage",
-      warehouseCode: "WH002",
-      warehouseName: "WH002",
-      settlementCycle: "月结",
-      currency: "CNY",
-      chargeType: "按件计费",
-      customerCode: "DEMO - demo",
-      customerName: "某电子商务有限公司",
-      validFrom: "2025-01-01 00:00:00",
-      validTo: "2025-03-31 23:59:59",
-      versionStatus: "expired",
-      publishType: "manual",
-      priceDetails: [
-        { itemName: "基础仓储费", unit: "件/天", price: 0.5 },
-        { itemName: "超期仓储费", unit: "件/天", price: 0.8 }
-      ],
-      remark: "Q1标准费率",
-      creator: "admin",
-      createTime: "2025-01-01 09:00:00",
-      updater: "admin",
-      updateTime: "2025-01-01 09:00:00"
+      id: 1,
+      code: "PC001",
+      name: "默认价卡",
+      type: "仓储费",
+      storageFee: "VIP1",
+      operationFee: "VIP2",
+      expressFee: "VIP1",
+      otherFee: "VIP3",
+      startDate: "2026/01/01 00:00:00",
+      endDate: "2026/12/31 23:59:59",
+      status: "生效",
+      customer: "DEMO - demo"
     }
   ];
 }
 
 function bindEvents() {
-  document.getElementById('customerSelector').addEventListener('change', function() {
-    currentCustomer = this.value;
-    filterByCustomer();
-    currentPage = 1;
-    renderView();
-    renderPagination();
-    updateStats();
-  });
+  // 筛选器事件
+  const filterType = document.getElementById('filterType');
+  const filterStatus = document.getElementById('filterStatus');
   
-  document.getElementById('btnSearch').addEventListener('click', filterData);
-  document.getElementById('btnReset').addEventListener('click', resetFilters);
-  document.getElementById('btnExport').addEventListener('click', showExportModal);
-  document.getElementById('pageSize').addEventListener('change', function() {
-    pageSize = parseInt(this.value);
-    currentPage = 1;
-    renderView();
-    renderPagination();
-  });
-  
-  document.getElementById('viewMode').addEventListener('change', function() {
-    currentViewMode = this.value;
-    renderView();
-  });
-  
-  document.querySelectorAll('.quick-time-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.quick-time-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      applyQuickTimeFilter(this.dataset.value);
-    });
-  });
+  if (filterType) {
+    filterType.addEventListener('change', filterData);
+  }
+  if (filterStatus) {
+    filterStatus.addEventListener('change', filterData);
+  }
 }
 
 function applyQuickTimeFilter(value) {
@@ -153,36 +121,16 @@ function formatDate(date) {
 }
 
 function filterByCustomer() {
-  filteredData = allData.filter(item => item.customerCode === currentCustomer);
+  filteredData = allData;
 }
 
 function filterData() {
-  const priceCardType = document.getElementById('filterPriceCardType').value;
-  const ruleName = document.getElementById('filterRuleName').value.trim().toLowerCase();
-  const warehouseCode = document.getElementById('filterWarehouseCode').value.trim().toLowerCase();
-  const versionStatus = document.getElementById('filterVersionStatus').value;
-  const validFrom = document.getElementById('filterValidFrom').value;
-  const validTo = document.getElementById('filterValidTo').value;
+  const filterType = document.getElementById('filterType') ? document.getElementById('filterType').value : '';
+  const filterStatus = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : '';
 
   filteredData = allData.filter(item => {
-    if (item.customerCode !== currentCustomer) return false;
-    
-    if (priceCardType && item.priceCardType !== priceCardType) return false;
-    if (ruleName && !item.ruleName.toLowerCase().includes(ruleName)) return false;
-    if (warehouseCode && !item.warehouseCode.toLowerCase().includes(warehouseCode)) return false;
-    if (versionStatus && item.versionStatus !== versionStatus) return false;
-    
-    if (validFrom) {
-      const itemValidFrom = new Date(item.validFrom);
-      const filterValidFromDate = new Date(validFrom);
-      if (itemValidTo < filterValidFromDate) return false;
-    }
-    
-    if (validTo) {
-      const itemValidTo = new Date(item.validTo);
-      const filterValidToDate = new Date(validTo);
-      if (itemValidFrom > filterValidToDate) return false;
-    }
+    if (filterType && item.type !== filterType) return false;
+    if (filterStatus && item.status !== filterStatus) return false;
     
     return true;
   });
@@ -194,19 +142,12 @@ function filterData() {
 }
 
 function resetFilters() {
-  document.getElementById('filterPriceCardType').value = '';
-  document.getElementById('filterRuleName').value = '';
-  document.getElementById('filterWarehouseCode').value = '';
-  document.getElementById('filterVersionStatus').value = '';
-  document.getElementById('filterValidFrom').value = '';
-  document.getElementById('filterValidTo').value = '';
-  
-  document.querySelectorAll('.quick-time-btn').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.value === 'all') {
-      btn.classList.add('active');
-    }
-  });
+  if (document.getElementById('filterType')) {
+    document.getElementById('filterType').value = '';
+  }
+  if (document.getElementById('filterStatus')) {
+    document.getElementById('filterStatus').value = '';
+  }
   
   filterByCustomer();
   currentPage = 1;
@@ -216,68 +157,60 @@ function resetFilters() {
 }
 
 function renderView() {
-  const container = document.getElementById('priceCardContainer');
+  const tbody = document.getElementById('priceCardTableBody');
+  const emptyState = document.getElementById('emptyState');
+  const table = document.getElementById('priceCardTable');
   
-  const displayData = getLatestVersionPerCard(filteredData);
-  const start = (currentPage - 1) * pageSize;
-  const pageData = displayData.slice(start, start + pageSize);
-
-  if (pageData.length === 0) {
-    container.innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i><p>暂无价卡数据</p></div>';
+  if (!tbody) {
+    console.error('找不到表格容器元素');
     return;
   }
+  
+  const start = (currentPage - 1) * pageSize;
+  const pageData = filteredData.slice(start, start + pageSize);
 
-  container.innerHTML = `
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>价卡类型</th>
-          <th>仓库</th>
-          <th>币种</th>
-          <th>价卡名称/价格预览</th>
-          <th style="width:180px;">操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${pageData.map(item => {
-          const typeLabel = PRICE_CARD_TYPE_MAP[item.priceCardType] || item.priceCardType;
-          const versionCount = getVersionCount(item.priceCardId);
-          
-          return `
-            <tr>
-              <td>${typeLabel}</td>
-              <td>${item.warehouseCode}</td>
-              <td>${item.currency}</td>
-              <td>
-                <div class="price-card-name-preview" onclick="viewDetail('${item.versionId}')" style="cursor:pointer;">
-                  <div class="price-card-name-row">
-                    <strong>${item.ruleName}</strong>
-                    ${versionCount > 1 ? `<span class="version-count-badge">${versionCount}个版本</span>` : ''}
-                  </div>
-                  <div class="price-card-price-row" style="font-size:12px;color:#666;margin-top:4px;">
-                    ${item.priceDetails && item.priceDetails.length > 0 
-                      ? `${item.priceDetails.slice(0, 2).map(d => `${d.itemName}: ${d.price}`).join('；')}` 
-                      : '暂无价格信息'}
-                    ${item.priceDetails && item.priceDetails.length > 2 ? '...' : ''}
-                  </div>
-                </div>
-              </td>
-              <td>
-                <div class="action-btns">
-                  <button class="action-btn-text" onclick="showVersionHistory('${item.priceCardId}')" title="查看版本">
-                    <i class="fa fa-history"></i> 版本
-                  </button>
-                  <button class="action-btn-text" onclick="recalculateFee('${item.priceCardId}')" title="费用重计">
-                    <i class="fa fa-calculator"></i> 重计
-                  </button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
+  if (pageData.length === 0) {
+    table.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  
+  table.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+
+  tbody.innerHTML = pageData.map(item => `
+    <tr>
+      <td>
+        <span class="font-medium text-gray-900">${item.code || '-'}</span>
+      </td>
+      <td>
+        <span class="level-badge level-${item.storageFee}" onclick="showStorageFeeDetail(${item.id})" title="点击查看详情">
+          ${item.storageFee || '-'}
+        </span>
+      </td>
+      <td>
+        <span class="level-badge level-${item.operationFee}" onclick="showOperationFeeDetail(${item.id})" title="点击查看详情">
+          ${item.operationFee || '-'}
+        </span>
+      </td>
+      <td>
+        <span class="level-badge level-${item.expressFee}" onclick="showExpressFeeDetail(${item.id})" title="点击查看详情">
+          ${item.expressFee || '-'}
+        </span>
+      </td>
+      <td>
+        <span class="level-badge level-${item.otherFee}" onclick="showOtherFeeDetail(${item.id})" title="点击查看详情">
+          ${item.otherFee || '-'}
+        </span>
+      </td>
+      <td>
+        <div class="text-sm">
+          <div class="text-gray-900">${item.startDate || '-'}</div>
+          <div class="text-gray-500">至 ${item.endDate || '-'}</div>
+        </div>
+      </td>
+    </tr>
+  `).join('');
 }
 
 function getLatestVersionPerCard(data) {
@@ -415,33 +348,11 @@ function hidePricePreview() {
 }
 
 function renderPagination() {
-  const displayData = getLatestVersionPerCard(filteredData);
-  const total = displayData.length;
-  const totalPages = Math.ceil(total / pageSize) || 1;
-
-  document.getElementById('totalCount').textContent = total;
-
-  const pagesContainer = document.getElementById('pageButtons');
-  let html = '';
-
-  html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fa fa-chevron-left"></i></button>`;
-
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-      html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-    } else if (i === currentPage - 2 || i === currentPage + 2) {
-      html += `<span style="padding:4px 8px;color:#999;">...</span>`;
-    }
-  }
-
-  html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fa fa-chevron-right"></i></button>`;
-
-  pagesContainer.innerHTML = html;
+  // 暂无分页元素，保留空函数
 }
 
 function goToPage(page) {
-  const displayData = getLatestVersionPerCard(filteredData);
-  const total = displayData.length;
+  const total = filteredData.length;
   const totalPages = Math.ceil(total / pageSize) || 1;
   
   if (page < 1 || page > totalPages) return;
@@ -451,28 +362,7 @@ function goToPage(page) {
 }
 
 function updateStats() {
-  const customerData = allData.filter(item => item.customerCode === currentCustomer);
-  
-  const groupedData = groupByPriceCard(customerData);
-  const cardCount = Object.keys(groupedData).length;
-  const versionCount = customerData.length;
-  
-  const activeVersions = customerData.filter(item => item.versionStatus === 'active');
-  const activeCardNames = [...new Set(activeVersions.map(item => item.ruleName))];
-  
-  const now = new Date();
-  const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const expiringVersions = customerData.filter(item => {
-    if (item.versionStatus !== 'active') return false;
-    const validTo = new Date(item.validTo);
-    return validTo <= thirtyDaysLater && validTo > now;
-  });
-  
-  document.getElementById('cardCountStat').textContent = cardCount;
-  document.getElementById('versionCountStat').textContent = versionCount;
-  document.getElementById('activeCountStat').textContent = activeCardNames.length;
-  document.getElementById('activeNamesStat').textContent = activeCardNames.length > 0 ? activeCardNames.join('、') : '-';
-  document.getElementById('expiringCountStat').textContent = expiringVersions.length;
+  // 暂无统计元素，保留函数以避免错误
 }
 
 function showModal(title, content, width = '600px') {
@@ -491,12 +381,12 @@ function showModal(title, content, width = '600px') {
     </div>
   `;
   document.body.appendChild(modal);
-  setTimeout(() => modal.classList.add('show'), 10);
+  setTimeout(() => modal.classList.add('active'), 10);
 }
 
 function closeModal(element) {
   const modal = element.closest('.modal');
-  modal.classList.remove('show');
+  modal.classList.remove('active');
   setTimeout(() => modal.remove(), 300);
 }
 
@@ -947,14 +837,703 @@ function exportAsPDF(data, content) {
 }
 
 function showToast(message, type = 'info') {
+  let toastContainer = document.querySelector('.toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+  }
+  
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
-  document.body.appendChild(toast);
+  toastContainer.appendChild(toast);
   
-  setTimeout(() => toast.classList.add('show'), 10);
   setTimeout(() => {
-    toast.classList.remove('show');
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+function toggleLogic() {
+  const content = document.getElementById('logicContent');
+  const icon = document.getElementById('logicIcon');
+  
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    icon.classList.remove('fa-chevron-down');
+    icon.classList.add('fa-chevron-up');
+  } else {
+    content.classList.add('hidden');
+    icon.classList.remove('fa-chevron-up');
+    icon.classList.add('fa-chevron-down');
+  }
+}
+
+function loadLogicDescription() {
+  const logicDiv = document.getElementById('logicDescription');
+  
+  logicDiv.innerHTML = `
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+      </h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm border border-gray-200 rounded">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">价卡列表加载</td>
+              <td class="px-3 py-2 text-gray-600">页面加载时从数据文件读取所有价卡信息</td>
+              <td class="px-3 py-2 text-gray-600">price-card-data.json</td>
+              <td class="px-3 py-2 text-gray-600">以表格形式展示，每行显示一个价卡</td>
+              <td class="px-3 py-2 text-gray-600">默认按ID升序排列</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">客户筛选</td>
+              <td class="px-3 py-2 text-gray-600">根据选择的客户代码过滤价卡数据</td>
+              <td class="px-3 py-2 text-gray-600">客户选择器</td>
+              <td class="px-3 py-2 text-gray-600">仅显示当前客户的价卡</td>
+              <td class="px-3 py-2 text-gray-600">支持客户切换</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">版本状态判断</td>
+              <td class="px-3 py-2 text-gray-600">根据当前日期与生效日期判断价卡状态</td>
+              <td class="px-3 py-2 text-gray-600">validFrom/validTo字段</td>
+              <td class="px-3 py-2 text-gray-600">生效中/已过期/待生效</td>
+              <td class="px-3 py-2 text-gray-600">状态用不同颜色标识</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fa fa-search text-primary mr-2"></i>检索条件
+      </h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm border border-gray-200 rounded">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">默认值</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">价卡类型</td>
+              <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+              <td class="px-3 py-2 text-gray-600">支持按类型筛选（全部类型、仓储费、运费、操作费、其他费用）</td>
+              <td class="px-3 py-2 text-gray-600">全部类型</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">版本状态</td>
+              <td class="px-3 py-2 text-gray-600">下拉单选框</td>
+              <td class="px-3 py-2 text-gray-600">支持按状态筛选（全部状态、生效中、已过期、待生效）</td>
+              <td class="px-3 py-2 text-gray-600">全部状态</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">生效日期范围</td>
+              <td class="px-3 py-2 text-gray-600">日期范围选择器</td>
+              <td class="px-3 py-2 text-gray-600">筛选生效日期在指定范围内的价卡</td>
+              <td class="px-3 py-2 text-gray-600">无限制</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+      </h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm border border-gray-200 rounded">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮名称</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">搜索</td>
+              <td class="px-3 py-2 text-gray-600">工具栏左侧</td>
+              <td class="px-3 py-2 text-gray-600">根据筛选条件过滤价卡列表</td>
+              <td class="px-3 py-2 text-gray-600">无</td>
+              <td class="px-3 py-2 text-gray-600">刷新显示结果</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">重置</td>
+              <td class="px-3 py-2 text-gray-600">工具栏左侧</td>
+              <td class="px-3 py-2 text-gray-600">清空所有筛选条件</td>
+              <td class="px-3 py-2 text-gray-600">无</td>
+              <td class="px-3 py-2 text-gray-600">显示全部数据</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">导出</td>
+              <td class="px-3 py-2 text-gray-600">工具栏右侧</td>
+              <td class="px-3 py-2 text-gray-600">打开导出格式选择弹窗</td>
+              <td class="px-3 py-2 text-gray-600">无</td>
+              <td class="px-3 py-2 text-gray-600">选择格式后下载文件</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">新增价卡</td>
+              <td class="px-3 py-2 text-gray-600">页面顶部</td>
+              <td class="px-3 py-2 text-gray-600">打开新增价卡弹窗</td>
+              <td class="px-3 py-2 text-gray-600">无</td>
+              <td class="px-3 py-2 text-gray-600">弹出模态框</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fa fa-table text-primary mr-2"></i>属性取值逻辑（主表）
+      </h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm border border-gray-200 rounded">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">格式</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">价卡编号</td>
+              <td class="px-3 py-2 text-gray-600">价卡唯一标识码</td>
+              <td class="px-3 py-2 text-gray-600">系统自动生成</td>
+              <td class="px-3 py-2 text-gray-600">PC + 3位数字</td>
+              <td class="px-3 py-2 text-gray-600">PC001</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">规则名称</td>
+              <td class="px-3 py-2 text-gray-600">价卡规则名称</td>
+              <td class="px-3 py-2 text-gray-600">手工录入</td>
+              <td class="px-3 py-2 text-gray-600">最多50字符</td>
+              <td class="px-3 py-2 text-gray-600">文本</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">价卡类型</td>
+              <td class="px-3 py-2 text-gray-600">费用类型分类</td>
+              <td class="px-3 py-2 text-gray-600">下拉选择</td>
+              <td class="px-3 py-2 text-gray-600">仓储费/运费/操作费/其他费用</td>
+              <td class="px-3 py-2 text-gray-600">枚举值</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">仓库代码</td>
+              <td class="px-3 py-2 text-gray-600">适用仓库</td>
+              <td class="px-3 py-2 text-gray-600">下拉选择</td>
+              <td class="px-3 py-2 text-gray-600">从仓库主数据选择</td>
+              <td class="px-3 py-2 text-gray-600">WH001</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">生效日期</td>
+              <td class="px-3 py-2 text-gray-600">价卡有效期</td>
+              <td class="px-3 py-2 text-gray-600">日期选择器</td>
+              <td class="px-3 py-2 text-gray-600">开始日期 ≤ 结束日期</td>
+              <td class="px-3 py-2 text-gray-600">YYYY-MM-DD</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">版本状态</td>
+              <td class="px-3 py-2 text-gray-600">当前价卡状态</td>
+              <td class="px-3 py-2 text-gray-600">系统计算</td>
+              <td class="px-3 py-2 text-gray-600">根据当前日期自动判断</td>
+              <td class="px-3 py-2 text-gray-600">生效中/已过期/待生效</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（价卡明细）
+      </h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm border border-gray-200 rounded">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+              <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">费用项名称</td>
+              <td class="px-3 py-2 text-gray-600">具体的收费项目</td>
+              <td class="px-3 py-2 text-gray-600">手工录入</td>
+              <td class="px-3 py-2 text-gray-600">最多100字符</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">计费单位</td>
+              <td class="px-3 py-2 text-gray-600">费用的计量单位</td>
+              <td class="px-3 py-2 text-gray-600">手工录入</td>
+              <td class="px-3 py-2 text-gray-600">如：件/天、kg、立方米等</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-800">单价</td>
+              <td class="px-3 py-2 text-gray-600">单位价格</td>
+              <td class="px-3 py-2 text-gray-600">手工录入</td>
+              <td class="px-3 py-2 text-gray-600">数字，最多2位小数</td>
+              <td class="px-3 py-2 text-gray-600">是</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="p-4">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fa fa-exclamation-triangle text-warning mr-2"></i>特殊业务规则
+      </h4>
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
+        <p class="text-sm text-blue-800">
+          <strong>版本管理规则：</strong>同一价卡可以有多个版本，每个版本有不同的生效时间段。系统会根据当前日期自动判断哪个版本生效。
+        </p>
+      </div>
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+        <p class="text-sm text-yellow-800">
+          <strong>时间冲突处理：</strong>新增价卡时，如果生效时间段与同一客户、同一仓库、同一类型的已有价卡存在重叠，系统会给出警告提示。
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+function handleSearch() {
+  filterData();
+}
+
+function handleReset() {
+  resetFilters();
+}
+
+function openAddCardModal() {
+  document.getElementById('addCardModal').classList.add('active');
+}
+
+function closeAddCardModal() {
+  document.getElementById('addCardModal').classList.remove('active');
+}
+
+function handleCopyTable() {
+  const table = document.getElementById('priceCardTable');
+  const rows = table.querySelectorAll('tr');
+  let text = '';
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('th, td');
+    text += Array.from(cells).map(cell => cell.textContent.trim()).join('\t') + '\n';
+  });
+  
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('表格已复制到剪贴板', 'success');
+  }).catch(() => {
+    showToast('复制失败', 'error');
+  });
+}
+
+function handleDownloadTable() {
+  const table = document.getElementById('priceCardTable');
+  let csv = [];
+  const rows = table.querySelectorAll('tr');
+  
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('th, td');
+    const rowData = Array.from(cells).map(cell => {
+      let text = cell.textContent.trim().replace(/"/g, '""');
+      return `"${text}"`;
+    });
+    csv.push(rowData.join(','));
+  });
+  
+  const csvContent = csv.join('\n');
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `价卡列表_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  
+  showToast('CSV文件下载成功', 'success');
+}
+
+function handleFullscreenTable() {
+  const tableContainer = document.querySelector('.overflow-x-auto');
+  if (!document.fullscreenElement) {
+    tableContainer.requestFullscreen().catch(err => {
+      showToast('无法进入全屏模式', 'error');
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function showStorageFeeDetail(id) {
+  const item = allData.find(d => d.id === id);
+  if (!item) return;
+  
+  const warehouseOps = item.warehouseOperations || [];
+  const regions = item.regions || [];
+  
+  let tableHtml = '';
+  if (warehouseOps.length > 0) {
+    const headerCells = regions.map(r => `<th class="text-right px-4 py-3">${r}</th>`).join('');
+    
+    const rows = warehouseOps.map(op => {
+      const priceCells = regions.map(r => {
+        const price = op.prices && op.prices[r] ? op.prices[r] : '-';
+        return `<td class="text-right px-4 py-3 font-semibold text-amber-600">${price}</td>`;
+      }).join('');
+      
+      return `
+        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3 font-medium text-gray-900">${op.name}</td>
+          <td class="px-4 py-3 text-gray-600">${op.unit}</td>
+          ${priceCells}
+        </tr>
+      `;
+    }).join('');
+    
+    tableHtml = `
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">库龄区间</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">单位</th>
+              ${headerCells}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    tableHtml = `
+      <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+        <i class="fa fa-inbox text-4xl mb-3"></i>
+        <p>暂无仓储费明细</p>
+      </div>
+    `;
+  }
+  
+  showModal('仓储费详情 - ' + item.code, `
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex items-center">
+            <i class="fa fa-barcode text-primary mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">价卡编号</div>
+              <div class="font-semibold text-gray-900">${item.code}</div>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <i class="fa fa-file-text text-primary mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">价卡名称</div>
+              <div class="font-semibold text-gray-900">${item.name}</div>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <i class="fa fa-calculator text-primary mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">计费类型</div>
+              <div class="font-semibold text-gray-900">${item.billingType || '-'}</div>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <i class="fa fa-calendar text-primary mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">结算周期</div>
+              <div class="font-semibold text-gray-900">${item.settlementCycle || '-'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <div class="flex items-center mb-3">
+          <i class="fa fa-warehouse text-primary mr-2"></i>
+          <h4 class="font-semibold text-gray-800">仓储费明细（按库龄分段）</h4>
+        </div>
+        ${tableHtml}
+      </div>
+    </div>
+  `, '900px');
+}
+
+function showOperationFeeDetail(id) {
+  const item = allData.find(d => d.id === id);
+  if (!item) return;
+  
+  const outboundFees = item.outboundFees || [];
+  const bundleFee = item.bundleFee;
+  
+  let tableHtml = '';
+  if (outboundFees.length > 0) {
+    const rows = outboundFees.map(fee => `
+      <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+        <td class="px-4 py-3 font-medium text-gray-900">${fee.weightRange}</td>
+        <td class="px-4 py-3 text-gray-600">${fee.unit}</td>
+        <td class="text-right px-4 py-3 font-semibold text-amber-600">${fee.rate}</td>
+        <td class="text-right px-4 py-3 font-semibold text-amber-600">${fee.surcharge}</td>
+      </tr>
+    `).join('');
+    
+    tableHtml = `
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">重量范围</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-700">单位</th>
+              <th class="text-right px-4 py-3 font-semibold text-gray-700">费率</th>
+              <th class="text-right px-4 py-3 font-semibold text-gray-700">附加费</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    tableHtml = `
+      <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+        <i class="fa fa-inbox text-4xl mb-3"></i>
+        <p>暂无出库费明细</p>
+      </div>
+    `;
+  }
+  
+  let bundleHtml = '';
+  if (bundleFee) {
+    bundleHtml = `
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-4 border border-amber-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <i class="fa fa-cubes text-amber-600 mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">捆绑费</div>
+              <div class="font-medium text-gray-900">${bundleFee.label}</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-bold text-amber-600">${bundleFee.price}</div>
+            <div class="text-xs text-gray-500">${item.currency}/${bundleFee.unit}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  showModal('出库费详情 - ' + item.code, `
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex items-center">
+            <i class="fa fa-barcode text-primary mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">价卡编号</div>
+              <div class="font-semibold text-gray-900">${item.code}</div>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <i class="fa fa-file-text text-primary mr-3"></i>
+            <div>
+              <div class="text-xs text-gray-500">价卡名称</div>
+              <div class="font-semibold text-gray-900">${item.name}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div>
+        <div class="flex items-center mb-3">
+          <i class="fa fa-shipping-fast text-primary mr-2"></i>
+          <h4 class="font-semibold text-gray-800">出库费明细（按重量分段）</h4>
+        </div>
+        ${tableHtml}
+      </div>
+      
+      ${bundleHtml}
+    </div>
+  `, '800px');
+}
+
+function showExpressFeeDetail(id) {
+  const item = allData.find(d => d.id === id);
+  if (!item) return;
+  
+  showModal('快递费详情 - ' + item.code, `
+    <div class="detail-section">
+      <div class="detail-grid">
+        <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${item.code}</span></div>
+        <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${item.name}</span></div>
+        <div class="detail-item"><span class="detail-label">快递费等级</span><span class="detail-value"><span class="level-badge level-${item.expressFee}">${item.expressFee || '-'}</span></span></div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:6px;text-align:center;color:#666;">
+        快递费按实际承运商报价计算
+      </div>
+    </div>
+  `, '500px');
+}
+
+function showOtherFeeDetail(id) {
+  const item = allData.find(d => d.id === id);
+  if (!item) return;
+  
+  showModal('其他费用详情 - ' + item.code, `
+    <div class="detail-section">
+      <div class="detail-grid">
+        <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${item.code}</span></div>
+        <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${item.name}</span></div>
+        <div class="detail-item"><span class="detail-label">其他费用等级</span><span class="detail-value"><span class="level-badge level-${item.otherFee}">${item.otherFee || '-'}</span></span></div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:6px;text-align:center;color:#666;">
+        其他费用包括特殊操作费、增值服务费等
+      </div>
+    </div>
+  `, '500px');
+}
+
+function addFeeRow() {
+  const tbody = document.getElementById('feeTypeTableBody');
+  
+  if (!tbody) {
+    console.error('找不到费用类型表格容器');
+    return;
+  }
+  
+  const rowCount = tbody.querySelectorAll('tr').length;
+  
+  if (rowCount >= 4) {
+    showToast('最多只能添加4个费用项', 'warning');
+    return;
+  }
+  
+  const newRow = document.createElement('tr');
+  newRow.innerHTML = `
+    <td class="px-4 py-3">
+      <select class="fee-type-select" onchange="updateFeeLevelOptions(this)">
+        <option value="">请选择费用类型</option>
+        <option value="storageFee">仓储费</option>
+        <option value="operationFee">出库费</option>
+        <option value="expressFee">快递费</option>
+        <option value="otherFee">其他费用</option>
+      </select>
+    </td>
+    <td class="px-4 py-3">
+      <select class="fee-level-select">
+        <option value="">请先选择费用类型</option>
+      </select>
+    </td>
+    <td class="px-4 py-3 fee-action-cell">
+      <button class="btn-delete-row" onclick="deleteFeeRow(this)">
+        <i class="fa fa-trash"></i>
+      </button>
+    </td>
+  `;
+  
+  tbody.appendChild(newRow);
+}
+
+function deleteFeeRow(btn) {
+  const row = btn.closest('tr');
+  row.remove();
+}
+
+function updateFeeLevelOptions(selectElement) {
+  const row = selectElement.closest('tr');
+  const levelSelect = row.querySelector('.fee-level-select');
+  const feeType = selectElement.value;
+  
+  levelSelect.innerHTML = '';
+  
+  if (!feeType) {
+    levelSelect.innerHTML = '<option value="">请先选择费用类型</option>';
+    return;
+  }
+  
+  const levels = ['VIP1', 'VIP2', 'VIP3', 'VIP4', 'VIP5'];
+  levelSelect.innerHTML = '<option value="">请选择等级</option>' +
+    levels.map(level => `<option value="${level}">${level}</option>`).join('');
+}
+
+function handleAddCard(event) {
+  event.preventDefault();
+  
+  const startDate = document.getElementById('effectiveStartDate').value;
+  const endDate = document.getElementById('effectiveEndDate').value;
+  
+  if (!startDate || !endDate) {
+    showToast('请选择生效日期', 'warning');
+    return;
+  }
+  
+  if (new Date(startDate) > new Date(endDate)) {
+    showToast('开始日期不能晚于结束日期', 'warning');
+    return;
+  }
+  
+  const tbody = document.querySelector('#addCardTable tbody');
+  const rows = tbody.querySelectorAll('tr');
+  const feeItems = [];
+  
+  rows.forEach(row => {
+    const feeType = row.querySelector('.fee-type-select').value;
+    const feeLevel = row.querySelector('.fee-level-select').value;
+    
+    if (feeType && feeLevel) {
+      feeItems.push({ feeType, feeLevel });
+    }
+  });
+  
+  if (feeItems.length === 0) {
+    showToast('请至少添加一个费用项', 'warning');
+    return;
+  }
+  
+  showToast('价卡创建成功', 'success');
+  closeAddCardModal();
+}
+
+function closeDetailModal() {
+  document.getElementById('detailModal').classList.remove('active');
 }
