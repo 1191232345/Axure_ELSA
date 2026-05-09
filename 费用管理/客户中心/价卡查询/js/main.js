@@ -29,6 +29,69 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+/** 费用明细表：默认折叠，展开后在固定高度内滚动 */
+function wrapFeeDetailCollapse(summaryInnerHtml, bodyInnerHtml) {
+  return `<details class="fee-detail-details">
+    <summary class="fee-detail-summary">${summaryInnerHtml}</summary>
+    <div class="fee-detail-scroll">${bodyInnerHtml}</div>
+  </details>`;
+}
+
+/** 离线默认数据：快递销售产品（运费段 + 杂费 × 分区） */
+function getDemoExpressProducts() {
+  const z = ['Zone2', 'Zone3', 'Zone4', 'Zone5', 'Zone6'];
+  return [
+    {
+      productCode: 'Fedex_Ground',
+      productName: 'FedEx Ground',
+      zoneKeys: z,
+      freightSegments: [
+        {
+          label: '0 lb < W ≤ 1 lb',
+          unit: '$/lb',
+          zonePrices: { Zone2: '8.20', Zone3: '8.65', Zone4: '9.10', Zone5: '9.85', Zone6: '10.40' }
+        },
+        {
+          label: '1 lb < W ≤ 5 lb',
+          unit: '$/lb',
+          zonePrices: { Zone2: '9.50', Zone3: '10.10', Zone4: '10.75', Zone5: '11.40', Zone6: '12.05' }
+        }
+      ],
+      surcharges: [
+        {
+          itemCode: 'FUEL',
+          itemName: '燃油附加',
+          zonePrices: { Zone2: '12%', Zone3: '12%', Zone4: '12%', Zone5: '12%', Zone6: '12%' }
+        },
+        {
+          itemCode: 'RES',
+          itemName: '住宅投递',
+          zonePrices: { Zone2: '5.25', Zone3: '5.25', Zone4: '5.90', Zone5: '6.40', Zone6: '6.90' }
+        }
+      ]
+    },
+    {
+      productCode: 'USPS_Ground',
+      productName: 'USPS_Ground',
+      zoneKeys: z,
+      freightSegments: [
+        {
+          label: '0–8 oz',
+          unit: '$/件',
+          zonePrices: { Zone2: '5.10', Zone3: '5.45', Zone4: '5.80', Zone5: '6.20', Zone6: '6.75' }
+        }
+      ],
+      surcharges: [
+        {
+          itemCode: 'FUEL',
+          itemName: '燃油/调节费',
+          zonePrices: { Zone2: '8%', Zone3: '8%', Zone4: '8%', Zone5: '8%', Zone6: '8%' }
+        }
+      ]
+    }
+  ];
+}
+
 /** 将仓库代码归到价卡上的区域（仓群）；优先目录，其次常用前缀规则 */
 function inferRegionForWarehouse(code) {
   if (!code || typeof code !== 'string') return null;
@@ -121,14 +184,7 @@ function buildGroupedStorageFeeTablesHtml(item) {
       })
       .join('');
 
-    html += `
-      <div class="storage-fee-group mb-5 last:mb-0">
-        <div class="storage-fee-group-head">
-          <span class="storage-fee-group-title"><i class="fa fa-object-group mr-2 text-primary"></i>${escapeHtml(
-            region
-          )} 仓群</span>
-          <span class="storage-fee-group-hint">${escapeHtml(subtitle)}</span>
-        </div>
+    const tableBody = `
         <div class="overflow-x-auto rounded-lg border border-gray-200">
           <table class="w-full text-sm min-w-max">
             <thead class="bg-gray-50 border-b border-gray-200">
@@ -140,22 +196,33 @@ function buildGroupedStorageFeeTablesHtml(item) {
             </thead>
             <tbody class="divide-y divide-gray-100">${rows}</tbody>
           </table>
+        </div>`;
+    const summary = `
+        <div class="fee-detail-summary-row">
+          <span class="storage-fee-group-title"><i class="fa fa-object-group mr-2 text-primary"></i>${escapeHtml(
+            region
+          )} 仓群 · 费用明细</span>
+          <span class="storage-fee-group-hint">${escapeHtml(subtitle)}</span>
         </div>
-      </div>`;
+        <span class="fee-detail-summary-tip">点击展开，表体在固定区域内滚动</span>`;
+    html += `<div class="storage-fee-group mb-5 last:mb-0">${wrapFeeDetailCollapse(
+      summary,
+      tableBody
+    )}</div>`;
   });
 
   const orphans = byRegion.__other || [];
   if (orphans.length) {
-    html += `
-      <div class="storage-fee-group mb-0">
-        <div class="storage-fee-group-head">
-          <span class="storage-fee-group-title"><i class="fa fa-exclamation-triangle mr-2 text-warning"></i>未匹配仓群</span>
-          <span class="storage-fee-group-hint">以下仓库未归入上表任一仓群，请检查仓库主数据或价卡区域配置</span>
-        </div>
-        <div class="rounded-lg border border-amber-200 bg-amber-50/40 px-3 py-2 text-sm text-amber-900">
+    const orphanBody = `<div class="rounded-lg border border-amber-200 bg-amber-50/40 px-3 py-2 text-sm text-amber-900">
           ${orphans.map(c => `<span class="inline-block mr-2 mb-1 px-2 py-0.5 bg-white rounded border border-amber-200">${escapeHtml(c)}</span>`).join('')}
+        </div>`;
+    const orphanSummary = `
+        <div class="fee-detail-summary-row">
+          <span class="storage-fee-group-title"><i class="fa fa-exclamation-triangle mr-2 text-warning"></i>未匹配仓群</span>
+          <span class="storage-fee-group-hint">以下仓库未归入上表任一仓群</span>
         </div>
-      </div>`;
+        <span class="fee-detail-summary-tip">点击展开</span>`;
+    html += `<div class="storage-fee-group mb-0">${wrapFeeDetailCollapse(orphanSummary, orphanBody)}</div>`;
   }
 
   return html;
@@ -216,10 +283,10 @@ function getDefaultData() {
       code: 'PC001',
       name: '默认价卡',
       type: '仓储费',
-      storageFee: '详情',
-      operationFee: '详情',
-      expressFee: '详情',
-      otherFee: '详情',
+      storageFee: 'VIP1',
+      operationFee: 'VIP2',
+      expressFee: 'VIP1',
+      otherFee: 'VIP3',
       startDate: '2026/01/01 00:00:00',
       endDate: '2026/12/31 23:59:59',
       status: '生效',
@@ -232,7 +299,8 @@ function getDefaultData() {
       warehouseOperations: demoWarehouseOps,
       operationFeeTitle: '出库费',
       outboundFees: demoOutboundFees,
-      bundleFee: demoBundleFee
+      bundleFee: demoBundleFee,
+      expressProducts: getDemoExpressProducts()
     }
   ];
 }
@@ -597,8 +665,12 @@ function viewDetail(versionId) {
       </div>
     </div>
     <div class="detail-section">
-      <div class="detail-section-title">价格明细</div>
-      <table class="detail-table">
+      ${wrapFeeDetailCollapse(
+        `<div class="fee-detail-summary-row">
+          <span class="detail-section-title" style="margin:0;padding:0;border:none;">价格明细</span>
+          <span class="fee-detail-summary-tip">默认折叠 · 展开后表体固定高度滚动</span>
+        </div>`,
+        `<table class="detail-table">
         <thead>
           <tr>
             <th>费用项</th>
@@ -609,7 +681,8 @@ function viewDetail(versionId) {
         <tbody>
           ${priceDetailsHtml}
         </tbody>
-      </table>
+      </table>`
+      )}
     </div>
     <div class="detail-section">
       <div class="detail-section-title">操作记录</div>
@@ -1408,7 +1481,7 @@ function showStorageFeeDetail(id) {
     `;
   }
   
-  showModal('仓储费详情 ' , `
+  showModal('仓储费详情 - ' + item.code, `
     <div class="space-y-6">
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
         <div class="grid grid-cols-2 gap-4">
@@ -1430,6 +1503,7 @@ function showStorageFeeDetail(id) {
       </div>
       
       <div>
+        <p class="text-xs text-gray-500 mb-2">以下按仓群展示费用明细表，默认折叠；展开后可在固定高度内上下滚动查看。</p>
         ${tableHtml}
       </div>
     </div>
@@ -1523,11 +1597,13 @@ function showOperationFeeDetail(id) {
       </div>
       
       <div>
-        <div class="flex items-center mb-3">
-          <i class="fa fa-shipping-fast text-primary mr-2"></i>
-          <h4 class="font-semibold text-gray-800">出库费明细（按重量分段）</h4>
-        </div>
-        ${tableHtml}
+        ${wrapFeeDetailCollapse(
+          `<div class="fee-detail-summary-row">
+            <span class="font-semibold text-gray-800 flex items-center"><i class="fa fa-shipping-fast text-primary mr-2"></i>出库费明细（按重量分段）</span>
+            <span class="fee-detail-summary-tip">默认折叠 · 展开后滚动查看</span>
+          </div>`,
+          tableHtml
+        )}
       </div>
       
       ${bundleHtml}
@@ -1535,22 +1611,197 @@ function showOperationFeeDetail(id) {
   `, '800px');
 }
 
+function collectExpressZoneKeys(product) {
+  if (product.zoneKeys && product.zoneKeys.length) {
+    return [...product.zoneKeys];
+  }
+  const set = new Set();
+  (product.freightSegments || []).forEach(s => {
+    Object.keys(s.zonePrices || {}).forEach(z => set.add(z));
+  });
+  (product.surcharges || []).forEach(su => {
+    Object.keys(su.zonePrices || {}).forEach(z => set.add(z));
+  });
+  return [...set];
+}
+
+function buildExpressFreightTableHtml(product) {
+  const zones = collectExpressZoneKeys(product);
+  const segs = product.freightSegments || [];
+  if (!segs.length) {
+    return '<p class="express-empty">暂无运费段</p>';
+  }
+  const th = zones.map(z => `<th class="express-th-zone">${escapeHtml(z)}</th>`).join('');
+  const rows = segs
+    .map(seg => {
+      const cells = zones
+        .map(z => {
+          const v =
+            seg.zonePrices && seg.zonePrices[z] != null ? String(seg.zonePrices[z]) : '—';
+          return `<td class="express-td-num">${escapeHtml(v)}</td>`;
+        })
+        .join('');
+      return `<tr>
+        <td class="express-td-label">${escapeHtml(seg.label)}</td>
+        <td class="express-td-unit">${escapeHtml(seg.unit || '—')}</td>
+        ${cells}
+      </tr>`;
+    })
+    .join('');
+  return `<div class="overflow-x-auto rounded-lg border border-gray-200">
+    <table class="express-subtable w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="express-th-label">运费段</th>
+          <th class="express-th-label">单位</th>
+          ${th}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function buildExpressSurchargeTableHtml(product) {
+  const zones = collectExpressZoneKeys(product);
+  const items = product.surcharges || [];
+  if (!items.length) {
+    return '<p class="express-empty">暂无杂费项</p>';
+  }
+  const th = zones.map(z => `<th class="express-th-zone">${escapeHtml(z)}</th>`).join('');
+  const rows = items
+    .map(it => {
+      const cells = zones
+        .map(z => {
+          const v =
+            it.zonePrices && it.zonePrices[z] != null ? String(it.zonePrices[z]) : '—';
+          return `<td class="express-td-num">${escapeHtml(v)}</td>`;
+        })
+        .join('');
+      return `<tr>
+        <td class="express-td-label">
+          <span class="express-item-code">${escapeHtml(it.itemCode)}</span>
+          ${escapeHtml(it.itemName || '')}
+        </td>
+        ${cells}
+      </tr>`;
+    })
+    .join('');
+  return `<div class="overflow-x-auto rounded-lg border border-gray-200">
+    <table class="express-subtable express-surcharge-table w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="express-th-label">收费项</th>
+          ${th}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function switchExpressProductTab(itemId, index) {
+  const wrap = document.querySelector(
+    `.express-detail-wrap[data-express-card-id="${String(itemId)}"]`
+  );
+  if (!wrap) return;
+  wrap.querySelectorAll('.express-product-tab').forEach((btn, i) => {
+    btn.classList.toggle('express-tab-active', i === index);
+  });
+  wrap.querySelectorAll('.express-prod-panel').forEach((panel, i) => {
+    if (i === index) panel.classList.remove('hidden');
+    else panel.classList.add('hidden');
+  });
+}
+
 function showExpressFeeDetail(id) {
   const item = allData.find(d => d.id === id);
   if (!item) return;
-  
-  showModal('快递费详情 - ' + item.code, `
+
+  const products = item.expressProducts || [];
+  if (!products.length) {
+    showModal(
+      '快递费详情 - ' + item.code,
+      `
     <div class="detail-section">
       <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${item.code}</span></div>
-        <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${item.name}</span></div>
-        <div class="detail-item"><span class="detail-label">快递费等级</span><span class="detail-value"><span class="level-badge level-${item.expressFee}">${item.expressFee || '-'}</span></span></div>
+        <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${escapeHtml(item.code)}</span></div>
+        <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${escapeHtml(item.name)}</span></div>
+        <div class="detail-item"><span class="detail-label">快递费等级</span><span class="detail-value"><span class="level-badge level-${item.expressFee}">${escapeHtml(item.expressFee || '-')}</span></span></div>
       </div>
       <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:6px;text-align:center;color:#666;">
-        快递费按实际承运商报价计算
+        暂无销售产品维度报价，请联系维护 expressProducts 数据或使用承运商实时报价。
       </div>
     </div>
-  `, '500px');
+  `,
+      '520px'
+    );
+    return;
+  }
+
+  const currency = item.currency || '美元';
+  const tabs = products
+    .map((p, i) => {
+      const label = escapeHtml(p.productName || p.productCode || '产品' + (i + 1));
+      const active = i === 0 ? ' express-tab-active' : '';
+      return `<button type="button" class="express-product-tab${active}" onclick="switchExpressProductTab(${item.id}, ${i})">${label}</button>`;
+    })
+    .join('');
+
+  const panels = products
+    .map((p, i) => {
+      const hidden = i === 0 ? '' : ' hidden';
+      const freightHtml = buildExpressFreightTableHtml(p);
+      const surHtml = buildExpressSurchargeTableHtml(p);
+      return `
+      <div class="express-prod-panel${hidden}" id="express-panel-${item.id}-${i}">
+        <p class="express-product-meta">
+          <span class="text-gray-500 text-sm">产品代码</span>
+          <strong class="ml-2">${escapeHtml(p.productCode)}</strong>
+        </p>
+        <div class="express-subsection">
+          ${wrapFeeDetailCollapse(
+            `<div class="fee-detail-summary-row">
+              <span class="express-subsection-title" style="margin:0;"><i class="fa fa-truck text-primary mr-2"></i>运费（分段 × 分区）</span>
+              <span class="fee-detail-summary-tip">默认折叠 · 展开后滚动</span>
+            </div>`,
+            freightHtml
+          )}
+        </div>
+        <div class="express-subsection">
+          ${wrapFeeDetailCollapse(
+            `<div class="fee-detail-summary-row">
+              <span class="express-subsection-title" style="margin:0;"><i class="fa fa-list-alt text-primary mr-2"></i>杂费（收费项 × 分区）</span>
+              <span class="fee-detail-summary-tip">默认折叠 · 展开后滚动</span>
+            </div>`,
+            surHtml
+          )}
+        </div>
+      </div>`;
+    })
+    .join('');
+
+  showModal(
+    '快递费详情 - ' + item.code,
+    `
+    <div class="space-y-4">
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${escapeHtml(item.code)}</span></div>
+          <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${escapeHtml(item.name)}</span></div>
+          <div class="detail-item"><span class="detail-label">快递费等级</span><span class="detail-value"><span class="level-badge level-${item.expressFee}">${escapeHtml(item.expressFee || '-')}</span></span></div>
+          <div class="detail-item"><span class="detail-label">币种</span><span class="detail-value">${escapeHtml(currency)}</span></div>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500">一级为销售产品；运费 / 杂费明细表<strong>默认折叠</strong>，展开后在固定高度内滚动。百分比为费率，其余为金额（与价卡币种一致）。</p>
+      <div class="express-detail-wrap" data-express-card-id="${item.id}">
+        <div class="express-product-tabs">${tabs}</div>
+        ${panels}
+      </div>
+    </div>
+  `,
+    '960px'
+  );
 }
 
 function showOtherFeeDetail(id) {

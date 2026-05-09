@@ -922,3 +922,188 @@
     color: #6b7280;
     max-width: 100%;
 }
+
+/* 快递费详情：销售产品 Tab + 运费/杂费子表 */
+.express-detail-wrap {
+    margin-top: 8px;
+}
+
+.express-product-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.express-product-tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #4b5563;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    font-family: inherit;
+}
+
+.express-product-tab:hover {
+    border-color: #c7d2fe;
+    color: #2a3b7d;
+}
+
+.express-product-tab.express-tab-active {
+    background: #2a3b7d;
+    color: #fff;
+    border-color: #2a3b7d;
+}
+
+.express-product-meta {
+    margin: 0 0 14px;
+    font-size: 14px;
+}
+
+.express-subsection {
+    margin-bottom: 20px;
+}
+
+.express-subsection:last-child {
+    margin-bottom: 0;
+}
+
+.express-subsection-title {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+}
+
+.express-subtable th,
+.express-subtable td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.express-th-zone,
+.express-td-num {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.express-th-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+}
+
+.express-td-label {
+    font-weight: 500;
+    color: #1f2937;
+    max-width: 220px;
+}
+
+.express-td-unit {
+    color: #6b7280;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.express-td-num {
+    font-weight: 600;
+    color: #b45309;
+    font-variant-numeric: tabular-nums;
+}
+
+.express-item-code {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #4b5563;
+    vertical-align: middle;
+}
+
+.express-empty {
+    margin: 0;
+    padding: 16px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px dashed #e5e7eb;
+}
+
+/* 费用明细：默认折叠 + 展开后固定高度滚动 */
+:root {
+    --fee-detail-scroll-max: 280px;
+}
+
+.fee-detail-details {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.fee-detail-summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid transparent;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.fee-detail-summary::-webkit-details-marker {
+    display: none;
+}
+
+.fee-detail-details[open] > .fee-detail-summary {
+    border-bottom-color: #e5e7eb;
+}
+
+.fee-detail-summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+}
+
+.fee-detail-summary-tip {
+    font-size: 12px;
+    font-weight: 400;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.fee-detail-scroll {
+    max-height: var(--fee-detail-scroll-max);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.fee-detail-scroll .detail-table {
+    margin: 0;
+    border-radius: 0;
+    border: none;
+}
+
+.fee-detail-scroll .overflow-x-auto {
+    max-width: 100%;
+}
