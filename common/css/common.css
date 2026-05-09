@@ -1,0 +1,565 @@
+/* ========================================
+   ELSA 原型公共样式（价卡查询等页面依赖）
+   ======================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #1f2937;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    flex-shrink: 0;
+}
+
+/* 主内容区：与底部 Tab 切换配合 */
+.main-content {
+    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.main-content.active {
+    display: block;
+}
+
+#main-prototype.main-content.active {
+    display: flex;
+    flex-direction: column;
+}
+
+:root {
+    --primary: #2a3b7d;
+    --primary-light: #3a4ca7;
+    --border: #e5e7eb;
+    --dark: #1d2129;
+}
+
+/* 与 Tailwind 扩展色一致（CDN 失败时兜底） */
+.bg-primary {
+    background-color: var(--primary);
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.shadow-header {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 容器（无 Tailwind 时） */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 底部 Tab */
+.tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tab {
+    padding: 10px 18px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: #4b5563;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.tab:hover {
+    border-color: #c7d2fe;
+    color: var(--primary);
+}
+
+.tab.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+/* 按钮 */
+.erp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.erp-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.erp-btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.erp-btn-primary:hover:not(:disabled) {
+    background: var(--primary-light);
+}
+
+.erp-btn-secondary {
+    background: #fff;
+    color: var(--dark);
+    border-color: var(--border);
+}
+
+.erp-btn-secondary:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+/* 弹层 Modal（价卡动态弹窗 + 页面内嵌 modal） */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(8px);
+    transition: transform 0.25s ease;
+}
+
+.modal.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    flex-shrink: 0;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.modal-close {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: #f3f4f6;
+    color: #4b5563;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 20px;
+    min-height: 0;
+}
+
+.modal-footer {
+    flex-shrink: 0;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Toast */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 360px;
+    pointer-events: none;
+}
+
+.toast {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: auto;
+}
+
+.toast-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.toast-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.toast-warning {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.toast-info {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+/* 价卡等级徽章 */
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.level-badge:hover {
+    box-shadow: 0 2px 6px rgba(42, 59, 125, 0.15);
+}
+
+.level-VIP1 {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+.level-VIP2 {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    color: #3730a3;
+    border-color: #a5b4fc;
+}
+
+.level-VIP3 {
+    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+    color: #9d174d;
+    border-color: #f9a8d4;
+}
+
+.level-VIP4 {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+.level-VIP5 {
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    color: #6b21a8;
+    border-color: #d8b4fe;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.version-badge-small {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #e0e7ff;
+    color: var(--primary);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-expired {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.status-future {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* 详情 / 版本弹窗内区块 */
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.detail-section:last-child {
+    margin-bottom: 0;
+}
+
+.detail-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e7ff;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px 16px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 500;
+}
+
+.detail-table,
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.detail-table th,
+.detail-table td,
+.data-table th,
+.data-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-table thead,
+.data-table thead {
+    background: #f9fafb;
+}
+
+.detail-table th,
+.data-table th {
+    font-weight: 600;
+    color: #374151;
+}
+
+.version-history-content {
+    font-size: 13px;
+}
+
+.version-history-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.action-btns {
+    display: inline-flex;
+    gap: 8px;
+}
+
+.action-btn {
+    cursor: pointer;
+    color: #6b7280;
+    padding: 4px;
+}
+
+.action-btn:hover {
+    color: var(--primary);
+}
+
+/* Mermaid 放大 */
+.mermaid-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.mermaid-modal.active {
+    display: flex;
+}
+
+.mermaid-modal-content {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 95%;
+    max-height: 95%;
+    overflow: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+}
+
+.mermaid-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #f3f4f6;
+    cursor: pointer;
+    font-size: 18px;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-modal-close:hover {
+    background: #e5e7eb;
+}
+
+.mermaid-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--primary);
+}
+
+.mermaid-container {
+    position: relative;
+}
+
+.mermaid-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* PRD 目录 */
+.toc-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+#toc-nav a {
+    display: block;
+    font-size: 13px;
+    color: #4b5563;
+    text-decoration: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+#toc-nav a:hover {
+    background: #f3f4f6;
+    color: var(--primary);
+}
+
+.toc-level-2 {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.toc-level-3 {
+    padding-left: 12px;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
