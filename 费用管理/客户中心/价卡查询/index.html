@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     
-    <link rel="stylesheet" href="/common/css/common.css">
+    <link rel="stylesheet" href="../../../common/css/common.css">
     <link rel="stylesheet" href="css/styles.css">
     
     <script>
@@ -125,18 +125,9 @@
             <div class="bg-white rounded shadow-card p-4 mb-4">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <div class="flex items-center w-full sm:w-auto">
-                        <label class="text-xs text-neutral-600 mr-2 whitespace-nowrap">价卡类型</label>
-                        <select id="filterType" class="w-full sm:w-48 px-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary outline-none">
-                            <option value="">全部类型</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center w-full sm:w-auto">
-                        <label class="text-xs text-neutral-600 mr-2 whitespace-nowrap">状态</label>
-                        <select id="filterStatus" class="w-full sm:w-48 px-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary outline-none">
-                            <option value="">全部状态</option>
-                            <option value="生效">生效</option>
-                            <option value="失效">失效</option>
-                            <option value="未生效">未生效</option>
+                        <label class="text-xs text-neutral-600 mr-2 whitespace-nowrap">客户代码</label>
+                        <select id="filterCustomerCode" class="w-full sm:w-48 px-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary outline-none">
+                            <option value="">全部客户</option>
                         </select>
                     </div>
                     <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
@@ -198,34 +189,20 @@
     </main>
     
     <div id="addCardModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content" style="max-width: 520px;">
             <div class="modal-header">
                 <h3><i class="fa fa-plus-circle" style="margin-right: 8px; color: #2a3b7d;"></i>新增价卡</h3>
                 <button class="modal-close" onclick="closeAddCardModal()"><i class="fa fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <form id="addCardForm">
-                    <div style="margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <label class="add-form-label">费用配置 <span style="color: #F53F3F;">*</span></label>
-                            <button type="button" class="erp-btn erp-btn-primary" onclick="addFeeRow()" style="padding: 6px 16px; font-size: 13px;">
-                                <i class="fa fa-plus" style="margin-right: 4px;"></i>添加费用项
-                            </button>
+                    <p style="font-size: 12px; color: #6b7280; margin: 0 0 16px;">仓储 / 出库 / 快递 / 其他费用的等级及分段明细，将按列表首条价卡作为模板复制，创建后可在业务侧再调整。</p>
+                    <div class="add-form-grid">
+                        <div class="add-form-item full-width">
+                            <label class="add-form-label">价卡名称 <span style="color: #F53F3F;">*</span></label>
+                            <input type="text" class="add-form-input" id="newPriceCardName" required maxlength="120" placeholder="请输入价卡名称">
                         </div>
-                        <table class="add-card-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 180px;">费用类型</th>
-                                    <th style="width: 180px;">选择等级</th>
-                                    <th style="width: 60px;">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="feeTypeTableBody">
-                            </tbody>
-                        </table>
-                    </div>
 
-                    <div class="add-form-grid" style="margin-top: 24px;">
                         <div class="add-form-item full-width">
                             <label class="add-form-label">生效日期 <span style="color: #F53F3F;">*</span></label>
                             <div style="display: flex; align-items: center; gap: 12px;">
@@ -272,7 +249,7 @@
         </div>
     </div>
     
-    <script src="/common/js/common.js"></script>
+    <script src="../../../common/js/common.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

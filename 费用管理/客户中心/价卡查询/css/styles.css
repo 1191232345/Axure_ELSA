@@ -900,3 +900,25 @@
     border-color: #F53F3F;
     color: white;
 }
+
+/* 仓储费弹窗：按仓群分块、块内按仓库分列 */
+.storage-fee-group-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.storage-fee-group-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.storage-fee-group-hint {
+    font-size: 12px;
+    color: #6b7280;
+    max-width: 100%;
+}

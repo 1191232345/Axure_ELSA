@@ -4,6 +4,7 @@
 
 let allData = [];
 let filteredData = [];
+let warehouseCatalog = [];
 let currentPage = 1;
 let pageSize = 10;
 let currentCustomer = 'DEMO - demo';
@@ -21,6 +22,145 @@ const VERSION_STATUS_MAP = {
   'future': { label: '待生效', class: 'status-future' }
 };
 
+function escapeHtml(text) {
+  if (text == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(text);
+  return div.innerHTML;
+}
+
+/** 将仓库代码归到价卡上的区域（仓群）；优先目录，其次常用前缀规则 */
+function inferRegionForWarehouse(code) {
+  if (!code || typeof code !== 'string') return null;
+  const row = warehouseCatalog.find(w => w.code === code);
+  if (row && row.region) return row.region;
+  if (/^(CA|TX|AZ)/i.test(code)) return '美西';
+  if (/^(NJ|MD|DE)/i.test(code)) return '美东';
+  if (/^(GA|FL)/i.test(code)) return '美南';
+  return null;
+}
+
+/**
+ * 按仓群（regions）分组适用仓库；价卡 regions 中若包含与仓库同名的区域键，则归入该仓群
+ * @returns {Record<string, string[]> & { __other?: string[] }}
+ */
+function groupWarehousesByRegion(item) {
+  const regions = item.regions || [];
+  const codes = [...new Set(item.warehouses || [])];
+  const map = {};
+  regions.forEach(r => {
+    map[r] = [];
+  });
+  const other = [];
+
+  codes.forEach(code => {
+    if (regions.includes(code)) {
+      map[code].push(code);
+      return;
+    }
+    const r = inferRegionForWarehouse(code);
+    if (r && map[r]) map[r].push(code);
+    else other.push(code);
+  });
+
+  const uniqOther = [...new Set(other)];
+  if (uniqOther.length) map.__other = uniqOther;
+  return map;
+}
+
+function buildGroupedStorageFeeTablesHtml(item) {
+  const warehouseOps = item.warehouseOperations || [];
+  const regions = item.regions || [];
+  if (!warehouseOps.length || !regions.length) return '';
+
+  const byRegion = groupWarehousesByRegion(item);
+  let html = '';
+
+  regions.forEach(region => {
+    const whs = [...new Set(byRegion[region] || [])].sort();
+    const subtitle =
+      whs.length > 0
+        ? `${whs.length} 个仓库 · 同仓群内执行本区域单价`
+        : '本价卡未指定该仓群下的仓库，展示区域统一价';
+
+    const headerCells =
+      whs.length > 0
+        ? whs
+            .map(
+              w =>
+                `<th class="text-right px-2 py-2 font-semibold text-gray-700 whitespace-nowrap">${escapeHtml(w)}</th>`
+            )
+            .join('')
+        : `<th class="text-right px-2 py-2 font-semibold text-gray-700 whitespace-nowrap">${escapeHtml(
+            region
+          )} · 统一</th>`;
+
+    const rows = warehouseOps
+      .map(op => {
+        const p =
+          op.prices && op.prices[region] != null ? String(op.prices[region]) : '-';
+        const cells =
+          whs.length > 0
+            ? whs
+                .map(
+                  () =>
+                    `<td class="text-right px-2 py-2 font-semibold text-amber-600 whitespace-nowrap">${escapeHtml(
+                      p
+                    )}</td>`
+                )
+                .join('')
+            : `<td class="text-right px-2 py-2 font-semibold text-amber-600 whitespace-nowrap">${escapeHtml(
+                p
+              )}</td>`;
+        return `
+        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">${escapeHtml(op.name)}</td>
+          <td class="px-3 py-2 text-gray-600 whitespace-nowrap">${escapeHtml(op.unit)}</td>
+          ${cells}
+        </tr>`;
+      })
+      .join('');
+
+    html += `
+      <div class="storage-fee-group mb-5 last:mb-0">
+        <div class="storage-fee-group-head">
+          <span class="storage-fee-group-title"><i class="fa fa-object-group mr-2 text-primary"></i>${escapeHtml(
+            region
+          )} 仓群</span>
+          <span class="storage-fee-group-hint">${escapeHtml(subtitle)}</span>
+        </div>
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="w-full text-sm min-w-max">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">库龄区间</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">单位</th>
+                ${headerCells}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  });
+
+  const orphans = byRegion.__other || [];
+  if (orphans.length) {
+    html += `
+      <div class="storage-fee-group mb-0">
+        <div class="storage-fee-group-head">
+          <span class="storage-fee-group-title"><i class="fa fa-exclamation-triangle mr-2 text-warning"></i>未匹配仓群</span>
+          <span class="storage-fee-group-hint">以下仓库未归入上表任一仓群，请检查仓库主数据或价卡区域配置</span>
+        </div>
+        <div class="rounded-lg border border-amber-200 bg-amber-50/40 px-3 py-2 text-sm text-amber-900">
+          ${orphans.map(c => `<span class="inline-block mr-2 mb-1 px-2 py-0.5 bg-white rounded border border-amber-200">${escapeHtml(c)}</span>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return html;
+}
+
 document.addEventListener('DOMContentLoaded', async function() {
   await loadData();
   bindEvents();
@@ -33,12 +173,14 @@ async function loadData() {
     if (resp.ok) {
       const jsonData = await resp.json();
       allData = jsonData.priceCards || [];
+      warehouseCatalog = jsonData.warehouseCatalog || [];
     } else {
       throw new Error('加载失败');
     }
   } catch (e) {
     console.warn('数据加载失败，使用默认数据', e);
     allData = getDefaultData();
+    warehouseCatalog = [];
   }
   
   filterByCustomer();
@@ -47,21 +189,50 @@ async function loadData() {
   updateStats();
 }
 
+/** 本地预览/JSON 加载失败时的示例价卡（含仓储费、出库费分段明细） */
 function getDefaultData() {
+  const demoRegions = ['美西', '美东', '美南'];
+  const demoWarehouseOps = [
+    { name: '0-30 day', unit: 'cbm/day', prices: { 美西: '0.00', 美东: '0.00', 美南: '0.00' } },
+    { name: '30-45 day', unit: 'cbm/day', prices: { 美西: '0.40', 美东: '0.40', 美南: '0.40' } },
+    { name: '45-90 day', unit: 'cbm/day', prices: { 美西: '0.80', 美东: '0.80', 美南: '0.80' } },
+    { name: '90-180 day', unit: 'cbm/day', prices: { 美西: '1.20', 美东: '1.20', 美南: '1.20' } },
+    { name: '180+ day', unit: 'cbm/day', prices: { 美西: '2.80', 美东: '2.80', 美南: '2.80' } }
+  ];
+  const demoOutboundFees = [
+    { weightRange: '0<W≤10', unit: '/件', rate: '1.20', surcharge: '1.00' },
+    { weightRange: '10<W≤30', unit: '/件', rate: '2.50', surcharge: '1.50' },
+    { weightRange: '30<W≤50', unit: '/件', rate: '3.50', surcharge: '2.00' },
+    { weightRange: '50<W≤70', unit: '/件', rate: '4.50', surcharge: '2.50' },
+    { weightRange: '70<W≤100', unit: '/件', rate: '5.50', surcharge: '3.00' },
+    { weightRange: '100<W≤150', unit: '/件', rate: '6.50', surcharge: '3.50' },
+    { weightRange: 'W>150', unit: '/件', rate: '20.00', surcharge: '15.00' }
+  ];
+  const demoBundleFee = { label: '一票订单捆绑多件发货', unit: '/件', price: '1.00' };
+
   return [
     {
       id: 1,
-      code: "PC001",
-      name: "默认价卡",
-      type: "仓储费",
-      storageFee: "VIP1",
-      operationFee: "VIP2",
-      expressFee: "VIP1",
-      otherFee: "VIP3",
-      startDate: "2026/01/01 00:00:00",
-      endDate: "2026/12/31 23:59:59",
-      status: "生效",
-      customer: "DEMO - demo"
+      code: 'PC001',
+      name: '默认价卡',
+      type: '仓储费',
+      storageFee: '详情',
+      operationFee: '详情',
+      expressFee: '详情',
+      otherFee: '详情',
+      startDate: '2026/01/01 00:00:00',
+      endDate: '2026/12/31 23:59:59',
+      status: '生效',
+      customer: 'DEMO - demo',
+      settlementCycle: '日结',
+      currency: '美元',
+      billingType: '批次库龄',
+      regions: demoRegions,
+      warehouses: ['CA005', 'TX001', 'DE001', 'NJ001', 'GA001'],
+      warehouseOperations: demoWarehouseOps,
+      operationFeeTitle: '出库费',
+      outboundFees: demoOutboundFees,
+      bundleFee: demoBundleFee
     }
   ];
 }
@@ -1142,12 +1313,30 @@ function handleReset() {
   resetFilters();
 }
 
+function resetAddCardForm() {
+  const nameEl = document.getElementById('newPriceCardName');
+  if (nameEl) nameEl.value = '';
+  const s = document.getElementById('effectiveStartDate');
+  const e = document.getElementById('effectiveEndDate');
+  if (s) s.value = '';
+  if (e) e.value = '';
+  const r = document.getElementById('remark');
+  if (r) r.value = '';
+}
+
 function openAddCardModal() {
-  document.getElementById('addCardModal').classList.add('active');
+  const modal = document.getElementById('addCardModal');
+  if (modal) modal.classList.add('active');
+  resetAddCardForm();
+  setTimeout(() => {
+    const nameEl = document.getElementById('newPriceCardName');
+    if (nameEl) nameEl.focus();
+  }, 100);
 }
 
 function closeAddCardModal() {
-  document.getElementById('addCardModal').classList.remove('active');
+  const modal = document.getElementById('addCardModal');
+  if (modal) modal.classList.remove('active');
 }
 
 function handleCopyTable() {
@@ -1204,46 +1393,13 @@ function handleFullscreenTable() {
 function showStorageFeeDetail(id) {
   const item = allData.find(d => d.id === id);
   if (!item) return;
-  
+
   const warehouseOps = item.warehouseOperations || [];
-  const regions = item.regions || [];
-  
   let tableHtml = '';
   if (warehouseOps.length > 0) {
-    const headerCells = regions.map(r => `<th class="text-right px-4 py-3">${r}</th>`).join('');
-    
-    const rows = warehouseOps.map(op => {
-      const priceCells = regions.map(r => {
-        const price = op.prices && op.prices[r] ? op.prices[r] : '-';
-        return `<td class="text-right px-4 py-3 font-semibold text-amber-600">${price}</td>`;
-      }).join('');
-      
-      return `
-        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-          <td class="px-4 py-3 font-medium text-gray-900">${op.name}</td>
-          <td class="px-4 py-3 text-gray-600">${op.unit}</td>
-          ${priceCells}
-        </tr>
-      `;
-    }).join('');
-    
-    tableHtml = `
-      <div class="overflow-x-auto rounded-lg border border-gray-200">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-700">库龄区间</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-700">单位</th>
-              ${headerCells}
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            ${rows}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } else {
+    tableHtml = buildGroupedStorageFeeTablesHtml(item);
+  }
+  if (!tableHtml) {
     tableHtml = `
       <div class="flex flex-col items-center justify-center py-12 text-gray-400">
         <i class="fa fa-inbox text-4xl mb-3"></i>
@@ -1252,7 +1408,7 @@ function showStorageFeeDetail(id) {
     `;
   }
   
-  showModal('仓储费详情 - ' + item.code, `
+  showModal('仓储费详情 ' , `
     <div class="space-y-6">
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
         <div class="grid grid-cols-2 gap-4">
@@ -1270,32 +1426,14 @@ function showStorageFeeDetail(id) {
               <div class="font-semibold text-gray-900">${item.name}</div>
             </div>
           </div>
-          <div class="flex items-center">
-            <i class="fa fa-calculator text-primary mr-3"></i>
-            <div>
-              <div class="text-xs text-gray-500">计费类型</div>
-              <div class="font-semibold text-gray-900">${item.billingType || '-'}</div>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <i class="fa fa-calendar text-primary mr-3"></i>
-            <div>
-              <div class="text-xs text-gray-500">结算周期</div>
-              <div class="font-semibold text-gray-900">${item.settlementCycle || '-'}</div>
-            </div>
-          </div>
         </div>
       </div>
       
       <div>
-        <div class="flex items-center mb-3">
-          <i class="fa fa-warehouse text-primary mr-2"></i>
-          <h4 class="font-semibold text-gray-800">仓储费明细（按库龄分段）</h4>
-        </div>
         ${tableHtml}
       </div>
     </div>
-  `, '900px');
+  `, '960px');
 }
 
 function showOperationFeeDetail(id) {
@@ -1433,105 +1571,70 @@ function showOtherFeeDetail(id) {
   `, '500px');
 }
 
-function addFeeRow() {
-  const tbody = document.getElementById('feeTypeTableBody');
-  
-  if (!tbody) {
-    console.error('找不到费用类型表格容器');
-    return;
-  }
-  
-  const rowCount = tbody.querySelectorAll('tr').length;
-  
-  if (rowCount >= 4) {
-    showToast('最多只能添加4个费用项', 'warning');
-    return;
-  }
-  
-  const newRow = document.createElement('tr');
-  newRow.innerHTML = `
-    <td class="px-4 py-3">
-      <select class="fee-type-select" onchange="updateFeeLevelOptions(this)">
-        <option value="">请选择费用类型</option>
-        <option value="storageFee">仓储费</option>
-        <option value="operationFee">出库费</option>
-        <option value="expressFee">快递费</option>
-        <option value="otherFee">其他费用</option>
-      </select>
-    </td>
-    <td class="px-4 py-3">
-      <select class="fee-level-select">
-        <option value="">请先选择费用类型</option>
-      </select>
-    </td>
-    <td class="px-4 py-3 fee-action-cell">
-      <button class="btn-delete-row" onclick="deleteFeeRow(this)">
-        <i class="fa fa-trash"></i>
-      </button>
-    </td>
-  `;
-  
-  tbody.appendChild(newRow);
+function clonePriceCardFromTemplate() {
+  const t = allData[0] || getDefaultData()[0];
+  return JSON.parse(JSON.stringify(t));
 }
 
-function deleteFeeRow(btn) {
-  const row = btn.closest('tr');
-  row.remove();
+function formatEffectiveStart(isoDate) {
+  return isoDate.replace(/-/g, '/') + ' 00:00:00';
 }
 
-function updateFeeLevelOptions(selectElement) {
-  const row = selectElement.closest('tr');
-  const levelSelect = row.querySelector('.fee-level-select');
-  const feeType = selectElement.value;
-  
-  levelSelect.innerHTML = '';
-  
-  if (!feeType) {
-    levelSelect.innerHTML = '<option value="">请先选择费用类型</option>';
-    return;
-  }
-  
-  const levels = ['VIP1', 'VIP2', 'VIP3', 'VIP4', 'VIP5'];
-  levelSelect.innerHTML = '<option value="">请选择等级</option>' +
-    levels.map(level => `<option value="${level}">${level}</option>`).join('');
+function formatEffectiveEnd(isoDate) {
+  return isoDate.replace(/-/g, '/') + ' 23:59:59';
 }
 
 function handleAddCard(event) {
   event.preventDefault();
-  
+
+  const nameEl = document.getElementById('newPriceCardName');
+  const name = (nameEl && nameEl.value ? nameEl.value : '').trim();
+  if (!name) {
+    showToast('请输入价卡名称', 'warning');
+    return;
+  }
+
   const startDate = document.getElementById('effectiveStartDate').value;
   const endDate = document.getElementById('effectiveEndDate').value;
-  
+
   if (!startDate || !endDate) {
     showToast('请选择生效日期', 'warning');
     return;
   }
-  
+
   if (new Date(startDate) > new Date(endDate)) {
     showToast('开始日期不能晚于结束日期', 'warning');
     return;
   }
-  
-  const tbody = document.querySelector('#addCardTable tbody');
-  const rows = tbody.querySelectorAll('tr');
-  const feeItems = [];
-  
-  rows.forEach(row => {
-    const feeType = row.querySelector('.fee-type-select').value;
-    const feeLevel = row.querySelector('.fee-level-select').value;
-    
-    if (feeType && feeLevel) {
-      feeItems.push({ feeType, feeLevel });
-    }
+
+  const base = clonePriceCardFromTemplate();
+  const newId = allData.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
+  const remarkEl = document.getElementById('remark');
+
+  Object.assign(base, {
+    id: newId,
+    code: 'NEW' + String(newId).padStart(3, '0'),
+    name,
+    ruleName: name,
+    startDate: formatEffectiveStart(startDate),
+    endDate: formatEffectiveEnd(endDate),
+    status: '未生效',
+    customer: '',
+    warehouses: [],
+    remark: (remarkEl && remarkEl.value.trim()) || '',
+    validFrom: startDate + 'T00:00:00',
+    validTo: endDate + 'T23:59:59'
   });
-  
-  if (feeItems.length === 0) {
-    showToast('请至少添加一个费用项', 'warning');
-    return;
-  }
-  
-  showToast('价卡创建成功', 'success');
+
+  allData.unshift(base);
   closeAddCardModal();
+  resetAddCardForm();
+  filterByCustomer();
+  renderView();
+  renderPagination();
+  updateStats();
+
+  showToast('价卡创建成功', 'success');
 }
 
 function closeDetailModal() {
