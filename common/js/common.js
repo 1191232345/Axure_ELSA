@@ -153,7 +153,23 @@
     tocNav.innerHTML = html;
   }
 
+  function togglePrdLogic(moduleId) {
+    var content = document.getElementById(moduleId + '-logic-content');
+    var icon = document.getElementById(moduleId + '-logic-icon');
+    
+    if (!content || !icon) return;
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+      content.style.display = 'block';
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.style.display = 'none';
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+
   window.switchMainTab = switchMainTab;
   window.openMermaidModal = openMermaidModal;
   window.closeMermaidModal = closeMermaidModal;
+  window.togglePrdLogic = togglePrdLogic;
 })();

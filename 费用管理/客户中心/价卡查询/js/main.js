@@ -266,13 +266,13 @@ function getDefaultData() {
     { name: '180+ day', unit: 'cbm/day', prices: { 美西: '2.80', 美东: '2.80', 美南: '2.80' } }
   ];
   const demoOutboundFees = [
-    { weightRange: '0<W≤10', unit: '/件', rate: '1.20', surcharge: '1.00' },
-    { weightRange: '10<W≤30', unit: '/件', rate: '2.50', surcharge: '1.50' },
-    { weightRange: '30<W≤50', unit: '/件', rate: '3.50', surcharge: '2.00' },
-    { weightRange: '50<W≤70', unit: '/件', rate: '4.50', surcharge: '2.50' },
-    { weightRange: '70<W≤100', unit: '/件', rate: '5.50', surcharge: '3.00' },
-    { weightRange: '100<W≤150', unit: '/件', rate: '6.50', surcharge: '3.50' },
-    { weightRange: 'W>150', unit: '/件', rate: '20.00', surcharge: '15.00' }
+    { weightRange: '出库附加费', unit: '/件', rate: '1.20', surcharge: '1.00' },
+    { weightRange: '出库附加费', unit: '/件', rate: '2.50', surcharge: '1.50' },
+    { weightRange: '出库附加费', unit: '/件', rate: '3.50', surcharge: '2.00' },
+    { weightRange: '出库附加费', unit: '/件', rate: '4.50', surcharge: '2.50' },
+    { weightRange: '出库附加费', unit: '/件', rate: '5.50', surcharge: '3.00' },
+    { weightRange: '出库附加费', unit: '/件', rate: '6.50', surcharge: '3.50' },
+    { weightRange: '出库附加费', unit: '/件', rate: '20.00', surcharge: '15.00' }
   ];
   const demoBundleFee = { label: '一票订单捆绑多件发货', unit: '/件', price: '1.00' };
 

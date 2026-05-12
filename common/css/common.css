@@ -563,3 +563,148 @@ header {
     font-size: 12px;
     margin-bottom: 2px;
 }
+
+/* 补充按钮样式 */
+.erp-btn-success {
+    background: #00B42A;
+    color: #fff;
+}
+
+.erp-btn-success:hover:not(:disabled) {
+    background: #00a023;
+}
+
+.erp-btn-warning {
+    background: #FF7D00;
+    color: #fff;
+}
+
+.erp-btn-warning:hover:not(:disabled) {
+    background: #e67000;
+}
+
+.erp-btn-danger {
+    background: #F53F3F;
+    color: #fff;
+}
+
+.erp-btn-danger:hover:not(:disabled) {
+    background: #d93636;
+}
+
+/* 补充表单样式 */
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-input,
+.select-primary,
+.input-primary {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+}
+
+.form-input:focus,
+.select-primary:focus,
+.input-primary:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(42, 59, 125, 0.1);
+}
+
+.form-input:disabled,
+.select-primary:disabled,
+.input-primary:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* 补充表格样式 */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table thead {
+    background: #f9fafb;
+}
+
+.data-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* 补充卡片阴影 */
+.shadow-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 补充徽章样式 */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.badge-success {
+    background: #e6ffed;
+    color: #00B42A;
+}
+
+.badge-warning {
+    background: #fff7e6;
+    color: #FF7D00;
+}
+
+.badge-danger {
+    background: #ffe6e6;
+    color: #F53F3F;
+}
+
+.badge-info {
+    background: #e6f4ff;
+    color: var(--primary);
+}
+
+/* 补充主内容区域样式 */
+.main-content {
+    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.main-content.active {
+    display: block;
+}
+
+#main-prototype.main-content.active {
+    display: flex;
+    flex-direction: column;
+}

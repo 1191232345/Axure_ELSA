@@ -1322,6 +1322,13 @@
                                             <td class="px-3 py-2 text-gray-600">提交回复后刷新列表</td>
                                         </tr>
                                         <tr class="hover:bg-gray-50">
+                                            <td class="px-3 py-2 text-gray-800">批量结案</td>
+                                            <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                            <td class="px-3 py-2 text-gray-600">打开批量结案弹窗，需填写处理结果（必填）</td>
+                                            <td class="px-3 py-2 text-gray-600">至少选择1条工单</td>
+                                            <td class="px-3 py-2 text-gray-600">提交后更新工单状态为"已结案"</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50">
                                             <td class="px-3 py-2 text-gray-800">详情</td>
                                             <td class="px-3 py-2 text-gray-600">每行操作列</td>
                                             <td class="px-3 py-2 text-gray-600">跳转到工单详情页</td>
@@ -1605,6 +1612,54 @@
                         <i class="fa fa-save mr-1"></i> 保存
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="batchSignModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fa fa-check-circle text-primary mr-2"></i>批量结案
+                </h3>
+                <button class="close-btn" onclick="closeBatchSignModal()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <div class="flex items-center gap-2 mb-3 p-3 bg-blue-50 rounded-lg">
+                        <i class="fa fa-info-circle text-primary"></i>
+                        <span class="text-sm text-gray-700">已选择 <span id="selectedCount" class="font-semibold text-primary">0</span> 个工单</span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="text-red-500">*</span> 处理结果
+                    </label>
+                    <select id="signResult" class="form-select" required>
+                        <option value="">请选择处理结果</option>
+                        <option value="resolved">已解决</option>
+                        <option value="partial-resolved">部分解决</option>
+                        <option value="cannot-resolve">无法解决</option>
+                        <option value="customer-cancel">客户取消</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">结案后将无法恢复，请谨慎操作</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        备注说明
+                    </label>
+                    <textarea id="signRemark" class="form-textarea" rows="3" placeholder="请输入备注说明（选填）"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeBatchSignModal()">
+                    <i class="fa fa-times mr-1.5"></i> 取消
+                </button>
+                <button class="erp-btn erp-btn-primary" onclick="submitBatchSign()">
+                    <i class="fa fa-check mr-1.5"></i> 确定结案
+                </button>
             </div>
         </div>
     </div>
@@ -2223,17 +2278,50 @@
                 showToast('请先选择要结案的工单', 'warning');
                 return;
             }
-            showConfirm({
-                title: '批量结案',
-                message: '确定要将选中的 ' + selectedRows.length + ' 个工单结案吗？结案后将无法恢复。',
-                confirmText: '确定结案',
-                onConfirm: function() {
-                    showToast('正在批量结案...', 'info');
-                    setTimeout(function() {
-                        showToast('批量结案成功！', 'success');
-                    }, 1000);
-                }
-            });
+            
+            document.getElementById('selectedCount').textContent = selectedRows.length;
+            document.getElementById('signResult').value = '';
+            document.getElementById('signRemark').value = '';
+            
+            document.getElementById('batchSignModal').classList.add('show');
+        }
+
+        function closeBatchSignModal() {
+            document.getElementById('batchSignModal').classList.remove('show');
+        }
+
+        function submitBatchSign() {
+            const signResult = document.getElementById('signResult').value;
+            const signRemark = document.getElementById('signRemark').value;
+            
+            if (!signResult) {
+                showToast('请选择处理结果', 'warning');
+                return;
+            }
+            
+            const selectedRows = document.querySelectorAll('.row-checkbox:checked');
+            const selectedCount = selectedRows.length;
+            
+            showToast('正在批量结案...', 'info');
+            
+            setTimeout(function() {
+                closeBatchSignModal();
+                showToast('成功结案 ' + selectedCount + ' 个工单！', 'success');
+                
+                selectedRows.forEach(function(checkbox) {
+                    const row = checkbox.closest('tr');
+                    if (row) {
+                        const statusCell = row.querySelector('td:nth-child(13)');
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="status-badge bg-green-100 text-green-700">已结案</span>';
+                        }
+                        checkbox.checked = false;
+                    }
+                });
+                
+                document.getElementById('selectAll').checked = false;
+                updateBatchButtons();
+            }, 1000);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
