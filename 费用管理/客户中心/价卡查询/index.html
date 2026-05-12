@@ -139,8 +139,8 @@
             <div class="bg-white rounded shadow-card overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <button class="erp-btn erp-btn-primary" onclick="openAddCardModal()">
-                            <i class="fa fa-plus"></i> 新增价卡
+                        <button class="erp-btn erp-btn-secondary" onclick="exportPriceCards()">
+                            <i class="fa fa-download"></i> 导出
                         </button>
                     </div>
                 </div>
@@ -149,12 +149,10 @@
                     <table class="price-card-table" id="priceCardTable">
                         <thead>
                             <tr>
-                                <th>价卡编号</th>
+                                <th>客户代码</th>
                                 <th>仓储费</th>
                                 <th>出库费</th>
                                 <th>快递费</th>
-                                <th>其他费用</th>
-                                <th>生效日期</th>
                             </tr>
                         </thead>
                         <tbody id="priceCardTableBody">
@@ -198,22 +196,8 @@
                                         <td class="px-3 py-2 text-gray-800">价卡列表加载</td>
                                         <td class="px-3 py-2 text-gray-600">页面加载时展示当前客户的所有价卡</td>
                                         <td class="px-3 py-2 text-gray-600">价卡配置表</td>
-                                        <td class="px-3 py-2 text-gray-600">按生效日期倒序排列</td>
+                                        <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
                                         <td class="px-3 py-2 text-gray-600">默认展示当前登录客户关联的价卡</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">费用等级展示</td>
-                                        <td class="px-3 py-2 text-gray-600">以等级徽章形式展示各费用类型等级</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡配置表</td>
-                                        <td class="px-3 py-2 text-gray-600">不同等级显示不同颜色徽章</td>
-                                        <td class="px-3 py-2 text-gray-600">点击可查看费用明细</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">生效日期展示</td>
-                                        <td class="px-3 py-2 text-gray-600">显示价卡的生效时间段</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡配置表</td>
-                                        <td class="px-3 py-2 text-gray-600">开始时间00:00:00，结束时间23:59:59</td>
-                                        <td class="px-3 py-2 text-gray-600">支持时间段重叠检测</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -236,9 +220,19 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">客户筛选</td>
-                                        <td class="px-3 py-2 text-gray-600">系统自动获取</td>
-                                        <td class="px-3 py-2 text-gray-600">根据当前登录用户的客户信息自动筛选价卡</td>
+                                        <td class="px-3 py-2 text-gray-800">客户代码下拉</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                                        <td class="px-3 py-2 text-gray-600">选择客户代码筛选价卡列表，默认显示"全部客户"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">重置按钮</td>
+                                        <td class="px-3 py-2 text-gray-600">点击按钮</td>
+                                        <td class="px-3 py-2 text-gray-600">清空筛选条件，恢复默认状态，重新加载价卡列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">搜索按钮</td>
+                                        <td class="px-3 py-2 text-gray-600">点击按钮</td>
+                                        <td class="px-3 py-2 text-gray-600">根据选择的客户代码筛选价卡列表</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -263,46 +257,32 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">新增价卡</td>
-                                        <td class="px-3 py-2 text-gray-600">页面右上角</td>
-                                        <td class="px-3 py-2 text-gray-600">打开新增价卡弹窗</td>
-                                        <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">填写表单后提交，检测时间冲突，保存成功后刷新列表</td>
+                                        <td class="px-3 py-2 text-gray-800">导出</td>
+                                        <td class="px-3 py-2 text-gray-600">表格上方</td>
+                                        <td class="px-3 py-2 text-gray-600">导出价卡列表</td>
+                                        <td class="px-3 py-2 text-gray-600">有数据可导出</td>
+                                        <td class="px-3 py-2 text-gray-600">生成CSV文件并下载</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">仓储费等级</td>
+                                        <td class="px-3 py-2 text-gray-800">仓储费</td>
                                         <td class="px-3 py-2 text-gray-600">表格每行</td>
                                         <td class="px-3 py-2 text-gray-600">打开仓储费详情弹窗</td>
                                         <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">展示按库龄分段的仓储费明细</td>
+                                        <td class="px-3 py-2 text-gray-600">展示价卡名称，点击查看按库龄分段的仓储费明细</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">出库费等级</td>
+                                        <td class="px-3 py-2 text-gray-800">出库费</td>
                                         <td class="px-3 py-2 text-gray-600">表格每行</td>
                                         <td class="px-3 py-2 text-gray-600">打开出库费详情弹窗</td>
                                         <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">展示按重量分段的出库费明细及捆绑费</td>
+                                        <td class="px-3 py-2 text-gray-600">展示价卡名称，点击查看按重量分段的出库费明细及捆绑费</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">快递费等级</td>
+                                        <td class="px-3 py-2 text-gray-800">快递费</td>
                                         <td class="px-3 py-2 text-gray-600">表格每行</td>
                                         <td class="px-3 py-2 text-gray-600">打开快递费详情弹窗</td>
                                         <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">展示快递费等级信息</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">其他费用等级</td>
-                                        <td class="px-3 py-2 text-gray-600">表格每行</td>
-                                        <td class="px-3 py-2 text-gray-600">打开其他费用详情弹窗</td>
-                                        <td class="px-3 py-2 text-gray-600">无</td>
-                                        <td class="px-3 py-2 text-gray-600">展示其他费用说明</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">确认添加</td>
-                                        <td class="px-3 py-2 text-gray-600">新增价卡弹窗</td>
-                                        <td class="px-3 py-2 text-gray-600">提交新增价卡表单</td>
-                                        <td class="px-3 py-2 text-gray-600">必填项已填写</td>
-                                        <td class="px-3 py-2 text-gray-600">检测时间冲突，自动拆分价卡，保存后刷新列表</td>
+                                        <td class="px-3 py-2 text-gray-600">展示价卡名称，点击查看按销售产品分段的快递费明细</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -329,165 +309,241 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">价卡编号</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡唯一标识</td>
-                                        <td class="px-3 py-2 text-gray-600">系统生成</td>
-                                        <td class="px-3 py-2 text-gray-600">自动生成唯一编号</td>
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">关联的客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">客户主数据</td>
+                                        <td class="px-3 py-2 text-gray-600">关联客户信息</td>
                                         <td class="px-3 py-2 text-gray-600">文本显示</td>
                                         <td class="px-3 py-2 text-gray-600">32</td>
                                         <td class="px-3 py-2 text-gray-600">字符型</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">仓储费</td>
-                                        <td class="px-3 py-2 text-gray-600">仓储费等级</td>
+                                        <td class="px-3 py-2 text-gray-600">价卡名称</td>
                                         <td class="px-3 py-2 text-gray-600">价卡配置</td>
-                                        <td class="px-3 py-2 text-gray-600">VIP1/VIP2/VIP3等</td>
-                                        <td class="px-3 py-2 text-gray-600">等级徽章</td>
-                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">显示价卡名称</td>
+                                        <td class="px-3 py-2 text-gray-600">可点击链接</td>
+                                        <td class="px-3 py-2 text-gray-600">128</td>
                                         <td class="px-3 py-2 text-gray-600">字符型</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">出库费</td>
-                                        <td class="px-3 py-2 text-gray-600">出库费等级</td>
+                                        <td class="px-3 py-2 text-gray-600">价卡名称</td>
                                         <td class="px-3 py-2 text-gray-600">价卡配置</td>
-                                        <td class="px-3 py-2 text-gray-600">VIP1/VIP2/VIP3等</td>
-                                        <td class="px-3 py-2 text-gray-600">等级徽章</td>
-                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">显示价卡名称</td>
+                                        <td class="px-3 py-2 text-gray-600">可点击链接</td>
+                                        <td class="px-3 py-2 text-gray-600">128</td>
                                         <td class="px-3 py-2 text-gray-600">字符型</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">快递费</td>
-                                        <td class="px-3 py-2 text-gray-600">快递费等级</td>
+                                        <td class="px-3 py-2 text-gray-600">价卡名称</td>
                                         <td class="px-3 py-2 text-gray-600">价卡配置</td>
-                                        <td class="px-3 py-2 text-gray-600">VIP1/VIP2/VIP3等</td>
-                                        <td class="px-3 py-2 text-gray-600">等级徽章</td>
-                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">显示价卡名称</td>
+                                        <td class="px-3 py-2 text-gray-600">可点击链接</td>
+                                        <td class="px-3 py-2 text-gray-600">128</td>
                                         <td class="px-3 py-2 text-gray-600">字符型</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">其他费用</td>
-                                        <td class="px-3 py-2 text-gray-600">其他费用等级</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡配置</td>
-                                        <td class="px-3 py-2 text-gray-600">VIP1/VIP2/VIP3等</td>
-                                        <td class="px-3 py-2 text-gray-600">等级徽章</td>
-                                        <td class="px-3 py-2 text-gray-600">32</td>
-                                        <td class="px-3 py-2 text-gray-600">字符型</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">生效日期</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡生效时间段</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡配置</td>
-                                        <td class="px-3 py-2 text-gray-600">开始时间00:00:00，结束时间23:59:59</td>
-                                        <td class="px-3 py-2 text-gray-600">YYYY/MM/DD HH:mm:ss</td>
-                                        <td class="px-3 py-2 text-gray-600">-</td>
-                                        <td class="px-3 py-2 text-gray-600">DATETIME</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- 属性取值逻辑（新增价卡弹窗） -->
-                    <div class="p-4">
+                    <!-- 客户代码下拉数据来源 -->
+                    <div class="p-4 border-b border-gray-100">
                         <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                            <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（新增价卡弹窗）
+                            <i class="fa fa-list text-primary mr-2"></i>客户代码下拉数据来源
                         </h4>
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm border border-gray-200 rounded">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">价卡名称</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡名称</td>
-                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                        <td class="px-3 py-2 text-gray-600">必填，最多120字符</td>
-                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                                        <td class="px-3 py-2 text-gray-600">128</td>
-                                        <td class="px-3 py-2 text-gray-600">字符型</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">生效日期</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡生效时间段</td>
-                                        <td class="px-3 py-2 text-gray-600">日期选择器</td>
-                                        <td class="px-3 py-2 text-gray-600">必填，开始时间自动设为00:00:00，结束时间自动设为23:59:59</td>
-                                        <td class="px-3 py-2 text-gray-600">日期选择器</td>
-                                        <td class="px-3 py-2 text-gray-600">-</td>
-                                        <td class="px-3 py-2 text-gray-600">DATETIME</td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">备注</td>
-                                        <td class="px-3 py-2 text-gray-600">价卡备注信息</td>
-                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                                        <td class="px-3 py-2 text-gray-600">可选，最多500字符</td>
-                                        <td class="px-3 py-2 text-gray-600">文本域</td>
-                                        <td class="px-3 py-2 text-gray-600">512</td>
-                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                        <td class="px-3 py-2 text-gray-800">客户代码下拉</td>
+                                        <td class="px-3 py-2 text-gray-600">接口获取</td>
+                                        <td class="px-3 py-2 text-gray-600">调用客户下拉接口，返回当前用户有权限的客户列表</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
+                    <!-- 用户权限逻辑 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-shield text-primary mr-2"></i>用户权限逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">场景</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">用户登录</td>
+                                        <td class="px-3 py-2 text-gray-600">获取用户关联的客户列表，用于客户代码下拉筛选</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">数据筛选</td>
+                                        <td class="px-3 py-2 text-gray-600">根据用户选择的客户代码筛选价卡列表，默认显示全部关联客户的价卡</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">无权限</td>
+                                        <td class="px-3 py-2 text-gray-600">如果用户未关联任何客户，显示空状态，提示"暂无权限查看价卡"</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 分页逻辑 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-file-o text-primary mr-2"></i>分页逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">项目</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">分页方式</td>
+                                        <td class="px-3 py-2 text-gray-600">前端分页，一次性加载所有数据</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">每页条数</td>
+                                        <td class="px-3 py-2 text-gray-600">20条</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">排序规则</td>
+                                        <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 错误处理与异常场景 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-exclamation-triangle text-primary mr-2"></i>错误处理与异常场景
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">场景</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">处理方式</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户代码不存在</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉列表不显示该选项，或标记为"已失效"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">价卡数据为空</td>
+                                        <td class="px-3 py-2 text-gray-600">显示空状态图标，提示"暂无价卡数据"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">导出失败</td>
+                                        <td class="px-3 py-2 text-gray-600">提示"导出失败，请稍后重试"，记录错误日志</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">详情查询失败</td>
+                                        <td class="px-3 py-2 text-gray-600">提示"未找到价卡信息"，关闭弹窗</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">网络异常</td>
+                                        <td class="px-3 py-2 text-gray-600">提示"网络异常，请检查网络连接"，显示重试按钮</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 数据需求清单 -->
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fa fa-database text-primary mr-2"></i>数据需求清单
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据类别</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据用途</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">获取维度</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户列表</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码下拉选择</td>
+                                        <td class="px-3 py-2 text-gray-600">当前登录用户关联的客户</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码、客户名称</td>
+                                        <td class="px-3 py-2 text-gray-600">客户主数据</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">价卡列表</td>
+                                        <td class="px-3 py-2 text-gray-600">主表数据展示</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码（可选筛选条件）</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码、价卡名称</td>
+                                        <td class="px-3 py-2 text-gray-600">价卡配置表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">仓储费明细</td>
+                                        <td class="px-3 py-2 text-gray-600">详情展示</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码+仓群+仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">仓群分组、库龄分段、单价、单位</td>
+                                        <td class="px-3 py-2 text-gray-600">费用管理 - 仓储费</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">出库费明细</td>
+                                        <td class="px-3 py-2 text-gray-600">详情展示</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码+仓群+仓库</td>
+                                        <td class="px-3 py-2 text-gray-600">重量分段、费率、捆绑费、单位</td>
+                                        <td class="px-3 py-2 text-gray-600">费用管理 - 操作费</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">快递费明细</td>
+                                        <td class="px-3 py-2 text-gray-600">详情展示</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码+销售产品</td>
+                                        <td class="px-3 py-2 text-gray-600">销售产品、运费分段、杂费、区域价格</td>
+                                        <td class="px-3 py-2 text-gray-600">【TMS】费用管理-销售运费/销售杂费</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">价卡导出数据</td>
+                                        <td class="px-3 py-2 text-gray-600">导出CSV文件</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码（可选筛选条件）</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码、仓储费、出库费、快递费</td>
+                                        <td class="px-3 py-2 text-gray-600">价卡配置表</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </main>
     
-    <div id="addCardModal" class="modal">
-        <div class="modal-content" style="max-width: 520px;">
-            <div class="modal-header">
-                <h3><i class="fa fa-plus-circle" style="margin-right: 8px; color: #2a3b7d;"></i>新增价卡</h3>
-                <button class="modal-close" onclick="closeAddCardModal()"><i class="fa fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <form id="addCardForm">
-                    <p style="font-size: 12px; color: #6b7280; margin: 0 0 16px;">仓储 / 出库 / 快递 / 其他费用的等级及分段明细，将按列表首条价卡作为模板复制，创建后可在业务侧再调整。</p>
-                    <div class="add-form-grid">
-                        <div class="add-form-item full-width">
-                            <label class="add-form-label">价卡名称 <span style="color: #F53F3F;">*</span></label>
-                            <input type="text" class="add-form-input" id="newPriceCardName" required maxlength="120" placeholder="请输入价卡名称">
-                        </div>
-
-                        <div class="add-form-item full-width">
-                            <label class="add-form-label">生效日期 <span style="color: #F53F3F;">*</span></label>
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="flex: 1;">
-                                    <input type="date" class="add-form-input" id="effectiveStartDate" required placeholder="开始日期">
-                                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">开始时间：00:00:00</div>
-                                </div>
-                                <span style="color: #9ca3af; font-size: 14px; font-weight: 600;">至</span>
-                                <div style="flex: 1;">
-                                    <input type="date" class="add-form-input" id="effectiveEndDate" required placeholder="结束日期">
-                                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">结束时间：23:59:59</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="add-form-item full-width">
-                            <label class="add-form-label">备注</label>
-                            <textarea class="add-form-textarea" id="remark" placeholder="请输入备注信息（可选）"></textarea>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="erp-btn erp-btn-secondary" onclick="closeAddCardModal()">取消</button>
-                <button class="erp-btn erp-btn-primary" onclick="handleAddCard(event)">
-                    <i class="fa fa-check"></i> 确认添加
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div id="detailModal" class="modal">
         <div class="modal-content" style="max-width: 1100px;">
             <div class="modal-header">

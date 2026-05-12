@@ -111,6 +111,19 @@
     background-color: #3a4ca7;
 }
 
+.fee-name-link {
+    color: #2a3b7d;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.fee-name-link:hover {
+    color: #1e3a8a;
+    text-decoration: underline;
+}
+
 @media (max-width: 768px) {
     .price-card-table {
         font-size: 13px;

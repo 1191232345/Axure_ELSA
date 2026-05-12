@@ -12,8 +12,7 @@ let currentCustomer = 'DEMO - demo';
 const PRICE_CARD_TYPE_MAP = {
   'storage': '仓储费',
   'shipping': '运费',
-  'operation': '操作费',
-  'other': '其他费用'
+  'operation': '操作费'
 };
 
 const VERSION_STATUS_MAP = {
@@ -286,7 +285,6 @@ function getDefaultData() {
       storageFee: 'VIP1',
       operationFee: 'VIP2',
       expressFee: 'VIP1',
-      otherFee: 'VIP3',
       startDate: '2026/01/01 00:00:00',
       endDate: '2026/12/31 23:59:59',
       status: '生效',
@@ -420,33 +418,22 @@ function renderView() {
   tbody.innerHTML = pageData.map(item => `
     <tr>
       <td>
-        <span class="font-medium text-gray-900">${item.code || '-'}</span>
+        <span class="text-gray-700">${item.customer || '-'}</span>
       </td>
       <td>
-        <span class="level-badge level-${item.storageFee}" onclick="showStorageFeeDetail(${item.id})" title="点击查看详情">
-          ${item.storageFee || '-'}
+        <span class="fee-name-link" onclick="showStorageFeeDetail(${item.id})" title="点击查看详情">
+          ${item.name || '-'}
         </span>
       </td>
       <td>
-        <span class="level-badge level-${item.operationFee}" onclick="showOperationFeeDetail(${item.id})" title="点击查看详情">
-          ${item.operationFee || '-'}
+        <span class="fee-name-link" onclick="showOperationFeeDetail(${item.id})" title="点击查看详情">
+          ${item.name || '-'}
         </span>
       </td>
       <td>
-        <span class="level-badge level-${item.expressFee}" onclick="showExpressFeeDetail(${item.id})" title="点击查看详情">
-          ${item.expressFee || '-'}
+        <span class="fee-name-link" onclick="showExpressFeeDetail(${item.id})" title="点击查看详情">
+          ${item.name || '-'}
         </span>
-      </td>
-      <td>
-        <span class="level-badge level-${item.otherFee}" onclick="showOtherFeeDetail(${item.id})" title="点击查看详情">
-          ${item.otherFee || '-'}
-        </span>
-      </td>
-      <td>
-        <div class="text-sm">
-          <div class="text-gray-900">${item.startDate || '-'}</div>
-          <div class="text-gray-500">至 ${item.endDate || '-'}</div>
-        </div>
       </td>
     </tr>
   `).join('');
@@ -604,9 +591,12 @@ function updateStats() {
   // 暂无统计元素，保留函数以避免错误
 }
 
-function showModal(title, content, width = '600px') {
+function showModal(title, content, width = '600px', footer = null) {
   const modal = document.createElement('div');
   modal.className = 'modal';
+  
+  const footerHtml = footer || '<button class="erp-btn erp-btn-secondary" onclick="closeModal(this)">关闭</button>';
+  
   modal.innerHTML = `
     <div class="modal-content" style="width: ${width};">
       <div class="modal-header">
@@ -614,9 +604,7 @@ function showModal(title, content, width = '600px') {
         <button class="modal-close" onclick="closeModal(this)">&times;</button>
       </div>
       <div class="modal-body">${content}</div>
-      <div class="modal-footer">
-        <button class="erp-btn erp-btn-secondary" onclick="closeModal(this)">关闭</button>
-      </div>
+      <div class="modal-footer">${footerHtml}</div>
     </div>
   `;
   document.body.appendChild(modal);
@@ -1179,7 +1167,7 @@ function loadLogicDescription() {
             <tr class="hover:bg-gray-50">
               <td class="px-3 py-2 text-gray-800">价卡类型</td>
               <td class="px-3 py-2 text-gray-600">下拉单选框</td>
-              <td class="px-3 py-2 text-gray-600">支持按类型筛选（全部类型、仓储费、运费、操作费、其他费用）</td>
+              <td class="px-3 py-2 text-gray-600">支持按类型筛选（全部类型、仓储费、运费、操作费）</td>
               <td class="px-3 py-2 text-gray-600">全部类型</td>
             </tr>
             <tr class="hover:bg-gray-50">
@@ -1285,7 +1273,7 @@ function loadLogicDescription() {
               <td class="px-3 py-2 text-gray-800">价卡类型</td>
               <td class="px-3 py-2 text-gray-600">费用类型分类</td>
               <td class="px-3 py-2 text-gray-600">下拉选择</td>
-              <td class="px-3 py-2 text-gray-600">仓储费/运费/操作费/其他费用</td>
+              <td class="px-3 py-2 text-gray-600">仓储费/运费/操作费</td>
               <td class="px-3 py-2 text-gray-600">枚举值</td>
               <td class="px-3 py-2 text-gray-600">是</td>
             </tr>
@@ -1386,32 +1374,6 @@ function handleReset() {
   resetFilters();
 }
 
-function resetAddCardForm() {
-  const nameEl = document.getElementById('newPriceCardName');
-  if (nameEl) nameEl.value = '';
-  const s = document.getElementById('effectiveStartDate');
-  const e = document.getElementById('effectiveEndDate');
-  if (s) s.value = '';
-  if (e) e.value = '';
-  const r = document.getElementById('remark');
-  if (r) r.value = '';
-}
-
-function openAddCardModal() {
-  const modal = document.getElementById('addCardModal');
-  if (modal) modal.classList.add('active');
-  resetAddCardForm();
-  setTimeout(() => {
-    const nameEl = document.getElementById('newPriceCardName');
-    if (nameEl) nameEl.focus();
-  }, 100);
-}
-
-function closeAddCardModal() {
-  const modal = document.getElementById('addCardModal');
-  if (modal) modal.classList.remove('active');
-}
-
 function handleCopyTable() {
   const table = document.getElementById('priceCardTable');
   const rows = table.querySelectorAll('tr');
@@ -1426,6 +1388,39 @@ function handleCopyTable() {
   }).catch(() => {
     showToast('复制失败', 'error');
   });
+}
+
+function exportPriceCards() {
+  if (!filteredData || filteredData.length === 0) {
+    showToast('暂无数据可导出', 'warning');
+    return;
+  }
+
+  const headers = ['客户代码', '仓储费', '出库费', '快递费', '状态', '备注'];
+  
+  const rows = filteredData.map(item => {
+    return [
+      item.customer || '-',
+      item.name || '-',
+      item.name || '-',
+      item.name || '-',
+      item.status || '-',
+      item.remark || '-'
+    ];
+  });
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `价卡列表_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+
+  showToast('导出成功', 'success');
 }
 
 function handleDownloadTable() {
@@ -1481,27 +1476,8 @@ function showStorageFeeDetail(id) {
     `;
   }
   
-  showModal('仓储费详情 - ' + item.code, `
+  showModal('仓储费详情', `
     <div class="space-y-6">
-      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex items-center">
-            <i class="fa fa-barcode text-primary mr-3"></i>
-            <div>
-              <div class="text-xs text-gray-500">价卡编号</div>
-              <div class="font-semibold text-gray-900">${item.code}</div>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <i class="fa fa-file-text text-primary mr-3"></i>
-            <div>
-              <div class="text-xs text-gray-500">价卡名称</div>
-              <div class="font-semibold text-gray-900">${item.name}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <div>
         <p class="text-xs text-gray-500 mb-2">以下按仓群展示费用明细表，默认折叠；展开后可在固定高度内上下滚动查看。</p>
         ${tableHtml}
@@ -1575,27 +1551,8 @@ function showOperationFeeDetail(id) {
     `;
   }
   
-  showModal('出库费详情 - ' + item.code, `
+  showModal('出库费详情', `
     <div class="space-y-6">
-      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex items-center">
-            <i class="fa fa-barcode text-primary mr-3"></i>
-            <div>
-              <div class="text-xs text-gray-500">价卡编号</div>
-              <div class="font-semibold text-gray-900">${item.code}</div>
-            </div>
-          </div>
-          <div class="flex items-center">
-            <i class="fa fa-file-text text-primary mr-3"></i>
-            <div>
-              <div class="text-xs text-gray-500">价卡名称</div>
-              <div class="font-semibold text-gray-900">${item.name}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <div>
         ${wrapFeeDetailCollapse(
           `<div class="fee-detail-summary-row">
@@ -1721,14 +1678,9 @@ function showExpressFeeDetail(id) {
   const products = item.expressProducts || [];
   if (!products.length) {
     showModal(
-      '快递费详情 - ' + item.code,
+      '快递费详情',
       `
     <div class="detail-section">
-      <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${escapeHtml(item.code)}</span></div>
-        <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${escapeHtml(item.name)}</span></div>
-        <div class="detail-item"><span class="detail-label">快递费等级</span><span class="detail-value"><span class="level-badge level-${item.expressFee}">${escapeHtml(item.expressFee || '-')}</span></span></div>
-      </div>
       <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:6px;text-align:center;color:#666;">
         暂无销售产品维度报价，请联系维护 expressProducts 数据或使用承运商实时报价。
       </div>
@@ -1782,14 +1734,11 @@ function showExpressFeeDetail(id) {
     .join('');
 
   showModal(
-    '快递费详情 - ' + item.code,
+    '快递费详情',
     `
     <div class="space-y-4">
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
         <div class="detail-grid">
-          <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${escapeHtml(item.code)}</span></div>
-          <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${escapeHtml(item.name)}</span></div>
-          <div class="detail-item"><span class="detail-label">快递费等级</span><span class="detail-value"><span class="level-badge level-${item.expressFee}">${escapeHtml(item.expressFee || '-')}</span></span></div>
           <div class="detail-item"><span class="detail-label">币种</span><span class="detail-value">${escapeHtml(currency)}</span></div>
         </div>
       </div>
@@ -1804,22 +1753,158 @@ function showExpressFeeDetail(id) {
   );
 }
 
-function showOtherFeeDetail(id) {
-  const item = allData.find(d => d.id === id);
-  if (!item) return;
-  
-  showModal('其他费用详情 - ' + item.code, `
+function buildStorageFeeDetailHtml(item) {
+  if (!item.warehouseOperations || item.warehouseOperations.length === 0) {
+    return '';
+  }
+  return `
     <div class="detail-section">
-      <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">价卡编号</span><span class="detail-value">${item.code}</span></div>
-        <div class="detail-item"><span class="detail-label">价卡名称</span><span class="detail-value">${item.name}</span></div>
-        <div class="detail-item"><span class="detail-label">其他费用等级</span><span class="detail-value"><span class="level-badge level-${item.otherFee}">${item.otherFee || '-'}</span></span></div>
-      </div>
-      <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:6px;text-align:center;color:#666;">
-        其他费用包括特殊操作费、增值服务费等
+      <h4 class="detail-section-title"><i class="fa fa-warehouse mr-2 text-primary"></i>仓储费明细</h4>
+      ${buildGroupedStorageFeeTablesHtml(item)}
+    </div>
+  `;
+}
+
+function buildOperationFeeDetailHtml(item) {
+  if (!item.outboundFees || item.outboundFees.length === 0) {
+    return '';
+  }
+
+  const rows = item.outboundFees.map(fee => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+      <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">${escapeHtml(fee.weightRange)}</td>
+      <td class="px-3 py-2 text-gray-600 whitespace-nowrap">${escapeHtml(fee.unit)}</td>
+      <td class="px-3 py-2 font-semibold text-amber-600 whitespace-nowrap">${escapeHtml(fee.rate)}</td>
+      <td class="px-3 py-2 font-semibold text-amber-600 whitespace-nowrap">${escapeHtml(fee.surcharge)}</td>
+    </tr>
+  `).join('');
+
+  const bundleFeeHtml = item.bundleFee ? `
+    <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-amber-900">${escapeHtml(item.bundleFee.label)}</span>
+        <span class="text-sm font-semibold text-amber-700">${escapeHtml(item.bundleFee.price)} ${escapeHtml(item.bundleFee.unit)}</span>
       </div>
     </div>
-  `, '500px');
+  ` : '';
+
+  return `
+    <div class="detail-section">
+      <h4 class="detail-section-title"><i class="fa fa-cube mr-2 text-primary"></i>出库费明细</h4>
+      <div class="overflow-x-auto rounded-lg border border-gray-200">
+        <table class="w-full text-sm min-w-max">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-3 py-2 text-left font-semibold text-gray-700">重量区间</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-700">单位</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-700">费率</th>
+              <th class="px-3 py-2 text-left font-semibold text-gray-700">捆绑费</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">${rows}</tbody>
+        </table>
+      </div>
+      ${bundleFeeHtml}
+    </div>
+  `;
+}
+
+function buildExpressFeeDetailHtml(item) {
+  if (!item.expressProducts || item.expressProducts.length === 0) {
+    return '';
+  }
+
+  const tabs = item.expressProducts.map((product, index) => `
+    <button class="express-product-tab ${index === 0 ? 'express-tab-active' : ''}" 
+            onclick="switchExpressTab(this, ${item.id}, ${index})">
+      ${escapeHtml(product.productName)}
+    </button>
+  `).join('');
+
+  const panels = item.expressProducts.map((product, index) => {
+    const freightRows = (product.freightSegments || []).map(seg => `
+      <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+        <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">${escapeHtml(seg.label)}</td>
+        <td class="px-3 py-2 text-gray-600 whitespace-nowrap">${escapeHtml(seg.unit)}</td>
+        ${product.zoneKeys.map(zone => `
+          <td class="px-3 py-2 font-semibold text-amber-600 whitespace-nowrap text-right">${escapeHtml(seg.zonePrices[zone] || '-')}</td>
+        `).join('')}
+      </tr>
+    `).join('');
+
+    const surchargeRows = (product.surcharges || []).map(sur => `
+      <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+        <td class="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">
+          <span class="express-item-code">${escapeHtml(sur.itemCode)}</span>
+          ${escapeHtml(sur.itemName)}
+        </td>
+        ${product.zoneKeys.map(zone => `
+          <td class="px-3 py-2 font-semibold text-amber-600 whitespace-nowrap text-right">${escapeHtml(sur.zonePrices[zone] || '-')}</td>
+        `).join('')}
+      </tr>
+    `).join('');
+
+    return `
+      <div class="express-product-panel ${index === 0 ? '' : 'hidden'}" data-product-index="${index}">
+        <div class="overflow-x-auto rounded-lg border border-gray-200 mb-4">
+          <table class="w-full text-sm min-w-max">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">重量区间</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">单位</th>
+                ${product.zoneKeys.map(zone => `
+                  <th class="px-3 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">${escapeHtml(zone)}</th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">${freightRows}</tbody>
+          </table>
+        </div>
+        ${surchargeRows ? `
+          <div class="overflow-x-auto rounded-lg border border-gray-200">
+            <table class="w-full text-sm min-w-max">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">杂费项</th>
+                  ${product.zoneKeys.map(zone => `
+                    <th class="px-3 py-2 text-right font-semibold text-gray-700 whitespace-nowrap">${escapeHtml(zone)}</th>
+                  `).join('')}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">${surchargeRows}</tbody>
+            </table>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="detail-section">
+      <h4 class="detail-section-title"><i class="fa fa-truck mr-2 text-primary"></i>快递费明细</h4>
+      <div class="express-detail-wrap" data-express-card-id="${item.id}">
+        <div class="express-product-tabs">${tabs}</div>
+        ${panels}
+      </div>
+    </div>
+  `;
+}
+
+function switchExpressTab(btn, cardId, productIndex) {
+  const wrap = btn.closest('.express-detail-wrap');
+  const tabs = wrap.querySelectorAll('.express-product-tab');
+  const panels = wrap.querySelectorAll('.express-product-panel');
+
+  tabs.forEach(tab => tab.classList.remove('express-tab-active'));
+  btn.classList.add('express-tab-active');
+
+  panels.forEach((panel, index) => {
+    if (index === productIndex) {
+      panel.classList.remove('hidden');
+    } else {
+      panel.classList.add('hidden');
+    }
+  });
 }
 
 function clonePriceCardFromTemplate() {
@@ -1833,59 +1918,6 @@ function formatEffectiveStart(isoDate) {
 
 function formatEffectiveEnd(isoDate) {
   return isoDate.replace(/-/g, '/') + ' 23:59:59';
-}
-
-function handleAddCard(event) {
-  event.preventDefault();
-
-  const nameEl = document.getElementById('newPriceCardName');
-  const name = (nameEl && nameEl.value ? nameEl.value : '').trim();
-  if (!name) {
-    showToast('请输入价卡名称', 'warning');
-    return;
-  }
-
-  const startDate = document.getElementById('effectiveStartDate').value;
-  const endDate = document.getElementById('effectiveEndDate').value;
-
-  if (!startDate || !endDate) {
-    showToast('请选择生效日期', 'warning');
-    return;
-  }
-
-  if (new Date(startDate) > new Date(endDate)) {
-    showToast('开始日期不能晚于结束日期', 'warning');
-    return;
-  }
-
-  const base = clonePriceCardFromTemplate();
-  const newId = allData.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
-  const remarkEl = document.getElementById('remark');
-
-  Object.assign(base, {
-    id: newId,
-    code: 'NEW' + String(newId).padStart(3, '0'),
-    name,
-    ruleName: name,
-    startDate: formatEffectiveStart(startDate),
-    endDate: formatEffectiveEnd(endDate),
-    status: '未生效',
-    customer: '',
-    warehouses: [],
-    remark: (remarkEl && remarkEl.value.trim()) || '',
-    validFrom: startDate + 'T00:00:00',
-    validTo: endDate + 'T23:59:59'
-  });
-
-  allData.unshift(base);
-  closeAddCardModal();
-  resetAddCardForm();
-  filterByCustomer();
-  renderView();
-  renderPagination();
-  updateStats();
-
-  showToast('价卡创建成功', 'success');
 }
 
 function closeDetailModal() {
