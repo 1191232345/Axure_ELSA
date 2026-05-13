@@ -508,6 +508,13 @@
                                         <td class="px-3 py-2 text-gray-600">确认后更新订单状态为"已出库"，刷新列表</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">单号点击复制</td>
+                                        <td class="px-3 py-2 text-gray-600">单号列</td>
+                                        <td class="px-3 py-2 text-gray-600">点击单号、参考号或跟踪号，复制到剪贴板</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">显示Toast提示"已复制到剪贴板"</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">查看详情</td>
                                         <td class="px-3 py-2 text-gray-600">每行操作列</td>
                                         <td class="px-3 py-2 text-gray-600">跳转到订单详情页面</td>
@@ -664,6 +671,8 @@
             </div>
         </div>
     </div>
+    
+    <div id="toastContainer" class="toast-container"></div>
     
     <!-- 公共JS -->
     <script src="/common/js/common.js"></script>

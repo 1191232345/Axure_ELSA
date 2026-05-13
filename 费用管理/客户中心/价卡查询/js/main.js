@@ -271,8 +271,8 @@ function getDefaultData() {
     { weightRange: '出库附加费', unit: '/件', rate: '3.50', surcharge: '2.00' },
     { weightRange: '出库附加费', unit: '/件', rate: '4.50', surcharge: '2.50' },
     { weightRange: '出库附加费', unit: '/件', rate: '5.50', surcharge: '3.00' },
-    { weightRange: '出库附加费', unit: '/件', rate: '6.50', surcharge: '3.50' },
-    { weightRange: '出库附加费', unit: '/件', rate: '20.00', surcharge: '15.00' }
+    { weightRange: '出库处理费', unit: '/件', rate: '6.50', surcharge: '3.50' },
+    { weightRange: '出库处理费', unit: '/件', rate: '20.00', surcharge: '15.00' }
   ];
   const demoBundleFee = { label: '一票订单捆绑多件发货', unit: '/件', price: '1.00' };
 

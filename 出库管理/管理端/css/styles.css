@@ -88,3 +88,13 @@ input:disabled {
     cursor: not-allowed;
     background-color: #f3f4f6;
 }
+
+/* 单号点击复制样式 */
+.copy-text {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.copy-text:hover {
+    color: #2a3b7d;
+}

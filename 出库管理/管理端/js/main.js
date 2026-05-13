@@ -258,9 +258,9 @@ function renderTable() {
           <input type="checkbox" class="checkbox-primary row-checkbox" data-id="${item.id}" ${item.checked ? 'checked' : ''}>
         </td>
         <td class="px-4 py-3 text-sm">
-          <div class="text-gray-800 font-medium">${item.orderNo}</div>
-          <div class="text-gray-500 text-xs mt-1">参考号: ${item.referenceNo}</div>
-          <div class="text-gray-500 text-xs">跟踪号: ${item.trackingNo}</div>
+          <div class="text-gray-800 font-medium copy-text" onclick="copyToClipboard('${item.orderNo}')" title="点击复制">${item.orderNo}</div>
+          <div class="text-gray-500 text-xs mt-1">参考号: <span class="copy-text" onclick="copyToClipboard('${item.referenceNo}')" title="点击复制">${item.referenceNo}</span></div>
+          <div class="text-gray-500 text-xs">跟踪号: <span class="copy-text" onclick="copyToClipboard('${item.trackingNo}')" title="点击复制">${item.trackingNo}</span></div>
         </td>
         <td class="px-4 py-3 text-sm">${item.warehouse}</td>
         <td class="px-4 py-3 text-sm">${item.skuInfo}</td>
@@ -435,4 +435,59 @@ function handleDownloadProof() {
     return;
   }
   alert(`正在下载 ${selectedItems.size} 条记录的发货证明...`);
+}
+
+function showToast(message, type) {
+  type = type || 'info';
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + type;
+  const iconMap = {
+    success: 'fa-check-circle',
+    error: 'fa-times-circle',
+    warning: 'fa-exclamation-circle',
+    info: 'fa-info-circle'
+  };
+  toast.innerHTML = '<i class="fa ' + iconMap[type] + ' mr-2"></i>' + message;
+  container.appendChild(toast);
+  
+  setTimeout(function() {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(function() {
+      container.removeChild(toast);
+    }, 300);
+  }, 2000);
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast('已复制到剪贴板: ' + text, 'success');
+    }).catch(function() {
+      fallbackCopyToClipboard(text);
+    });
+  } else {
+    fallbackCopyToClipboard(text);
+  }
+}
+
+function fallbackCopyToClipboard(text) {
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    showToast('已复制到剪贴板: ' + text, 'success');
+  } catch (err) {
+    showToast('复制失败，请手动复制', 'error');
+  }
+  
+  document.body.removeChild(textArea);
 }
