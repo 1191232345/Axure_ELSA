@@ -258,9 +258,12 @@ function renderTable() {
           <input type="checkbox" class="checkbox-primary row-checkbox" data-id="${item.id}" ${item.checked ? 'checked' : ''}>
         </td>
         <td class="px-4 py-3 text-sm">
-          <div class="text-gray-800 font-medium copy-text" onclick="copyToClipboard('${item.orderNo}')" title="点击复制">${item.orderNo}</div>
-          <div class="text-gray-500 text-xs mt-1">参考号: <span class="copy-text" onclick="copyToClipboard('${item.referenceNo}')" title="点击复制">${item.referenceNo}</span></div>
-          <div class="text-gray-500 text-xs">跟踪号: <span class="copy-text" onclick="copyToClipboard('${item.trackingNo}')" title="点击复制">${item.trackingNo}</span></div>
+          <div class="flex items-center gap-1">
+            <span class="text-gray-800 font-medium">${item.orderNo}</span>
+            <button class="copy-btn" onclick="copyToClipboard('${item.orderNo}')" title="复制"><i class="fa fa-copy"></i></button>
+          </div>
+          <div class="text-gray-500 text-xs mt-1 flex items-center gap-1">参考号: <span>${item.referenceNo}</span><button class="copy-btn" onclick="copyToClipboard('${item.referenceNo}')" title="复制"><i class="fa fa-copy"></i></button></div>
+          <div class="text-gray-500 text-xs flex items-center gap-1">跟踪号: <span>${item.trackingNo}</span><button class="copy-btn" onclick="copyToClipboard('${item.trackingNo}')" title="复制"><i class="fa fa-copy"></i></button></div>
         </td>
         <td class="px-4 py-3 text-sm">${item.warehouse}</td>
         <td class="px-4 py-3 text-sm">${item.skuInfo}</td>
@@ -448,14 +451,18 @@ function showToast(message, type) {
     warning: 'fa-exclamation-circle',
     info: 'fa-info-circle'
   };
-  toast.innerHTML = '<i class="fa ' + iconMap[type] + ' mr-2"></i>' + message;
+  
+  const shortMessage = message.length > 30 ? message.substring(0, 27) + '...' : message;
+  toast.innerHTML = '<i class="fa ' + iconMap[type] + ' mr-2"></i>' + shortMessage;
+  toast.title = message;
   container.appendChild(toast);
   
   setTimeout(function() {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(100%)';
+    toast.classList.add('toast-out');
     setTimeout(function() {
-      container.removeChild(toast);
+      if (container.contains(toast)) {
+        container.removeChild(toast);
+      }
     }, 300);
   }, 2000);
 }

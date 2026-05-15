@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财务管理 - 未出账订单</title>
+    
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <link rel="stylesheet" href="/common/css/common.css">
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2a3b7d',
+                        'primary-light': '#3a4ca7',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        dark: '#1D2129',
+                        'light-bg': '#FFFFFF',
+                        'card-bg': '#FFFFFF',
+                        border: '#E5E7EB'
+                    },
+                    boxShadow: {
+                        'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+                        'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        };
+        
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3
+        });
+        
+        const DATA_CONFIG = {
+            pageId: 'recalculation',
+            dataFile: 'data/recalculation-data.json',
+            apiBase: 'http://localhost:3100/api/data',
+            version: '1.0.0'
+        };
+        
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return '<div class="mermaid-container" onclick="openMermaidModal(this)"><div class="mermaid">' + code + '</div><span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span></div>';
+            }
+            return '<pre><code class="language-' + language + '">' + code + '</code></pre>';
+        };
+        marked.setOptions({ renderer: renderer, breaks: true, gfm: true });
+    </script>
+</head>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+    <div class="tabs fixed bottom-8 right-8 z-40">
+        <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+        <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+        <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+    </div>
+    
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+        <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center">
+                    <span class="text-lg font-semibold">ELSA</span>
+                    <span class="mx-2 text-white/50">|</span>
+                    <span class="text-sm">财务管理 - 未出账订单</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main id="main-prd" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title"><i class="fa fa-list-alt mr-2"></i>目录导航</div>
+                        <div id="toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="prd-content" class="prose max-w-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+        <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+            <button class="mermaid-modal-close" onclick="closeMermaidModal()"><i class="fa fa-times"></i></button>
+            <div class="mermaid-modal-title"><i class="fa fa-sitemap mr-2"></i>流程图预览</div>
+            <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+        </div>
+    </div>
+    
+    <main id="main-testcases" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                <div id="testcases-content" class="prose max-w-none"></div>
+            </div>
+        </div>
+    </main>
+    
+    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+        <div class="container mx-auto px-4 py-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-semibold text-gray-900">未出账订单</h1>
+                <p class="text-gray-500 mt-1">批量重计费用</p>
+            </div>
+            
+            <div class="bg-white rounded shadow-card p-4 mb-4">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">订单号</label>
+                        <div class="filter-combo">
+                            <select class="filter-combo-select">
+                                <option>精确查询</option>
+                                <option>模糊查询</option>
+                            </select>
+                            <input type="text" placeholder="请输入订单号" class="filter-combo-input">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">客户代码</label>
+                        <select class="form-input bg-white text-sm">
+                            <option>DEMO - demo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">仓库</label>
+                        <select class="form-input bg-white text-sm">
+                            <option>请选择仓库</option>
+                            <option>DE001</option>
+                            <option>DE002</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">配送渠道</label>
+                        <select class="form-input bg-white text-sm">
+                            <option>请选择配送渠道</option>
+                            <option>FEDEX_MPS</option>
+                            <option>FEDEX_HOME_GROUND</option>
+                        </select>
+                    </div>
+                    
+                    <div class="ml-auto flex items-center gap-2">
+                        <button id="resetBtn" class="erp-btn erp-btn-secondary">
+                            重置
+                        </button>
+                        <button id="searchBtn" class="erp-btn erp-btn-primary">
+                            <i class="fa fa-search mr-1"></i> 搜索
+                        </button>
+                        <button class="flex items-center text-primary text-sm hover:text-primary/80">
+                            展开 <i class="fa fa-angle-down ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded shadow-card p-4 mb-4">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex gap-3">
+                        <button id="batchRecalculateBtn" class="erp-btn erp-btn-secondary">
+                            <i class="fa fa-repeat mr-1"></i> 批量重计
+                        </button>
+                        <button class="erp-btn erp-btn-secondary">
+                            <i class="fa fa-download mr-1"></i> 导出
+                        </button>
+                        <button id="recalculateBtn" class="erp-btn erp-btn-secondary">
+                            <i class="fa fa-calculator mr-1"></i> 重计明细
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button id="outboundTabBtn" class="tab-btn tab-btn-active">
+                            出库单
+                        </button>
+                        <button id="storageTabBtn" class="tab-btn tab-btn-inactive">
+                            仓储费
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded shadow-card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm data-table">
+                        <thead>
+                            <tr class="bg-gray-50 text-left">
+                                <th class="px-4 py-3 w-10"><input type="checkbox" id="selectAllCheckbox" class="rounded text-primary focus:ring-primary"></th>
+                                <th class="px-4 py-3 font-medium text-gray-500">下单时间</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">账单类型</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">仓库</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">客户代码</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">订单号</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">物流产品</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">计费总金额</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">币种</th>
+                                <th class="px-4 py-3 font-medium text-gray-500">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            <tr class="border-t border-gray-100">
+                                <td colspan="10" class="px-4 py-12 text-center text-gray-400">
+                                    <i class="fa fa-inbox text-4xl mb-2 block"></i>
+                                    <p>暂无数据</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100">
+                    <div class="text-sm text-gray-500">
+                        共 <span id="totalCount">0</span> 条记录
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select class="form-input text-sm">
+                            <option>10/page</option>
+                            <option>20/page</option>
+                            <option>50/page</option>
+                        </select>
+                        <nav class="flex items-center gap-1">
+                            <button class="page-btn" disabled>
+                                <i class="fa fa-angle-left"></i>
+                            </button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">
+                                <i class="fa fa-angle-right"></i>
+                            </button>
+                        </nav>
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm text-gray-500">Go to</span>
+                            <input type="text" value="1" class="w-10 h-8 form-input text-center text-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="logic-section">
+                <div class="logic-header" onclick="togglePrdLogic('recalculation')">
+                    <div class="flex items-center">
+                        <i class="fa fa-book text-primary mr-2"></i>
+                        <span class="font-semibold text-primary">逻辑说明</span>
+                        <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                    </div>
+                    <i class="fa fa-chevron-down text-primary logic-header-icon" id="recalculation-logic-icon"></i>
+                </div>
+                <div id="recalculation-logic-content" class="logic-content hidden">
+                    <div class="flex border-b border-gray-200 mb-4">
+                        <button class="prd-tab-btn active" style="border-bottom-color: var(--primary); color: var(--primary);" onclick="switchPrdTab('prd', 'recalculation')">PRD文档</button>
+                        <button class="prd-tab-btn" onclick="switchPrdTab('testcases', 'recalculation')">测试用例</button>
+                    </div>
+                    <div>
+                        <div id="recalculation-prd-content" class="prose max-w-none">
+                            <p class="text-gray-500">点击"PRD文档"标签查看详细需求说明...</p>
+                        </div>
+                        <div id="recalculation-testcases-content" class="prose max-w-none hidden">
+                            <p class="text-gray-500">点击"测试用例"标签查看详细测试用例...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="recalculateModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg w-full max-w-7xl max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-lg font-medium">重计明细 - <span id="modalChargeType">出库单</span></h3>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">订单号</label>
+                        <input type="text" class="form-input text-sm" placeholder="请输入订单号、参考单号、跟踪号">
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">操作时间</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="date" class="form-input text-sm">
+                            <span class="text-gray-400">至</span>
+                            <input type="date" class="form-input text-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">物流产品</label>
+                        <select class="form-input text-sm">
+                            <option>全部</option>
+                            <option>FEDEX_MPS</option>
+                            <option>FEDEX_HOME_GROUND</option>
+                            <option>ZYBQ</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center">
+                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">状态</label>
+                        <select id="recalculateStatusFilter" class="form-input text-sm">
+                            <option value="all">全部</option>
+                            <option value="processing">重计中</option>
+                            <option value="success">成功</option>
+                            <option value="failed">失败</option>
+                        </select>
+                    </div>
+
+                    <button class="ml-auto erp-btn erp-btn-primary text-sm">
+                        <i class="fa fa-search mr-1"></i> 搜索
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4">
+                <table class="w-full text-sm data-table">
+                    <thead>
+                        <tr class="bg-gray-50 text-left">
+                            <th class="px-4 py-3 font-medium text-gray-500">操作时间</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">操作人</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">仓库代码</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">客户代码</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">订单号</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">物流产品</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">计费类型</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">状态</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">重计金额</th>
+                            <th class="px-4 py-3 font-medium text-gray-500">失败原因</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recalculateTableBody">
+                        <tr class="border-t border-gray-100">
+                            <td colspan="10" class="px-4 py-12 text-center text-gray-400">
+                                <i class="fa fa-inbox text-4xl mb-2 block"></i>
+                                <p>暂无数据</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="text-sm text-gray-500">
+                        共 <span id="recalculateTotalCount">0</span> 条记录
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <select id="recalculatePageSize" class="form-input text-sm">
+                            <option value="10">10/page</option>
+                            <option value="20">20/page</option>
+                            <option value="50">50/page</option>
+                        </select>
+                    </div>
+                    <nav class="flex items-center gap-1">
+                        <button id="recalculatePrevPage" class="page-btn" disabled>
+                            <i class="fa fa-angle-left"></i>
+                        </button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button id="recalculateNextPage" class="page-btn">
+                            <i class="fa fa-angle-right"></i>
+                        </button>
+                    </nav>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <span class="text-sm text-gray-500">Go to</span>
+                            <input type="number" id="recalculateGoToPage" value="1" min="1" class="w-10 h-8 form-input text-center text-sm">
+                        </div>
+                        <button class="erp-btn erp-btn-secondary text-sm" id="closeModalBtn">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="limitExceededModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg w-full max-w-md">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="warning-icon-wrapper">
+                        <i class="fa fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 class="text-lg font-medium">数据量超限提示</h3>
+                </div>
+                <div class="mb-6">
+                    <p class="text-gray-600 mb-2">当前筛选结果共 <span id="exceededCount" class="font-semibold text-warning">0</span> 条记录，超过单次最大处理量（50,000条）。</p>
+                    <p class="text-gray-600 mb-4">请选择以下处理方式：</p>
+                    <div class="option-card space-y-3">
+                        <label class="option-item">
+                            <input type="radio" name="processOption" value="limit" checked>
+                            <div class="option-item-content">
+                                <div class="option-item-title">仅处理前50,000条</div>
+                                <div class="option-item-desc">系统将自动处理前50,000条记录，剩余数据需要调整筛选条件后分批处理</div>
+                            </div>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="processOption" value="cancel">
+                            <div class="option-item-content">
+                                <div class="option-item-title">取消操作</div>
+                                <div class="option-item-desc">返回页面，调整筛选条件以减少数据量</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button id="cancelLimitBtn" class="erp-btn erp-btn-secondary">
+                        取消
+                    </button>
+                    <button id="confirmLimitBtn" class="erp-btn erp-btn-primary">
+                        确认处理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="successModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg w-full max-w-md">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="success-icon-wrapper">
+                        <i class="fa fa-check-circle"></i>
+                    </div>
+                    <h3 class="text-lg font-medium">提交成功</h3>
+                </div>
+                <div class="mb-6">
+                    <p class="text-gray-600 mb-2">批量重计任务已成功提交，系统正在后台处理中。</p>
+                    <p class="text-gray-600 mb-4">您可以在 <strong class="text-primary">重计明细</strong> 中查看执行结果和处理状态。</p>
+                    <div class="flex justify-end gap-3">
+                        <button id="closeSuccessBtn" class="erp-btn erp-btn-secondary">
+                            关闭
+                        </button>
+                        <button id="goToRecalculateDetailBtn" class="erp-btn erp-btn-primary">
+                            查看重计明细
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/common/js/common.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

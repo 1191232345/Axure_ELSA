@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     
     <!-- 公共样式 -->
-    <link rel="stylesheet" href="/common/css/common.css">
+    <link rel="stylesheet" href="../../common/css/common.css">
     <!-- 模块样式 -->
     <link rel="stylesheet" href="css/styles.css">
     
@@ -108,10 +108,10 @@
         </div>
         
         <!-- 二级导航 -->
-        <div class="bg-[#3686da] border-t border-white/10">
+        <div class="bg-[#1e3a5f] border-t border-white/10">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center h-10 overflow-x-auto whitespace-nowrap">
-                    <a href="outbound-list.html" class="px-3 py-2 text-xs text-white bg-white/10 mr-1 rounded">出库列表</a>
+                    <a href="outbound-list.html" class="px-3 py-2 text-xs text-white bg-white/20 mr-1 rounded hover:bg-white/30 transition-colors">出库列表</a>
                 </div>
             </div>
         </div>
@@ -508,9 +508,9 @@
                                         <td class="px-3 py-2 text-gray-600">确认后更新订单状态为"已出库"，刷新列表</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-3 py-2 text-gray-800">单号点击复制</td>
-                                        <td class="px-3 py-2 text-gray-600">单号列</td>
-                                        <td class="px-3 py-2 text-gray-600">点击单号、参考号或跟踪号，复制到剪贴板</td>
+                                        <td class="px-3 py-2 text-gray-800">复制按钮</td>
+                                        <td class="px-3 py-2 text-gray-600">单号、参考号、跟踪号后</td>
+                                        <td class="px-3 py-2 text-gray-600">点击复制按钮，将对应单号复制到剪贴板</td>
                                         <td class="px-3 py-2 text-gray-600">无</td>
                                         <td class="px-3 py-2 text-gray-600">显示Toast提示"已复制到剪贴板"</td>
                                     </tr>
@@ -672,10 +672,10 @@
         </div>
     </div>
     
-    <div id="toastContainer" class="toast-container"></div>
+    <div id="toastContainer" class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 400px; pointer-events: none;"></div>
     
     <!-- 公共JS -->
-    <script src="/common/js/common.js"></script>
+    <script src="../../common/js/common.js"></script>
     <!-- 模块JS -->
     <script src="js/main.js"></script>
 </body>

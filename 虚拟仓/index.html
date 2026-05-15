@@ -2,44 +2,19 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="css/styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>虚拟仓管理系统</title>
-    <link rel="stylesheet" href="libs/font-awesome.min.css">
-    <script src="libs/tailwind.min.js"></script>
-    <script src="libs/marked.min.js"></script>
-    <script src="libs/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'default',
-            securityLevel: 'loose',
-            logLevel: 3
-        });
-        
-        const renderer = new marked.Renderer();
-        renderer.code = function(code, language) {
-            if (language === 'mermaid') {
-                return `<div class="mermaid-container" onclick="openMermaidModal(this)">
-                    <div class="mermaid">${code}</div>
-                    <span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span>
-                </div>`;
-            }
-            return `<pre><code class="language-${language}">${code}</code></pre>`;
-        };
-        
-        marked.setOptions({
-            renderer: renderer,
-            breaks: true,
-            gfm: true
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                mermaid.run();
-            }, 100);
-        });
-    </script>
+    
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <link rel="stylesheet" href="../common/css/common.css">
+    <link rel="stylesheet" href="css/styles.css">
+    
     <script>
         tailwind.config = {
             theme: {
@@ -57,256 +32,39 @@
                         'card-bg': '#FFFFFF',
                         border: '#E5E7EB'
                     },
-                    fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
-                    },
                     boxShadow: {
                         'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
                         'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
                         'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
                         'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
-                    },
-                    transitionTimingFunction: {
-                        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)'
                     }
-                },
+                }
             }
-        }
+        };
+        
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3
+        });
+        
+        const DATA_CONFIG = {
+            pageId: 'virtual-warehouse',
+            dataFile: 'data/virtual-warehouse-data.json',
+            apiBase: 'http://localhost:3100/api/data',
+            version: '1.0.0'
+        };
+        
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return '<div class="mermaid-container" onclick="openMermaidModal(this)"><div class="mermaid">' + code + '</div><span class="mermaid-hint"><i class="fa fa-search-plus mr-1"></i>点击放大</span></div>';
+            }
+            return '<pre><code class="language-' + language + '">' + code + '</code></pre>';
+        };
+        marked.setOptions({ renderer: renderer, breaks: true, gfm: true });
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-            .text-shadow-sm {
-                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            }
-            .btn-primary {
-                @apply bg-primary text-white px-4 py-2 rounded-lg transition-all hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
-            }
-            .btn-secondary {
-                @apply bg-white text-primary border border-border px-4 py-2 rounded-lg transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
-            }
-            .btn-danger {
-                @apply bg-danger text-white px-4 py-2 rounded-lg transition-all hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-danger/50 focus:ring-offset-2;
-            }
-            .card {
-                @apply bg-white rounded-lg shadow-card p-6 transition-all hover:shadow-card-hover;
-            }
-            .input-field {
-                @apply w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all;
-            }
-            .table-hover-row:hover {
-                @apply bg-gray-50;
-            }
-            .erp-btn {
-                padding: 6px 12px;
-                border-radius: 4px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                border: 1px solid transparent;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .erp-btn-primary {
-                background-color: #2a3b7d;
-                color: white;
-                border-color: #2a3b7d;
-            }
-            .erp-btn-primary:hover {
-                background-color: #3a4ca7;
-                border-color: #3a4ca7;
-            }
-            .erp-btn-secondary {
-                background-color: white;
-                color: #2a3b7d;
-                border-color: #E5E7EB;
-            }
-            .erp-btn-secondary:hover {
-                background-color: #f9fafb;
-                border-color: #a3a3a3;
-                color: #262626;
-            }
-            .erp-btn-warning {
-                background-color: #FF7D00;
-                color: white;
-                border-color: #FF7D00;
-            }
-            .erp-btn-warning:hover {
-                background-color: #ff952e;
-                border-color: #ff952e;
-            }
-            .erp-btn-danger {
-                background-color: #F53F3F;
-                color: white;
-                border-color: #F53F3F;
-            }
-            .erp-btn-danger:hover {
-                background-color: #ff5c5c;
-                border-color: #ff5c5c;
-            }
-            .modal-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 50;
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity 0.3s ease, visibility 0.3s ease;
-            }
-            .modal-overlay.show {
-                opacity: 1;
-                visibility: visible;
-            }
-            .modal-content {
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-                width: 90%;
-                max-width: 600px;
-                max-height: 80vh;
-                overflow-y: auto;
-                transform: translateY(-20px);
-                transition: transform 0.3s ease;
-            }
-            .modal-overlay.show .modal-content {
-                transform: translateY(0);
-            }
-            .modal-header {
-                padding: 20px;
-                border-bottom: 1px solid #E5E7EB;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .modal-title {
-                font-size: 18px;
-                font-weight: 600;
-                color: #1D2129;
-            }
-            .modal-body {
-                padding: 20px;
-            }
-            .modal-footer {
-                padding: 16px 20px;
-                border-top: 1px solid #E5E7EB;
-                display: flex;
-                justify-content: flex-end;
-                gap: 12px;
-            }
-            .close-btn {
-                background-color: white;
-                color: #2a3b7d;
-                border: 1px solid #E5E7EB;
-                border-radius: 4px;
-                padding: 8px 16px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
-            .close-btn:hover {
-                background-color: #f9fafb;
-            }
-            .form-group {
-                margin-bottom: 16px;
-            }
-            .form-group label {
-                display: block;
-                font-size: 14px;
-                font-weight: 500;
-                color: #374151;
-                margin-bottom: 6px;
-            }
-            .form-group .required {
-                color: #F53F3F;
-            }
-            .form-select {
-                width: 100%;
-                padding: 8px 12px;
-                border: 1px solid #E5E7EB;
-                border-radius: 6px;
-                font-size: 14px;
-                color: #1D2129;
-                background-color: white;
-                transition: all 0.2s ease;
-            }
-            .form-select:focus {
-                outline: none;
-                border-color: #2a3b7d;
-                box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-            }
-            .form-select option:disabled {
-                color: #9ca3af;
-                background-color: #f3f4f6;
-                cursor: not-allowed;
-            }
-            .form-select option:not(:disabled):hover {
-                background-color: #e5e7eb;
-            }
-            .form-input {
-                width: 100%;
-                padding: 8px 12px;
-                border: 1px solid #E5E7EB;
-                border-radius: 6px;
-                font-size: 14px;
-                color: #1D2129;
-                background-color: white;
-                transition: all 0.2s ease;
-            }
-            .form-input:focus {
-                outline: none;
-                border-color: #2a3b7d;
-                box-shadow: 0 0 0 2px rgba(42, 59, 125, 0.1);
-            }
-            .tabs {
-                display: flex;
-                gap: 2px;
-                background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
-                padding: 4px;
-                border-radius: 12px;
-                width: fit-content;
-                box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
-            }
-            .tab {
-                padding: 10px 20px;
-                border: none;
-                background: transparent;
-                color: rgba(255, 255, 255, 0.7);
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                border-radius: 8px;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .tab:hover {
-                color: white;
-                transform: translateY(-1px);
-            }
-            .tab.active {
-                background: white;
-                color: #2a3b7d;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-                font-weight: 600;
-            }
-            .page {
-                display: none;
-            }
-            .page.active {
-                display: block;
-            }
-        }
-    </style>
 </head>
 <body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
     <div class="tabs fixed bottom-8 right-8 z-40">
@@ -435,71 +193,6 @@
 
     <div id="modals-container"></div>
 
-    <script src="js/main.js"></script>
-    <script>
-        const pageCache = {};
-        
-        async function loadPage(pageName) {
-            const container = document.getElementById('page-container');
-            
-            if (pageCache[pageName]) {
-                container.innerHTML = pageCache[pageName];
-                const pageDiv = container.querySelector('.page');
-                if (pageDiv) pageDiv.classList.add('active');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`pages/${pageName}.html`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const html = await response.text();
-                pageCache[pageName] = html;
-                container.innerHTML = html;
-                const pageDiv = container.querySelector('.page');
-                if (pageDiv) pageDiv.classList.add('active');
-            } catch (error) {
-                console.error('Error loading page:', error);
-                container.innerHTML = `
-                    <div class="bg-white rounded shadow-card p-8 text-center">
-                        <i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i>
-                        <p class="text-lg text-gray-600">页面加载失败</p>
-                        <p class="text-sm text-gray-500 mt-2">${error.message}</p>
-                        <button onclick="loadPage('${pageName}')" class="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-light">
-                            <i class="fa fa-refresh mr-2"></i>重试
-                        </button>
-                    </div>
-                `;
-            }
-        }
-        
-        async function loadModals() {
-            const container = document.getElementById('modals-container');
-            
-            try {
-                const response = await fetch('pages/modals.html');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const html = await response.text();
-                container.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading modals:', error);
-            }
-        }
-        
-        function switchPage(pageName) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            loadPage(pageName);
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            loadPage('organization');
-            loadModals();
-        });
-    </script>
-
-    <!-- Mermaid流程图放大弹窗 -->
     <div id="mermaid-modal" class="modal-overlay" onclick="closeMermaidModal(event)">
         <div class="modal-content" style="width: 90%; max-width: 1200px; max-height: 90vh;" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -514,7 +207,6 @@
         </div>
     </div>
 
-    <!-- 添加用户选择弹窗 -->
     <div id="add-user-modal" class="modal-overlay">
         <div class="modal-content" style="width: 1000px;">
             <div class="modal-header">
@@ -525,7 +217,6 @@
             </div>
             <div class="modal-body">
                 <div class="grid grid-cols-2 gap-4">
-                    <!-- 左侧：未关联任何层级的员工 -->
                     <div class="border border-gray-200 rounded">
                         <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
                             <div class="flex items-center justify-between mb-2">
@@ -587,7 +278,6 @@
                         </div>
                     </div>
 
-                    <!-- 右侧：已关联本层级的员工 -->
                     <div class="border border-gray-200 rounded">
                         <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
                             <div class="flex items-center justify-between mb-2">
@@ -628,5 +318,8 @@
             </div>
         </div>
     </div>
+    
+    <script src="../common/js/common.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

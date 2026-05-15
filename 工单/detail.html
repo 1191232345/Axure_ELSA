@@ -960,6 +960,15 @@
                                     <span class="text-gray-400">暂无备注</span>
                                 </div>
                                 <div class="info-item full-width">
+                                    <label>处理结果</label>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-400">暂无处理结果</span>
+                                        <button class="edit-btn" onclick="openEditModal('result', '处理结果')">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="info-item full-width">
                                     <label>附件</label>
                                     <div class="attachment-list">
                                         <a href="#" class="attachment-item">
@@ -1202,6 +1211,13 @@
                                         <td class="px-3 py-2 text-gray-600">打开编辑弹窗</td>
                                         <td class="px-3 py-2 text-gray-600">工单未结案</td>
                                         <td class="px-3 py-2 text-gray-600">保存后刷新页面</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">编辑处理结果</td>
+                                        <td class="px-3 py-2 text-gray-600">处理结果字段旁</td>
+                                        <td class="px-3 py-2 text-gray-600">打开编辑弹窗，输入处理结果内容</td>
+                                        <td class="px-3 py-2 text-gray-600">工单未结案</td>
+                                        <td class="px-3 py-2 text-gray-600">保存后更新处理结果字段，刷新页面</td>
                                     </tr>
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">发送</td>

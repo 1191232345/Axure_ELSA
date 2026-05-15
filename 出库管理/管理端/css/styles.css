@@ -89,12 +89,91 @@ input:disabled {
     background-color: #f3f4f6;
 }
 
-/* 单号点击复制样式 */
-.copy-text {
+/* 复制按钮样式 */
+.copy-btn {
+    padding: 2px 6px;
+    font-size: 12px;
+    color: #6b7280;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
+    opacity: 0.6;
 }
 
-.copy-text:hover {
+.copy-btn:hover {
     color: #2a3b7d;
+    background: #f3f4f6;
+    opacity: 1;
+}
+
+.copy-btn:active {
+    transform: scale(0.95);
+}
+
+/* 底部 Tab 切换按钮 */
+.tabs {
+    display: flex;
+    gap: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #2a3b7d 100%);
+    padding: 4px;
+    border-radius: 12px;
+    width: fit-content;
+    box-shadow: 0 4px 20px rgba(42, 59, 125, 0.3);
+}
+
+.tab {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab:hover {
+    color: white;
+    transform: translateY(-1px);
+}
+
+.tab.active {
+    background: white;
+    color: #2a3b7d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+}
+
+/* Toast 动画 */
+.toast {
+    animation: toastSlideIn 0.3s ease-out;
+}
+
+.toast-out {
+    animation: toastSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
 }
