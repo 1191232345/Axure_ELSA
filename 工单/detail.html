@@ -1236,9 +1236,9 @@
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-3 py-2 text-gray-800">提交审批</td>
                                         <td class="px-3 py-2 text-gray-600">页面底部</td>
-                                        <td class="px-3 py-2 text-gray-600">提交工单审批</td>
+                                        <td class="px-3 py-2 text-gray-600">打开提交审批弹窗，需填写处理结果（必填）</td>
                                         <td class="px-3 py-2 text-gray-600">工单未结案</td>
-                                        <td class="px-3 py-2 text-gray-600">更新状态为审核中</td>
+                                        <td class="px-3 py-2 text-gray-600">提交后更新工单状态为"审批中"</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1284,6 +1284,48 @@
             <div class="modal-footer">
                 <button class="erp-btn erp-btn-secondary" onclick="closeModal('confirmDialog')">取消</button>
                 <button class="erp-btn erp-btn-primary" id="confirmBtn">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="approvalModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fa fa-paper-plane text-primary mr-2"></i>提交审批
+                </h3>
+                <button class="close-btn" onclick="closeApprovalModal()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <div class="flex items-center gap-2 mb-3 p-3 bg-blue-50 rounded-lg">
+                        <i class="fa fa-info-circle text-primary"></i>
+                        <span class="text-sm text-gray-700">工单号：<span class="font-semibold text-primary">SHKST-20251125-006</span></span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="text-red-500">*</span> 处理结果
+                    </label>
+                    <select id="approvalResult" class="form-select" required>
+                        <option value="">请选择处理结果</option>
+                        <option value="resolved">已解决</option>
+                        <option value="partial-resolved">部分解决</option>
+                        <option value="cannot-resolve">无法解决</option>
+                        <option value="customer-cancel">客户取消</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">提交后将进入审批流程</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeApprovalModal()">
+                    <i class="fa fa-times mr-1.5"></i> 取消
+                </button>
+                <button class="erp-btn erp-btn-primary" onclick="submitApproval()">
+                    <i class="fa fa-check mr-1.5"></i> 确定提交
+                </button>
             </div>
         </div>
     </div>
@@ -1576,14 +1618,28 @@
         }
 
         function handleSubmitApproval() {
-            showConfirm({
-                title: '提交审批确认',
-                message: '确定要提交审批吗？提交后将进入审批流程。',
-                confirmText: '提交',
-                onConfirm: function() {
-                    showToast('已提交审批', 'success');
-                }
-            });
+            document.getElementById('approvalResult').value = '';
+            document.getElementById('approvalModal').classList.add('show');
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('approvalModal').classList.remove('show');
+        }
+
+        function submitApproval() {
+            const approvalResult = document.getElementById('approvalResult').value;
+            
+            if (!approvalResult) {
+                showToast('请选择处理结果', 'warning');
+                return;
+            }
+            
+            showToast('正在提交审批...', 'info');
+            
+            setTimeout(function() {
+                closeApprovalModal();
+                showToast('审批提交成功！', 'success');
+            }, 1000);
         }
 
         document.addEventListener('keydown', function(e) {

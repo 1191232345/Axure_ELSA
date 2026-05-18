@@ -1646,12 +1646,6 @@
                     </select>
                     <p class="text-xs text-gray-500 mt-1">结案后将无法恢复，请谨慎操作</p>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        备注说明
-                    </label>
-                    <textarea id="signRemark" class="form-textarea" rows="3" placeholder="请输入备注说明（选填）"></textarea>
-                </div>
             </div>
             <div class="modal-footer">
                 <button class="erp-btn erp-btn-secondary" onclick="closeBatchSignModal()">
@@ -2281,7 +2275,6 @@
             
             document.getElementById('selectedCount').textContent = selectedRows.length;
             document.getElementById('signResult').value = '';
-            document.getElementById('signRemark').value = '';
             
             document.getElementById('batchSignModal').classList.add('show');
         }
@@ -2292,7 +2285,6 @@
 
         function submitBatchSign() {
             const signResult = document.getElementById('signResult').value;
-            const signRemark = document.getElementById('signRemark').value;
             
             if (!signResult) {
                 showToast('请选择处理结果', 'warning');
