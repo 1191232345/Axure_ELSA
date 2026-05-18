@@ -12,13 +12,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[模块名称]测试用例 - ELSA</title>
     
-    <!-- CDN 资源 -->
+    <!-- CDN 资源（v2.1 统一版本） -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     
     <!-- 内联样式 -->
     <style>

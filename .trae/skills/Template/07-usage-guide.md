@@ -1,184 +1,243 @@
-# 使用说明
+# 使用说明（v2.2 精简版）
 
-本文档说明如何使用TOB产品设计模板创建新的模块页面。
+**📅 最后更新：2026-01-18 | 版本：v2.2（结构优化 + 去冗余）**
 
-## 1. 文件结构
+> **目标**：让产品经理在 **5分钟内** 完成新模块创建，开发/测试在 **3分钟内** 找到所需文档。
+
+---
+
+## 📖 目录
+
+1. [⚡ 5分钟快速上手](#1--5分钟快速上手)
+2. [❓ 常见问题FAQ（Top 10）](#2--常见问题faq-top-10)
+3. [📚 完整文档索引](#3--完整文档索引)
+
+---
+
+## 1. ⚡ 5分钟快速上手
+
+### 步骤1：创建目录结构（30秒）
+
+```bash
+# 在项目根目录执行
+mkdir -p [模块名称]/{css,js,data}
+```
+
+### 步骤2：复制基础模板（2分钟）
+
+从以下文件复制内容到对应位置：
+
+| 源文件 | 复制到 | 用途 |
+|--------|--------|------|
+| [03-html-structure.md](03-html-structure.md) | `index.html` | 页面结构（含Tab导航） |
+| [02-css-styles.md](02-css-styles.md) | `<style>` 标签内 | CSS样式（可选，按需引用） |
+| [04-javascript.md](04-javascript.md) | `<script>` 标签内 | JS交互逻辑 |
+
+### 步骤3：替换占位符（1分钟）
+
+在 `index.html` 中搜索并替换：
 
 ```
-virtual-warehouse-template/
-├── SKILL.md                 # 主入口文件
-├── 01-design-spec.md        # 核心设计规范
-├── 02-css-styles.md         # CSS 样式模板
-├── 03-html-structure.md     # HTML 页面结构模板
-├── 04-javascript.md         # JavaScript 交互模板
-├── 05-logic-description.md  # 逻辑说明区域模板
-├── 06-components.md         # 业务组件库
-└── 07-usage-guide.md        # 使用说明（本文件）
+[模块名称] → 你的实际模块名
+[page_id] → 页面唯一标识（如：warehouse-list）
 ```
 
-## 2. 快速开始
+### 步骤4：配置数据持久化（30秒）
 
-### 2.1 创建新模块页面
+```javascript
+// 在 main.js 中设置
+const DATA_CONFIG = {
+    pageId: 'your-page-id',
+    dataFile: 'your-module/data/page-data.json',
+    apiBase: 'http://localhost:3100/api/data',
+    version: '1.0.0'
+};
+```
 
-1. 复制 [03-html-structure.md](03-html-structure.md) 中的完整页面结构
-2. 替换 `[模块名称]` 为实际模块名称
-3. 根据业务需求修改页面内容
+### 步骤5：启动服务器并预览（1分钟）
 
-### 2.2 引入必要资源
+```bash
+cd /Users/zsw/Desktop/Axure_ELSA/server
+npm run pm2:start
 
-确保页面包含以下 CDN 资源：
+# 访问 http://localhost:3100/[模块名称]/index.html
+```
+
+---
+
+## ✨ 最小化示例（一键复制）
 
 ```html
-<!-- CDN 资源 -->
-<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[模块名称] - ELSA</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <div id="app">
+        <!-- 你的页面内容 -->
+        <h1 class="text-2xl font-bold text-[#2a3b7d]">[模块名称]</h1>
+    </div>
+
+    <!-- 公共JS -->
+    <script src="/common/js/common.js"></script>
+    
+    <!-- 模块JS -->
+    <script src="./js/main.js"></script>
+</body>
+</html>
 ```
 
-### 2.3 引入样式和脚本
+---
 
-1. 从 [02-css-styles.md](02-css-styles.md) 复制完整 CSS 样式到 `<style>` 标签内
-2. 从 [04-javascript.md](04-javascript.md) 复制完整 JavaScript 到 `<script>` 标签内
+## 2. ❓ 常见问题FAQ（Top 10）
 
-## 3. 组件使用指南
+### Q1：如何使用设计令牌？
+**A**：优先使用CSS变量而非硬编码颜色值。
+```css
+/* ✅ 正确 */
+color: var(--color-primary);
 
-### 3.1 筛选器组件
+/* ❌ 错误 */
+color: #2a3b7d;
+```
+详细变量列表见 → [00-design-tokens.md](00-design-tokens.md)
 
-从 [06-components.md](06-components.md) 选择合适的筛选器组件：
-- 基础筛选器：适用于简单搜索场景
-- 高级筛选器：适用于复杂搜索场景
+---
 
-### 3.2 按钮组件
+### Q2：图标应该用哪个版本的Font Awesome？
+**A**：统一使用 **Font Awesome 6**。
+```html
+<!-- ✅ FA6 写法 -->
+<i class="fas fa-user"></i>
 
-根据操作类型选择合适的按钮：
-- 主按钮（erp-btn-primary）：主要操作，如新增、保存
-- 次要按钮（erp-btn-secondary）：次要操作，如导出、重置
-- 警告按钮（erp-btn-warning）：警告操作，如编辑
-- 危险按钮（erp-btn-danger）：危险操作，如删除
-- 成功按钮（erp-btn-success）：确认操作
+<!-- ❌ FA4 已废弃 -->
+<i class="fa fa-user"></i>
+```
 
-### 3.3 模态框组件
+---
 
-从 [06-components.md](06-components.md) 选择合适的模态框：
-- 基础模态框：通用弹窗
-- 确认对话框：删除确认等操作
-- 表单模态框：新增/编辑表单
+### Q3：如何添加新的业务组件？
+**A**：参考 [06-components.md](06-components.md) 的HTML结构，复制对应的组件代码块。
 
-### 3.4 表单组件
+常用组件：
+- 空状态 → 第12节
+- 骨架屏 → 第13节
+- Toast通知 → 第14节
+- 面包屑 → 第15节
+- 标签页 → 第16节
 
-根据字段类型选择合适的表单组件：
-- 文本输入框：单行文本
-- 下拉选择框：固定选项
-- 多行文本框：长文本
-- 日期选择器：日期字段
-- 复选框：多选
-- 单选按钮组：单选
+---
 
-### 3.5 状态徽章
+### Q4：JavaScript函数在哪里查找？
+**A**：所有JS函数已整合到 [04-javascript.md](04-javascript.md)，按6大分区组织：
+- Part1：核心框架（标签切换、PRD加载）
+- Part2：UI组件（Toast、骨架屏、Alert）
+- Part3：表单操作（搜索、验证）
+- Part4：CRUD（新增、编辑、删除）
+- Part5：数据处理（导出、审批）
+- Part6：列表交互（分页、选择）
 
-根据状态类型选择合适的徽章：
-- 启用状态：bg-green-100 text-green-700
-- 禁用状态：bg-red-100 text-red-700
-- 待审核状态：bg-yellow-100 text-yellow-700
-- 已完成状态：bg-blue-100 text-blue-700
+---
 
-## 4. 逻辑说明编写指南
+### Q5：如何编写逻辑说明？
+**A**：使用 [05-logic-description.md](05-logic-description.md) 的模板，放置在原型tab页的数据表格下方。
 
-### 4.1 逻辑说明区域
+---
 
-每个原型页面底部都应包含逻辑说明区域，参考 [05-logic-description.md](05-logic-description.md)。
+### Q6：PRD文档格式要求？
+**A**：遵循 [09-prd-spec.md](09-prd-spec.md) 规范，包含：
+1. Executive Summary（执行摘要）
+2. User Experience（用户体验）
+3. Functional Modules（功能模块）
+4. Functional Logic Details（功能逻辑详情）
 
-### 4.2 逻辑说明包含内容
+---
 
-1. **初始化页面（数据展示逻辑）**
-   - 页面加载时的数据展示规则
-   - 数据来源和展示顺序
+### Q7：测试用例如何编写？
+**A**：按照 [10-testcase-spec.md](10-testcase-spec.md) 格式，使用表格形式描述测试步骤。
 
-2. **检索条件**
-   - 搜索字段的输入方式
-   - 查询逻辑说明
+---
 
-3. **按钮逻辑**
-   - 按钮位置和触发动作
-   - 前置条件和后续操作
+### Q8：如何确保设计一致性？
+**A**：使用 [01-design-spec.md](01-design-spec.md) 的"5分钟速查卡"，检查Top 10最常用变量是否正确。
 
-4. **属性取值逻辑**
-   - 字段的数据来源
-   - 取值规则和显示格式
+---
 
-## 5. 设计规范遵循
+### Q9：响应式和暗色模式支持？
+**A**：已在 [00-design-tokens.md](00-design-tokens.md) 中定义完整的响应式断点和暗色模式变量。详见该文件的"响应式设计系统"和"暗色模式框架"章节。
 
-### 5.1 色彩使用
+---
 
-参考 [01-design-spec.md](01-design-spec.md) 中的色彩系统：
-- 主色调：#2a3b7d（深蓝）
-- 辅助色：#36CFC9（青色）
-- 功能色：成功、警告、危险
+### Q10：遇到问题如何排查？
+**A**：按以下顺序检查：
+1. 控制台是否有报错？
+2. CDN资源是否加载成功？（FA6、marked、mermaid）
+3. DATA_CONFIG配置是否正确？
+4. 数据文件路径是否正确？
 
-### 5.2 字体规范
+如仍有问题，查看 [12-review-checklist.md](12-review-checklist.md) 的评审清单。
 
-- 页面主标题：2rem (32px)
-- 区块标题：1.4rem (22px)
-- 正文内容：0.95rem (15px)
-- 辅助文字：0.875rem (14px)
+---
 
-### 5.3 间距规范
+## 3. 📚 完整文档索引
 
-- 紧凑间距：0.25rem (4px)
-- 小间距：0.5rem (8px)
-- 标准间距：1rem (16px)
-- 大间距：1.5rem (24px)
+### 核心规范（必读）
 
-## 6. 常见问题
+| 文件 | 说明 | 适用角色 |
+|------|------|----------|
+| **[00-design-tokens.md](00-design-tokens.md)** | 设计令牌系统（**唯一数据源**） | 全员 |
+| **[01-design-spec.md](01-design-spec.md)** | 5分钟速查卡（Top 10变量） | PM / 开发 |
+| **[03-html-structure.md](03-html-structure.md)** | HTML页面结构模板 + FA6迁移指南 | 开发 |
+| **[04-javascript.md](04-javascript.md)** | JavaScript交互函数库（v2.2 统一入口） | 开发 |
+| **[06-components.md](06-components.md)** | 业务组件库（20+组件变体） | PM / 开发 |
 
-### 6.1 样式不生效
+### 样式与交互
 
-确保：
-1. Tailwind CSS CDN 正确引入
-2. 自定义 CSS 样式正确复制到 `<style>` 标签内
-3. Tailwind 配置正确设置
+| 文件 | 说明 | 适用角色 |
+|------|------|----------|
+| [02-css-styles.md](02-css-styles.md) | CSS样式模板（完整样式定义） | 开发 |
+| [08-interaction-states.md](08-interaction-states.md) | 交互状态规范（hover/focus/disabled） | 开发 / 测试 |
+| [16-common-css.md](16-common-css.md) | 公共CSS模板（common.css） | 开发 |
+| [17-common-js.md](17-common-js.md) | 公共JS模板（APIDataManager等） | 开发 |
 
-### 6.2 交互不工作
+### 文档与测试
 
-确保：
-1. JavaScript 正确复制到 `<script>` 标签内
-2. 元素 ID 和函数调用匹配
-3. 事件绑定正确
+| 文件 | 说明 | 适用角色 |
+|------|------|----------|
+| [05-logic-description.md](05-logic-description.md) | 逻辑说明区域模板 | PM |
+| [09-prd-spec.md](09-prd-spec.md) | PRD文档规范 | PM |
+| [10-testcase-spec.md](10-testcase-spec.md) | 测试用例文档规范 | 测试 |
+| [11-testcase-html-template.md](11-testcase-html-template.md) | 测试用例HTML页面模板 | 测试 |
+| [12-review-checklist.md](12-review-checklist.md) | 评审检查清单 | PM / 测试 |
 
-### 6.3 PRD/测试用例不加载
+### 工具与辅助
 
-确保：
-1. prd.md 和 test-cases.md 文件存在于同目录
-2. Marked.js 和 Mermaid.js 正确引入
-3. 文件编码为 UTF-8
+| 文件 | 说明 | 适用角色 |
+|------|------|----------|
+| [15-data-persistence.md](15-data-persistence.md) | 数据持久化方案（Node.js服务器） | 开发 |
 
-## 7. 最佳实践
+### 归档文件（历史参考）
 
-### 7.1 命名规范
+| 文件 | 说明 | 状态 |
+|------|------|------|
+| ~~14-config-panel.md~~ | 可视化配置面板模板 | 🗄️ 已归档至 `/archive/` |
+| ~~13-button-interaction.md~~ | 按钮交互逻辑模板 | 🗄️ **已合并**入04-javascript.md |
 
-- 页面 ID：`page-[模块标识]`
-- 模态框 ID：`modal-[功能标识]`
-- 逻辑说明 ID：`[模块标识]-logic-content`
+---
 
-### 7.2 代码组织
+## 版本历史
 
-1. CSS 样式放在 `<head>` 内
-2. JavaScript 放在 `</body>` 前
-3. 保持代码缩进一致
-
-### 7.3 响应式设计
-
-使用 Tailwind 的响应式类：
-- `sm:` - 640px 以上
-- `md:` - 768px 以上
-- `lg:` - 1024px 以上
-
-## 8. 模板更新
-
-当设计规范更新时，需要同步更新模板文件：
-
-1. 检查项目的设计变化
-2. 更新对应的模板文件
-3. 测试新模板的兼容性
-4. 更新使用说明文档
+| 版本 | 日期 | 更新内容 |
+|:----:|:----:|----------|
+| **v2.2** | 2026-01-18 | **结构优化**：精简为3章（快速上手/FAQ/索引）、删除重复内容、增加Top 10 FAQ、归档低频功能 |
+| **v2.1** | 2026-01-18 | 更新CDN依赖版本、补充v2.0组件使用指南、增加迁移指南 |
+| **v2.0** | 2026-01-15 | 初始版本，包含完整的使用说明和最佳实践 |

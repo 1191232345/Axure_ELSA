@@ -43,23 +43,35 @@ server/                      # Node.js 服务器
 
 | 文件 | 说明 |
 |------|------|
-| [01-design-spec.md](01-design-spec.md) | 核心设计规范（主题色彩、字体、间距） |
+| [00-design-tokens.md](00-design-tokens.md) | **🆕 设计令牌系统**（统一色彩/字体/间距变量 - **唯一数据源**） |
+| [01-design-spec.md](01-design-spec.md) | **5分钟速查卡**（Top 10最常用设计变量） |
 | [02-css-styles.md](02-css-styles.md) | CSS 样式模板（完整样式定义） |
-| [03-html-structure.md](03-html-structure.md) | HTML 页面结构模板（模块化） |
-| [04-javascript.md](04-javascript.md) | JavaScript 交互模板 |
+| [03-html-structure.md](03-html-structure.md) | HTML 页面结构模板（模块化 + FA6升级） |
+| [04-javascript.md](04-javascript.md) | **JavaScript 交互函数库 v2.2**（6大分区统一入口） |
 | [05-logic-description.md](05-logic-description.md) | 逻辑说明区域模板 |
-| [06-components.md](06-components.md) | 业务组件库 |
-| [07-usage-guide.md](07-usage-guide.md) | 使用说明 |
+| [06-components.md](06-components.md) | **✨ 业务组件库 v2.0**（含空状态/骨架屏/通知等新组件） |
+| [07-usage-guide.md](07-usage-guide.md) | **使用说明 v2.2**（5分钟快速上手 + Top 10 FAQ） |
 | [08-interaction-states.md](08-interaction-states.md) | 交互状态规范 |
 | [09-prd-spec.md](09-prd-spec.md) | PRD文档规范 |
 | [10-testcase-spec.md](10-testcase-spec.md) | 测试用例文档规范 |
 | [11-testcase-html-template.md](11-testcase-html-template.md) | 测试用例HTML页面模板 |
 | [12-review-checklist.md](12-review-checklist.md) | 评审检查清单 |
-| [13-button-interaction.md](13-button-interaction.md) | 按钮交互逻辑模板 |
-| [14-config-panel.md](14-config-panel.md) | 可视化配置面板模板 |
+| ~~[13-button-interaction.md]~~ | 🗄️ **已合并**入04-javascript.md |
+| ~~[14-config-panel.md]~~ | 🗄️ 已归档至 `/archive/` 目录 |
 | [15-data-persistence.md](15-data-persistence.md) | 数据持久化模板 |
-| [16-common-css.md](16-common-css.md) | 公共 CSS 模板 |
+| [16-common-css.md](16-common-css.md) | 公共 CSS 模板（v2.1 新命名体系） |
 | [17-common-js.md](17-common-js.md) | 公共 JS 模板 |
+
+### 🆕 版本更新记录
+
+| 版本 | 日期 | 更新内容 |
+|:----:|:----:|----------|
+| **v2.3** | 2026-01-18 | **第4批优化**：合并13-button-interaction.md到04-javascript.md(按6大功能分区重组)、精简01-design-spec.md为"5分钟速查卡"(仅保留Top 10变量)、归档14-config-panel.md至/archive/、重构07-usage-guide.md为3章精简结构(快速上手/FAQ/索引)、消除冗余内容提升查找效率 |
+| **v2.2** | 2026-01-18 | 合并13-button-interaction.md全部业务逻辑，按6大分区重组（框架/UI/表单/CRUD/数据/列表） |
+| **v2.1** | 2026-01-18 | **第3批优化**：交互状态全面引入设计令牌(80+硬编码消除)、新增5类v2.0组件完整JS实现(Toast/标签页/骨架屏/Alert/面包屑)、响应式设计系统(6断点+自适应布局)、暗色模式双方案框架(系统跟随+手动切换) |
+| **v2.0** | 2026-01-15 | **第1批优化**：新增设计令牌系统、升级前端依赖(FA6/marked9/mermaid11)、补充5个核心组件库（空状态/骨架屏/通知提醒/面包屑/标签页）、移除重复Tailwind配置 |
+| **v1.5** | 2026-01-14 | 增加按钮交互逻辑模板、数据持久化支持、公共资源分离 |
+| **v1.0** | 2026-01-13 | 初始版本，包含基础设计规范和组件库 |
 
 ## 🚀 快速开始
 
@@ -92,15 +104,21 @@ npm run pm2:start
 
 ## 🎨 核心设计规范
 
-主题色彩、字体、间距等详细规范请参考 [01-design-spec.md](01-design-spec.md)
+### 设计令牌系统（v2.0 新增）
 
-| 规范项 | 值 |
-|--------|------|
-| 主色调 | `#2a3b7d` |
-| 辅助色 | `#36CFC9` |
-| 成功色 | `#00B42A` |
-| 警告色 | `#FF7D00` |
-| 危险色 | `#F53F3F` |
+**推荐优先使用** [00-design-tokens.md](00-design-tokens.md) 中的统一变量，确保全局一致性。
+
+| 规范项 | 值 | 令牌引用 |
+|--------|------|----------|
+| 主色调 | `#2a3b7d` | `--color-primary` |
+| 辅助色 | `#36CFC9` | `--color-secondary` |
+| 成功色 | `#00B42A` | `--color-success` |
+| 警告色 | `#FF7D00` | `--color-warning` |
+| 危险色 | `#F53F3F` | `--color-danger` |
+
+> 详细色彩系统、字体、间距、圆角、阴影等完整定义请参考：
+> - **[00-design-tokens.md](00-design-tokens.md)** - 统一令牌（推荐）
+> - **[01-design-spec.md](01-design-spec.md)** - 设计规范详解
 
 ## 💾 数据持久化
 
@@ -119,7 +137,21 @@ const DATA_CONFIG = {
 
 ## 🧩 业务组件
 
+### v2.0 新增组件（2026-01-15）
+
+| 组件 | 文件位置 | 说明 |
+|------|----------|------|
+| **空状态 (Empty State)** | [06-components.md#12](06-components.md#12) | 无数据/搜索无结果/错误状态，带操作引导 |
+| **骨架屏 (Skeleton)** | [06-components.md#13](06-components.md#13) | 表格/卡片/详情页加载占位，支持闪烁动画 |
+| **通知提醒 (Alert/Toast)** | [06-components.md#14](06-components.md#14) | 内联提示框 + 全局浮动通知，4种类型 |
+| **面包屑导航 (Breadcrumb)** | [06-components.md#15](06-components.md#15) | 基础版 + 图标版 + 可编辑路径版 |
+| **标签页 (Tabs)** | [06-components.md#16](06-components.md#16) | 线型 + 卡片型(Pills)，含完整JS控制 |
+
+### 基础组件
+
 筛选器、按钮、模态框、表单、状态徽章、分页等组件详细模板请参考 [06-components.md](06-components.md)
+
+> **注意**：所有组件已统一升级至 **Font Awesome 6** 图标规范
 
 ## 📝 逻辑说明
 
@@ -149,8 +181,23 @@ PRD评审、原型评审、测试用例评审的检查项详细清单请参考 [
 
 ## ⚠️ 重要提示
 
-1. 公共资源通过 `/common/` 路径引用
-2. 模块样式放在 `css/styles.css`
-3. 模块逻辑放在 `js/main.js`
-4. 数据文件放在 `data/` 目录
-5. 保持命名规范一致（page-[模块标识]、modal-[功能标识]）
+1. **设计令牌**：优先使用 [00-design-tokens.md](00-design-tokens.md) 中的CSS变量，避免硬编码颜色值
+2. **图标规范**：统一使用 **Font Awesome 6**（`fas`/`far`/`fab`前缀），不再使用FA4的`fa`前缀
+3. **依赖版本**：
+   - Font Awesome: `6.4.0` (CDN)
+   - Marked: `9.1.6` (CDN)
+   - Mermaid: `11.6.3` (CDN)
+4. 公共资源通过 `/common/` 路径引用
+5. 模块样式放在 `css/styles.css`
+6. 模块逻辑放在 `js/main.js`
+7. 数据文件放在 `data/` 目录
+8. 保持命名规范一致（page-[模块标识]、modal-[功能标识]）
+
+### 📌 v2.0 迁移指南
+
+从旧版模板升级时，请注意以下变更：
+
+- [x] **Tailwind配置**：已移除HTML模板中的重复配置，改为引用`00-design-tokens.md`
+- [x] **图标class**：`fa fa-xxx` → `fas fa-xxx`（详见03-html-structure.md的迁移对照表）
+- [x] **新增组件**：空状态、骨架屏、通知提醒、面包屑、标签页（详见06-components.md v2.0章节）
+- [x] **动画增强**：骨架屏支持shimmer闪烁效果，空状态支持fadeInUp入场动画
