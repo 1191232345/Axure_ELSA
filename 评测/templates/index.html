@@ -1,0 +1,3195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>员工绩效评价 - 后台管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#FF7D00',
+            danger: '#F53F3F',
+            success: '#00B42A',
+            neutral: {
+              100: '#F5F7FA',
+              200: '#E5E6EB',
+              300: '#C9CDD4',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto { content-visibility: auto; }
+      .sidebar-item { @apply flex items-center px-4 py-3 text-neutral-600 hover:bg-primary/10 hover:text-primary transition-all duration-200 cursor-pointer; }
+      .sidebar-item.active { @apply bg-primary/10 text-primary border-l-4 border-primary; }
+      .btn-primary { @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50; }
+      .btn-secondary { @apply bg-white border border-primary text-primary hover:bg-primary/5 font-medium py-2 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/30; }
+      .btn-danger { @apply bg-danger hover:bg-danger/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-danger/50; }
+      .table-cell { @apply px-4 py-3 text-sm border-b border-neutral-200; }
+      .form-input { @apply w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all; }
+      .required-indicator { @apply text-danger text-xs ml-1; }
+      .field-error { @apply border-danger focus:ring-danger/50 focus:border-danger; }
+      .error-message { @apply text-danger text-xs mt-1; }
+      .checkbox-group-item { @apply flex items-center mb-2; }
+      .checkbox-group-checkbox { @apply w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50 mr-2; }
+      .pagination-info { @apply text-sm text-neutral-500; }
+      .pagination-controls { @apply flex items-center space-x-1; }
+      .pagination-btn { @apply px-3 py-1 border border-neutral-300 rounded text-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all; }
+      .pagination-btn.active { @apply bg-primary text-white border-primary; }
+      .pagination-btn.disabled { @apply opacity-50 cursor-not-allowed pointer-events-none; }
+      .pagination-ellipsis { @apply px-2 text-neutral-500; }
+    }
+  </style>
+</head>
+<body class="font-inter bg-neutral-100 text-neutral-700 min-h-screen flex overflow-hidden">
+  <!-- 侧边栏 -->
+  <aside class="w-64 bg-white shadow-md h-screen flex-shrink-0 hidden md:block transition-all duration-300" id="sidebar">
+    <div class="p-4 border-b border-neutral-200">
+      <h1 class="text-lg font-bold text-primary flex items-center">
+        <i class="fa fa-tachometer mr-2"></i>绩效评价系统
+      </h1>
+    </div>
+    <nav class="mt-2">
+      <div class="sidebar-item active" data-target="employees">
+        <i class="fa fa-users w-5 text-center mr-3"></i>
+        <span>员工管理</span>
+      </div>
+      <div class="sidebar-item" data-target="rating-items">
+        <i class="fa fa-list-ul w-5 text-center mr-3"></i>
+        <span>评分项管理</span>
+      </div>
+      <div class="sidebar-item" data-target="evaluation-results">
+        <i class="fa fa-bar-chart w-5 text-center mr-3"></i>
+        <span>评价结果</span>
+      </div>
+      
+      <!-- <div class="mt-6 px-4">
+        <div class="text-xs text-neutral-400 mb-2 uppercase tracking-wider">移动端入口</div>
+        <a href="/mobile-editor" target="_blank" class="sidebar-item block">
+          <i class="fa fa-mobile w-5 text-center mr-3"></i>
+          <span>移动端评价</span>
+        </a>
+        <a href="/mobile-test" target="_blank" class="sidebar-item block">
+          <i class="fa fa-tablet w-5 text-center mr-3"></i>
+          <span>移动端测试</span>
+        </a>
+      </div> -->
+    </nav>
+  </aside>
+  
+  <!-- 主内容区 -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6">
+      <div class="flex items-center">
+        <button id="toggleSidebar" class="md:hidden mr-4 text-neutral-500">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+        <h2 class="text-lg font-semibold" id="pageTitle">员工管理</h2>
+      </div>
+      <div class="flex items-center">
+        <button id="backupDatabaseBtn" class="btn-secondary mr-3 text-sm">
+          <i class="fa fa-database mr-1"></i> 备份数据库
+        </button>
+        <div class="relative mr-4">
+          <button class="flex items-center text-neutral-600 hover:text-primary transition-colors">
+            <img src="https://picsum.photos/id/1005/32/32" alt="管理员头像" class="w-8 h-8 rounded-full mr-2">
+            <span class="hidden md:inline">管理员</span>
+            <i class="fa fa-angle-down ml-1"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- 页面内容 -->
+    <main class="flex-1 overflow-y-auto p-6" id="mainContent">      
+      <!-- 员工管理页面 -->
+      <div class="page-content" id="employees-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <h3 class="font-semibold text-lg mb-4 md:mb-0">员工管理</h3>
+            <div class="flex flex-wrap gap-2">
+              <button id="batchAddEmployeesBtn" class="btn-secondary">
+                <i class="fa fa-plus-circle mr-1"></i> 批量新增
+              </button>
+              <button id="batchDeleteEmployeesBtn" class="btn-danger" style="display: none;">
+                <i class="fa fa-trash mr-1"></i> 批量删除选中
+              </button>
+              <button id="batchAssociateBtn" class="btn-secondary">
+                <i class="fa fa-link mr-1"></i> 批量关联
+              </button>
+              <button id="addEmployeeBtn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 添加员工
+              </button>
+            </div>
+          </div>
+          
+          <!-- 员工管理筛选区域 -->
+          <div class="mb-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <input type="text" id="employeeSearch" placeholder="搜索员工姓名..." 
+                      class="form-input pl-10">
+                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+              </div>
+              <div class="w-full sm:w-48">
+                <select id="employeeDepartmentFilter" class="form-input">
+                    <option value="">所有部门</option>
+                    <option value="头程客服部">头程客服部</option>
+                    <option value="海外仓客服部">海外仓客服部</option>
+                    <option value="对仓服务部">对仓服务部</option>
+                    <option value="海外运营部">海外运营部</option>
+                    <option value="清关组">清关组</option>
+                    <option value="数据组">数据组</option>
+                  </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium" style="width: 50px;">
+                    <input type="checkbox" id="selectAllEmployees" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50">
+                  </th>
+                  <th class="table-cell text-left font-medium">ID</th>
+                  <th class="table-cell text-left font-medium">姓名</th>
+                  <th class="table-cell text-left font-medium">部门</th>
+                  <th class="table-cell text-left font-medium">关联评分项数量</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="employeesTableBody">
+                <!-- 员工数据将通过JS动态加载 -->
+              </tbody>
+            </table>
+          </div>
+          <!-- 员工分页 -->
+          <div class="mt-4 flex justify-between items-center" id="employeesPagination">
+            <!-- 分页控件将通过JS动态生成 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 评分项管理页面 -->
+      <div class="page-content hidden" id="rating-items-page">
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <h3 class="font-semibold text-lg mb-4 md:mb-0">评分项管理</h3>
+            <div class="flex flex-wrap gap-2">
+              <button id="batchAddRatingItemsBtn" class="btn-secondary">
+                <i class="fa fa-plus-circle mr-1"></i> 批量新增
+              </button>
+              <button id="batchDeleteRatingItemsBtn" class="btn-danger" style="display: none;">
+                <i class="fa fa-trash mr-1"></i> 批量删除选中
+              </button>
+              <button id="addRatingItemBtn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 添加评分项
+              </button>
+            </div>
+          </div>
+          
+          <!-- 评分项管理筛选区域 -->
+          <div class="mb-6">
+            <div class="relative">
+              <input type="text" id="ratingItemSearch" placeholder="搜索评分项名称..." 
+                    class="form-input pl-10">
+              <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium" style="width: 50px;">
+                    <input type="checkbox" id="selectAllRatingItems" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50">
+                  </th>
+                  <th class="table-cell text-left font-medium" style="width: 100px;">ID</th>
+                  <th class="table-cell text-left font-medium" style="width: 200px;">评分项名称</th>
+                  <th class="table-cell text-left font-medium" style="width: 500px;">描述</th>
+                  <th class="table-cell text-left font-medium" style="white-space: nowrap;">关联员工数</th>
+                  <th class="table-cell text-left font-medium" style="white-space: nowrap;">是否启用</th>
+                  <th class="table-cell text-left font-medium" style="white-space: nowrap;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="ratingItemsTableBody">
+                <!-- 评分项数据将通过JS动态加载 -->
+              </tbody>
+            </table>
+          </div>
+          <!-- 评分项分页 -->
+          <div class="mt-4 flex justify-between items-center" id="ratingItemsPagination">
+            <!-- 分页控件将通过JS动态生成 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 评价结果页面 -->
+      <div class="page-content hidden" id="evaluation-results-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <h3 class="font-semibold text-lg mb-4 md:mb-0">评价结果</h3>
+            <div class="flex flex-wrap gap-2">
+              <button id="exportEvaluationBtn" class="btn-primary">
+                <i class="fa fa-download mr-1"></i> 导出评分明细
+              </button>
+              <button id="exportEvaluationStatsBtn" class="btn-secondary">
+                <i class="fa fa-bar-chart mr-1"></i> 导出评分统计
+              </button>
+              <button id="clearEvaluationBtn" class="btn-secondary">
+                <i class="fa fa-trash mr-1"></i> 清除记录
+              </button>
+            </div>
+          </div>
+          
+          <!-- 评价结果筛选区域 -->
+          <div class="mb-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <label class="block text-sm font-medium text-neutral-700 mb-1">被评人（员工）</label>
+                <select id="evaluationEmployeeFilter" class="form-input">
+                  <option value="">全部员工</option>
+                </select>
+              </div>
+              <div class="relative flex-1">
+                <label class="block text-sm font-medium text-neutral-700 mb-1">评价人</label>
+                <input type="text" id="evaluationEvaluatorFilter" placeholder="搜索评价人姓名..." 
+                      class="form-input">
+              </div>
+              <div class="flex items-end">
+                <button id="resetEvaluationFilters" class="btn-secondary">
+                  <i class="fa fa-refresh mr-1"></i> 重置筛选
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium">员工姓名</th>
+                  <th class="table-cell text-left font-medium">部门</th>
+                  <th class="table-cell text-left font-medium">评价人</th>
+                  <th class="table-cell text-left font-medium">评价时间</th>
+                  <th class="table-cell text-left font-medium">平均分</th>
+                  <th class="table-cell text-left font-medium">最高分</th>
+                  <th class="table-cell text-left font-medium">最低分</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="evaluationResultsTableBody">
+                <!-- 评价结果数据将通过JS动态加载 -->
+              </tbody>
+            </table>
+          </div>
+          <!-- 评价结果分页和统计 -->
+          <div class="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <!-- 统计数据 -->
+            <div class="text-sm text-neutral-600" id="evaluationResultsStats">
+              <!-- 统计数据将通过JS动态生成 -->
+            </div>
+            <!-- 分页控件 -->
+            <div class="flex justify-between items-center" id="evaluationResultsPagination">
+              <!-- 分页控件将通过JS动态生成 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- 模态框组件 -->
+  <!-- 员工模态框 -->
+  <div id="employeeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg" id="employeeModalTitle">添加员工</h3>
+          <button class="close-modal text-neutral-400 hover:text-neutral-700">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <form id="employeeForm" class="p-6 space-y-4">
+        <input type="hidden" name="employeeId" id="employeeId">
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            姓名 <span class="required-indicator">*</span>
+          </label>
+          <input type="text" name="employeeName" id="employeeName" class="form-input" required>
+          <div class="error-message hidden">请输入姓名</div>
+        </div>
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            部门 <span class="required-indicator">*</span>
+          </label>
+          <select name="employeeDepartment" id="employeeDepartment" class="form-input" required>
+            <option value="">所有部门</option>
+            <option value="头程客服部">头程客服部</option>
+            <option value="海外仓客服部">海外仓客服部</option>
+            <option value="对仓服务部">对仓服务部</option>
+            <option value="海外运营部">海外运营部</option>
+            <option value="清关组">清关组</option>
+            <option value="数据组">数据组</option>
+          </select>
+          <div class="error-message hidden">请选择部门</div>
+        </div>
+        
+        <!-- 关联评分项 -->
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            关联评分项 <span class="required-indicator">*</span>
+          </label>
+          <div id="ratingItemsGroup" class="checkbox-group">
+            <!-- 评分项将通过JS动态加载 -->
+          </div>
+          <div class="error-message hidden" id="ratingItemsError">请至少选择一项评分项</div>
+        </div>
+        
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 评分项模态框 -->
+  <div id="ratingItemModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg" id="ratingItemModalTitle">添加评分项</h3>
+          <button class="close-modal text-neutral-400 hover:text-neutral-700">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <form id="ratingItemForm" class="p-6 space-y-4">
+        <input type="hidden" name="ratingItemId" id="ratingItemId">
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            评分项名称 <span class="required-indicator">*</span>
+          </label>
+          <input type="text" name="ratingItemName" id="ratingItemName" class="form-input" required>
+          <div class="error-message hidden">请输入评分项名称</div>
+        </div>
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">描述</label>
+          <textarea name="ratingItemDescription" id="ratingItemDescription" rows="3" class="form-input" placeholder="请输入评分项的详细描述"></textarea>
+        </div>
+        
+        <div>
+          <label class="flex items-center">
+            <input type="checkbox" name="ratingItemEnabled" id="ratingItemEnabled" class="mr-2" checked>
+            <span>启用该评分项</span>
+          </label>
+        </div>
+        
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 评价详情模态框 -->
+  <div id="evaluationDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg">评价详情</h3>
+          <button class="close-modal text-neutral-400 hover:text-neutral-700">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6 space-y-6 overflow-y-auto flex-grow" id="evaluationDetailContent" style="max-height: 60vh;">
+        <!-- 评价详情内容将通过JS动态填充 -->
+      </div>
+      <div class="p-6 border-t border-neutral-200" id="evaluationDetailFooter">
+        <!-- 删除按钮将通过JS动态添加 -->
+      </div>
+    </div>
+  </div>
+  
+
+  
+  <!-- 确认删除模态框 -->
+  <div id="confirmDeleteModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-6 border-b border-neutral-200">
+        <h3 class="font-semibold text-lg">确认删除</h3>
+      </div>
+      <div class="p-6">
+        <p class="text-neutral-600 mb-6" id="deleteConfirmMessage">您确定要删除这项记录吗？此操作不可撤销。</p>
+        <div class="flex justify-end">
+          <button id="cancelDelete" class="btn-secondary mr-3">取消</button>
+          <button id="confirmDelete" class="btn-danger">删除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 批量操作模态框（员工） -->
+  <div id="batchOperationsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-6 border-b border-neutral-200">
+        <h3 class="font-semibold text-lg">批量删除</h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-neutral-700 mb-2">操作类型</label>
+          <select id="batchOperationType" class="form-input">
+            <option value="department">按部门删除</option>
+            <option value="all">删除所有员工</option>
+          </select>
+        </div>
+        <div id="batchDepartmentSelect" class="hidden">
+          <label class="block text-neutral-700 mb-2">选择部门</label>
+          <select id="batchDepartment" class="form-input">
+            <option value="">请选择部门</option>
+            <option value="头程客服部">头程客服部</option>
+            <option value="海外仓客服部">海外仓客服部</option>
+            <option value="对仓服务部">对仓服务部</option>
+            <option value="海外运营部">海外运营部</option>
+            <option value="清关组">清关组</option>
+            <option value="数据组">数据组</option>
+          </select>
+        </div>
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button id="confirmBatchOperation" class="btn-danger">确认执行</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 批量关联评分项模态框 -->
+  <div id="batchAssociateModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <h3 class="font-semibold text-lg">批量关联评分项</h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-neutral-700 mb-2">关联方式</label>
+          <select id="associateType" class="form-input">
+            <option value="department">按部门批量关联</option>
+            <option value="json">从JSON文件导入</option>
+            <option value="export">导出关联关系JSON</option>
+          </select>
+        </div>
+        
+        <!-- 按部门关联 -->
+        <div id="departmentAssociateSection">
+          <div class="mb-4">
+            <label class="block text-neutral-700 mb-2">选择部门</label>
+            <select id="associateDepartment" class="form-input">
+              <option value="">请选择部门</option>
+              <option value="头程客服部">头程客服部</option>
+              <option value="海外仓客服部">海外仓客服部</option>
+              <option value="对仓服务部">对仓服务部</option>
+              <option value="海外运营部">海外运营部</option>
+              <option value="清关组">清关组</option>
+              <option value="数据组">数据组</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-neutral-700 mb-2">选择评分项</label>
+            <div id="associateRatingItemsGroup" class="checkbox-group max-h-60 overflow-y-auto border border-neutral-200 rounded-lg p-3">
+              <!-- 评分项将通过JS动态加载 -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- JSON导入 -->
+        <div id="jsonImportSection" class="hidden">
+          <div class="mb-4">
+            <label class="block text-neutral-700 mb-2">选择JSON文件</label>
+            <input type="file" id="jsonFileInput" accept=".json" class="form-input">
+            <p class="text-xs text-neutral-500 mt-1">格式: {"员工ID": ["评分项ID列表"]}</p>
+          </div>
+        </div>
+        
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button id="confirmBatchAssociate" class="btn-primary">确认</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 批量新增员工模态框 -->
+  <div id="batchAddEmployeesModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg">批量新增员工</h3>
+          <div class="flex gap-2">
+            <button type="button" id="pasteEmployeesBtn" class="btn-secondary text-sm">
+              <i class="fa fa-clipboard mr-1"></i> 从Excel粘贴
+            </button>
+            <button type="button" id="addEmployeeRowBtn" class="btn-secondary text-sm">
+              <i class="fa fa-plus mr-1"></i> 添加一行
+            </button>
+            <button type="button" id="clearAllEmployeesBtn" class="btn-secondary text-sm text-danger">
+              <i class="fa fa-trash mr-1"></i> 清空所有
+            </button>
+          </div>
+        </div>
+      </div>
+      <form id="batchAddEmployeesForm" class="p-6 space-y-4">
+        <div>
+          <div class="mb-3">
+            <label class="block text-neutral-700 mb-2">
+              员工列表 <span class="required-indicator">*</span>
+            </label>
+            <p class="text-xs text-neutral-500 mb-3">
+              支持从Excel复制粘贴（姓名和部门两列），或手动填写。使用Tab键切换输入框，Enter键添加新行。
+            </p>
+          </div>
+          <div class="border border-neutral-200 rounded-lg overflow-hidden">
+            <div class="bg-neutral-50 px-4 py-2 grid grid-cols-12 gap-3 text-sm font-medium text-neutral-600 border-b border-neutral-200">
+              <div class="col-span-1">序号</div>
+              <div class="col-span-4">姓名 <span class="required-indicator">*</span></div>
+              <div class="col-span-5">部门 <span class="required-indicator">*</span></div>
+              <div class="col-span-2 text-center">操作</div>
+            </div>
+            <div id="batchEmployeesRows" class="divide-y divide-neutral-200">
+              <!-- 员工行将通过JS动态添加 -->
+            </div>
+          </div>
+          <div class="error-message hidden mt-2" id="batchEmployeesError">请至少添加一个员工</div>
+        </div>
+        <div>
+          <label class="flex items-center">
+            <input type="checkbox" id="batchEmployeesAutoAssociate" class="mr-2" checked>
+            <span>自动关联所有启用的评分项</span>
+          </label>
+        </div>
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button type="submit" class="btn-primary">批量添加</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 批量新增评分项模态框 -->
+  <div id="batchAddRatingItemsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg">批量新增评分项</h3>
+          <div class="flex gap-2">
+            <button type="button" id="pasteRatingItemsBtn" class="btn-secondary text-sm">
+              <i class="fa fa-clipboard mr-1"></i> 从Excel粘贴
+            </button>
+            <button type="button" id="addRatingItemRowBtn" class="btn-secondary text-sm">
+              <i class="fa fa-plus mr-1"></i> 添加一行
+            </button>
+            <button type="button" id="clearAllRatingItemsBtn" class="btn-secondary text-sm text-danger">
+              <i class="fa fa-trash mr-1"></i> 清空所有
+            </button>
+          </div>
+        </div>
+      </div>
+      <form id="batchAddRatingItemsForm" class="p-6 space-y-4">
+        <div>
+          <div class="mb-3">
+            <label class="block text-neutral-700 mb-2">
+              评分项列表 <span class="required-indicator">*</span>
+            </label>
+            <p class="text-xs text-neutral-500 mb-3">
+              支持从Excel复制粘贴（名称和描述两列），或手动填写。使用Tab键切换输入框，Enter键添加新行。
+            </p>
+          </div>
+          <div class="border border-neutral-200 rounded-lg overflow-hidden">
+            <div class="bg-neutral-50 px-4 py-2 grid grid-cols-12 gap-3 text-sm font-medium text-neutral-600 border-b border-neutral-200">
+              <div class="col-span-1">序号</div>
+              <div class="col-span-4">评分项名称 <span class="required-indicator">*</span></div>
+              <div class="col-span-5">描述</div>
+              <div class="col-span-2 text-center">操作</div>
+            </div>
+            <div id="batchRatingItemsRows" class="divide-y divide-neutral-200">
+              <!-- 评分项行将通过JS动态添加 -->
+            </div>
+          </div>
+          <div class="error-message hidden mt-2" id="batchRatingItemsError">请至少添加一个评分项</div>
+        </div>
+        <div>
+          <label class="flex items-center">
+            <input type="checkbox" id="batchRatingItemsEnabled" class="mr-2" checked>
+            <span>默认启用所有评分项</span>
+          </label>
+        </div>
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button type="submit" class="btn-primary">批量添加</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 清除评价记录模态框 -->
+  <div id="clearEvaluationModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-6 border-b border-neutral-200">
+        <h3 class="font-semibold text-lg">清除评价记录</h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-neutral-700 mb-2">清除方式</label>
+          <select id="clearEvaluationType" class="form-input">
+            <option value="all">清除所有记录</option>
+            <option value="date_range">按日期范围清除</option>
+            <option value="evaluator">按评价人清除</option>
+            <option value="employee_id">按员工ID清除</option>
+          </select>
+        </div>
+        <div id="clearDateRangeSection" class="hidden">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-neutral-700 mb-2">开始日期</label>
+              <input type="date" id="clearStartDate" class="form-input">
+            </div>
+            <div>
+              <label class="block text-neutral-700 mb-2">结束日期</label>
+              <input type="date" id="clearEndDate" class="form-input">
+            </div>
+          </div>
+        </div>
+        <div id="clearEvaluatorSection" class="hidden">
+          <label class="block text-neutral-700 mb-2">评价人</label>
+          <input type="text" id="clearEvaluator" class="form-input" placeholder="请输入评价人姓名">
+        </div>
+        <div id="clearEmployeeIdSection" class="hidden">
+          <label class="block text-neutral-700 mb-2">员工ID</label>
+          <input type="text" id="clearEmployeeId" class="form-input" placeholder="请输入员工ID">
+        </div>
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button id="confirmClearEvaluation" class="btn-danger">确认清除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 通知提示 -->
+  <div id="notification" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm flex items-start">
+    <div id="notificationIcon" class="mr-3 text-success text-xl">
+      <i class="fa fa-check-circle"></i>
+    </div>
+    <div>
+      <h4 id="notificationTitle" class="font-medium text-neutral-800">操作成功</h4>
+      <p id="notificationMessage" class="text-sm text-neutral-600 mt-1">您的操作已成功完成。</p>
+    </div>
+    <button id="closeNotification" class="ml-auto text-neutral-400 hover:text-neutral-600">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+
+  <script>
+    // 全局数据存储
+    let globalData = {
+      employees: {},
+      ratingItems: {},
+      employeeRatingRelations: {},
+      evaluationResults: {},
+      pagination: {
+        employees: { currentPage: 1, pageSize: 10, totalItems: 0, totalPages: 1 },
+        ratingItems: { currentPage: 1, pageSize: 10, totalItems: 0, totalPages: 1 },
+        evaluationResults: { currentPage: 1, pageSize: 15, totalItems: 0, totalPages: 1 }
+      },
+      filteredData: {
+        employees: null,
+        ratingItems: null,
+        evaluationResults: null
+      }
+    };
+    
+    // 初始化应用
+    document.addEventListener('DOMContentLoaded', function() {
+      // 加载所有数据
+      loadAllData();
+      
+      // 初始化页面导航
+      initPageNavigation();
+      
+      // 初始化事件监听
+      initEventListeners();
+    });
+    
+    // 加载所有数据
+    async function loadAllData() {
+      try {
+        // 并行加载所有数据
+        const [employeesRes, ratingItemsRes, evaluationResultsRes, relationsRes] = await Promise.all([
+          fetch('/api/employees'),
+          fetch('/api/rating-items'),
+          fetch('/api/evaluation-results'),
+          fetch('/api/employee-rating-relations')
+        ]);
+        
+        globalData.employees = await employeesRes.json();
+        globalData.ratingItems = await ratingItemsRes.json();
+        globalData.evaluationResults = await evaluationResultsRes.json();
+        globalData.employeeRatingRelations = await relationsRes.json();
+        
+        // 更新分页信息
+        updatePaginationInfo();
+        
+        // 初始化评价结果筛选下拉框
+        initEvaluationFilters();
+        
+        // 渲染所有表格
+        renderEmployeesTable();
+        renderRatingItemsTable();
+        renderEvaluationResultsTable();
+        
+        // 填充评分项复选框组
+        populateRatingItemsCheckboxes();
+      } catch (error) {
+        console.error('加载数据失败:', error);
+        showNotification('加载失败', '无法加载系统数据，请刷新页面重试', 'error');
+      }
+    }
+    
+    // 计算员工评分项关联
+    function calculateEmployeeRatingRelations() {
+      // 这里实际应用中应该从API获取，这里简化处理
+      // 为演示目的，我们创建一些默认关联
+      if (Object.keys(globalData.employeeRatingRelations).length === 0) {
+        const employeeIds = Object.keys(globalData.employees);
+        const ratingItemIds = Object.keys(globalData.ratingItems);
+        
+        employeeIds.forEach(empId => {
+          // 为每个员工随机关联2-3个评分项
+          const count = Math.floor(Math.random() * 2) + 2;
+          const relations = [];
+          
+          while (relations.length < count && relations.length < ratingItemIds.length) {
+            const randomId = ratingItemIds[Math.floor(Math.random() * ratingItemIds.length)];
+            if (!relations.includes(parseInt(randomId))) {
+              relations.push(parseInt(randomId));
+            }
+          }
+          
+          globalData.employeeRatingRelations[empId] = relations;
+        });
+      }
+    }
+    
+    // 更新分页信息
+    function updatePaginationInfo() {
+      // 更新员工列表分页信息
+      const employees = globalData.filteredData.employees || globalData.employees;
+      globalData.pagination.employees.totalItems = Object.keys(employees).length;
+      globalData.pagination.employees.totalPages = Math.max(1, Math.ceil(globalData.pagination.employees.totalItems / globalData.pagination.employees.pageSize));
+      
+      // 更新评分项列表分页信息
+      const ratingItems = globalData.filteredData.ratingItems || globalData.ratingItems;
+      globalData.pagination.ratingItems.totalItems = Object.keys(ratingItems).length;
+      globalData.pagination.ratingItems.totalPages = Math.max(1, Math.ceil(globalData.pagination.ratingItems.totalItems / globalData.pagination.ratingItems.pageSize));
+      
+      // 更新评价结果列表分页信息
+      const evaluationResults = globalData.filteredData.evaluationResults || globalData.evaluationResults;
+      globalData.pagination.evaluationResults.totalItems = Object.keys(evaluationResults).length;
+      globalData.pagination.evaluationResults.totalPages = Math.max(1, Math.ceil(globalData.pagination.evaluationResults.totalItems / globalData.pagination.evaluationResults.pageSize));
+    }
+
+    // 创建分页组件
+    function createPaginationComponent(type, containerId, currentPage, totalPages, onPageChange) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      // 创建分页信息
+      const info = document.createElement('div');
+      info.className = 'pagination-info';
+      info.textContent = `第 ${currentPage} 页，共 ${totalPages} 页`;
+      container.appendChild(info);
+
+      // 创建分页控件
+      const pagination = document.createElement('div');
+      pagination.className = 'pagination-controls';
+
+      // 上一页按钮
+      const prevButton = document.createElement('button');
+      prevButton.className = `pagination-btn ${currentPage === 1 ? 'disabled' : ''}`;
+      prevButton.textContent = '上一页';
+      prevButton.disabled = currentPage === 1;
+      prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+          onPageChange(currentPage - 1);
+        }
+      });
+      pagination.appendChild(prevButton);
+
+      // 页码按钮
+      // 简化版分页，只显示当前页和前后各一页
+      const startPage = Math.max(1, currentPage - 1);
+      const endPage = Math.min(totalPages, startPage + 2);
+
+      if (startPage > 1) {
+        const firstPageButton = document.createElement('button');
+        firstPageButton.className = 'pagination-btn';
+        firstPageButton.textContent = '1';
+        firstPageButton.addEventListener('click', () => onPageChange(1));
+        pagination.appendChild(firstPageButton);
+
+        if (startPage > 2) {
+          const ellipsis = document.createElement('span');
+          ellipsis.className = 'pagination-ellipsis';
+          ellipsis.textContent = '...';
+          pagination.appendChild(ellipsis);
+        }
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+        pageButton.textContent = i;
+        pageButton.addEventListener('click', () => onPageChange(i));
+        pagination.appendChild(pageButton);
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          const ellipsis = document.createElement('span');
+          ellipsis.className = 'pagination-ellipsis';
+          ellipsis.textContent = '...';
+          pagination.appendChild(ellipsis);
+        }
+
+        const lastPageButton = document.createElement('button');
+        lastPageButton.className = 'pagination-btn';
+        lastPageButton.textContent = totalPages;
+        lastPageButton.addEventListener('click', () => onPageChange(totalPages));
+        pagination.appendChild(lastPageButton);
+      }
+
+      // 下一页按钮
+      const nextButton = document.createElement('button');
+      nextButton.className = `pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+      nextButton.textContent = '下一页';
+      nextButton.disabled = currentPage === totalPages;
+      nextButton.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          onPageChange(currentPage + 1);
+        }
+      });
+      pagination.appendChild(nextButton);
+
+      container.appendChild(pagination);
+    }
+
+    // 初始化页面导航
+    function initPageNavigation() {
+      const sidebarItems = document.querySelectorAll('.sidebar-item');
+      const pageContents = document.querySelectorAll('.page-content');
+      const pageTitle = document.getElementById('pageTitle');
+      
+      sidebarItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // 更新活动状态
+          sidebarItems.forEach(i => i.classList.remove('active'));
+          this.classList.add('active');
+          
+          // 显示对应页面
+          const target = this.getAttribute('data-target');
+          pageContents.forEach(page => page.classList.add('hidden'));
+          document.getElementById(`${target}-page`).classList.remove('hidden');
+          
+          // 更新页面标题
+          pageTitle.textContent = this.querySelector('span').textContent;
+          
+          // 切换菜单时刷新页面数据
+          loadAllData();
+          
+          // 如果是评分项管理页面，重置批量删除按钮
+          if (target === 'rating-items') {
+            setTimeout(() => {
+              updateBatchDeleteButtonVisibility();
+            }, 100);
+          }
+          
+          // 如果是员工管理页面，重置批量删除按钮
+          if (target === 'employees') {
+            setTimeout(() => {
+              updateBatchDeleteEmployeesButtonVisibility();
+            }, 100);
+          }
+          
+          // 如果是评价结果页面，初始化筛选下拉框
+          if (target === 'evaluation-results') {
+            setTimeout(() => {
+              initEvaluationFilters();
+            }, 100);
+          }
+        });
+      });
+      
+      // 侧边栏切换（移动设备）
+      document.getElementById('toggleSidebar').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('hidden');
+      });
+    }
+    
+    // 初始化事件监听
+    function initEventListeners() {
+      // 关闭模态框按钮
+      document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.fixed.inset-0').forEach(modal => {
+            modal.classList.add('hidden');
+          });
+        });
+      });
+      
+      // 添加员工按钮
+      document.getElementById('addEmployeeBtn').addEventListener('click', function() {
+        document.getElementById('employeeModalTitle').textContent = '添加员工';
+        document.getElementById('employeeId').value = '';
+        document.getElementById('employeeForm').reset();
+        hideErrors(document.getElementById('employeeForm'));
+        document.getElementById('employeeModal').classList.remove('hidden');
+      });
+      
+      // 批量新增员工按钮
+      document.getElementById('batchAddEmployeesBtn').addEventListener('click', function() {
+        initBatchAddEmployeesModal();
+        document.getElementById('batchAddEmployeesModal').classList.remove('hidden');
+      });
+      
+      // 添加员工行按钮
+      document.getElementById('addEmployeeRowBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        addEmployeeRow();
+      });
+      
+      // 从Excel粘贴按钮
+      document.getElementById('pasteEmployeesBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        showPasteDialog('employees');
+      });
+      
+      // 清空所有员工行按钮
+      document.getElementById('clearAllEmployeesBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('确定要清空所有员工行吗？')) {
+          const rowsContainer = document.getElementById('batchEmployeesRows');
+          rowsContainer.innerHTML = '';
+          addEmployeeRow(); // 至少保留一行
+        }
+      });
+      
+      // 添加评分项按钮
+      document.getElementById('addRatingItemBtn').addEventListener('click', function() {
+        document.getElementById('ratingItemModalTitle').textContent = '添加评分项';
+        document.getElementById('ratingItemId').value = '';
+        document.getElementById('ratingItemForm').reset();
+        hideErrors(document.getElementById('ratingItemForm'));
+        document.getElementById('ratingItemModal').classList.remove('hidden');
+      });
+      
+      // 批量新增评分项按钮
+      document.getElementById('batchAddRatingItemsBtn').addEventListener('click', function() {
+        initBatchAddRatingItemsModal();
+        document.getElementById('batchAddRatingItemsModal').classList.remove('hidden');
+      });
+      
+      // 添加评分项行按钮
+      document.getElementById('addRatingItemRowBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        addRatingItemRow();
+      });
+      
+      // 从Excel粘贴评分项按钮
+      document.getElementById('pasteRatingItemsBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        showPasteDialog('rating-items');
+      });
+      
+      // 清空所有评分项行按钮
+      document.getElementById('clearAllRatingItemsBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('确定要清空所有评分项行吗？')) {
+          const rowsContainer = document.getElementById('batchRatingItemsRows');
+          rowsContainer.innerHTML = '';
+          addRatingItemRow(); // 至少保留一行
+        }
+      });
+      
+      // 批量删除评分项按钮（选中项删除）
+      document.getElementById('batchDeleteRatingItemsBtn').addEventListener('click', function() {
+        const selectedIds = getSelectedRatingItemIds();
+        if (selectedIds.length === 0) {
+          showNotification('操作失败', '请至少选择一个评分项', 'error');
+          return;
+        }
+        
+        // 计算关联员工数
+        let totalRelatedCount = 0;
+        selectedIds.forEach(id => {
+          for (const empRelations of Object.values(globalData.employeeRatingRelations)) {
+            if (empRelations.includes(id)) {
+              totalRelatedCount++;
+            }
+          }
+        });
+        
+        let message = '';
+        if (totalRelatedCount > 0) {
+          message = `您选择了 ${selectedIds.length} 个评分项，这些评分项共关联了 ${totalRelatedCount} 名员工，删除后相关评价数据也将受影响，确定要继续吗？`;
+        } else {
+          message = `您确定要删除选中的 ${selectedIds.length} 个评分项吗？`;
+        }
+        
+        if (!confirm(message)) {
+          return;
+        }
+        
+        handleBatchDeleteRatingItems(selectedIds);
+      });
+      
+      // 全选/取消全选评分项
+      document.getElementById('selectAllRatingItems').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.rating-item-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = this.checked;
+        });
+        updateBatchDeleteButtonVisibility();
+      });
+      
+      // 导出评分按钮
+        document.getElementById('exportEvaluationBtn').addEventListener('click', exportEvaluationData);
+        document.getElementById('exportEvaluationStatsBtn').addEventListener('click', exportEvaluationStats);
+      
+      // 新增功能按钮
+      // 批量删除员工按钮（选中项删除）
+      document.getElementById('batchDeleteEmployeesBtn').addEventListener('click', function() {
+        const selectedIds = getSelectedEmployeeIds();
+        if (selectedIds.length === 0) {
+          showNotification('操作失败', '请至少选择一个员工', 'error');
+          return;
+        }
+        
+        let message = `您确定要删除选中的 ${selectedIds.length} 名员工吗？删除后相关评价数据也将受影响。`;
+        
+        if (!confirm(message)) {
+          return;
+        }
+        
+        handleBatchDeleteEmployees(selectedIds);
+      });
+      
+      // 全选/取消全选员工
+      document.getElementById('selectAllEmployees').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.employee-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = this.checked;
+        });
+        updateBatchDeleteEmployeesButtonVisibility();
+      });
+      
+      document.getElementById('batchAssociateBtn').addEventListener('click', function() {
+        populateAssociateRatingItems();
+        document.getElementById('batchAssociateModal').classList.remove('hidden');
+      });
+      
+      document.getElementById('clearEvaluationBtn').addEventListener('click', function() {
+        document.getElementById('clearEvaluationModal').classList.remove('hidden');
+      });
+      
+      document.getElementById('backupDatabaseBtn').addEventListener('click', backupDatabase);
+      
+      // 批量操作类型切换
+      document.getElementById('batchOperationType').addEventListener('change', function() {
+        const departmentSelect = document.getElementById('batchDepartmentSelect');
+        if (this.value === 'department') {
+          departmentSelect.classList.remove('hidden');
+        } else {
+          departmentSelect.classList.add('hidden');
+        }
+      });
+      
+      // 批量关联类型切换
+      document.getElementById('associateType').addEventListener('change', function() {
+        const deptSection = document.getElementById('departmentAssociateSection');
+        const jsonSection = document.getElementById('jsonImportSection');
+        
+        if (this.value === 'department') {
+          deptSection.classList.remove('hidden');
+          jsonSection.classList.add('hidden');
+        } else if (this.value === 'json') {
+          deptSection.classList.add('hidden');
+          jsonSection.classList.remove('hidden');
+        } else {
+          deptSection.classList.add('hidden');
+          jsonSection.classList.add('hidden');
+        }
+      });
+      
+      // 清除评价记录类型切换
+      document.getElementById('clearEvaluationType').addEventListener('change', function() {
+        document.getElementById('clearDateRangeSection').classList.add('hidden');
+        document.getElementById('clearEvaluatorSection').classList.add('hidden');
+        document.getElementById('clearEmployeeIdSection').classList.add('hidden');
+        
+        if (this.value === 'date_range') {
+          document.getElementById('clearDateRangeSection').classList.remove('hidden');
+        } else if (this.value === 'evaluator') {
+          document.getElementById('clearEvaluatorSection').classList.remove('hidden');
+        } else if (this.value === 'employee_id') {
+          document.getElementById('clearEmployeeIdSection').classList.remove('hidden');
+        }
+      });
+      
+      // 批量操作确认
+      document.getElementById('confirmBatchOperation').addEventListener('click', handleBatchOperation);
+      
+      // 批量关联确认
+      document.getElementById('confirmBatchAssociate').addEventListener('click', handleBatchAssociate);
+      
+      // 清除评价记录确认
+      document.getElementById('confirmClearEvaluation').addEventListener('click', handleClearEvaluation);
+      
+      // 员工表单提交
+      document.getElementById('employeeForm').addEventListener('submit', handleEmployeeFormSubmit);
+      
+      // 评分项表单提交
+      document.getElementById('ratingItemForm').addEventListener('submit', handleRatingItemFormSubmit);
+      
+      // 批量新增评分项表单提交
+      document.getElementById('batchAddRatingItemsForm').addEventListener('submit', handleBatchAddRatingItems);
+      
+      // 批量新增员工表单提交
+      document.getElementById('batchAddEmployeesForm').addEventListener('submit', handleBatchAddEmployees);
+      
+      // 评价结果筛选事件
+      const evaluationEmployeeFilter = document.getElementById('evaluationEmployeeFilter');
+      const evaluationEvaluatorFilter = document.getElementById('evaluationEvaluatorFilter');
+      const resetEvaluationFilters = document.getElementById('resetEvaluationFilters');
+      
+      if (evaluationEmployeeFilter) {
+        evaluationEmployeeFilter.addEventListener('change', filterEvaluationResults);
+      }
+      if (evaluationEvaluatorFilter) {
+        evaluationEvaluatorFilter.addEventListener('input', filterEvaluationResults);
+      }
+      if (resetEvaluationFilters) {
+        resetEvaluationFilters.addEventListener('click', function() {
+          if (evaluationEmployeeFilter) evaluationEmployeeFilter.value = '';
+          if (evaluationEvaluatorFilter) evaluationEvaluatorFilter.value = '';
+          filterEvaluationResults();
+        });
+      }
+      
+      // 评分项复选框变化时更新批量删除按钮显示
+      document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('rating-item-checkbox')) {
+          updateBatchDeleteButtonVisibility();
+        }
+        if (e.target.classList.contains('employee-checkbox')) {
+          updateBatchDeleteEmployeesButtonVisibility();
+        }
+      });
+      
+      // 筛选事件
+      document.getElementById('employeeSearch').addEventListener('input', filterEmployees);
+      document.getElementById('employeeDepartmentFilter').addEventListener('change', filterEmployees);
+      document.getElementById('ratingItemSearch').addEventListener('input', filterRatingItems);
+      
+      // 关闭通知
+      document.getElementById('closeNotification').addEventListener('click', hideNotification);
+      
+      // 删除确认
+      document.getElementById('cancelDelete').addEventListener('click', function() {
+        document.getElementById('confirmDeleteModal').classList.add('hidden');
+      });
+      
+      document.getElementById('confirmDelete').addEventListener('click', executeDelete);
+    }
+    
+    // 渲染员工表格
+    function renderEmployeesTable(filteredEmployees = null) {
+      if (filteredEmployees !== null) {
+        globalData.filteredData.employees = filteredEmployees;
+        globalData.pagination.employees.currentPage = 1; // 筛选时重置为第一页
+      }
+      
+      const employees = globalData.filteredData.employees || globalData.employees;
+      const tableBody = document.getElementById('employeesTableBody');
+      const { currentPage, pageSize } = globalData.pagination.employees;
+      
+      // 更新分页信息
+      updatePaginationInfo();
+      
+      // 获取当前页的数据
+      const employeeIds = Object.keys(employees);
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const currentPageEmployees = employeeIds.slice(startIndex, endIndex);
+      
+      tableBody.innerHTML = '';
+      
+      if (currentPageEmployees.length === 0) {
+        // 没有数据时显示空状态
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+          <td colspan="6" class="table-cell text-center py-8 text-neutral-500">
+            暂无员工数据
+          </td>
+        `;
+        tableBody.appendChild(emptyRow);
+      } else {
+        // 渲染当前页的数据
+        currentPageEmployees.forEach(id => {
+          const employee = employees[id];
+          // 获取关联的评分项数量
+          const relationIds = globalData.employeeRatingRelations[id] || [];
+          const relationCount = relationIds.length;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="table-cell">
+              <input type="checkbox" class="employee-checkbox w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50" value="${id}">
+            </td>
+            <td class="table-cell">${id}</td>
+            <td class="table-cell">${employee.name}</td>
+            <td class="table-cell">${employee.department}</td>
+            <td class="table-cell">${relationCount}</td>
+            <td class="table-cell">
+              <button class="text-primary hover:text-primary/80 mr-3 edit-employee" data-id="${id}" title="编辑">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <button class="text-danger hover:text-danger/80 delete-employee" data-id="${id}" title="删除">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          `;
+          
+          tableBody.appendChild(row);
+        });
+      }
+      
+      // 绑定编辑和删除事件
+      document.querySelectorAll('.edit-employee').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const employeeId = this.getAttribute('data-id');
+          // 异步处理编辑操作，添加错误捕获
+          editEmployee(employeeId).catch(error => {
+            console.error('编辑员工失败:', error);
+            showNotification('操作失败', '无法加载员工编辑信息，请重试', 'error');
+          });
+        });
+      });
+      
+      document.querySelectorAll('.delete-employee').forEach(btn => {
+        btn.addEventListener('click', function() {
+          confirmDelete('employee', this.getAttribute('data-id'));
+        });
+      });
+      
+      // 创建分页组件
+      createPaginationComponent(
+        'employees',
+        'employeesPagination',
+        globalData.pagination.employees.currentPage,
+        globalData.pagination.employees.totalPages,
+        (page) => {
+          globalData.pagination.employees.currentPage = page;
+          renderEmployeesTable();
+        }
+      );
+      
+      // 更新批量删除按钮显示
+      updateBatchDeleteEmployeesButtonVisibility();
+    }
+    
+    // 渲染评分项表格
+    function renderRatingItemsTable(filteredItems = null) {
+      if (filteredItems !== null) {
+        globalData.filteredData.ratingItems = filteredItems;
+        globalData.pagination.ratingItems.currentPage = 1; // 筛选时重置为第一页
+      }
+      
+      const items = globalData.filteredData.ratingItems || globalData.ratingItems;
+      const tableBody = document.getElementById('ratingItemsTableBody');
+      const { currentPage, pageSize } = globalData.pagination.ratingItems;
+      
+      // 更新分页信息
+      updatePaginationInfo();
+      
+      // 获取当前页的数据
+      const itemIds = Object.keys(items);
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const currentPageItems = itemIds.slice(startIndex, endIndex);
+      
+      tableBody.innerHTML = '';
+      
+      if (currentPageItems.length === 0) {
+        // 没有数据时显示空状态
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+          <td colspan="7" class="table-cell text-center py-8 text-neutral-500">
+            暂无评分项数据
+          </td>
+        `;
+        tableBody.appendChild(emptyRow);
+      } else {
+        // 渲染当前页的数据
+        currentPageItems.forEach(id => {
+          const item = items[id];
+          // 计算关联员工数
+          let relatedCount = 0;
+          for (const empRelations of Object.values(globalData.employeeRatingRelations)) {
+            if (empRelations.includes(id)) {
+              relatedCount++;
+            }
+          }
+          
+          const statusClass = item.enabled 
+            ? 'bg-success/10 text-success' 
+            : 'bg-neutral-200 text-neutral-500';
+          const statusText = item.enabled ? '启用' : '禁用';
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="table-cell">
+              <input type="checkbox" class="rating-item-checkbox w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50" value="${id}">
+            </td>
+            <td class="table-cell" style="white-space: nowrap;">${id}</td>
+            <td class="table-cell" style="white-space: nowrap;">${item.name}</td>
+            <td class="table-cell" style="width: 300px;">${item.description}</td>
+            <td class="table-cell" style="white-space: nowrap;">${relatedCount}</td>
+            <td class="table-cell" style="white-space: nowrap;">
+              <span class="px-2 py-1 ${statusClass} rounded-full text-xs">${statusText}</span>
+            </td>
+            <td class="table-cell" style="white-space: nowrap;">
+              <button class="text-primary hover:text-primary/80 mr-3 edit-rating-item" data-id="${id}" title="编辑">
+                <i class="fa fa-pencil"></i>
+              </button>
+              <button class="text-danger hover:text-danger/80 delete-rating-item" data-id="${id}" title="删除">
+                <i class="fa fa-trash"></i>
+              </button>
+            </td>
+          `;
+          
+          tableBody.appendChild(row);
+        });
+      }
+      
+      // 绑定编辑和删除事件
+      document.querySelectorAll('.edit-rating-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+          editRatingItem(this.getAttribute('data-id'));
+        });
+      });
+      
+      document.querySelectorAll('.delete-rating-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+          confirmDelete('rating-item', this.getAttribute('data-id'));
+        });
+      });
+      
+      // 创建分页组件
+      createPaginationComponent(
+        'rating-items',
+        'ratingItemsPagination',
+        globalData.pagination.ratingItems.currentPage,
+        globalData.pagination.ratingItems.totalPages,
+        (page) => {
+          globalData.pagination.ratingItems.currentPage = page;
+          renderRatingItemsTable();
+        }
+      );
+      
+      // 更新全选复选框状态
+      updateSelectAllCheckbox();
+      
+      // 更新批量删除按钮显示
+      updateBatchDeleteButtonVisibility();
+    }
+    
+    // 渲染评价结果表格
+      function renderEvaluationResultsTable(filteredResults = null) {
+        const tableBody = document.getElementById('evaluationResultsTableBody');
+        const { currentPage, pageSize } = globalData.pagination.evaluationResults;
+        
+        // 使用筛选后的数据或全部数据
+        if (filteredResults !== null) {
+          globalData.filteredData.evaluationResults = filteredResults;
+          globalData.pagination.evaluationResults.currentPage = 1; // 筛选时重置为第一页
+        }
+        
+        const results = globalData.filteredData.evaluationResults || globalData.evaluationResults;
+        
+        // 更新分页信息
+        updatePaginationInfo();
+        
+        // 获取当前页的数据
+        const resultIds = Object.keys(results);
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const currentPageResults = resultIds.slice(startIndex, endIndex);
+        
+        tableBody.innerHTML = '';
+        
+        if (currentPageResults.length === 0) {
+          // 没有数据时显示空状态
+          const emptyRow = document.createElement('tr');
+          emptyRow.innerHTML = `
+            <td colspan="8" class="table-cell text-center py-8 text-neutral-500">
+              暂无评价结果数据
+            </td>
+          `;
+          tableBody.appendChild(emptyRow);
+        } else {
+          // 渲染当前页的数据
+          currentPageResults.forEach(id => {
+            const result = results[id];
+            const employee = globalData.employees[result.employee_id];
+            if (!employee) return;
+            
+            // 计算平均分、最高分、最低分
+            let totalScore = 0;
+            let maxScore = -1;
+            let minScore = 11;
+            
+            result.ratings.forEach(rating => {
+              const score = parseFloat(rating.score);
+              totalScore += score;
+              maxScore = Math.max(maxScore, score);
+              minScore = Math.min(minScore, score);
+            });
+            
+            const avgScore = result.ratings.length > 0 
+              ? (totalScore / result.ratings.length).toFixed(1) 
+              : '0.0';
+            
+            // 处理没有评分的情况
+            const displayMaxScore = result.ratings.length > 0 ? maxScore.toFixed(1) : '0.0';
+            const displayMinScore = result.ratings.length > 0 ? minScore.toFixed(1) : '0.0';
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td class="table-cell">${employee.name}</td>
+              <td class="table-cell">${employee.department}</td>
+              <td class="table-cell">${result.evaluator}</td>
+              <td class="table-cell">${formatToBeijingTime(result.date)}</td>
+              <td class="table-cell font-medium">${avgScore}</td>
+              <td class="table-cell text-success">${displayMaxScore}</td>
+              <td class="table-cell text-danger">${displayMinScore}</td>
+              <td class="table-cell">
+                <button class="text-primary hover:text-primary/80 view-evaluation" data-id="${id}" title="查看详情">
+                  <i class="fa fa-eye"></i> 详情
+                </button>
+              </td>
+            `;
+            
+            tableBody.appendChild(row);
+          });
+        }
+        
+        // 绑定查看详情事件
+        document.querySelectorAll('.view-evaluation').forEach(btn => {
+          btn.addEventListener('click', function() {
+            viewEvaluationDetails(this.getAttribute('data-id'));
+          });
+        });
+        
+        // 更新统计数据
+        updateEvaluationResultsStats(results, currentPageResults.length);
+        
+        // 创建分页组件
+        createPaginationComponent(
+          'evaluation-results',
+          'evaluationResultsPagination',
+          globalData.pagination.evaluationResults.currentPage,
+          globalData.pagination.evaluationResults.totalPages,
+          (page) => {
+            globalData.pagination.evaluationResults.currentPage = page;
+            renderEvaluationResultsTable();
+          }
+        );
+      }
+      
+      // 更新评价结果统计数据
+      function updateEvaluationResultsStats(results, currentPageCount) {
+        const statsContainer = document.getElementById('evaluationResultsStats');
+        if (!statsContainer) return;
+        
+        const totalItems = Object.keys(results).length;
+        const { currentPage, pageSize } = globalData.pagination.evaluationResults;
+        const startIndex = (currentPage - 1) * pageSize + 1;
+        const endIndex = Math.min(startIndex + currentPageCount - 1, totalItems);
+        
+        // 计算统计信息
+        let totalEvaluations = 0;
+        let totalEmployees = new Set();
+        let totalEvaluators = new Set();
+        let totalRatings = 0;
+        let totalScore = 0;
+        
+        for (const result of Object.values(results)) {
+          totalEvaluations++;
+          totalEmployees.add(result.employee_id);
+          totalEvaluators.add(result.evaluator);
+          totalRatings += result.ratings.length;
+          
+          result.ratings.forEach(rating => {
+            totalScore += parseFloat(rating.score) || 0;
+          });
+        }
+        
+        const avgScore = totalRatings > 0 ? (totalScore / totalRatings).toFixed(2) : '0.00';
+        
+        // 显示统计信息
+        if (totalItems === 0) {
+          statsContainer.innerHTML = '<span class="text-neutral-400">暂无数据</span>';
+        } else {
+          statsContainer.innerHTML = `
+            <div class="flex flex-wrap gap-4">
+              <span><strong>总计：</strong>${totalItems} 条记录</span>
+              ${currentPageCount > 0 ? `<span>显示：第 ${startIndex}-${endIndex} 条</span>` : ''}
+              <span><strong>评价人数：</strong>${totalEmployees.size} 人</span>
+              <span><strong>评价人：</strong>${totalEvaluators.size} 人</span>
+              <span><strong>平均分：</strong>${avgScore}</span>
+            </div>
+          `;
+        }
+      }
+      
+      // 导出评分数据
+      function exportEvaluationData() {
+        // 准备CSV数据
+        let csvContent = '员工姓名,部门,评价人,评价时间,评分项,分数,评语\n';
+        
+        for (const result of Object.values(globalData.evaluationResults)) {
+          const employee = globalData.employees[result.employee_id];
+          if (!employee) continue;
+          
+          result.ratings.forEach(rating => {
+            const item = globalData.ratingItems[rating.item_id];
+            if (!item) return;
+            
+            // 处理CSV中的特殊字符
+            const name = employee.name.replace(/"/g, '""');
+            const department = employee.department.replace(/"/g, '""');
+            const evaluator = result.evaluator.replace(/"/g, '""');
+            const itemName = item.name.replace(/"/g, '""');
+            const comment = (rating.comment || '').replace(/"/g, '""').replace(/\n/g, ' ');
+            
+            csvContent += `"${name}","${department}","${evaluator}",${formatToBeijingTime(result.date)},"${itemName}",${rating.score},"${comment}"\n`;
+          });
+        }
+        
+        // 创建下载链接
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          link.setAttribute('download', `绩效评分明细_${timestamp}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          showNotification('导出成功', '评分明细已导出为CSV文件', 'success');
+        } else {
+          showNotification('导出失败', '您的浏览器不支持文件导出，请尝试使用现代浏览器', 'error');
+        }
+      }
+      
+      // 导出评分统计数据
+      function exportEvaluationStats() {
+        // 按被评人和评分项维度统计数据
+        const stats = {};
+        
+        for (const result of Object.values(globalData.evaluationResults)) {
+          const employee = globalData.employees[result.employee_id];
+          if (!employee) continue;
+          
+          const employeeKey = `${result.employee_id}_${employee.name}_${employee.department}`;
+          if (!stats[employeeKey]) {
+            stats[employeeKey] = {}
+          }
+          
+          result.ratings.forEach(rating => {
+            const item = globalData.ratingItems[rating.item_id];
+            if (!item) return;
+            
+            const itemKey = `${rating.item_id}_${item.name}`;
+            if (!stats[employeeKey][itemKey]) {
+              stats[employeeKey][itemKey] = {
+                totalScore: 0,
+                count: 0,
+                maxScore: -1,
+                minScore: 11
+              };
+            }
+            
+            const score = parseFloat(rating.score);
+            stats[employeeKey][itemKey].totalScore += score;
+            stats[employeeKey][itemKey].count += 1;
+            stats[employeeKey][itemKey].maxScore = Math.max(stats[employeeKey][itemKey].maxScore, score);
+            stats[employeeKey][itemKey].minScore = Math.min(stats[employeeKey][itemKey].minScore, score);
+          });
+        }
+        
+        // 准备CSV数据
+        let csvContent = '被评人ID,被评人姓名,部门,评分项ID,评分项名称,评价次数,平均分,最高分,最低分\n';
+        
+        for (const [employeeKey, items] of Object.entries(stats)) {
+          const [employeeId, employeeName, department] = employeeKey.split('_');
+          
+          for (const [itemKey, itemStats] of Object.entries(items)) {
+            const [itemId, itemName] = itemKey.split('_');
+            const avgScore = (itemStats.totalScore / itemStats.count).toFixed(2);
+            
+            // 处理CSV中的特殊字符
+            const name = employeeName.replace(/"/g, '""');
+            const dept = department.replace(/"/g, '""');
+            const ratingItemName = itemName.replace(/"/g, '""');
+            
+            csvContent += `${employeeId},"${name}","${dept}",${itemId},"${ratingItemName}",${itemStats.count},${avgScore},${itemStats.maxScore},${itemStats.minScore}\n`;
+          }
+        }
+        
+        // 创建下载链接
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          link.setAttribute('download', `绩效评分统计_${timestamp}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          showNotification('导出成功', '评分统计已导出为CSV文件', 'success');
+        } else {
+          showNotification('导出失败', '您的浏览器不支持文件导出，请尝试使用现代浏览器', 'error');
+        }
+      }
+    
+
+    
+    // 填充评分项复选框组
+    function populateRatingItemsCheckboxes() {
+      const container = document.getElementById('ratingItemsGroup');
+      container.innerHTML = '';
+      
+      for (const [id, item] of Object.entries(globalData.ratingItems)) {
+        if (item.enabled) {
+          const div = document.createElement('div');
+          div.className = 'checkbox-group-item';
+          div.innerHTML = `
+            <input type="checkbox" name="ratingItems" value="${id}" class="checkbox-group-checkbox" id="ratingItem${id}">
+            <label for="ratingItem${id}">${item.name}</label>
+          `;
+          container.appendChild(div);
+        }
+      }
+    }
+    
+    // 加载员工的评分项（用于评价表单）
+
+    
+    // 编辑员工
+    async function editEmployee(id) {
+      const employee = globalData.employees[id];
+      if (!employee) return;
+      
+      document.getElementById('employeeModalTitle').textContent = '编辑员工';
+      document.getElementById('employeeId').value = id;
+      document.getElementById('employeeName').value = employee.name;
+      document.getElementById('employeeDepartment').value = employee.department;
+      
+      // 清空之前的选择
+      document.querySelectorAll('input[name="ratingItems"]').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      
+      try {
+        // 调用API获取最新的员工-评分项关联数据
+        const response = await fetch('/api/employee-rating-relations');
+        if (response.ok) {
+          const latestRelations = await response.json();
+          // 更新本地存储的关联数据
+          globalData.employeeRatingRelations = latestRelations;
+        }
+      } catch (error) {
+        console.error('获取评分项关联数据失败:', error);
+        // 出错时继续使用本地已有数据
+      }
+      
+      // 勾选已关联的评分项
+      const relationIds = globalData.employeeRatingRelations[id] || [];
+      relationIds.forEach(rid => {
+        const checkbox = document.querySelector(`input[name="ratingItems"][value="${rid}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+      
+      hideErrors(document.getElementById('employeeForm'));
+      document.getElementById('employeeModal').classList.remove('hidden');
+    }
+    
+    // 编辑评分项
+    function editRatingItem(id) {
+      const item = globalData.ratingItems[id];
+      if (!item) return;
+      
+      document.getElementById('ratingItemModalTitle').textContent = '编辑评分项';
+      document.getElementById('ratingItemId').value = id;
+      document.getElementById('ratingItemName').value = item.name;
+      document.getElementById('ratingItemDescription').value = item.description;
+      document.getElementById('ratingItemEnabled').checked = item.enabled;
+      
+      hideErrors(document.getElementById('ratingItemForm'));
+      document.getElementById('ratingItemModal').classList.remove('hidden');
+    }
+    
+    // 查看评价详情
+    function viewEvaluationDetails(id) {
+      const result = globalData.evaluationResults[id];
+      if (!result) return;
+      
+      const employee = globalData.employees[result.employee_id];
+      if (!employee) return;
+      
+      // 重置页脚内容并添加删除按钮
+      const modalFooter = document.getElementById('evaluationDetailFooter');
+      modalFooter.innerHTML = `
+        <div class="flex justify-end">
+          <button id="deleteEvaluationBtn" data-id="${id}" class="btn-danger text-sm py-1 px-3">
+            <i class="fa fa-trash-o mr-1"></i> 删除
+          </button>
+        </div>
+      `;
+      
+      // 绑定删除按钮事件
+      document.getElementById('deleteEvaluationBtn').addEventListener('click', function() {
+        confirmDelete('evaluation-result', this.getAttribute('data-id'));
+      });
+      
+      let html = `
+        <div class="border-b border-neutral-200 pb-4">
+          <h4 class="font-medium text-lg mb-2">${employee.name}</h4>
+          <p class="text-neutral-500 text-sm">${employee.department}</p>
+          <div class="mt-3 grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-neutral-500">评价人：</span>
+              <span>${result.evaluator}</span>
+            </div>
+            <div>
+              <span class="text-neutral-500">评价时间：</span>
+              <span>${formatToBeijingTime(result.date)}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="font-medium mb-3">评分详情</h4>
+          <div class="space-y-4">
+      `;
+      
+      // 添加评分项
+      result.ratings.forEach(rating => {
+        const item = globalData.ratingItems[rating.item_id];
+        if (!item) return;
+        
+        html += `
+          <div>
+            <div class="flex justify-between mb-1">
+              <span>${item.name}</span>
+              <span class="font-medium">${rating.score}分</span>
+            </div>
+            <div class="h-2 bg-neutral-200 rounded-full mb-2">
+              <div class="h-full bg-primary rounded-full" style="width: ${parseFloat(rating.score) * 10}%"></div>
+            </div>
+            <p class="text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">${rating.comment || '无评语'}</p>
+          </div>
+        `;
+      });
+      
+      // 添加总体评价
+      // html += `
+      //     </div>
+      //   </div>
+        
+      //   <div class="pt-4 border-t border-neutral-200">
+      //     <h4 class="font-medium mb-3">总体评价</h4>
+      //     <p class="text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">${result.overall_comment || '无总体评价'}</p>
+      //   </div>
+      // `;
+      
+      document.getElementById('evaluationDetailContent').innerHTML = html;
+      document.getElementById('evaluationDetailModal').classList.remove('hidden');
+    }
+    
+    // 处理员工表单提交
+    async function handleEmployeeFormSubmit(e) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const employeeId = document.getElementById('employeeId').value;
+      const isEdit = !!employeeId;
+      
+      // 验证表单
+      let isValid = true;
+      const nameInput = document.getElementById('employeeName');
+      const departmentInput = document.getElementById('employeeDepartment');
+      const ratingCheckboxes = document.querySelectorAll('input[name="ratingItems"]:checked');
+      
+      if (!nameInput.value.trim()) {
+        showError(nameInput, '请输入姓名');
+        isValid = false;
+      } else {
+        hideError(nameInput);
+      }
+      
+      if (!departmentInput.value) {
+        showError(departmentInput, '请选择部门');
+        isValid = false;
+      } else {
+        hideError(departmentInput);
+      }
+      
+      if (ratingCheckboxes.length === 0) {
+        document.getElementById('ratingItemsError').classList.remove('hidden');
+        isValid = false;
+      } else {
+        document.getElementById('ratingItemsError').classList.add('hidden');
+      }
+      
+      if (!isValid) return;
+      
+      // 收集数据
+      const formData = {
+        name: nameInput.value.trim(),
+        department: departmentInput.value,
+        rating_items: Array.from(ratingCheckboxes).map(checkbox => parseInt(checkbox.value))
+      };
+      
+      try {
+        // 发送请求
+        let response;
+        if (isEdit) {
+          response = await fetch(`/api/employees/${employeeId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+          });
+        } else {
+          response = await fetch('/api/employees', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+          });
+        }
+        
+        if (response.ok) {
+          // 重新加载数据并关闭模态框
+          await loadAllData();
+          form.reset();
+          document.getElementById('employeeModal').classList.add('hidden');
+          showNotification(
+            isEdit ? '编辑成功' : '添加成功',
+            isEdit ? '员工信息已更新' : '新员工已添加'
+          );
+        } else {
+          throw new Error('操作失败');
+        }
+      } catch (error) {
+        console.error('处理员工数据失败:', error);
+        showNotification('操作失败', '无法保存员工信息，请重试', 'error');
+      }
+    }
+    
+    // 处理评分项表单提交
+    async function handleRatingItemFormSubmit(e) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const itemId = document.getElementById('ratingItemId').value;
+      const isEdit = !!itemId;
+      
+      // 验证表单
+      let isValid = true;
+      const nameInput = document.getElementById('ratingItemName');
+      
+      if (!nameInput.value.trim()) {
+        showError(nameInput, '请输入评分项名称');
+        isValid = false;
+      } else {
+        hideError(nameInput);
+      }
+      
+      if (!isValid) return;
+      
+      // 收集数据
+      const formData = {
+        name: nameInput.value.trim(),
+        description: document.getElementById('ratingItemDescription').value.trim(),
+        enabled: document.getElementById('ratingItemEnabled').checked
+      };
+      
+      try {
+        // 发送请求
+        let response;
+        if (isEdit) {
+          response = await fetch(`/api/rating-items/${itemId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+          });
+        } else {
+          response = await fetch('/api/rating-items', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+          });
+        }
+        
+        if (response.ok) {
+          // 重新加载数据并关闭模态框
+          await loadAllData();
+          form.reset();
+          document.getElementById('ratingItemModal').classList.add('hidden');
+          showNotification(
+            isEdit ? '编辑成功' : '添加成功',
+            isEdit ? '评分项已更新' : '新评分项已添加'
+          );
+        } else {
+          throw new Error('操作失败');
+        }
+      } catch (error) {
+        console.error('处理评分项数据失败:', error);
+        showNotification('操作失败', '无法保存评分项信息，请重试', 'error');
+      }
+    }
+    
+
+    
+    // 确认删除
+    function confirmDelete(type, id) {
+      let message = '';
+      if (type === 'employee') {
+        message = '您确定要删除该员工吗？相关的评价数据也将被删除。';
+      } else if (type === 'rating-item') {
+        // 计算关联员工数
+        let relatedCount = 0;
+        for (const empRelations of Object.values(globalData.employeeRatingRelations)) {
+          if (empRelations.includes(parseInt(id))) {
+            relatedCount++;
+          }
+        }
+        
+        if (relatedCount > 0) {
+          message = `该评分项当前关联了${relatedCount}名员工，删除后相关评价数据也将受影响，确定要继续吗？`;
+        } else {
+          message = '您确定要删除该评分项吗？';
+        }
+      } else if (type === 'evaluation-result') {
+        message = '您确定要删除这条评价记录吗？删除后无法恢复。';
+      }
+      
+      document.getElementById('deleteConfirmMessage').textContent = message;
+      document.getElementById('confirmDeleteModal').classList.remove('hidden');
+      
+      // 存储要删除的类型和ID
+      document.getElementById('confirmDelete').setAttribute('data-type', type);
+      document.getElementById('confirmDelete').setAttribute('data-id', id);
+    }
+    
+    // 执行删除
+    async function executeDelete() {
+      const type = this.getAttribute('data-type');
+      const id = this.getAttribute('data-id');
+      
+      try {
+        let url = '';
+        if (type === 'employee') {
+          url = `/api/employees/${id}`;
+        } else if (type === 'rating-item') {
+          url = `/api/rating-items/${id}`;
+        } else if (type === 'evaluation-result') {
+          url = `/api/evaluation-results/${id}`;
+        }
+        
+        const response = await fetch(url, {method: 'DELETE'});
+        
+        if (response.ok) {
+          // 重新加载数据并关闭模态框
+          await loadAllData();
+          document.getElementById('confirmDeleteModal').classList.add('hidden');
+          // 如果是评价结果删除，同时关闭评价详情弹窗
+          if (type === 'evaluation-result') {
+            document.getElementById('evaluationDetailModal').classList.add('hidden');
+          }
+          // 如果是评分项删除，更新批量删除按钮显示
+          if (type === 'rating-item') {
+            updateBatchDeleteButtonVisibility();
+          }
+          showNotification('删除成功', '记录已删除', 'success');
+        } else {
+          throw new Error('删除失败');
+        }
+      } catch (error) {
+        console.error('删除失败:', error);
+        showNotification('删除失败', '无法删除记录，请重试', 'error');
+      }
+    }
+    
+    // 筛选员工
+    function filterEmployees() {
+      const searchTerm = document.getElementById('employeeSearch').value.toLowerCase().trim();
+      const department = document.getElementById('employeeDepartmentFilter').value;
+      
+      const filtered = {};
+      
+      for (const [id, employee] of Object.entries(globalData.employees)) {
+        const matchesSearch = searchTerm === '' || 
+                             employee.name.toLowerCase().includes(searchTerm) ||
+                             employee.department.toLowerCase().includes(searchTerm);
+                              
+        // 使用includes来增加匹配的容错性，避免因大小写或空格问题导致筛选失效
+        const matchesDepartment = department === '' || employee.department.includes(department);
+        
+        if (matchesSearch && matchesDepartment) {
+          filtered[id] = employee;
+        }
+      }
+      
+      renderEmployeesTable(filtered);
+      // 筛选后更新批量删除按钮显示
+      setTimeout(() => {
+        updateBatchDeleteEmployeesButtonVisibility();
+      }, 100);
+    }
+    
+    // 筛选评分项
+    function filterRatingItems() {
+      const searchTerm = document.getElementById('ratingItemSearch').value.toLowerCase().trim();
+      
+      const filtered = {};
+      
+      for (const [id, item] of Object.entries(globalData.ratingItems)) {
+        if (searchTerm === '' || 
+            item.name.toLowerCase().includes(searchTerm) ||
+            item.description.toLowerCase().includes(searchTerm)) {
+          filtered[id] = item;
+        }
+      }
+      
+      renderRatingItemsTable(filtered);
+      // 筛选后更新批量删除按钮显示
+      setTimeout(() => {
+        updateBatchDeleteButtonVisibility();
+      }, 100);
+    }
+    
+    // 筛选评价结果
+    function filterEvaluationResults() {
+      const employeeId = document.getElementById('evaluationEmployeeFilter').value;
+      const evaluator = document.getElementById('evaluationEvaluatorFilter').value.toLowerCase().trim();
+      
+      const filtered = {};
+      
+      for (const [id, result] of Object.entries(globalData.evaluationResults)) {
+        // 按被评人筛选
+        const matchesEmployee = employeeId === '' || result.employee_id === employeeId;
+        
+        // 按评价人筛选
+        const matchesEvaluator = evaluator === '' || result.evaluator.toLowerCase().includes(evaluator);
+        
+        if (matchesEmployee && matchesEvaluator) {
+          filtered[id] = result;
+        }
+      }
+      
+      renderEvaluationResultsTable(filtered);
+    }
+    
+    // 初始化评价结果筛选下拉框
+    function initEvaluationFilters() {
+      const employeeSelect = document.getElementById('evaluationEmployeeFilter');
+      if (!employeeSelect) return;
+      
+      // 清空现有选项（保留"全部员工"）
+      employeeSelect.innerHTML = '<option value="">全部员工</option>';
+      
+      // 添加员工选项
+      const employees = Object.entries(globalData.employees).sort((a, b) => {
+        // 按部门分组，然后按姓名排序
+        if (a[1].department !== b[1].department) {
+          return a[1].department.localeCompare(b[1].department);
+        }
+        return a[1].name.localeCompare(b[1].name);
+      });
+      
+      employees.forEach(([id, employee]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = `${employee.name} (${employee.department})`;
+        employeeSelect.appendChild(option);
+      });
+    }
+    
+    // 将时间转换为北京时间显示（UTC+8）
+    function formatToBeijingTime(dateString) {
+      if (!dateString) return '';
+      
+      try {
+        let date;
+        
+        // 处理不同的时间格式
+        if (dateString.includes('T')) {
+          // ISO 格式：2024-01-01T12:00:00 或 2024-01-01T12:00:00Z
+          // 如果包含 Z，说明是 UTC 时间
+          // 如果不包含时区信息，假设是 UTC 时间
+          if (dateString.endsWith('Z')) {
+            date = new Date(dateString);
+          } else if (dateString.includes('+') || dateString.includes('-', 10)) {
+            // 包含时区偏移，直接解析
+            date = new Date(dateString);
+          } else {
+            // 没有时区信息，假设是 UTC 时间
+            date = new Date(dateString + 'Z');
+          }
+        } else if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+          // 格式：2024-01-01 12:00:00
+          // 假设这是 UTC 时间，需要转换为北京时间
+          date = new Date(dateString.replace(' ', 'T') + 'Z');
+        } else {
+          // 尝试直接解析
+          date = new Date(dateString);
+        }
+        
+        // 检查日期是否有效
+        if (isNaN(date.getTime())) {
+          return dateString; // 如果解析失败，返回原始字符串
+        }
+        
+        // 转换为北京时间（UTC+8）
+        // 使用 getTime() 获取 UTC 时间戳，然后加 8 小时
+        const beijingTime = new Date(date.getTime() + (8 * 60 * 60 * 1000));
+        
+        // 格式化为：YYYY-MM-DD HH:mm:ss
+        const year = beijingTime.getUTCFullYear();
+        const month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(beijingTime.getUTCDate()).padStart(2, '0');
+        const hours = String(beijingTime.getUTCHours()).padStart(2, '0');
+        const minutes = String(beijingTime.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(beijingTime.getUTCSeconds()).padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      } catch (error) {
+        console.error('时间格式化错误:', error, dateString);
+        return dateString; // 出错时返回原始字符串
+      }
+    }
+    
+    // 显示通知
+    function showNotification(title, message, type = 'success') {
+      const notification = document.getElementById('notification');
+      const notificationTitle = document.getElementById('notificationTitle');
+      const notificationMessage = document.getElementById('notificationMessage');
+      const notificationIcon = document.getElementById('notificationIcon');
+      
+      notificationTitle.textContent = title;
+      notificationMessage.textContent = message;
+      
+      // 设置图标
+      notificationIcon.className = '';
+      if (type === 'success') {
+        notificationIcon.className = 'mr-3 text-success text-xl';
+        notificationIcon.innerHTML = '<i class="fa fa-check-circle"></i>';
+      } else if (type === 'error') {
+        notificationIcon.className = 'mr-3 text-danger text-xl';
+        notificationIcon.innerHTML = '<i class="fa fa-exclamation-circle"></i>';
+      } else if (type === 'info') {
+        notificationIcon.className = 'mr-3 text-primary text-xl';
+        notificationIcon.innerHTML = '<i class="fa fa-info-circle"></i>';
+      }
+      
+      // 显示通知
+      notification.classList.remove('translate-x-full');
+      
+      // 3秒后自动关闭
+      setTimeout(hideNotification, 3000);
+    }
+    
+    // 隐藏通知
+    function hideNotification() {
+      document.getElementById('notification').classList.add('translate-x-full');
+    }
+    
+    // 显示表单错误
+    function showError(input, message) {
+      input.classList.add('field-error');
+      const errorElement = input.nextElementSibling;
+      if (errorElement && errorElement.classList.contains('error-message')) {
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+      }
+    }
+    
+    // 隐藏表单错误
+    function hideError(input) {
+      input.classList.remove('field-error');
+      const errorElement = input.nextElementSibling;
+      if (errorElement && errorElement.classList.contains('error-message')) {
+        errorElement.classList.add('hidden');
+      }
+    }
+    
+    // 隐藏表单所有错误
+    function hideErrors(form) {
+      const inputs = form.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => hideError(input));
+    }
+    
+    // ========== 新增功能实现 ==========
+    
+    // 批量操作
+    async function handleBatchOperation() {
+      const operationType = document.getElementById('batchOperationType').value;
+      const department = document.getElementById('batchDepartment').value;
+      
+      let message = '';
+      if (operationType === 'department') {
+        if (!department) {
+          showNotification('操作失败', '请选择部门', 'error');
+          return;
+        }
+        message = `确定要删除部门 "${department}" 的所有员工吗？此操作不可撤销。`;
+      } else {
+        message = '确定要删除系统中的所有员工吗？这是一个危险操作，所有员工数据将被永久删除！';
+      }
+      
+      if (!confirm(message)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/employees/batch-delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            type: operationType === 'department' ? 'department' : 'all',
+            department: operationType === 'department' ? department : undefined
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('batchOperationsModal').classList.add('hidden');
+          await loadAllData();
+          showNotification('删除成功', `已删除 ${result.deleted_count} 名员工`, 'success');
+        } else {
+          showNotification('删除失败', result.error || '删除过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('批量删除失败:', error);
+        showNotification('删除失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+    
+    // 填充批量关联评分项复选框
+    function populateAssociateRatingItems() {
+      const container = document.getElementById('associateRatingItemsGroup');
+      container.innerHTML = '';
+      
+      for (const [id, item] of Object.entries(globalData.ratingItems)) {
+        if (item.enabled) {
+          const div = document.createElement('div');
+          div.className = 'checkbox-group-item';
+          div.innerHTML = `
+            <input type="checkbox" name="associateRatingItems" value="${id}" class="checkbox-group-checkbox" id="associateRatingItem${id}">
+            <label for="associateRatingItem${id}">${item.name}</label>
+          `;
+          container.appendChild(div);
+        }
+      }
+    }
+    
+    // 批量关联评分项
+    async function handleBatchAssociate() {
+      const associateType = document.getElementById('associateType').value;
+      
+      if (associateType === 'department') {
+        const department = document.getElementById('associateDepartment').value;
+        const checkboxes = document.querySelectorAll('input[name="associateRatingItems"]:checked');
+        const ratingItemIds = Array.from(checkboxes).map(cb => cb.value);
+        
+        if (!department) {
+          showNotification('操作失败', '请选择部门', 'error');
+          return;
+        }
+        
+        if (ratingItemIds.length === 0) {
+          showNotification('操作失败', '请至少选择一个评分项', 'error');
+          return;
+        }
+        
+        try {
+          const response = await fetch('/api/employee-rating-relations/batch-by-department', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              department: department,
+              rating_item_ids: ratingItemIds
+            })
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            document.getElementById('batchAssociateModal').classList.add('hidden');
+            await loadAllData();
+            showNotification('关联成功', `已为 ${result.updated_count} 名员工关联评分项`, 'success');
+          } else {
+            showNotification('关联失败', result.error || '关联过程中发生错误', 'error');
+          }
+        } catch (error) {
+          console.error('批量关联失败:', error);
+          showNotification('关联失败', '无法连接到服务器，请重试', 'error');
+        }
+      } else if (associateType === 'json') {
+        const fileInput = document.getElementById('jsonFileInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+          showNotification('导入失败', '请选择JSON文件', 'error');
+          return;
+        }
+        
+        try {
+          const fileText = await fileInput.files[0].text();
+          const jsonData = JSON.parse(fileText);
+          
+          const response = await fetch('/api/employee-rating-relations/import', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(jsonData)
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            document.getElementById('batchAssociateModal').classList.add('hidden');
+            fileInput.value = '';
+            await loadAllData();
+            showNotification('导入成功', `已更新 ${result.updated_count} 个员工的关联关系`, 'success');
+          } else {
+            showNotification('导入失败', result.error || '导入过程中发生错误', 'error');
+          }
+        } catch (error) {
+          console.error('JSON导入失败:', error);
+          showNotification('导入失败', 'JSON文件格式错误或无法解析', 'error');
+        }
+      } else if (associateType === 'export') {
+        try {
+          const response = await fetch('/api/employee-rating-relations/export');
+          const data = await response.json();
+          
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.setAttribute('href', url);
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          link.setAttribute('download', `员工评分项关联_${timestamp}.json`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          document.getElementById('batchAssociateModal').classList.add('hidden');
+          showNotification('导出成功', '关联关系已导出为JSON文件', 'success');
+        } catch (error) {
+          console.error('导出失败:', error);
+          showNotification('导出失败', '无法导出数据，请重试', 'error');
+        }
+      }
+    }
+    
+    // 清除评价记录
+    async function handleClearEvaluation() {
+      const clearType = document.getElementById('clearEvaluationType').value;
+      
+      let data = { type: clearType };
+      let message = '';
+      
+      if (clearType === 'date_range') {
+        const startDate = document.getElementById('clearStartDate').value;
+        const endDate = document.getElementById('clearEndDate').value;
+        
+        if (!startDate || !endDate) {
+          showNotification('操作失败', '请选择日期范围', 'error');
+          return;
+        }
+        
+        data.start_date = startDate;
+        data.end_date = endDate;
+        message = `确定要清除 ${startDate} 至 ${endDate} 期间的所有评价记录吗？此操作不可撤销。`;
+      } else if (clearType === 'evaluator') {
+        const evaluator = document.getElementById('clearEvaluator').value.trim();
+        
+        if (!evaluator) {
+          showNotification('操作失败', '请输入评价人姓名', 'error');
+          return;
+        }
+        
+        data.evaluator = evaluator;
+        message = `确定要清除评价人 "${evaluator}" 的所有评价记录吗？此操作不可撤销。`;
+      } else if (clearType === 'employee_id') {
+        const employeeId = document.getElementById('clearEmployeeId').value.trim();
+        
+        if (!employeeId) {
+          showNotification('操作失败', '请输入员工ID', 'error');
+          return;
+        }
+        
+        data.employee_id = employeeId;
+        message = `确定要清除员工ID "${employeeId}" 的所有评价记录吗？此操作不可撤销。`;
+      } else {
+        message = '确定要清除系统中的所有评价记录吗？这是一个危险操作，所有评价数据将被永久删除！';
+      }
+      
+      if (!confirm(message)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/evaluation-results/clear', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('clearEvaluationModal').classList.add('hidden');
+          await loadAllData();
+          showNotification('清除成功', `已清除 ${result.deleted_count} 条评价记录`, 'success');
+        } else {
+          showNotification('清除失败', result.error || '清除过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('清除评价记录失败:', error);
+        showNotification('清除失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+    
+    // 获取选中的评分项ID列表
+    function getSelectedRatingItemIds() {
+      const checkboxes = document.querySelectorAll('.rating-item-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+    
+    // 更新全选复选框状态
+    function updateSelectAllCheckbox() {
+      const selectAll = document.getElementById('selectAllRatingItems');
+      const checkboxes = document.querySelectorAll('.rating-item-checkbox');
+      
+      if (checkboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+      }
+      
+      const checkedCount = document.querySelectorAll('.rating-item-checkbox:checked').length;
+      if (checkedCount === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      } else if (checkedCount === checkboxes.length) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+      } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+      }
+    }
+    
+    // 更新批量删除按钮显示
+    function updateBatchDeleteButtonVisibility() {
+      const selectedIds = getSelectedRatingItemIds();
+      const batchDeleteBtn = document.getElementById('batchDeleteRatingItemsBtn');
+      
+      if (selectedIds.length > 0) {
+        batchDeleteBtn.style.display = 'inline-block';
+        batchDeleteBtn.innerHTML = `<i class="fa fa-trash mr-1"></i> 批量删除 (${selectedIds.length})`;
+      } else {
+        batchDeleteBtn.style.display = 'none';
+      }
+      
+      updateSelectAllCheckbox();
+    }
+    
+    // 获取选中的员工ID列表
+    function getSelectedEmployeeIds() {
+      const checkboxes = document.querySelectorAll('.employee-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+    
+    // 更新批量删除员工按钮显示
+    function updateBatchDeleteEmployeesButtonVisibility() {
+      const selectedIds = getSelectedEmployeeIds();
+      const batchDeleteBtn = document.getElementById('batchDeleteEmployeesBtn');
+      
+      if (selectedIds.length > 0) {
+        batchDeleteBtn.style.display = 'inline-block';
+        batchDeleteBtn.innerHTML = `<i class="fa fa-trash mr-1"></i> 批量删除 (${selectedIds.length})`;
+      } else {
+        batchDeleteBtn.style.display = 'none';
+      }
+      
+      // 更新全选复选框状态
+      updateSelectAllEmployeesCheckbox();
+    }
+    
+    // 更新全选员工复选框状态
+    function updateSelectAllEmployeesCheckbox() {
+      const selectAll = document.getElementById('selectAllEmployees');
+      const checkboxes = document.querySelectorAll('.employee-checkbox');
+      
+      if (checkboxes.length === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+      }
+      
+      const checkedCount = document.querySelectorAll('.employee-checkbox:checked').length;
+      if (checkedCount === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      } else if (checkedCount === checkboxes.length) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+      } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+      }
+    }
+    
+    // 批量删除员工（按ID列表）
+    async function handleBatchDeleteEmployees(ids) {
+      try {
+        const response = await fetch('/api/employees/batch-delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ ids: ids })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          await loadAllData();
+          
+          let message = `成功删除 ${result.deleted_count} 名员工`;
+          if (result.errors && result.errors.length > 0) {
+            message += `，${result.errors.length} 个失败`;
+            console.warn('批量删除错误:', result.errors);
+          }
+          
+          showNotification('批量删除成功', message, 'success');
+          
+          // 重置全选复选框
+          document.getElementById('selectAllEmployees').checked = false;
+          updateBatchDeleteEmployeesButtonVisibility();
+        } else {
+          showNotification('批量删除失败', result.error || '删除过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('批量删除失败:', error);
+        showNotification('批量删除失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+    
+    // 初始化批量新增员工模态框
+    function initBatchAddEmployeesModal() {
+      const rowsContainer = document.getElementById('batchEmployeesRows');
+      rowsContainer.innerHTML = '';
+      document.getElementById('batchEmployeesAutoAssociate').checked = true;
+      document.getElementById('batchEmployeesError').classList.add('hidden');
+      
+      // 默认添加3行
+      for (let i = 0; i < 3; i++) {
+        addEmployeeRow();
+      }
+      
+      // 设置键盘事件
+      setTimeout(() => {
+        setupEmployeeRowKeyboardEvents();
+      }, 100);
+    }
+    
+    // 显示粘贴对话框
+    function showPasteDialog(type) {
+      const title = type === 'employees' ? '从Excel粘贴员工数据' : '从Excel粘贴评分项数据';
+      const hint = type === 'employees' 
+        ? '请从Excel复制数据（姓名和部门两列），然后粘贴到下方文本框。每行一个员工，列之间用Tab分隔。'
+        : '请从Excel复制数据（评分项名称和描述两列），然后粘贴到下方文本框。每行一个评分项，列之间用Tab分隔。';
+      
+      const pasteText = prompt(`${title}\n\n${hint}\n\n请粘贴数据：`);
+      
+      if (pasteText && pasteText.trim()) {
+        if (type === 'employees') {
+          pasteEmployeesData(pasteText);
+        } else {
+          pasteRatingItemsData(pasteText);
+        }
+      }
+    }
+    
+    // 粘贴员工数据
+    function pasteEmployeesData(pasteText) {
+      const rowsContainer = document.getElementById('batchEmployeesRows');
+      rowsContainer.innerHTML = '';
+      
+      const lines = pasteText.split('\n').filter(line => line.trim());
+      const departments = ['头程客服部', '海外仓客服部', '对仓服务部', '海外运营部', '清关组', '数据组'];
+      
+      lines.forEach((line, index) => {
+        const cells = line.split('\t').map(cell => cell.trim());
+        if (cells.length >= 2) {
+          const name = cells[0];
+          const department = cells[1];
+          
+          // 添加行
+          addEmployeeRow();
+          
+          // 填充数据
+          const rows = rowsContainer.querySelectorAll('.grid');
+          const currentRow = rows[rows.length - 1];
+          if (currentRow) {
+            const nameInput = currentRow.querySelector('.employee-name-input');
+            const deptSelect = currentRow.querySelector('.employee-department-input');
+            
+            if (nameInput) nameInput.value = name;
+            if (deptSelect) {
+              // 尝试匹配部门
+              const matchedDept = departments.find(d => d.includes(department) || department.includes(d));
+              if (matchedDept) {
+                deptSelect.value = matchedDept;
+              } else {
+                deptSelect.value = department; // 如果匹配不到，直接设置值
+              }
+            }
+          }
+        }
+      });
+      
+      // 如果粘贴后没有数据，至少添加一行
+      if (rowsContainer.children.length === 0) {
+        addEmployeeRow();
+      }
+      
+      updateEmployeeRowNumbers();
+      setupEmployeeRowKeyboardEvents();
+      
+      showNotification('粘贴成功', `已粘贴 ${lines.length} 行数据`, 'success');
+    }
+    
+    // 粘贴评分项数据
+    function pasteRatingItemsData(pasteText) {
+      const rowsContainer = document.getElementById('batchRatingItemsRows');
+      rowsContainer.innerHTML = '';
+      
+      const lines = pasteText.split('\n').filter(line => line.trim());
+      
+      lines.forEach((line) => {
+        const cells = line.split('\t').map(cell => cell.trim());
+        if (cells.length >= 1) {
+          const name = cells[0];
+          const description = cells.length > 1 ? cells[1] : '';
+          
+          // 添加行
+          addRatingItemRow();
+          
+          // 填充数据
+          const rows = rowsContainer.querySelectorAll('.grid');
+          const currentRow = rows[rows.length - 1];
+          if (currentRow) {
+            const nameInput = currentRow.querySelector('.rating-item-name-input');
+            const descInput = currentRow.querySelector('.rating-item-description-input');
+            
+            if (nameInput) nameInput.value = name;
+            if (descInput && description) descInput.value = description;
+          }
+        }
+      });
+      
+      // 如果粘贴后没有数据，至少添加一行
+      if (rowsContainer.children.length === 0) {
+        addRatingItemRow();
+      }
+      
+      updateRatingItemRowNumbers();
+      
+      showNotification('粘贴成功', `已粘贴 ${lines.length} 行数据`, 'success');
+    }
+    
+    // 添加员工行
+    function addEmployeeRow() {
+      const rowsContainer = document.getElementById('batchEmployeesRows');
+      const rowIndex = rowsContainer.children.length + 1;
+      
+      const row = document.createElement('div');
+      row.className = 'px-4 py-3 grid grid-cols-12 gap-3 items-center hover:bg-neutral-50 transition-colors';
+      row.innerHTML = `
+        <div class="col-span-1 text-sm text-neutral-500">${rowIndex}</div>
+        <div class="col-span-4">
+          <input type="text" class="employee-name-input form-input text-sm" placeholder="请输入姓名">
+        </div>
+        <div class="col-span-5">
+          <select class="employee-department-input form-input text-sm">
+            <option value="">请选择部门</option>
+            <option value="头程客服部">头程客服部</option>
+            <option value="海外仓客服部">海外仓客服部</option>
+            <option value="对仓服务部">对仓服务部</option>
+            <option value="海外运营部">海外运营部</option>
+            <option value="清关组">清关组</option>
+            <option value="数据组">数据组</option>
+          </select>
+        </div>
+        <div class="col-span-2 text-center">
+          <button type="button" class="remove-employee-row-btn text-danger hover:text-danger/80 text-sm" title="删除">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      `;
+      
+      rowsContainer.appendChild(row);
+      
+      // 绑定删除按钮事件
+      const removeBtn = row.querySelector('.remove-employee-row-btn');
+      removeBtn.addEventListener('click', function() {
+        row.remove();
+        updateEmployeeRowNumbers();
+      });
+      
+      // 自动聚焦到第一个输入框
+      const nameInput = row.querySelector('.employee-name-input');
+      if (nameInput) {
+        setTimeout(() => nameInput.focus(), 100);
+      }
+    }
+    
+    // 更新员工行序号
+    function updateEmployeeRowNumbers() {
+      const rows = document.getElementById('batchEmployeesRows').children;
+      Array.from(rows).forEach((row, index) => {
+        const numberCell = row.querySelector('.col-span-1');
+        if (numberCell) {
+          numberCell.textContent = index + 1;
+        }
+      });
+    }
+    
+    // 批量新增员工
+    async function handleBatchAddEmployees(e) {
+      e.preventDefault();
+      
+      const rowsContainer = document.getElementById('batchEmployeesRows');
+      const rows = rowsContainer.querySelectorAll('.grid');
+      const autoAssociate = document.getElementById('batchEmployeesAutoAssociate').checked;
+      
+      const employees = [];
+      const errorMessages = [];
+      
+      rows.forEach((row, index) => {
+        const nameInput = row.querySelector('.employee-name-input');
+        const departmentSelect = row.querySelector('.employee-department-input');
+        
+        const name = nameInput ? nameInput.value.trim() : '';
+        const department = departmentSelect ? departmentSelect.value.trim() : '';
+        
+        // 跳过空行
+        if (!name && !department) {
+          return;
+        }
+        
+        // 验证必填项
+        if (!name) {
+          errorMessages.push(`第${index + 1}行: 姓名不能为空`);
+          if (nameInput) {
+            nameInput.classList.add('field-error');
+          }
+          return;
+        } else if (nameInput) {
+          nameInput.classList.remove('field-error');
+        }
+        
+        if (!department) {
+          errorMessages.push(`第${index + 1}行: 请选择部门`);
+          if (departmentSelect) {
+            departmentSelect.classList.add('field-error');
+          }
+          return;
+        } else if (departmentSelect) {
+          departmentSelect.classList.remove('field-error');
+        }
+        
+        employees.push({
+          name: name,
+          department: department,
+          rating_items: []  // 如果启用自动关联，后端会处理
+        });
+      });
+      
+      if (errorMessages.length > 0) {
+        document.getElementById('batchEmployeesError').textContent = errorMessages[0];
+        document.getElementById('batchEmployeesError').classList.remove('hidden');
+        return;
+      }
+      
+      if (employees.length === 0) {
+        document.getElementById('batchEmployeesError').textContent = '请至少添加一个员工';
+        document.getElementById('batchEmployeesError').classList.remove('hidden');
+        return;
+      }
+      
+      document.getElementById('batchEmployeesError').classList.add('hidden');
+      
+      try {
+        const response = await fetch('/api/employees/batch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ 
+            employees: employees,
+            auto_associate: autoAssociate
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('batchAddEmployeesModal').classList.add('hidden');
+          await loadAllData();
+          
+          let message = `成功添加 ${result.added_count} 个员工`;
+          if (result.errors && result.errors.length > 0) {
+            message += `，${result.errors.length} 个失败`;
+            console.warn('批量新增错误:', result.errors);
+          }
+          
+          showNotification('批量新增成功', message, 'success');
+        } else {
+          showNotification('批量新增失败', result.error || '添加过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('批量新增失败:', error);
+        showNotification('批量新增失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+    
+    // 初始化批量新增评分项模态框
+    function initBatchAddRatingItemsModal() {
+      const rowsContainer = document.getElementById('batchRatingItemsRows');
+      rowsContainer.innerHTML = '';
+      document.getElementById('batchRatingItemsEnabled').checked = true;
+      document.getElementById('batchRatingItemsError').classList.add('hidden');
+      
+      // 默认添加3行
+      for (let i = 0; i < 3; i++) {
+        addRatingItemRow();
+      }
+      
+      // 设置键盘事件
+      setTimeout(() => {
+        setupRatingItemRowKeyboardEvents();
+      }, 100);
+    }
+    
+    // 添加评分项行
+    function addRatingItemRow() {
+      const rowsContainer = document.getElementById('batchRatingItemsRows');
+      const rowIndex = rowsContainer.children.length + 1;
+      
+      const row = document.createElement('div');
+      row.className = 'px-4 py-3 grid grid-cols-12 gap-3 items-center hover:bg-neutral-50 transition-colors';
+      row.innerHTML = `
+        <div class="col-span-1 text-sm text-neutral-500">${rowIndex}</div>
+        <div class="col-span-4">
+          <input type="text" class="rating-item-name-input form-input text-sm" placeholder="请输入评分项名称" 
+                 data-row-index="${rowIndex}">
+        </div>
+        <div class="col-span-5">
+          <input type="text" class="rating-item-description-input form-input text-sm" placeholder="请输入描述（可选）" 
+                 data-row-index="${rowIndex}">
+        </div>
+        <div class="col-span-2 text-center">
+          <button type="button" class="remove-rating-item-row-btn text-danger hover:text-danger/80 text-sm" title="删除">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      `;
+      
+      rowsContainer.appendChild(row);
+      
+      // 绑定删除按钮事件
+      const removeBtn = row.querySelector('.remove-rating-item-row-btn');
+      removeBtn.addEventListener('click', function() {
+        row.remove();
+        updateRatingItemRowNumbers();
+        setupRatingItemRowKeyboardEvents();
+      });
+      
+      // 设置键盘事件
+      setupRatingItemRowKeyboardEvents();
+      
+      // 自动聚焦到第一个输入框（仅在添加新行时）
+      const nameInput = row.querySelector('.rating-item-name-input');
+      if (nameInput && rowsContainer.children.length === rowIndex) {
+        setTimeout(() => nameInput.focus(), 100);
+      }
+    }
+    
+    // 设置评分项行键盘事件
+    function setupRatingItemRowKeyboardEvents() {
+      const nameInputs = document.querySelectorAll('.rating-item-name-input');
+      const descInputs = document.querySelectorAll('.rating-item-description-input');
+      
+      nameInputs.forEach((input, index) => {
+        // 移除旧的事件监听器
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        
+        // Tab键：切换到描述输入框
+        newInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            const descInput = document.querySelectorAll('.rating-item-description-input')[index];
+            if (descInput) {
+              descInput.focus();
+            }
+          }
+          // Enter键：添加新行并聚焦到新行的名称输入框
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addRatingItemRow();
+          }
+        });
+      });
+      
+      descInputs.forEach((input, index) => {
+        // 移除旧的事件监听器
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        
+        // Tab键：切换到下一行的名称输入框，或添加新行
+        newInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            const nextNameInput = document.querySelectorAll('.rating-item-name-input')[index + 1];
+            if (nextNameInput) {
+              nextNameInput.focus();
+            } else {
+              // 如果没有下一行，添加新行
+              addRatingItemRow();
+            }
+          }
+          // Enter键：添加新行
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addRatingItemRow();
+          }
+        });
+      });
+    }
+    
+    // 更新评分项行序号
+    function updateRatingItemRowNumbers() {
+      const rows = document.getElementById('batchRatingItemsRows').children;
+      Array.from(rows).forEach((row, index) => {
+        const numberCell = row.querySelector('.col-span-1');
+        if (numberCell) {
+          numberCell.textContent = index + 1;
+        }
+      });
+    }
+    
+    // 批量新增评分项
+    async function handleBatchAddRatingItems(e) {
+      e.preventDefault();
+      
+      const rowsContainer = document.getElementById('batchRatingItemsRows');
+      const rows = rowsContainer.querySelectorAll('.grid');
+      const enabled = document.getElementById('batchRatingItemsEnabled').checked;
+      
+      const items = [];
+      const errorMessages = [];
+      
+      rows.forEach((row, index) => {
+        const nameInput = row.querySelector('.rating-item-name-input');
+        const descriptionInput = row.querySelector('.rating-item-description-input');
+        
+        const name = nameInput ? nameInput.value.trim() : '';
+        const description = descriptionInput ? descriptionInput.value.trim() : '';
+        
+        // 跳过空行
+        if (!name && !description) {
+          return;
+        }
+        
+        // 验证必填项
+        if (!name) {
+          errorMessages.push(`第${index + 1}行: 评分项名称不能为空`);
+          if (nameInput) {
+            nameInput.classList.add('field-error');
+          }
+          return;
+        } else if (nameInput) {
+          nameInput.classList.remove('field-error');
+        }
+        
+        items.push({
+          name: name,
+          description: description,
+          enabled: enabled
+        });
+      });
+      
+      if (errorMessages.length > 0) {
+        document.getElementById('batchRatingItemsError').textContent = errorMessages[0];
+        document.getElementById('batchRatingItemsError').classList.remove('hidden');
+        return;
+      }
+      
+      if (items.length === 0) {
+        document.getElementById('batchRatingItemsError').textContent = '请至少添加一个评分项';
+        document.getElementById('batchRatingItemsError').classList.remove('hidden');
+        return;
+      }
+      
+      document.getElementById('batchRatingItemsError').classList.add('hidden');
+      
+      try {
+        const response = await fetch('/api/rating-items/batch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ items: items })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('batchAddRatingItemsModal').classList.add('hidden');
+          await loadAllData();
+          
+          let message = `成功添加 ${result.added_count} 个评分项`;
+          if (result.errors && result.errors.length > 0) {
+            message += `，${result.errors.length} 个失败`;
+            console.warn('批量新增错误:', result.errors);
+          }
+          
+          showNotification('批量新增成功', message, 'success');
+        } else {
+          showNotification('批量新增失败', result.error || '添加过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('批量新增失败:', error);
+        showNotification('批量新增失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+    
+    // 批量删除评分项（按ID列表）
+    async function handleBatchDeleteRatingItems(ids) {
+      try {
+        const response = await fetch('/api/rating-items/batch-delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ ids: ids })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          await loadAllData();
+          
+          let message = `成功删除 ${result.deleted_count} 个评分项`;
+          if (result.errors && result.errors.length > 0) {
+            message += `，${result.errors.length} 个失败`;
+            console.warn('批量删除错误:', result.errors);
+          }
+          
+          showNotification('批量删除成功', message, 'success');
+          
+          // 重置全选复选框
+          document.getElementById('selectAllRatingItems').checked = false;
+          updateBatchDeleteButtonVisibility();
+        } else {
+          showNotification('批量删除失败', result.error || '删除过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('批量删除失败:', error);
+        showNotification('批量删除失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+    
+    // 备份数据库
+    async function backupDatabase() {
+      if (!confirm('确定要备份数据库吗？')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/backup', {
+          method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('备份成功', '数据库已成功备份', 'success');
+        } else {
+          showNotification('备份失败', result.error || '备份过程中发生错误', 'error');
+        }
+      } catch (error) {
+        console.error('备份失败:', error);
+        showNotification('备份失败', '无法连接到服务器，请重试', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

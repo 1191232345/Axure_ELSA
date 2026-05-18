@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>员工绩效评价 - 登录</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#FF7D00',
+            danger: '#F53F3F',
+            neutral: {
+              100: '#F5F7FA',
+              200: '#E5E6EB',
+              300: '#C9CDD4',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .btn-primary {
+        @apply bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50;
+      }
+      .form-input {
+        @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all;
+      }
+      .required-indicator {
+        @apply text-danger text-xs ml-1;
+      }
+      .field-error {
+        @apply border-danger focus:ring-danger/50 focus:border-danger;
+      }
+      .error-message {
+        @apply text-danger text-sm mt-1 flex items-center;
+      }
+      .login-container {
+        @apply min-h-screen flex items-center justify-center bg-neutral-100;
+      }
+      .login-card {
+        @apply bg-white rounded-2xl shadow-lg p-8 w-full max-w-md transform transition-all duration-300 hover:shadow-xl;
+      }
+      .login-header {
+        @apply mb-8 text-center;
+      }
+      .login-title {
+        @apply text-2xl font-bold text-neutral-700 mb-2;
+      }
+      .login-subtitle {
+        @apply text-neutral-500;
+      }
+      .form-group {
+        @apply mb-4;
+      }
+      .form-label {
+        @apply block text-sm font-medium text-neutral-700 mb-1;
+      }
+      .input-icon {
+        @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400;
+      }
+      .input-wrapper {
+        @apply relative;
+      }
+      .input-with-icon {
+        @apply pl-10;
+      }
+      .login-footer {
+        @apply mt-6 text-center text-sm text-neutral-500;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1 class="login-title">员工绩效评价系统</h1>
+        <p class="login-subtitle">请登录以继续</p>
+      </div>
+      
+      <form id="loginForm" method="POST" action="/login">
+        <!-- 错误消息区域 -->
+        {% if error %}
+        <div class="error-message mb-4 p-3 bg-danger/10 rounded-lg">
+          <i class="fa fa-exclamation-circle mr-2"></i>
+          {{ error }}
+        </div>
+        {% endif %}
+        
+        <!-- 用户名输入 -->
+        <div class="form-group">
+          <label for="username" class="form-label">用户名</label>
+          <div class="input-wrapper">
+            <i class="fa fa-user input-icon"></i>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              class="form-input input-with-icon" 
+              placeholder="请输入用户名" 
+              required
+              autofocus
+            >
+          </div>
+        </div>
+        
+        <!-- 密码输入 -->
+        <div class="form-group">
+          <label for="password" class="form-label">密码</label>
+          <div class="input-wrapper">
+            <i class="fa fa-lock input-icon"></i>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-input input-with-icon" 
+              placeholder="请输入密码" 
+              required
+            >
+          </div>
+        </div>
+        
+        <!-- 记住我选项 -->
+        <div class="form-group flex items-center">
+          <input type="checkbox" id="remember" name="remember" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary">
+          <label for="remember" class="ml-2 text-sm text-neutral-600">记住我</label>
+        </div>
+        
+        <!-- 登录按钮 -->
+        <div class="form-group">
+          <button type="submit" class="btn-primary w-full">
+            <i class="fa fa-sign-in mr-2"></i>登录
+          </button>
+        </div>
+      </form>
+      
+      <div class="login-footer">
+        <p>若有账号问题，请联系管理员/p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
