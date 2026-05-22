@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>价卡管理 - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            'card': '0 4px 16px rgba(27, 58, 75, 0.08)',
+            'card-hover': '0 8px 32px rgba(27, 58, 75, 0.1)',
+            'dropdown': '0 4px 16px rgba(27, 58, 75, 0.1)',
+            'header': '0 1px 3px rgba(27, 58, 75, 0.06)',
+            'accent': '0 4px 20px rgba(232, 168, 56, 0.15)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-display font-semibold tracking-wide">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                费用管理
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
+                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
+                <a href="/费用管理/价卡管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">价卡管理</a>
+                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-dark hover:bg-hover">批量获取费用</a>
+              </div>
+            </div>
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                对账
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/对账/成本明细/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">成本明细</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fas fa-bell"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fas fa-user-circle text-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-2 sm:px-3 lg:px-4 py-6">
+    <div class="bg-white rounded-lg shadow-card p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-primary">
+          <i class="fas fa-filter mr-2 text-accent"></i>筛选条件
+        </h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">价卡名称</label>
+          <input type="text" id="filterName" placeholder="请输入价卡名称" 
+                 class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">状态</label>
+          <select id="filterStatus" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+            <option value="">全部状态</option>
+            <option value="draft">草稿</option>
+            <option value="active">生效</option>
+            <option value="cancelled">已作废</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">生效时间（起）</label>
+          <input type="datetime-local" id="filterEffectiveDateStart" 
+                 class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">生效时间（止）</label>
+          <input type="datetime-local" id="filterEffectiveDateEnd" 
+                 class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+        </div>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button onclick="resetFilters()" class="btn btn-secondary">
+          <i class="fas fa-redo mr-1"></i>重置
+        </button>
+        <button onclick="applyFilters()" class="btn btn-secondary">
+          <i class="fas fa-search mr-2"></i>查询
+        </button>
+      </div>
+    </div>
+
+    <div class="mb-6 flex justify-start">
+      <button onclick="openCreateModal()" class="btn btn-primary">
+        <i class="fas fa-plus mr-2"></i>创建价卡
+      </button>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-light-bg">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                价卡名称
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                包含费用项
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                生效时间
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                失效时间
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                状态
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                创建时间
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody id="packageTableBody" class="divide-y divide-border-light">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="emptyState" class="hidden py-12 text-center">
+        <i class="fas fa-box-open text-4xl text-text-muted mb-4"></i>
+        <p class="text-text-secondary">暂无价卡数据</p>
+        <button onclick="openCreateModal()" class="btn btn-primary mt-4">
+          <i class="fas fa-plus mr-2"></i>创建第一个价卡
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <div id="packageModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">
+          <i class="fas fa-plus-circle mr-2 text-accent"></i>
+          <span id="modalTitleText">创建价卡</span>
+        </h3>
+        <button class="modal-close" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="packageForm">
+          <input type="hidden" id="packageId">
+          
+          <div class="form-section">
+            <h4 class="form-section-title">
+              <i class="fas fa-info-circle mr-2 text-accent"></i>基本信息
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-group">
+                <label class="form-label">价卡名称 <span class="text-danger">*</span></label>
+                <input type="text" id="packageName" required
+                       class="form-input" placeholder="请输入价卡名称">
+              </div>
+            </div>
+            
+            <div class="form-group mt-4">
+              <label class="form-label">价卡描述</label>
+              <textarea id="packageDescription" rows="3"
+                        class="form-input" placeholder="请输入价卡描述"></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="form-section-title">
+              <i class="fas fa-list-check mr-2 text-accent"></i>收费项
+            </h4>
+            
+            <div class="mb-4">
+              <div class="category-tabs mb-4">
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" class="fee-category-tab active" data-category="inbound" onclick="switchFeeCategory('inbound')">
+                    <i class="fas fa-download mr-1"></i>入库费
+                  </button>
+                  <button type="button" disabled class="fee-category-tab" data-category="outbound" onclick="switchFeeCategory('outbound')">
+                    <i class="fas fa-upload mr-1"></i>出库费
+                  </button>
+                  <button type="button" disabled class="fee-category-tab" data-category="storage" onclick="switchFeeCategory('storage')">
+                    <i class="fas fa-warehouse mr-1"></i>仓储费
+                  </button>
+                  <button type="button" disabled class="fee-category-tab" data-category="express" onclick="switchFeeCategory('express')">
+                    <i class="fas fa-truck mr-1"></i>快递费
+                  </button>
+                  <button type="button" disabled class="fee-category-tab" data-category="other" onclick="switchFeeCategory('other')">
+                    <i class="fas fa-ellipsis-h mr-1"></i>其他费用
+                  </button>
+                </div>
+              </div>
+              
+              <div id="feeCategoryContent">
+                <div class="flex items-center justify-end mb-3">
+                  <button type="button" onclick="addFeeRow()" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-plus mr-1"></i>新增行
+                  </button>
+                </div>
+                
+                <div class="overflow-x-auto border border-border rounded-lg">
+                  <table class="w-full">
+                    <thead class="bg-light-bg">
+                      <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">收费类型</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">收费项</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣方式</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="feeItemsTableBody" class="divide-y divide-border-light">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4 class="form-section-title">
+              <i class="fas fa-cog mr-2 text-accent"></i>其他设置
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-group">
+                <label class="form-label">生效时间</label>
+                <input type="datetime-local" id="effectiveDate" class="form-input">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">失效时间</label>
+                <input type="datetime-local" id="expiryDate" class="form-input">
+              </div>
+            </div>
+            
+            <div class="form-group mt-4">
+              <label class="flex items-center">
+                <input type="checkbox" id="packageStatus" class="form-checkbox">
+                <span class="ml-2 text-sm text-text-secondary">立即生效</span>
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button onclick="closeModal()" class="btn btn-secondary">
+          <i class="fas fa-times mr-2"></i>取消
+        </button>
+        <button onclick="savePackage()" class="btn btn-primary">
+          <i class="fas fa-save mr-2"></i>保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="detailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-eye mr-2 text-accent"></i>价卡详情
+        </h3>
+        <button class="modal-close" onclick="closeDetailModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body" id="detailContent">
+      </div>
+      
+      <div class="modal-footer">
+        <button onclick="closeDetailModal()" class="btn btn-secondary">
+          <i class="fas fa-times mr-2"></i>关闭
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

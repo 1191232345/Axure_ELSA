@@ -1,0 +1,6 @@
+{
+  "version": "3.0",
+  "lastUpdated": "2025-01-20",
+  "description": "套餐管理数据文件 - 支持多费用大类",
+  "note": "此文件为参考数据，实际数据存储在LocalStorage中"
+}
