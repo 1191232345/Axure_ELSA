@@ -7,7 +7,7 @@ const CONFIG = {
   
   DEFAULT_VALUES: {
     'inch-lbs': {
-      pallet: { length: 47.2, width: 31.5, height: 70.9, weight: 2205 },
+      pallet: { length: 40, width: 48, height: 100, weight: 1500 },
       sku: { length: 11.8, width: 7.9, height: 5.9, weight: 11 }
     },
     'cm-kg': {
@@ -36,7 +36,7 @@ const CONFIG = {
 
 let currentUnit = 'inch-lbs';
 let currentCalcMode = 'independent';
-let currentPackingMode = 'single';
+let currentPackingMode = 'auto';
 let skuCounter = 0;
 let currentIndependentResults = [];
 let currentPallet = null;
@@ -74,6 +74,283 @@ function getWeightUnit() {
 }
 
 // ==================== 计算模块 ====================
+class MaxRectsBinPack {
+  constructor(binWidth, binHeight) {
+    this.binWidth = binWidth;
+    this.binHeight = binHeight;
+    this.freeRects = [{ x: 0, y: 0, w: binWidth, h: binHeight }];
+    this.usedRects = [];
+  }
+
+  insert(width, height, heuristic) {
+    if (heuristic === undefined) heuristic = 'BSSF';
+    let bestNode = null;
+    let bestShortSideFit = Infinity;
+    let bestLongSideFit = Infinity;
+
+    for (let i = 0; i < this.freeRects.length; i++) {
+      const rect = this.freeRects[i];
+      if (rect.w >= width && rect.h >= height) {
+        const leftoverHoriz = Math.abs(rect.w - width);
+        const leftoverVert = Math.abs(rect.h - height);
+        const shortSideFit = Math.min(leftoverHoriz, leftoverVert);
+        const longSideFit = Math.max(leftoverHoriz, leftoverVert);
+
+        if (heuristic === 'BSSF') {
+          if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+            bestNode = { x: rect.x, y: rect.y, w: width, h: height };
+            bestShortSideFit = shortSideFit;
+            bestLongSideFit = longSideFit;
+          }
+        } else if (heuristic === 'BLSF') {
+          if (longSideFit < bestLongSideFit || (longSideFit === bestLongSideFit && shortSideFit < bestShortSideFit)) {
+            bestNode = { x: rect.x, y: rect.y, w: width, h: height };
+            bestShortSideFit = shortSideFit;
+            bestLongSideFit = longSideFit;
+          }
+        } else if (heuristic === 'BAF') {
+          const areaFit = rect.w * rect.h - width * height;
+          if (areaFit < bestShortSideFit || (areaFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+            bestNode = { x: rect.x, y: rect.y, w: width, h: height };
+            bestShortSideFit = areaFit;
+            bestLongSideFit = longSideFit;
+          }
+        }
+      }
+    }
+
+    if (!bestNode) return null;
+
+    this._placeRect(bestNode);
+    return bestNode;
+  }
+
+  insertWithRotation(width, height, heuristic) {
+    if (heuristic === undefined) heuristic = 'BSSF';
+    let bestNode = null;
+    let bestRotated = false;
+    let bestShortSideFit = Infinity;
+    let bestLongSideFit = Infinity;
+
+    for (let i = 0; i < this.freeRects.length; i++) {
+      const rect = this.freeRects[i];
+
+      if (rect.w >= width && rect.h >= height) {
+        const leftoverHoriz = Math.abs(rect.w - width);
+        const leftoverVert = Math.abs(rect.h - height);
+        const shortSideFit = Math.min(leftoverHoriz, leftoverVert);
+        const longSideFit = Math.max(leftoverHoriz, leftoverVert);
+
+        if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+          bestNode = { x: rect.x, y: rect.y, w: width, h: height };
+          bestRotated = false;
+          bestShortSideFit = shortSideFit;
+          bestLongSideFit = longSideFit;
+        }
+      }
+
+      if (rect.w >= height && rect.h >= width) {
+        const leftoverHoriz = Math.abs(rect.w - height);
+        const leftoverVert = Math.abs(rect.h - width);
+        const shortSideFit = Math.min(leftoverHoriz, leftoverVert);
+        const longSideFit = Math.max(leftoverHoriz, leftoverVert);
+
+        if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+          bestNode = { x: rect.x, y: rect.y, w: height, h: width };
+          bestRotated = true;
+          bestShortSideFit = shortSideFit;
+          bestLongSideFit = longSideFit;
+        }
+      }
+    }
+
+    if (!bestNode) return { placed: null, rotated: false };
+
+    this._placeRect(bestNode);
+    return { placed: bestNode, rotated: bestRotated };
+  }
+
+  _placeRect(node) {
+    const numFree = this.freeRects.length;
+    const newFreeRects = [];
+
+    for (let i = 0; i < numFree; i++) {
+      const free = this.freeRects[i];
+      if (!this._intersects(free, node)) {
+        newFreeRects.push(free);
+        continue;
+      }
+      const splits = this._splitFreeRect(free, node);
+      for (let j = 0; j < splits.length; j++) {
+        newFreeRects.push(splits[j]);
+      }
+    }
+
+    this.freeRects = this._pruneFreeRects(newFreeRects);
+    this.usedRects.push(node);
+  }
+
+  _splitFreeRect(freeRect, placedRect) {
+    const results = [];
+
+    if (placedRect.x > freeRect.x && placedRect.x < freeRect.x + freeRect.w) {
+      results.push({
+        x: freeRect.x,
+        y: freeRect.y,
+        w: placedRect.x - freeRect.x,
+        h: freeRect.h
+      });
+    }
+    if (placedRect.x + placedRect.w < freeRect.x + freeRect.w) {
+      results.push({
+        x: placedRect.x + placedRect.w,
+        y: freeRect.y,
+        w: freeRect.x + freeRect.w - placedRect.x - placedRect.w,
+        h: freeRect.h
+      });
+    }
+    if (placedRect.y > freeRect.y && placedRect.y < freeRect.y + freeRect.h) {
+      results.push({
+        x: freeRect.x,
+        y: freeRect.y,
+        w: freeRect.w,
+        h: placedRect.y - freeRect.y
+      });
+    }
+    if (placedRect.y + placedRect.h < freeRect.y + freeRect.h) {
+      results.push({
+        x: freeRect.x,
+        y: placedRect.y + placedRect.h,
+        w: freeRect.w,
+        h: freeRect.y + freeRect.h - placedRect.y - placedRect.h
+      });
+    }
+
+    return results;
+  }
+
+  _pruneFreeRects(rects) {
+    const filtered = rects.filter(r => r.w > 0 && r.h > 0);
+    const result = [];
+
+    for (let i = 0; i < filtered.length; i++) {
+      let dominated = false;
+      for (let j = 0; j < filtered.length; j++) {
+        if (i === j) continue;
+        if (this._contains(filtered[j], filtered[i])) {
+          dominated = true;
+          break;
+        }
+      }
+      if (!dominated) {
+        result.push(filtered[i]);
+      }
+    }
+
+    return result;
+  }
+
+  _intersects(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x &&
+           a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  _contains(outer, inner) {
+    return outer.x <= inner.x && outer.y <= inner.y &&
+           outer.x + outer.w >= inner.x + inner.w &&
+           outer.y + outer.h >= inner.y + inner.h;
+  }
+
+  occupancy() {
+    let usedArea = 0;
+    for (let i = 0; i < this.usedRects.length; i++) {
+      usedArea += this.usedRects[i].w * this.usedRects[i].h;
+    }
+    return usedArea / (this.binWidth * this.binHeight);
+  }
+}
+
+function packLayerMaxRects(binWidth, binHeight, validOrientations, skuWeight, maxWeight) {
+  const packer = new MaxRectsBinPack(binWidth, binHeight);
+  const placements = [];
+  let totalWeight = 0;
+  const maxIterations = 2000;
+  let iterations = 0;
+
+  while (iterations < maxIterations) {
+    iterations++;
+
+    let bestNode = null;
+    let bestRotated = false;
+    let bestOrientation = null;
+    let bestShortSideFit = Infinity;
+    let bestLongSideFit = Infinity;
+
+    for (let i = 0; i < packer.freeRects.length; i++) {
+      const rect = packer.freeRects[i];
+
+      for (const ori of validOrientations) {
+        if (ori.l <= rect.w && ori.w <= rect.h) {
+          const leftoverHoriz = rect.w - ori.l;
+          const leftoverVert = rect.h - ori.w;
+          const shortSideFit = Math.min(leftoverHoriz, leftoverVert);
+          const longSideFit = Math.max(leftoverHoriz, leftoverVert);
+
+          if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+            bestNode = { x: rect.x, y: rect.y, w: ori.l, h: ori.w };
+            bestRotated = false;
+            bestOrientation = ori;
+            bestShortSideFit = shortSideFit;
+            bestLongSideFit = longSideFit;
+          }
+        }
+
+        if (ori.w <= rect.w && ori.l <= rect.h) {
+          const leftoverHoriz = rect.w - ori.w;
+          const leftoverVert = rect.h - ori.l;
+          const shortSideFit = Math.min(leftoverHoriz, leftoverVert);
+          const longSideFit = Math.max(leftoverHoriz, leftoverVert);
+
+          if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+            bestNode = { x: rect.x, y: rect.y, w: ori.w, h: ori.l };
+            bestRotated = true;
+            bestOrientation = ori;
+            bestShortSideFit = shortSideFit;
+            bestLongSideFit = longSideFit;
+          }
+        }
+      }
+    }
+
+    if (!bestNode) break;
+
+    if (skuWeight > 0 && totalWeight + skuWeight > maxWeight) break;
+
+    packer._placeRect(bestNode);
+
+    const placement = {
+      x: bestNode.x,
+      y: bestNode.y,
+      l: bestNode.w,
+      w: bestNode.h,
+      h: bestOrientation.h,
+      orientation: bestOrientation
+    };
+    if (bestRotated) {
+      placement.rotated = true;
+    }
+
+    placements.push(placement);
+    totalWeight += skuWeight;
+  }
+
+  return {
+    placements,
+    count: placements.length,
+    weight: totalWeight
+  };
+}
+
 function calculateForOrientation(pallet, sku, skuWeight) {
   const countL = Math.floor(pallet.length / sku.l);
   const countW = Math.floor(pallet.width / sku.w);
@@ -239,147 +516,14 @@ function calculateCombinedLoading(pallet, skus) {
 
 function calculateLayerMixedPacking(pallet, sku) {
   const orientations = getOrientations(sku);
-  
+
   function packLayer(layerHeight, maxWeight) {
-    const placements = [];
-    let freeRects = [{ x: 0, y: 0, w: pallet.length, h: pallet.width }];
-    let totalWeight = 0;
-    
     const validOrientations = orientations.filter(ori => ori.h <= layerHeight);
     if (validOrientations.length === 0) return { placements: [], count: 0, weight: 0 };
-    
-    let iterations = 0;
-    const maxIterations = 1000;
-    
-    while (iterations < maxIterations) {
-      iterations++;
-      
-      let bestPlacement = null;
-      let bestScore = -1;
-      let bestRectIndex = -1;
-      
-      for (let ri = 0; ri < freeRects.length; ri++) {
-        const rect = freeRects[ri];
-        
-        for (const ori of validOrientations) {
-          if (ori.l <= rect.w && ori.w <= rect.h) {
-            if (sku.weight > 0 && totalWeight + sku.weight > maxWeight) continue;
-            
-            const areaUsed = ori.l * ori.w;
-            const waste = rect.w * rect.h - areaUsed;
-            const score = areaUsed * 1000 - waste;
-            
-            if (score > bestScore) {
-              bestScore = score;
-              bestPlacement = {
-                x: rect.x,
-                y: rect.y,
-                l: ori.l,
-                w: ori.w,
-                h: ori.h,
-                orientation: ori
-              };
-              bestRectIndex = ri;
-            }
-          }
-          
-          if (ori.w <= rect.w && ori.l <= rect.h) {
-            if (sku.weight > 0 && totalWeight + sku.weight > maxWeight) continue;
-            
-            const areaUsed = ori.l * ori.w;
-            const waste = rect.w * rect.h - areaUsed;
-            const score = areaUsed * 1000 - waste;
-            
-            if (score > bestScore) {
-              bestScore = score;
-              bestPlacement = {
-                x: rect.x,
-                y: rect.y,
-                l: ori.w,
-                w: ori.l,
-                h: ori.h,
-                orientation: ori,
-                rotated: true
-              };
-              bestRectIndex = ri;
-            }
-          }
-        }
-      }
-      
-      if (!bestPlacement) break;
-      
-      placements.push(bestPlacement);
-      totalWeight += sku.weight;
-      
-      const usedRect = freeRects[bestRectIndex];
-      const newFreeRects = [];
-      
-      for (let i = 0; i < freeRects.length; i++) {
-        if (i === bestRectIndex) continue;
-        newFreeRects.push(freeRects[i]);
-      }
-      
-      if (usedRect.w > bestPlacement.l) {
-        newFreeRects.push({
-          x: usedRect.x + bestPlacement.l,
-          y: usedRect.y,
-          w: usedRect.w - bestPlacement.l,
-          h: bestPlacement.w
-        });
-      }
-      
-      if (usedRect.h > bestPlacement.w) {
-        newFreeRects.push({
-          x: usedRect.x,
-          y: usedRect.y + bestPlacement.w,
-          w: usedRect.w,
-          h: usedRect.h - bestPlacement.w
-        });
-      }
-      
-      freeRects = mergeFreeRects(newFreeRects);
-    }
-    
-    return {
-      placements,
-      count: placements.length,
-      weight: totalWeight
-    };
+
+    return packLayerMaxRects(pallet.length, pallet.width, validOrientations, sku.weight, maxWeight);
   }
-  
-  function mergeFreeRects(rects) {
-    const merged = [];
-    const used = new Set();
-    
-    for (let i = 0; i < rects.length; i++) {
-      if (used.has(i)) continue;
-      
-      let current = { ...rects[i] };
-      
-      for (let j = 0; j < rects.length; j++) {
-        if (i === j || used.has(j)) continue;
-        
-        if (rects[j].x === current.x + current.w && 
-            rects[j].y === current.y && 
-            rects[j].h === current.h) {
-          current.w += rects[j].w;
-          used.add(j);
-        }
-        else if (rects[j].y === current.y + current.h && 
-                 rects[j].x === current.x && 
-                 rects[j].w === current.w) {
-          current.h += rects[j].h;
-          used.add(j);
-        }
-      }
-      
-      merged.push(current);
-    }
-    
-    return merged;
-  }
-  
+
   let remainingHeight = pallet.height;
   let remainingWeight = pallet.weight;
   const allLayers = [];
@@ -535,194 +679,14 @@ function calculateBetweenLayerMixed(pallet, sku) {
 
 function calculateFullMixedPacking(pallet, sku) {
   const orientations = getOrientations(sku);
-  
+
   function packLayerWithMixedOrientations(layerHeight, maxWeight) {
-    const placements = [];
-    let freeRects = [{ x: 0, y: 0, w: pallet.length, h: pallet.width }];
-    let totalWeight = 0;
-    
     const validOrientations = orientations.filter(ori => ori.h <= layerHeight);
     if (validOrientations.length === 0) return { placements: [], count: 0, weight: 0 };
-    
-    let iterations = 0;
-    const maxIterations = 2000;
-    
-    while (iterations < maxIterations) {
-      iterations++;
-      
-      let bestPlacement = null;
-      let bestScore = -1;
-      let bestRectIndex = -1;
-      
-      for (let ri = 0; ri < freeRects.length; ri++) {
-        const rect = freeRects[ri];
-        
-        for (const ori of validOrientations) {
-          if (ori.l <= rect.w && ori.w <= rect.h) {
-            if (sku.weight > 0 && totalWeight + sku.weight > maxWeight) continue;
-            
-            const fitWidth = Math.floor(rect.w / ori.l);
-            const fitHeight = Math.floor(rect.h / ori.w);
-            const countInRect = fitWidth * fitHeight;
-            
-            if (countInRect > 0) {
-              const areaUsed = countInRect * ori.l * ori.w;
-              const score = areaUsed;
-              
-              if (score > bestScore) {
-                bestScore = score;
-                bestPlacement = {
-                  x: rect.x,
-                  y: rect.y,
-                  l: ori.l,
-                  w: ori.w,
-                  h: ori.h,
-                  orientation: ori,
-                  count: countInRect,
-                  fitWidth,
-                  fitHeight
-                };
-                bestRectIndex = ri;
-              }
-            }
-          }
-          
-          if (ori.w <= rect.w && ori.l <= rect.h) {
-            if (sku.weight > 0 && totalWeight + sku.weight * Math.floor(rect.w / ori.w) * Math.floor(rect.h / ori.l) > maxWeight) continue;
-            
-            const fitWidth = Math.floor(rect.w / ori.w);
-            const fitHeight = Math.floor(rect.h / ori.l);
-            const countInRect = fitWidth * fitHeight;
-            
-            if (countInRect > 0) {
-              const areaUsed = countInRect * ori.l * ori.w;
-              const score = areaUsed;
-              
-              if (score > bestScore) {
-                bestScore = score;
-                bestPlacement = {
-                  x: rect.x,
-                  y: rect.y,
-                  l: ori.w,
-                  w: ori.l,
-                  h: ori.h,
-                  orientation: ori,
-                  rotated: true,
-                  count: countInRect,
-                  fitWidth,
-                  fitHeight
-                };
-                bestRectIndex = ri;
-              }
-            }
-          }
-        }
-      }
-      
-      if (!bestPlacement) break;
-      
-      const actualCount = Math.min(
-        bestPlacement.count,
-        sku.weight > 0 ? Math.floor((maxWeight - totalWeight) / sku.weight) : bestPlacement.count
-      );
-      
-      if (actualCount <= 0) break;
-      
-      for (let i = 0; i < actualCount; i++) {
-        const fi = Math.floor(i / bestPlacement.fitWidth);
-        const fj = i % bestPlacement.fitWidth;
-        placements.push({
-          x: bestPlacement.x + fj * bestPlacement.l,
-          y: bestPlacement.y + fi * bestPlacement.w,
-          l: bestPlacement.l,
-          w: bestPlacement.w,
-          h: bestPlacement.h,
-          orientation: bestPlacement.orientation
-        });
-      }
-      
-      totalWeight += actualCount * sku.weight;
-      
-      const usedRect = freeRects[bestRectIndex];
-      const newFreeRects = [];
-      
-      for (let i = 0; i < freeRects.length; i++) {
-        if (i === bestRectIndex) continue;
-        newFreeRects.push(freeRects[i]);
-      }
-      
-      const usedWidth = bestPlacement.fitWidth * bestPlacement.l;
-      const usedHeight = Math.ceil(actualCount / bestPlacement.fitWidth) * bestPlacement.w;
-      
-      if (usedRect.w > usedWidth) {
-        newFreeRects.push({
-          x: usedRect.x + usedWidth,
-          y: usedRect.y,
-          w: usedRect.w - usedWidth,
-          h: usedRect.h
-        });
-      }
-      
-      if (usedRect.h > usedHeight) {
-        newFreeRects.push({
-          x: usedRect.x,
-          y: usedRect.y + usedHeight,
-          w: usedWidth,
-          h: usedRect.h - usedHeight
-        });
-      }
-      
-      freeRects = mergeFreeRectsOptimized(newFreeRects);
-    }
-    
-    return {
-      placements,
-      count: placements.length,
-      weight: totalWeight
-    };
+
+    return packLayerMaxRects(pallet.length, pallet.width, validOrientations, sku.weight, maxWeight);
   }
-  
-  function mergeFreeRectsOptimized(rects) {
-    if (rects.length === 0) return [];
-    
-    const filtered = rects.filter(r => r.w > 0 && r.h > 0);
-    const merged = [];
-    const used = new Set();
-    
-    for (let i = 0; i < filtered.length; i++) {
-      if (used.has(i)) continue;
-      
-      let current = { ...filtered[i] };
-      let changed = true;
-      
-      while (changed) {
-        changed = false;
-        for (let j = 0; j < filtered.length; j++) {
-          if (i === j || used.has(j)) continue;
-          
-          if (filtered[j].x === current.x + current.w && 
-              filtered[j].y === current.y && 
-              filtered[j].h === current.h) {
-            current.w += filtered[j].w;
-            used.add(j);
-            changed = true;
-          }
-          else if (filtered[j].y === current.y + current.h && 
-                   filtered[j].x === current.x && 
-                   filtered[j].w === current.w) {
-            current.h += filtered[j].h;
-            used.add(j);
-            changed = true;
-          }
-        }
-      }
-      
-      merged.push(current);
-    }
-    
-    return merged;
-  }
-  
+
   let remainingHeight = pallet.height;
   let remainingWeight = pallet.weight;
   const allLayers = [];
@@ -896,6 +860,7 @@ let controls = null;
 let palletGroup = null;
 let skuGroup = null;
 let animationId = null;
+let needsRender = true;
 
 function init3DScene() {
   const canvas = document.getElementById('canvas3d');
@@ -969,17 +934,22 @@ function startAnimation() {
     if (controls) {
       controls.update();
     }
-    if (renderer && scene && camera) {
+    if (needsRender && renderer && scene && camera) {
       renderer.render(scene, camera);
+      needsRender = false;
     }
   }
   animate();
+  
+  if (controls) {
+    controls.addEventListener('change', () => { needsRender = true; });
+  }
 }
 
-function drawVisualization(result, pallet, sku) {
+function prepareScene() {
   if (!scene) {
     const success = init3DScene();
-    if (!success) return;
+    if (!success) return false;
   }
   
   const canvas = document.getElementById('canvas3d');
@@ -991,21 +961,36 @@ function drawVisualization(result, pallet, sku) {
   }
   
   clearScene();
+  return true;
+}
+
+function drawVisualization(result, pallet, sku) {
+  if (!prepareScene()) return;
   
   const scale = 1;
   
   createPallet(pallet, scale);
   createSkuBoxes(result, scale);
   adjustCamera(pallet);
+  needsRender = true;
 }
 
 function clearScene() {
-  while (palletGroup.children.length > 0) {
-    palletGroup.remove(palletGroup.children[0]);
-  }
-  while (skuGroup.children.length > 0) {
-    skuGroup.remove(skuGroup.children[0]);
-  }
+  [palletGroup, skuGroup].forEach(group => {
+    if (!group) return;
+    while (group.children.length > 0) {
+      const child = group.children[0];
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose());
+        } else {
+          child.material.dispose();
+        }
+      }
+      group.remove(child);
+    }
+  });
 }
 
 function createPallet(pallet, scale) {
@@ -1055,6 +1040,7 @@ function createSkuBoxes(result, scale) {
     opacity: 0.7
   });
   
+  const skuEdgesGeometry = new THREE.EdgesGeometry(skuGeometry);
   const skuEdgesMaterial = new THREE.LineBasicMaterial({
     color: CONFIG.COLORS.ACCENT_DARK
   });
@@ -1073,8 +1059,7 @@ function createSkuBoxes(result, scale) {
         skuMesh.receiveShadow = true;
         skuGroup.add(skuMesh);
         
-        const skuEdges = new THREE.EdgesGeometry(skuGeometry);
-        const skuWireframe = new THREE.LineSegments(skuEdges, skuEdgesMaterial);
+        const skuWireframe = new THREE.LineSegments(skuEdgesGeometry, skuEdgesMaterial);
         skuWireframe.position.copy(skuMesh.position);
         skuGroup.add(skuWireframe);
         
@@ -1092,20 +1077,7 @@ function adjustCamera(pallet) {
 }
 
 function drawMixedVisualization(result, pallet, sku) {
-  if (!scene) {
-    const success = init3DScene();
-    if (!success) return;
-  }
-  
-  const canvas = document.getElementById('canvas3d');
-  const container = canvas ? canvas.parentElement : null;
-  if (container && container.clientWidth > 0 && renderer) {
-    renderer.setSize(container.clientWidth, 500);
-    camera.aspect = container.clientWidth / 500;
-    camera.updateProjectionMatrix();
-  }
-  
-  clearScene();
+  if (!prepareScene()) return;
   
   const THREE = window.THREE;
   if (!THREE) return;
@@ -1183,6 +1155,7 @@ function drawMixedVisualization(result, pallet, sku) {
   });
   
   adjustCamera(pallet);
+  needsRender = true;
 }
 
 const SKU_COLORS = [
@@ -1195,20 +1168,7 @@ const SKU_COLORS = [
 ];
 
 function drawCombinedVisualization(combinedResult, pallet, skus) {
-  if (!scene) {
-    const success = init3DScene();
-    if (!success) return;
-  }
-  
-  const canvas = document.getElementById('canvas3d');
-  const container = canvas ? canvas.parentElement : null;
-  if (container && container.clientWidth > 0 && renderer) {
-    renderer.setSize(container.clientWidth, 500);
-    camera.aspect = container.clientWidth / 500;
-    camera.updateProjectionMatrix();
-  }
-  
-  clearScene();
+  if (!prepareScene()) return;
   
   const THREE = window.THREE;
   if (!THREE) return;
@@ -1266,6 +1226,7 @@ function drawCombinedVisualization(combinedResult, pallet, skus) {
   });
   
   adjustCamera(pallet);
+  needsRender = true;
 }
 
 function setView(viewType, btnEl) {
@@ -1275,11 +1236,13 @@ function setView(viewType, btnEl) {
   buttons.forEach(btn => btn.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
   
-  const maxDim = 200;
+  const maxDim = currentPallet 
+    ? Math.max(currentPallet.length, currentPallet.width, currentPallet.height) 
+    : 200;
   
   switch(viewType) {
     case 'top':
-      camera.position.set(0, maxDim * 2, 0);
+      camera.position.set(0, maxDim * 2, 0.01);
       break;
     case 'front':
       camera.position.set(0, maxDim * 0.5, maxDim * 2);
@@ -1297,7 +1260,26 @@ function setView(viewType, btnEl) {
 }
 
 // ==================== UI交互模块 ====================
+function convertValue(value, type, fromUnit, toUnit) {
+  if (fromUnit === toUnit || !value || isNaN(value)) return value;
+  
+  const fromMetric = fromUnit === 'cm-kg';
+  const toMetric = toUnit === 'cm-kg';
+  
+  if (type === 'length') {
+    if (!fromMetric && toMetric) return +(value * CONFIG.UNITS.INCH_TO_CM).toFixed(2);
+    if (fromMetric && !toMetric) return +(value / CONFIG.UNITS.INCH_TO_CM).toFixed(2);
+  } else if (type === 'weight') {
+    if (!fromMetric && toMetric) return +(value * CONFIG.UNITS.LBS_TO_KG).toFixed(2);
+    if (fromMetric && !toMetric) return +(value / CONFIG.UNITS.LBS_TO_KG).toFixed(2);
+  }
+  
+  return value;
+}
+
 function switchUnit(unit) {
+  const oldUnit = currentUnit;
+  if (oldUnit === unit) return;
   currentUnit = unit;
   
   document.getElementById('btn-cm-kg').classList.toggle('active', unit === 'cm-kg');
@@ -1316,13 +1298,40 @@ function switchUnit(unit) {
     if (el) el.textContent = weightUnit;
   }
   
+  const palletLengthEl = document.getElementById('palletLength');
+  const palletWidthEl = document.getElementById('palletWidth');
+  const palletHeightEl = document.getElementById('palletHeight');
+  const palletWeightEl = document.getElementById('palletWeight');
+  
+  if (palletLengthEl.value) palletLengthEl.value = convertValue(parseFloat(palletLengthEl.value), 'length', oldUnit, unit);
+  if (palletWidthEl.value) palletWidthEl.value = convertValue(parseFloat(palletWidthEl.value), 'length', oldUnit, unit);
+  if (palletHeightEl.value) palletHeightEl.value = convertValue(parseFloat(palletHeightEl.value), 'length', oldUnit, unit);
+  if (palletWeightEl.value) palletWeightEl.value = convertValue(parseFloat(palletWeightEl.value), 'weight', oldUnit, unit);
+  
   const defaultValues = CONFIG.DEFAULT_VALUES[unit].pallet;
-  document.getElementById('palletLength').placeholder = defaultValues.length;
-  document.getElementById('palletWidth').placeholder = defaultValues.width;
-  document.getElementById('palletHeight').placeholder = defaultValues.height;
-  document.getElementById('palletWeight').placeholder = defaultValues.weight;
+  palletLengthEl.placeholder = defaultValues.length;
+  palletWidthEl.placeholder = defaultValues.width;
+  palletHeightEl.placeholder = defaultValues.height;
+  palletWeightEl.placeholder = defaultValues.weight;
+  
+  document.querySelectorAll('.sku-item').forEach(item => {
+    const skuId = item.id;
+    const lengthEl = document.getElementById(`${skuId}-length`);
+    const widthEl = document.getElementById(`${skuId}-width`);
+    const heightEl = document.getElementById(`${skuId}-height`);
+    const weightEl = document.getElementById(`${skuId}-weight`);
+    
+    if (lengthEl && lengthEl.value) lengthEl.value = convertValue(parseFloat(lengthEl.value), 'length', oldUnit, unit);
+    if (widthEl && widthEl.value) widthEl.value = convertValue(parseFloat(widthEl.value), 'length', oldUnit, unit);
+    if (heightEl && heightEl.value) heightEl.value = convertValue(parseFloat(heightEl.value), 'length', oldUnit, unit);
+    if (weightEl && weightEl.value) weightEl.value = convertValue(parseFloat(weightEl.value), 'weight', oldUnit, unit);
+  });
   
   updateSkuUnits();
+  
+  if (document.getElementById('resultSection').style.display !== 'none') {
+    calculate();
+  }
 }
 
 function updateSkuUnits() {
@@ -1335,6 +1344,19 @@ function updateSkuUnits() {
       unit.textContent = index < 3 ? lengthUnit : weightUnit;
     });
   });
+}
+
+function toggleAdvancedOptions() {
+  const content = document.getElementById('advancedOptionsContent');
+  const arrow = document.getElementById('advancedOptionsArrow');
+  
+  if (content.classList.contains('expanded')) {
+    content.classList.remove('expanded');
+    arrow.style.transform = 'rotate(-90deg)';
+  } else {
+    content.classList.add('expanded');
+    arrow.style.transform = 'rotate(0deg)';
+  }
 }
 
 function switchCalcMode(mode) {
@@ -1358,6 +1380,7 @@ function switchCalcMode(mode) {
 function switchPackingMode(mode) {
   currentPackingMode = mode;
   
+  document.getElementById('btn-packing-auto').classList.toggle('active', mode === 'auto');
   document.getElementById('btn-packing-single').classList.toggle('active', mode === 'single');
   document.getElementById('btn-packing-between').classList.toggle('active', mode === 'between');
   document.getElementById('btn-packing-layer').classList.toggle('active', mode === 'layer');
@@ -1365,6 +1388,9 @@ function switchPackingMode(mode) {
   
   const descEl = document.getElementById('packingModeDesc');
   switch(mode) {
+    case 'auto':
+      descEl.textContent = '自动计算所有摆放模式，选择装载量最大的方案';
+      break;
     case 'single':
       descEl.textContent = '所有货物使用同一摆放方向，选择最优方向计算';
       break;
@@ -1380,7 +1406,27 @@ function switchPackingMode(mode) {
   }
 }
 
+function showGlobalError(message) {
+  const box = document.getElementById('globalErrorBox');
+  const text = document.getElementById('globalErrorText');
+  if (box && text) {
+    text.textContent = message;
+    box.style.display = 'flex';
+    box.style.animation = 'none';
+    box.offsetHeight;
+    box.style.animation = '';
+    clearTimeout(box._hideTimer);
+    box._hideTimer = setTimeout(() => { box.style.display = 'none'; }, 5000);
+  }
+}
+
+function hideGlobalError() {
+  const box = document.getElementById('globalErrorBox');
+  if (box) box.style.display = 'none';
+}
+
 function calculate() {
+  hideGlobalError();
   const pallet = {
     length: convertToMetric(parseFloat(document.getElementById('palletLength').value) || 0, 'length'),
     width: convertToMetric(parseFloat(document.getElementById('palletWidth').value) || 0, 'length'),
@@ -1393,7 +1439,7 @@ function calculate() {
   const skus = getAllSkus();
   
   if (skus.length === 0) {
-    alert('请至少添加一个SKU');
+    showGlobalError('请至少添加一个SKU');
     return;
   }
   
@@ -1406,29 +1452,73 @@ function calculate() {
   }
 }
 
+function getPackingModeLabel(type) {
+  switch(type) {
+    case 'single': return '单一方向';
+    case 'betweenLayerMixed': return '层间混合';
+    case 'layerMixed': return '层内混合';
+    case 'fullMixed': return '完全混合';
+    default: return '混合摆放';
+  }
+}
+
+function calculateBestPackingMode(pallet, sku) {
+  const allResults = [];
+  
+  const singleResult = calculateBestOrientation(pallet, sku);
+  singleResult.type = 'single';
+  singleResult.modeLabel = '单一方向';
+  allResults.push(singleResult);
+  
+  const betweenResult = calculateBetweenLayerMixed(pallet, sku);
+  allResults.push(betweenResult);
+  
+  const layerResult = calculateLayerMixedPacking(pallet, sku);
+  allResults.push(layerResult);
+  
+  const fullResult = calculateFullMixedPacking(pallet, sku);
+  allResults.push(fullResult);
+  
+  allResults.sort((a, b) => {
+    const qtyA = a.quantity || a.totalItems || 0;
+    const qtyB = b.quantity || b.totalItems || 0;
+    if (qtyB !== qtyA) return qtyB - qtyA;
+    
+    const utilA = parseFloat(a.spaceUtilization) || 0;
+    const utilB = parseFloat(b.spaceUtilization) || 0;
+    return utilB - utilA;
+  });
+  
+  return allResults[0];
+}
+
 function calculateAllSkusWithPackingMode(pallet, skus, packingMode) {
   const results = [];
   
   skus.forEach(sku => {
     let result;
     
-    switch(packingMode) {
-      case 'single':
-        result = calculateBestOrientation(pallet, sku);
-        result.type = 'single';
-        break;
-      case 'between':
-        result = calculateBetweenLayerMixed(pallet, sku);
-        break;
-      case 'layer':
-        result = calculateLayerMixedPacking(pallet, sku);
-        break;
-      case 'full':
-        result = calculateFullMixedPacking(pallet, sku);
-        break;
-      default:
-        result = calculateBestOrientation(pallet, sku);
-        result.type = 'single';
+    if (packingMode === 'auto') {
+      result = calculateBestPackingMode(pallet, sku);
+    } else {
+      switch(packingMode) {
+        case 'single':
+          result = calculateBestOrientation(pallet, sku);
+          result.type = 'single';
+          break;
+        case 'between':
+          result = calculateBetweenLayerMixed(pallet, sku);
+          break;
+        case 'layer':
+          result = calculateLayerMixedPacking(pallet, sku);
+          break;
+        case 'full':
+          result = calculateFullMixedPacking(pallet, sku);
+          break;
+        default:
+          result = calculateBestOrientation(pallet, sku);
+          result.type = 'single';
+      }
     }
     
     results.push({
@@ -1451,20 +1541,27 @@ function validatePalletInputs(pallet) {
   }
   
   if (errors.length > 0) {
-    alert(errors.join('\n'));
+    showGlobalError(errors.join('；'));
     return false;
   }
   
   return true;
 }
 
+function openResultModal() {
+  document.getElementById('resultModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeResultModal() {
+  document.getElementById('resultModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
 function displayMultipleResults(results, pallet) {
   const validResults = results.filter(r => r.result && (r.result.quantity > 0 || r.result.totalItems > 0));
   if (validResults.length === 0) {
-    document.getElementById('resultSection').style.display = 'block';
-    document.getElementById('skuCardsContainer').innerHTML = '<div class="text-center text-gray-500 py-4">所有SKU均无法放入该托盘</div>';
-    document.getElementById('selectedSkuDetail').style.display = 'none';
-    document.getElementById('warningBox').style.display = 'none';
+    showGlobalError('所有SKU均无法放入该托盘');
     return;
   }
   
@@ -1472,8 +1569,7 @@ function displayMultipleResults(results, pallet) {
   currentPallet = pallet;
   selectedSkuIndex = 0;
   
-  document.getElementById('resultSection').style.display = 'block';
-  document.getElementById('resultTitle').textContent = '各SKU最大装载件数';
+  document.getElementById('modalResultTitle').textContent = '各SKU最大装载件数';
   
   const weightUnit = getWeightUnit();
   
@@ -1483,6 +1579,8 @@ function displayMultipleResults(results, pallet) {
     const isSelected = index === 0;
     const quantity = result.quantity || result.totalItems || 0;
     const isMixed = result.type && result.type !== 'single';
+    const modeLabel = getPackingModeLabel(result.type);
+    const showAutoBadge = currentPackingMode === 'auto';
     
     let metaHTML = '';
     if (isMixed) {
@@ -1499,7 +1597,7 @@ function displayMultipleResults(results, pallet) {
            data-index="${index}">
         <div class="sku-result-card-header">
           <div class="sku-result-card-name">${sku.name}</div>
-          ${index === 0 ? '<span class="sku-result-card-badge">最优</span>' : ''}
+          ${showAutoBadge ? `<span class="auto-selected-mode"><i class="fas fa-wand-magic-sparkles"></i>${modeLabel}</span>` : ''}
         </div>
         <div class="sku-result-card-quantity">${quantity}</div>
         <div class="sku-result-card-unit">件</div>
@@ -1540,6 +1638,8 @@ function displayMultipleResults(results, pallet) {
     drawMixedVisualization(firstItem.result, pallet, firstItem.sku);
     document.getElementById('orientationInfo').textContent = `${firstItem.sku.name} - ${getPackingModeLabel(firstItem.result.type)}`;
   }
+  
+  openResultModal();
 }
 
 function getPackingModeLabel(type) {
@@ -1849,6 +1949,12 @@ function resetForm() {
 
 // ==================== 初始化 ====================
 function initPage() {
+  const defaults = CONFIG.DEFAULT_VALUES[currentUnit].pallet;
+  document.getElementById('palletLength').value = defaults.length;
+  document.getElementById('palletWidth').value = defaults.width;
+  document.getElementById('palletHeight').value = defaults.height;
+  document.getElementById('palletWeight').value = defaults.weight;
+  
   addSkuInput();
   generatePackingModeDiagrams();
 }
