@@ -355,7 +355,7 @@ class InboundFeeRuleEngine {
                 <thead>
                   <tr style="background:var(--color-surface);">
                     <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:30%;">规格</th>
-                    <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:25%;">价格（元）</th>
+                    <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:25%;">价格（$）</th>
                     <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:35%;">备注</th>
                     <th style="padding:10px; text-align:center; border-bottom:1px solid var(--color-border); width:10%;">操作</th>
                   </tr>
@@ -384,7 +384,7 @@ class InboundFeeRuleEngine {
 
             <div class="form-group">
               <label class="form-label">计费举例</label>
-              <textarea id="addCalculationExample" class="form-input" rows="4" placeholder="示例：&#10;计费公式：费用 = 单价 × 数量&#10;举例：卸柜1个20GP柜&#10;计算：350元 × 1 = 350元"></textarea>
+              <textarea id="addCalculationExample" class="form-input" rows="4" placeholder="示例：&#10;计费公式：费用 = 单价 × 数量&#10;举例：卸柜1个20GP柜&#10;计算：350$ × 1 = 350$"></textarea>
             </div>
           </div>
 
@@ -401,7 +401,7 @@ class InboundFeeRuleEngine {
                   <tr style="background:var(--color-surface);">
                     <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:30%;">开始量</th>
                     <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:30%;">结束量</th>
-                    <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:30%;">价格（元）</th>
+                    <th style="padding:10px; text-align:left; border-bottom:1px solid var(--color-border); width:30%;">价格（$）</th>
                     <th style="padding:10px; text-align:center; border-bottom:1px solid var(--color-border); width:10%;">操作</th>
                   </tr>
                 </thead>
@@ -448,7 +448,6 @@ class InboundFeeRuleEngine {
         { value: '入库附加费', label: '入库附加费' }
       ],
       '快递散货入库': [
-        { value: '收发费', label: '收发费' },
         { value: '入库附加费', label: '入库附加费' }
       ],
       '托盘入库': [
@@ -489,14 +488,50 @@ class InboundFeeRuleEngine {
       const tbody = document.getElementById('pricingTableBody');
       tbody.innerHTML = '';
       this.addPricingRow();
-    } else if (feeItem === '入库附加费' && category === '整柜入库') {
+    } else if (feeItem === '入库附加费') {
       pricingTableSection.style.display = 'none';
       pricingTextSection.style.display = 'none';
       subCategorySection.style.display = 'block';
+      this.updateSubCategoryOptions();
     } else {
       pricingTableSection.style.display = 'none';
       pricingTextSection.style.display = 'block';
     }
+  }
+
+  updateSubCategoryOptions() {
+    const category = document.getElementById('addCategory').value;
+    const subCategorySelect = document.getElementById('addSubCategory');
+    
+    subCategorySelect.innerHTML = '<option value="">请选择二级分类</option>';
+    
+    const subCategoryOptions = {
+      '整柜入库': [
+        { value: 'SKU超量费', label: 'SKU超量费' },
+        { value: '超重费', label: '超重费' },
+        { value: '清单费', label: '清单费' }
+      ],
+      '快递散货入库': [
+        { value: '轻点费', label: '轻点费' },
+        { value: '分货费', label: '分货费' },
+        { value: 'SKU超量费', label: 'SKU超量费' }
+      ],
+      '托盘入库': [
+        { value: '拆拖', label: '拆拖' },
+        { value: '分货', label: '分货' },
+        { value: '超重', label: '超重' },
+        { value: '清点', label: '清点' },
+        { value: 'SKU超重费', label: 'SKU超重费' }
+      ]
+    };
+
+    const options = subCategoryOptions[category] || [];
+    options.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.label;
+      subCategorySelect.appendChild(option);
+    });
   }
 
   toggleTierPricing() {
@@ -535,13 +570,14 @@ class InboundFeeRuleEngine {
         <option value="美标托盘">美标托盘</option>
         <option value="定制托盘">定制托盘</option>
       `;
-    } else {
+    } else if (category === '快递散货入库') {
       specOptions = `
-
         <option value="小件">小件</option>
         <option value="中件">中件</option>
         <option value="大件">大件</option>
         <option value="超大件">超大件</option>
+        <option value="轻货">轻货</option>
+        <option value="重货">重货</option>
       `;
     }
 
@@ -646,7 +682,7 @@ class InboundFeeRuleEngine {
         showToast('请至少添加一条费率记录', 'error');
         return;
       }
-    } else if (feeItem === '入库附加费' && category === '整柜入库') {
+    } else if (feeItem === '入库附加费') {
       subCategory = document.getElementById('addSubCategory').value;
       
       if (!subCategory) {
@@ -801,7 +837,7 @@ class InboundFeeRuleEngine {
           </div>
 
           <div class="form-group">
-            <label class="form-label">单价（元）</label>
+            <label class="form-label">单价（$）</label>
             <input type="number" id="editUnitPrice" class="form-input" value="${item.unitPrice || ''}" step="0.01">
           </div>
 

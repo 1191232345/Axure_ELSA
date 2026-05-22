@@ -1078,3 +1078,21 @@ body {
   justify-content: flex-end;
   gap: 12px;
 }
+
+.sku-result-card-pallet-info {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.sku-result-card-pallet-info i {
+  font-size: 11px;
+}

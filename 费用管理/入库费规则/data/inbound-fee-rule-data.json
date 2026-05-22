@@ -1,1 +1,528 @@
-{"categories": [{"id": "cat_1", "name": "整柜入库", "level": 1, "type": "category", "expanded": true, "children": [{"id": "sub_1_1", "name": "卸柜费", "parentId": "cat_1", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_1_1_1", "feeItem": "卸柜费", "warehouseOperation": "集装箱入库", "unit": "票", "pricingRules": [{"spec": "20GP", "price": 300.0, "remark": "最多700个纸箱，超出部分，0.3/箱"}, {"spec": "40HQ", "price": 450.0, "remark": "最多1000纸箱以内，超出部分，0.3/箱"}, {"spec": "45HQ", "price": 500.0, "remark": "最多1200纸箱以内，超出部分，0.3/箱"}], "calculationExample": "客户入库一个40HQ到美国海外仓，共1500箱，20个SKU，超过45公斤共100箱，所产生的费用为：\n卸柜费：450+(1500-1000)*0.3\n超额重：100*1\nSKU超额费：(20-5)*10", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "admin", "updateTime": "2025-07-22 10:00:00"}], "level": 2}, {"id": "sub_1_2", "name": "入库附加费", "parentId": "cat_1", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_1_2_1", "feeItem": "入库附加费", "warehouseOperation": "SKU数量费", "chargeMode": "SKU数量", "freeQuantity": 5, "unitPrice": 0.0, "unit": "个", "remark": "免费个数", "condition": "此费用以SKU数量为维度进行收取，超过之后每增加一个SKU", "calculationExample": "若同时触发多个额外费用，则费用叠加收取。\n\nSKU超额费：(20-5)*10", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "admin", "updateTime": "2025-07-22 10:30:00"}, {"id": "rule_1_2_2", "feeItem": "入库附加费", "warehouseOperation": "SKU超额费", "chargeMode": "SKU超额", "freeQuantity": 5, "unitPrice": 10.0, "unit": "个", "remark": "", "condition": "此费用以SKU数量为维度进行收取，超过之后每增加一个SKU", "calculationExample": "SKU超额费：(20-5)*10", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "zsw", "updateTime": "2025-07-21 14:00:00"}, {"id": "rule_1_2_3", "feeItem": "入库附加费", "warehouseOperation": "超重费", "chargeMode": "重量阶梯", "weightTiers": [{"range": "35kg<重量≤45kg", "price": 0.5, "unit": "箱"}, {"range": "货物≥45kg", "price": 1.0, "unit": "箱"}], "condition": "", "calculationExample": "若同时触发多个额外费用，则费用叠加收取。", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "admin", "updateTime": "2025-07-20 16:20:00"}, {"id": "rule_1_2_4", "feeItem": "入库附加费", "warehouseOperation": "清点费", "chargeMode": "按件计费", "basePrice": 0.5, "unit": "件", "remark": "", "condition": "此费用在一箱多件需要清点内容件内收取，如果不需要清点内容件内，则不需要收取", "triggerCondition": "需要清点内容时才收取", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "zsw", "updateTime": "2025-07-19 11:15:00"}], "level": 2}], "level": 1}, {"id": "cat_2", "name": "快递散货入库", "level": 1, "type": "category", "expanded": true, "children": [{"id": "sub_2_1", "name": "收货费", "parentId": "cat_2", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_2_1_1", "feeItem": "收货费", "warehouseOperation": "快递散货入库(≤50LB)", "chargeMode": "按箱计费", "containerLimit": "≤50LB", "basePrice": 2.0, "unit": "箱", "remark": "", "condition": "如快递散货入库，则需收取该费用。超出50LB加收$2/件额外操作费。", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-03-01 至 2026-03-31", "updater": "zsw", "updateTime": "2025-07-19 09:45:00"}], "level": 2}, {"id": "sub_2_2", "name": "入库附加费", "parentId": "cat_2", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_2_2_1", "feeItem": "入库附加费", "warehouseOperation": "清点费", "chargeMode": "按件计费", "basePrice": 0.5, "unit": "件", "remark": "", "condition": "货物一箱多件，需要清点内容件内以货物数量，如果不需要清点内容件内，则不需要收取", "triggerCondition": "需要清点内容时才收取", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "admin", "updateTime": "2025-07-18 14:30:00"}, {"id": "rule_2_2_2", "feeItem": "入库附加费", "warehouseOperation": "分拣费", "chargeMode": "按箱计费", "basePrice": 0.5, "unit": "箱", "remark": "", "condition": "货物一箱多SKU未做物混隔离", "calculationExample": "若同时触发多个额外费用，则费用叠加收取。", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-01-01 至 2026-12-31", "updater": "zsw", "updateTime": "2025-07-17 10:20:00"}, {"id": "rule_2_2_3", "feeItem": "入库附加费", "warehouseOperation": "SKU数量费", "chargeMode": "SKU数量", "freeQuantity": 5, "unitPrice": 0.0, "unit": "个", "remark": "免费个数", "condition": "此费用以SKU数量为维度进行收取，超过之后每增加一个SKU", "calculationExample": "清点费：100*0.5（如果不需要清点内容件内，则不需要收取）\nSKU超额费：(20-5)*10", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-05-01 至 2026-05-31", "updater": "admin", "updateTime": "2025-07-16 13:55:00"}, {"id": "rule_2_2_4", "feeItem": "入库附加费", "warehouseOperation": "SKU超额费", "chargeMode": "SKU超额", "freeQuantity": 5, "unitPrice": 10.0, "unit": "个", "remark": "", "condition": "此费用以SKU数量为维度进行收取，超过之后每增加一个SKU", "calculationExample": "SKU超额费：(20-5)*10\n清点费：100*0.5", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-05-01 至 2026-05-31", "updater": "zsw", "updateTime": "2025-07-15 08:40:00"}], "level": 2}], "level": 1}, {"id": "cat_3", "name": "托盘入库", "level": 1, "type": "category", "expanded": true, "children": [{"id": "sub_3_1", "name": "卸货费", "parentId": "cat_3", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_3_1_1", "feeItem": "卸货费", "warehouseOperation": "打托货物入库", "chargeMode": "按托计费", "palletSize": "标准", "basePrice": 10.0, "unit": "托盘", "remark": "", "condition": "如托盘入库，则需收取该费用。“托盘”按美国亚马逊标准托盘尺寸定义即40x48x72 in且≤1500LB，超出此标准加收$15/托额外操作费。", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "zsw", "updateTime": "2025-07-14 17:25:00"}], "level": 2}, {"id": "sub_3_2", "name": "拆托费", "parentId": "cat_3", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_3_2_1", "feeItem": "拆托费", "warehouseOperation": "如托盘入库，多个SKU混在同一个托盘内", "chargeMode": "按托计费", "basePrice": 15.0, "unit": "托", "remark": "", "condition": "", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "admin", "updateTime": "2025-07-13 11:10:00"}], "level": 2}, {"id": "sub_3_3", "name": "分拣费", "parentId": "cat_3", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_3_3_1", "feeItem": "分拣费", "warehouseOperation": "如托盘入库，多个SKU混在同一个托盘内", "chargeMode": "按箱计费", "basePrice": 0.5, "unit": "箱", "remark": "", "condition": "", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "zsw", "updateTime": "2025-07-12 14:50:00"}], "level": 2}, {"id": "sub_3_4", "name": "入库附加费", "parentId": "cat_3", "level": 2, "type": "operation", "expanded": true, "children": [{"id": "rule_3_4_1", "feeItem": "入库附加费", "warehouseOperation": "超重费", "chargeMode": "重量阶梯", "weightTiers": [{"range": "混托情况下，35kg<重量≤45kg", "price": 0.5, "unit": "箱"}, {"range": "混托情况下，货物≥45kg", "price": 1.0, "unit": "箱"}], "condition": "", "calculationExample": "若同时触发多个额外费用，则费用叠加收取。", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "admin", "updateTime": "2025-07-11 09:30:00"}, {"id": "rule_3_4_2", "feeItem": "入库附加费", "warehouseOperation": "清点费", "chargeMode": "按件计费", "basePrice": 0.5, "unit": "件", "remark": "", "condition": "此费用在一箱多件需要清点内容件内收取，如果不需要清点内容件内，则不需要收取", "triggerCondition": "需要清点内容时才收取", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "published", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "zsw", "updateTime": "2025-07-10 16:15:00"}, {"id": "rule_3_4_3", "feeItem": "入库附加费", "warehouseOperation": "SKU数量费", "chargeMode": "SKU数量", "freeQuantity": 5, "unitPrice": 0.0, "unit": "个", "remark": "免费个数", "condition": "此费用以SKU数量为维度进行收取，超过之后每增加一个SKU", "calculationExample": "SKU超额费：(20-5)*10\n清点费：100*0.5", "level": 3, "type": "rule", "publishStatus": "draft", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "admin", "updateTime": "2025-07-09 13:40:00"}, {"id": "rule_3_4_4", "feeItem": "入库附加费", "warehouseOperation": "SKU超额费", "chargeMode": "SKU超额", "freeQuantity": 5, "unitPrice": 10.0, "unit": "个", "remark": "", "condition": "此费用以SKU数量为维度进行收取，超过之后每增加一个SKU", "calculationExample": "", "level": 3, "type": "rule", "publishStatus": "draft", "validityPeriod": "2025-06-01 至 2025-12-31", "updater": "zsw", "updateTime": "2025-07-08 10:25:00"}], "level": 2}], "level": 1}], "metadata": {"version": "2.0", "description": "入库费规则树形结构数据", "lastUpdated": "2026-05-19", "totalCategories": 3, "totalOperations": 9, "totalRules": 19}}
+{
+  "categories": [
+    {
+      "id": "cat_1",
+      "name": "整柜入库",
+      "level": 1,
+      "type": "category",
+      "expanded": true,
+      "children": [
+        {
+          "id": "sub_1_1",
+          "name": "卸柜费",
+          "parentId": "cat_1",
+          "level": 2,
+          "type": "operation",
+          "expanded": true,
+          "children": [
+            {
+              "id": "rule_1_1_1",
+              "feeItem": "卸货费",
+              "unit": "柜",
+              "pricingRules": [
+                {
+                  "spec": "20GP",
+                  "price": 300.0,
+                  "remark": "最多700个纸箱，超出部分，0.3/箱"
+                },
+                {
+                  "spec": "40HQ",
+                  "price": 450.0,
+                  "remark": "最多1000纸箱以内，超出部分，0.3/箱"
+                },
+                {
+                  "spec": "45HQ",
+                  "price": 500.0,
+                  "remark": "最多1200纸箱以内，超出部分，0.3/箱"
+                }
+              ],
+              "calculationExample": "客户入库一个40HQ到美国海外仓，共1500箱，20个SKU，超过45公斤共100箱，所产生的费用为：\n卸柜费：450+(1500-1000)*0.3\n超额重：100*1\nSKU超额费：(20-5)*10",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 10:00:00"
+            }
+          ]
+        },
+        {
+          "id": "sub_1_2",
+          "name": "入库附加费",
+          "parentId": "cat_1",
+          "level": 2,
+          "type": "operation",
+          "expanded": true,
+          "children": [
+            {
+              "id": "rule_1_2_1",
+              "feeItem": "入库附加费",
+              "subCategory": "SKU超量费",
+              "unit": "个",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 5,
+                  "price": 0
+                },
+                {
+                  "start": 6,
+                  "end": 10,
+                  "price": 10
+                },
+                {
+                  "start": 11,
+                  "end": 20,
+                  "price": 8
+                },
+                {
+                  "start": 21,
+                  "end": 999999,
+                  "price": 5
+                }
+              ],
+              "condition": "此费用以SKU数量为维度进行收取，超过免费数量后按阶梯价格收费",
+              "calculationExample": "若SKU数量为20个：\n前5个免费\n第6-10个：5个 × 10元 = 50元\n第11-20个：10个 × 8元 = 80元\n总计：50 + 80 = 130元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 10:30:00"
+            },
+            {
+              "id": "rule_1_2_2",
+              "feeItem": "入库附加费",
+              "subCategory": "超重费",
+              "unit": "箱",
+              "tierPricing": [
+                {
+                  "start": 35,
+                  "end": 45,
+                  "price": 0.5
+                },
+                {
+                  "start": 45,
+                  "end": 999999,
+                  "price": 1.0
+                }
+              ],
+              "condition": "单箱重量超过35kg时收取超重费，按重量阶梯计费",
+              "calculationExample": "若单箱重量为50kg：\n超重费：1.0元/箱",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 11:00:00"
+            },
+            {
+              "id": "rule_1_2_3",
+              "feeItem": "入库附加费",
+              "subCategory": "清单费",
+              "unit": "票",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 100,
+                  "price": 50
+                },
+                {
+                  "start": 101,
+                  "end": 500,
+                  "price": 80
+                },
+                {
+                  "start": 501,
+                  "end": 999999,
+                  "price": 120
+                }
+              ],
+              "condition": "需要提供详细清单服务时收取，按货物数量阶梯计费",
+              "calculationExample": "若货物数量为300件：\n清单费：80元/票",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 11:30:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat_2",
+      "name": "快递散货入库",
+      "level": 1,
+      "type": "category",
+      "expanded": true,
+      "children": [
+        {
+          "id": "sub_2_1",
+          "name": "入库附加费",
+          "parentId": "cat_2",
+          "level": 2,
+          "type": "operation",
+          "expanded": true,
+          "children": [
+            {
+              "id": "rule_2_1_1",
+              "feeItem": "入库附加费",
+              "subCategory": "轻点费",
+              "unit": "件",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 50,
+                  "price": 0.5
+                },
+                {
+                  "start": 51,
+                  "end": 200,
+                  "price": 0.4
+                },
+                {
+                  "start": 201,
+                  "end": 500,
+                  "price": 0.3
+                },
+                {
+                  "start": 501,
+                  "end": 999999,
+                  "price": 0.2
+                }
+              ],
+              "condition": "快递散货入库时需要清点货物数量，按件数阶梯计费",
+              "calculationExample": "若入库300件货物：\n前50件：50 × 0.5 = 25元\n第51-200件：150 × 0.4 = 60元\n第201-300件：100 × 0.3 = 30元\n总计：25 + 60 + 30 = 115元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 14:00:00"
+            },
+            {
+              "id": "rule_2_1_2",
+              "feeItem": "入库附加费",
+              "subCategory": "分货费",
+              "unit": "件",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 100,
+                  "price": 1.0
+                },
+                {
+                  "start": 101,
+                  "end": 300,
+                  "price": 0.8
+                },
+                {
+                  "start": 301,
+                  "end": 500,
+                  "price": 0.6
+                },
+                {
+                  "start": 501,
+                  "end": 999999,
+                  "price": 0.5
+                }
+              ],
+              "condition": "快递散货需要按SKU分拣时收取，按件数阶梯计费",
+              "calculationExample": "若分货400件：\n前100件：100 × 1.0 = 100元\n第101-300件：200 × 0.8 = 160元\n第301-400件：100 × 0.6 = 60元\n总计：100 + 160 + 60 = 320元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 14:30:00"
+            },
+            {
+              "id": "rule_2_1_3",
+              "feeItem": "入库附加费",
+              "subCategory": "SKU超量费",
+              "unit": "个",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 3,
+                  "price": 0
+                },
+                {
+                  "start": 4,
+                  "end": 10,
+                  "price": 15
+                },
+                {
+                  "start": 11,
+                  "end": 20,
+                  "price": 12
+                },
+                {
+                  "start": 21,
+                  "end": 999999,
+                  "price": 8
+                }
+              ],
+              "condition": "快递散货入库SKU数量超过免费数量时收取，按阶梯价格计费",
+              "calculationExample": "若SKU数量为15个：\n前3个免费\n第4-10个：7个 × 15元 = 105元\n第11-15个：5个 × 12元 = 60元\n总计：105 + 60 = 165元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 15:00:00"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cat_3",
+      "name": "托盘入库",
+      "level": 1,
+      "type": "category",
+      "expanded": true,
+      "children": [
+        {
+          "id": "sub_3_1",
+          "name": "卸货费",
+          "parentId": "cat_3",
+          "level": 2,
+          "type": "operation",
+          "expanded": true,
+          "children": [
+            {
+              "id": "rule_3_1_1",
+              "feeItem": "卸货费",
+              "unit": "托",
+              "pricingRules": [
+                {
+                  "spec": "标准托盘",
+                  "price": 25.0,
+                  "remark": "标准尺寸托盘"
+                },
+                {
+                  "spec": "欧标托盘",
+                  "price": 30.0,
+                  "remark": "欧洲标准托盘"
+                },
+                {
+                  "spec": "美标托盘",
+                  "price": 35.0,
+                  "remark": "美国标准托盘"
+                },
+                {
+                  "spec": "定制托盘",
+                  "price": 40.0,
+                  "remark": "非标准尺寸托盘"
+                }
+              ],
+              "calculationExample": "客户入库10个标准托盘：\n卸货费：25 × 10 = 250元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 16:00:00"
+            }
+          ]
+        },
+        {
+          "id": "sub_3_2",
+          "name": "入库附加费",
+          "parentId": "cat_3",
+          "level": 2,
+          "type": "operation",
+          "expanded": true,
+          "children": [
+            {
+              "id": "rule_3_2_1",
+              "feeItem": "入库附加费",
+              "subCategory": "拆拖",
+              "unit": "托",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 5,
+                  "price": 20
+                },
+                {
+                  "start": 6,
+                  "end": 20,
+                  "price": 18
+                },
+                {
+                  "start": 21,
+                  "end": 50,
+                  "price": 15
+                },
+                {
+                  "start": 51,
+                  "end": 999999,
+                  "price": 12
+                }
+              ],
+              "condition": "需要拆除托盘包装时收取，按托盘数量阶梯计费",
+              "calculationExample": "若拆拖30个托盘：\n前5个：5 × 20 = 100元\n第6-20个：15 × 18 = 270元\n第21-30个：10 × 15 = 150元\n总计：100 + 270 + 150 = 520元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 16:30:00"
+            },
+            {
+              "id": "rule_3_2_2",
+              "feeItem": "入库附加费",
+              "subCategory": "分货",
+              "unit": "件",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 200,
+                  "price": 0.8
+                },
+                {
+                  "start": 201,
+                  "end": 500,
+                  "price": 0.6
+                },
+                {
+                  "start": 501,
+                  "end": 1000,
+                  "price": 0.5
+                },
+                {
+                  "start": 1001,
+                  "end": 999999,
+                  "price": 0.4
+                }
+              ],
+              "condition": "托盘货物需要按SKU分拣时收取，按件数阶梯计费",
+              "calculationExample": "若分货800件：\n前200件：200 × 0.8 = 160元\n第201-500件：300 × 0.6 = 180元\n第501-800件：300 × 0.5 = 150元\n总计：160 + 180 + 150 = 490元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 17:00:00"
+            },
+            {
+              "id": "rule_3_2_3",
+              "feeItem": "入库附加费",
+              "subCategory": "超重",
+              "unit": "托",
+              "tierPricing": [
+                {
+                  "start": 500,
+                  "end": 800,
+                  "price": 10
+                },
+                {
+                  "start": 801,
+                  "end": 1200,
+                  "price": 15
+                },
+                {
+                  "start": 1201,
+                  "end": 999999,
+                  "price": 20
+                }
+              ],
+              "condition": "单托重量超过500kg时收取超重费，按重量阶梯计费",
+              "calculationExample": "若单托重量为1000kg：\n超重费：15元/托",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 17:30:00"
+            },
+            {
+              "id": "rule_3_2_4",
+              "feeItem": "入库附加费",
+              "subCategory": "清点",
+              "unit": "件",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 100,
+                  "price": 0.3
+                },
+                {
+                  "start": 101,
+                  "end": 500,
+                  "price": 0.25
+                },
+                {
+                  "start": 501,
+                  "end": 1000,
+                  "price": 0.2
+                },
+                {
+                  "start": 1001,
+                  "end": 999999,
+                  "price": 0.15
+                }
+              ],
+              "condition": "需要清点货物数量时收取，按件数阶梯计费",
+              "calculationExample": "若清点600件货物：\n前100件：100 × 0.3 = 30元\n第101-500件：400 × 0.25 = 100元\n第501-600件：100 × 0.2 = 20元\n总计：30 + 100 + 20 = 150元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 18:00:00"
+            },
+            {
+              "id": "rule_3_2_5",
+              "feeItem": "入库附加费",
+              "subCategory": "SKU超重费",
+              "unit": "个",
+              "tierPricing": [
+                {
+                  "start": 0,
+                  "end": 5,
+                  "price": 0
+                },
+                {
+                  "start": 6,
+                  "end": 15,
+                  "price": 20
+                },
+                {
+                  "start": 16,
+                  "end": 30,
+                  "price": 15
+                },
+                {
+                  "start": 31,
+                  "end": 999999,
+                  "price": 10
+                }
+              ],
+              "condition": "托盘入库SKU数量超过免费数量时收取，按阶梯价格计费",
+              "calculationExample": "若SKU数量为25个：\n前5个免费\n第6-15个：10个 × 20元 = 200元\n第16-25个：10个 × 15元 = 150元\n总计：200 + 150 = 350元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 18:30:00"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "3.0",
+    "description": "入库费规则树形结构数据 - 包含整柜入库、快递散货入库、托盘入库三大分类，所有二级分类均采用阶梯式计费",
+    "lastUpdated": "2026-05-22",
+    "totalCategories": 3,
+    "totalOperations": 5,
+    "totalRules": 12
+  }
+}

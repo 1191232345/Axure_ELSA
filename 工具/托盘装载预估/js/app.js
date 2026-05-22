@@ -811,6 +811,15 @@ function addSkuInput(name = '', length = '', width = '', height = '', weight = '
                  value="${weight}">
           <span class="unit">${weightUnit}</span>
         </div>
+        <div class="input-item">
+          <label>件数</label>
+          <input type="number" 
+                 id="${skuId}-quantity" 
+                 placeholder="可选" 
+                 step="1" 
+                 min="0"
+                 value="">
+        </div>
       </div>
     </div>
   `;
@@ -836,6 +845,7 @@ function getAllSkus() {
     const width = convertToMetric(parseFloat(document.getElementById(`${skuId}-width`).value) || 0, 'length');
     const height = convertToMetric(parseFloat(document.getElementById(`${skuId}-height`).value) || 0, 'length');
     const weight = convertToMetric(parseFloat(document.getElementById(`${skuId}-weight`).value) || 0, 'weight');
+    const quantity = parseInt(document.getElementById(`${skuId}-quantity`).value) || 0;
     
     if (length > 0 && width > 0 && height > 0) {
       skus.push({
@@ -844,7 +854,8 @@ function getAllSkus() {
         length,
         width,
         height,
-        weight
+        weight,
+        quantity
       });
     }
   });
@@ -1521,6 +1532,12 @@ function calculateAllSkusWithPackingMode(pallet, skus, packingMode) {
       }
     }
     
+    const maxQuantity = result.quantity || result.totalItems || 0;
+    if (sku.quantity > 0 && maxQuantity > 0) {
+      result.palletCount = Math.ceil(sku.quantity / maxQuantity);
+      result.lastPalletQuantity = sku.quantity % maxQuantity || maxQuantity;
+    }
+    
     results.push({
       sku,
       result
@@ -1591,6 +1608,13 @@ function displayMultipleResults(results, pallet) {
                   <span><i class="fas fa-layer-group fa-sm"></i> ${result.countL}×${result.countW}×${result.countH}</span>`;
     }
     
+    let palletInfoHTML = '';
+    if (result.palletCount) {
+      palletInfoHTML = `<div class="sku-result-card-pallet-info">
+        <span><i class="fas fa-pallet"></i> 需 ${result.palletCount} 托</span>
+      </div>`;
+    }
+    
     cardsHTML += `
       <div class="sku-result-card ${isSelected ? 'selected' : ''}" 
            onclick="selectSkuCard(${index})" 
@@ -1600,7 +1624,8 @@ function displayMultipleResults(results, pallet) {
           ${showAutoBadge ? `<span class="auto-selected-mode"><i class="fas fa-wand-magic-sparkles"></i>${modeLabel}</span>` : ''}
         </div>
         <div class="sku-result-card-quantity">${quantity}</div>
-        <div class="sku-result-card-unit">件</div>
+        <div class="sku-result-card-unit">件/托</div>
+        ${palletInfoHTML}
         <div class="sku-result-card-meta">${metaHTML}</div>
       </div>
     `;
@@ -1692,9 +1717,19 @@ function updateSelectedSkuDetail(index) {
     
     detailHTML = `
       <div class="detail-item">
-        <div class="detail-label">最大件数</div>
+        <div class="detail-label">单托最大件数</div>
         <div class="detail-value">${quantity} 件</div>
       </div>
+      ${result.palletCount ? `
+      <div class="detail-item">
+        <div class="detail-label">需要托数</div>
+        <div class="detail-value">${result.palletCount} 托</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">末托件数</div>
+        <div class="detail-value">${result.lastPalletQuantity} 件</div>
+      </div>
+      ` : ''}
       <div class="detail-item">
         <div class="detail-label">摆放模式</div>
         <div class="detail-value">${getPackingModeLabel(result.type)}</div>
@@ -1738,9 +1773,19 @@ function updateSelectedSkuDetail(index) {
     
     detailHTML = `
       <div class="detail-item">
-        <div class="detail-label">最大件数</div>
+        <div class="detail-label">单托最大件数</div>
         <div class="detail-value">${result.quantity} 件</div>
       </div>
+      ${result.palletCount ? `
+      <div class="detail-item">
+        <div class="detail-label">需要托数</div>
+        <div class="detail-value">${result.palletCount} 托</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">末托件数</div>
+        <div class="detail-value">${result.lastPalletQuantity} 件</div>
+      </div>
+      ` : ''}
       <div class="detail-item">
         <div class="detail-label">摆放方向</div>
         <div class="detail-value">${result.orientation}</div>
