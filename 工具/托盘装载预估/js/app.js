@@ -811,7 +811,7 @@ function addSkuInput(name = '', length = '', width = '', height = '', weight = '
                  value="${weight}">
           <span class="unit">${weightUnit}</span>
         </div>
-        <div class="input-item">
+        <div class="input-item input-with-unit">
           <label>件数</label>
           <input type="number" 
                  id="${skuId}-quantity" 
@@ -819,6 +819,7 @@ function addSkuInput(name = '', length = '', width = '', height = '', weight = '
                  step="1" 
                  min="0"
                  value="">
+          <span class="unit">件</span>
         </div>
       </div>
     </div>
@@ -1534,8 +1535,28 @@ function calculateAllSkusWithPackingMode(pallet, skus, packingMode) {
     
     const maxQuantity = result.quantity || result.totalItems || 0;
     if (sku.quantity > 0 && maxQuantity > 0) {
-      result.palletCount = Math.ceil(sku.quantity / maxQuantity);
-      result.lastPalletQuantity = sku.quantity % maxQuantity || maxQuantity;
+      const totalPallets = Math.ceil(sku.quantity / maxQuantity);
+      const remainder = sku.quantity % maxQuantity;
+      
+      result.palletCount = totalPallets;
+      result.lastPalletQuantity = remainder === 0 ? maxQuantity : remainder;
+      
+      result.palletDetails = [];
+      for (let i = 0; i < totalPallets; i++) {
+        if (i < totalPallets - 1) {
+          result.palletDetails.push({
+            palletNumber: i + 1,
+            quantity: maxQuantity,
+            isFull: true
+          });
+        } else {
+          result.palletDetails.push({
+            palletNumber: i + 1,
+            quantity: result.lastPalletQuantity,
+            isFull: remainder === 0
+          });
+        }
+      }
     }
     
     results.push({
@@ -1621,10 +1642,9 @@ function displayMultipleResults(results, pallet) {
            data-index="${index}">
         <div class="sku-result-card-header">
           <div class="sku-result-card-name">${sku.name}</div>
+          <div class="sku-result-card-quantity-inline">${quantity} 件/托</div>
           ${showAutoBadge ? `<span class="auto-selected-mode"><i class="fas fa-wand-magic-sparkles"></i>${modeLabel}</span>` : ''}
         </div>
-        <div class="sku-result-card-quantity">${quantity}</div>
-        <div class="sku-result-card-unit">件/托</div>
         ${palletInfoHTML}
         <div class="sku-result-card-meta">${metaHTML}</div>
       </div>
@@ -1752,6 +1772,25 @@ function updateSelectedSkuDetail(index) {
       </div>
     `;
     
+    if (result.palletDetails && result.palletDetails.length > 0) {
+      detailHTML += `<div style="grid-column: 1 / -1; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+        <div style="font-size: 13px; font-weight: 600; color: var(--color-primary); margin-bottom: 8px;">
+          <i class="fas fa-pallet" style="color: var(--color-accent); margin-right: 6px;"></i>托数分配
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.8;">
+          ${result.palletDetails.map(p => {
+            const status = p.isFull ? '已满' : '未满';
+            const statusColor = p.isFull ? '#10B981' : '#F59E0B';
+            return `<span style="display: inline-block; margin-right: 12px;">
+              <span style="font-weight: 600; color: var(--color-primary);">第${p.palletNumber}托:</span> 
+              ${p.quantity}件 
+              <span style="color: ${statusColor}; font-size: 11px;">(${status})</span>
+            </span>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+    
     if (result.layers.length > 0) {
       detailHTML += `<div style="grid-column: 1 / -1; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
         <div style="font-size: 13px; font-weight: 600; color: var(--color-primary); margin-bottom: 8px;">层叠详情</div>
@@ -1807,6 +1846,25 @@ function updateSelectedSkuDetail(index) {
         <div class="detail-value">${weightUtilization}%</div>
       </div>
     `;
+    
+    if (result.palletDetails && result.palletDetails.length > 0) {
+      detailHTML += `<div style="grid-column: 1 / -1; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+        <div style="font-size: 13px; font-weight: 600; color: var(--color-primary); margin-bottom: 8px;">
+          <i class="fas fa-pallet" style="color: var(--color-accent); margin-right: 6px;"></i>托数分配
+        </div>
+        <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.8;">
+          ${result.palletDetails.map(p => {
+            const status = p.isFull ? '已满' : '未满';
+            const statusColor = p.isFull ? '#10B981' : '#F59E0B';
+            return `<span style="display: inline-block; margin-right: 12px;">
+              <span style="font-weight: 600; color: var(--color-primary);">第${p.palletNumber}托:</span> 
+              ${p.quantity}件 
+              <span style="color: ${statusColor}; font-size: 11px;">(${status})</span>
+            </span>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
   }
   
   document.getElementById('selectedSkuDetailGrid').innerHTML = detailHTML;

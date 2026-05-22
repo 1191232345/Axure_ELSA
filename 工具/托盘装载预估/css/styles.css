@@ -759,9 +759,10 @@ body {
 .sku-result-card-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .sku-result-card-name {
@@ -771,6 +772,15 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 1;
+}
+
+.sku-result-card-quantity-inline {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
 }
 
 .sku-result-card-badge {
