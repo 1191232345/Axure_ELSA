@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>托盘装载预估工具 - ELSA</title>
+
+  <!-- CDN 资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Import Map for Three.js -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            accent: '#E8A838',
+            success: '#2D936C',
+            danger: '#C44536',
+            surface: '#F5F3EF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap');
+
+    :root {
+      --color-primary: #1B3A4B;
+      --color-primary-light: #2A5568;
+      --color-accent: #E8A838;
+      --color-success: #2D936C;
+      --color-danger: #C44536;
+      --color-surface: #F5F3EF;
+      --color-border: #D8D5CE;
+      --color-text: #1A1A2E;
+      --color-text-secondary: #5A6275;
+      --shadow-md: 0 4px 16px rgba(27, 58, 75, 0.08);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--color-surface);
+      color: var(--color-text);
+      min-height: 100vh;
+    }
+
+    .header-nav {
+      background: linear-gradient(135deg, #1B3A4B 0%, #2A5568 100%);
+      color: white;
+      box-shadow: 0 2px 12px rgba(27, 58, 75, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 2px solid var(--color-accent);
+    }
+
+    .tool-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, var(--color-accent) 0%, #F0C060 100%);
+      border-radius: 2px;
+    }
+
+    .input-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .input-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-item label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+
+    .input-item input {
+      padding: 8px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--color-text);
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .input-item input:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px rgba(232, 168, 56, 0.12);
+    }
+
+    .input-item .unit {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-secondary);
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    .input-with-unit {
+      position: relative;
+    }
+
+    .input-with-unit input {
+      padding-right: 40px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(27, 58, 75, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(27, 58, 75, 0.3);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      background: #f8fafc;
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+      border: 2px solid #3B82F6;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    .result-number {
+      font-size: 48px;
+      font-weight: 700;
+      color: #3B82F6;
+      font-family: 'DM Sans', sans-serif;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .result-detail {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .detail-item {
+      background: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid #E5E7EB;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .warning-box {
+      background: #FEF3C7;
+      border: 1px solid #FBBF24;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #92400E;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-box {
+      background: #E0F2FE;
+      border: 1px solid #0EA5E9;
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #0C4A6E;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .layout-preview {
+      background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%);
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-md);
+      margin-top: 20px;
+      min-height: 500px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #canvas3d {
+      width: 100%;
+      height: 500px;
+      display: block;
+    }
+
+    .pallet-visual {
+      border: 3px solid var(--color-primary);
+      background: #F9FAFB;
+      position: relative;
+      margin: 20px auto;
+    }
+
+    .sku-box {
+      border: 1px solid var(--color-accent);
+      background: rgba(232, 168, 56, 0.1);
+      position: absolute;
+    }
+
+    .view-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      display: flex;
+      gap: 8px;
+    }
+
+    .view-btn {
+      background: white;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .view-btn:hover {
+      background: var(--color-surface);
+      border-color: var(--color-primary);
+    }
+
+    .view-btn.active {
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+
+    .unit-switcher {
+      display: flex;
+      gap: 8px;
+      background: #f3f4f6;
+      padding: 4px;
+      border-radius: var(--radius-md);
+    }
+
+    .unit-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 16px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+
+    .unit-btn:hover {
+      background: #f9fafb;
+      border-color: var(--color-border);
+    }
+
+    .unit-btn.active {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+      color: white;
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(27, 58, 75, 0.2);
+    }
+
+    .unit-label {
+      font-weight: 600;
+    }
+
+    .unit-separator {
+      opacity: 0.6;
+      font-size: 11px;
+    }
+
+    .orientation-examples {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+    }
+
+    .orientation-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .orientation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .orientation-item {
+      position: relative;
+      padding: 10px;
+      background: white;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .orientation-item:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 2px 8px rgba(232, 168, 56, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .orientation-item.active {
+      border-color: var(--color-primary);
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    }
+
+    .orientation-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+
+    .orientation-count {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-primary);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .orientation-label {
+      font-size: 10px;
+      color: var(--color-text-secondary);
+    }
+
+    .orientation-preview {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 8px;
+      padding: 12px;
+      background: white;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      min-width: 200px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+
+    .orientation-item:hover .orientation-preview {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .preview-canvas {
+      width: 180px;
+      height: 120px;
+      background: #f3f4f6;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .preview-info {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+    }
+
+    .btn-add-sku {
+      margin-left: auto;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, var(--color-success) 0%, #35A87C 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-add-sku:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(45, 147, 108, 0.3);
+    }
+
+    .sku-item {
+      background: #f9fafb;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .sku-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .sku-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .btn-remove-sku {
+      padding: 4px 8px;
+      background: white;
+      color: var(--color-danger);
+      border: 1px solid var(--color-danger);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-remove-sku:hover {
+      background: var(--color-danger);
+      color: white;
+    }
+
+    .sku-name-input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .sku-name-input:focus {
+      outline: none;
+      border-color: var(--color-accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 头部导航 -->
+  <header class="header-nav">
+    <!-- <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-14">
+        <div class="flex items-center gap-10">
+          <span class="text-lg font-semibold" style="font-family: 'DM Sans', sans-serif;">ELSA</span>
+          <nav class="flex gap-6">
+            <a href="/" class="text-white hover:text-yellow-300 transition-colors">首页</a>
+            <a href="/工具/托盘装载预估/index.html" class="text-yellow-300 font-medium">托盘装载预估</a>
+          </nav>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm">工具</span>
+        </div>
+      </div>
+    </div> -->
+  </header>
+
+  <!-- 主内容 -->
+  <main class="container mx-auto px-4 py-6 max-w-5xl">
+
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-primary mb-2" style="font-family: 'DM Sans', sans-serif;">
+        <i class="fa fa-cubes mr-2"></i>预估工具（托盘装载）
+      </h1>
+      <p class="text-sm text-gray-600">
+        根据托盘限制条件和SKU尺寸，计算最大装载件数
+      </p>
+    </div>
+
+    <!-- 单位切换 -->
+    <div class="tool-card" style="padding: 16px 24px;">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="fa fa-exchange text-accent"></i>
+          <span class="text-sm font-medium text-gray-700">单位制：</span>
+        </div>
+        <div class="unit-switcher">
+        <button class="unit-btn active" id="btn-inch-lbs" onclick="switchUnit('inch-lbs')">
+            <span class="unit-label">inch</span>
+            <span class="unit-separator">+</span>
+            <span class="unit-label">lbs</span>
+        </button>
+        <button class="unit-btn" id="btn-cm-kg" onclick="switchUnit('cm-kg')">
+            <span class="unit-label">cm</span>
+            <span class="unit-separator">+</span>
+            <span class="unit-label">kg</span>
+        </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 托盘参数输入 -->
+    <div class="tool-card">
+      <h3 class="section-title">
+        <i class="fa fa-pallet text-accent"></i>
+        托盘参数
+      </h3>
+
+      <div class="input-group">
+        <div class="input-item input-with-unit">
+          <label>长</label>
+          <input type="number" value="40" id="palletLength" placeholder="请输入">
+          <span class="unit" id="unit-length-1">inch</span>
+        </div>
+        <div class="input-item input-with-unit">
+          <label>宽</label>
+          <input type="number" value="48" id="palletWidth" placeholder="请输入">
+          <span class="unit" id="unit-length-2">inch</span>
+        </div>
+        <div class="input-item input-with-unit">
+          <label>高</label>
+          <input type="number" value="68" id="palletHeight" placeholder="请输入">
+          <span class="unit" id="unit-length-3">inch</span>
+        </div>
+        <div class="input-item input-with-unit">
+          <label>重</label>
+          <input type="number" value="1500" id="palletWeight" placeholder="请输入">
+          <span class="unit" id="unit-weight-1">lbs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKU参数输入 -->
+    <div class="tool-card">
+      <h3 class="section-title">
+        <i class="fa fa-cube text-accent"></i>
+        SKU参数
+        <button class="btn-add-sku" onclick="addSkuInput()">
+          <i class="fa fa-plus"></i> 添加SKU
+        </button>
+      </h3>
+
+      <div id="skuList">
+        <!-- SKU项会动态添加 -->
+      </div>
+
+      <div class="info-box">
+        <i class="fa fa-info-circle"></i>
+        <div>
+          <strong>说明：</strong>支持添加多个不同尺寸的SKU，系统会分别计算每个SKU的最优装载方案。
+          <br>每个SKU会自动尝试6种摆放方向，找出最优方案。
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="flex gap-3 justify-center my-6">
+      <button class="btn btn-secondary" onclick="resetForm()">
+        <i class="fa fa-refresh"></i> 重置
+      </button>
+      <button class="btn btn-primary" onclick="calculate()">
+        <i class="fa fa-calculator"></i> 计算最大件数
+      </button>
+    </div>
+
+    <!-- 计算结果 -->
+    <div id="resultSection" style="display: none;">
+      <div class="result-card">
+        <h3 class="text-center text-lg font-semibold mb-2">
+          <i class="fa fa-check-circle text-green-600 mr-2"></i>
+          最大装载件数
+        </h3>
+        <div class="result-number" id="maxQuantity">0</div>
+        <p class="text-center text-sm text-gray-600" id="layoutInfo"></p>
+
+        <div class="result-detail" id="resultDetails">
+          <!-- 动态填充 -->
+        </div>
+
+        <div id="warningBox" class="warning-box" style="display: none;">
+          <i class="fa fa-exclamation-triangle"></i>
+          <span id="warningText"></span>
+        </div>
+      </div>
+
+      <!-- 可视化预览 -->
+      <div class="tool-card">
+        <h3 class="section-title">
+          <i class="fa fa-cube text-accent"></i>
+          装载方案（3D）
+        </h3>
+
+        <div class="layout-preview" id="visualPreview">
+          <div class="view-controls">
+            <button class="view-btn active" onclick="setView('perspective')" id="btn-perspective">
+              <i class="fa fa-cube"></i> 透视
+            </button>
+            <button class="view-btn" onclick="setView('top')" id="btn-top">
+              <i class="fa fa-arrow-down"></i> 俯视
+            </button>
+            <button class="view-btn" onclick="setView('front')" id="btn-front">
+              <i class="fa fa-arrow-right"></i> 正视
+            </button>
+            <button class="view-btn" onclick="setView('side')" id="btn-side">
+              <i class="fa fa-arrow-left"></i> 侧视
+            </button>
+          </div>
+          <canvas id="canvas3d"></canvas>
+        </div>
+
+        <div class="mt-4 text-sm text-gray-600">
+          <strong>摆放方案：</strong>
+          <span id="orientationInfo">-</span>
+          <span class="ml-4 text-gray-400">| 鼠标拖拽旋转，滚轮缩放</span>
+        </div>
+
+        <!-- 摆放方向示例 -->
+        <div class="orientation-examples" id="orientationExamples" style="display: none;">
+          <div class="orientation-title">
+            <i class="fa fa-th-large mr-1"></i>
+            所有摆放方向对比（悬浮预览效果）
+          </div>
+          <div class="orientation-grid" id="orientationGrid">
+            <!-- 动态生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    // 导入Three.js
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    
+    // 暴露到全局
+    window.THREE = THREE;
+    window.OrbitControls = OrbitControls;
+    
+    // 当前单位制
+    let currentUnit = 'inch-lbs';
+    
+    // SKU计数器
+    let skuCounter = 0;
+    
+    // 单位转换常量
+    const INCH_TO_CM = 2.54;
+    const LBS_TO_KG = 0.453592;
+    
+    // 添加SKU输入项
+    function addSkuInput(name = '', length = '', width = '', height = '', weight = '') {
+      skuCounter++;
+      const skuId = `sku-${skuCounter}`;
+      const lengthUnit = currentUnit === 'cm-kg' ? 'cm' : 'inch';
+      const weightUnit = currentUnit === 'cm-kg' ? 'kg' : 'lbs';
+      
+      const defaultValues = currentUnit === 'inch-lbs' 
+        ? { length: '11.8', width: '7.9', height: '5.9', weight: '11' }
+        : { length: '30', width: '20', height: '15', weight: '5' };
+      
+      const html = `
+        <div class="sku-item" id="${skuId}">
+          <div class="sku-item-header">
+            <div class="sku-item-title">SKU #${skuCounter}</div>
+            <button class="btn-remove-sku" onclick="removeSkuInput('${skuId}')">
+              <i class="fa fa-trash"></i> 删除
+            </button>
+          </div>
+          <input type="text" 
+                 class="sku-name-input" 
+                 id="${skuId}-name" 
+                 placeholder="SKU名称（可选）" 
+                 value="${name}">
+          <div class="input-group">
+            <div class="input-item input-with-unit">
+              <label>长度</label>
+              <input type="number" 
+                     id="${skuId}-length" 
+                     placeholder="${length || defaultValues.length}" 
+                     step="0.1" 
+                     min="0"
+                     value="${length}">
+              <span class="unit">${lengthUnit}</span>
+            </div>
+            <div class="input-item input-with-unit">
+              <label>宽度</label>
+              <input type="number" 
+                     id="${skuId}-width" 
+                     placeholder="${width || defaultValues.width}" 
+                     step="0.1" 
+                     min="0"
+                     value="${width}">
+              <span class="unit">${lengthUnit}</span>
+            </div>
+            <div class="input-item input-with-unit">
+              <label>高度</label>
+              <input type="number" 
+                     id="${skuId}-height" 
+                     placeholder="${height || defaultValues.height}" 
+                     step="0.1" 
+                     min="0"
+                     value="${height}">
+              <span class="unit">${lengthUnit}</span>
+            </div>
+            <div class="input-item input-with-unit">
+              <label>重量</label>
+              <input type="number" 
+                     id="${skuId}-weight" 
+                     placeholder="${weight || defaultValues.weight}" 
+                     step="0.1" 
+                     min="0"
+                     value="${weight}">
+              <span class="unit">${weightUnit}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('skuList').insertAdjacentHTML('beforeend', html);
+    }
+    
+    // 删除SKU输入项
+    function removeSkuInput(skuId) {
+      const skuItem = document.getElementById(skuId);
+      if (skuItem) {
+        skuItem.remove();
+      }
+    }
+    
+    // 获取所有SKU数据
+    function getAllSkus() {
+      const skuItems = document.querySelectorAll('.sku-item');
+      const skus = [];
+      
+      skuItems.forEach(item => {
+        const skuId = item.id;
+        const name = document.getElementById(`${skuId}-name`).value || `SKU #${skuId.split('-')[1]}`;
+        const length = convertToMetric(parseFloat(document.getElementById(`${skuId}-length`).value) || 0, 'length');
+        const width = convertToMetric(parseFloat(document.getElementById(`${skuId}-width`).value) || 0, 'length');
+        const height = convertToMetric(parseFloat(document.getElementById(`${skuId}-height`).value) || 0, 'length');
+        const weight = convertToMetric(parseFloat(document.getElementById(`${skuId}-weight`).value) || 0, 'weight');
+        
+        if (length > 0 && width > 0 && height > 0) {
+          skus.push({
+            id: skuId,
+            name,
+            length,
+            width,
+            height,
+            weight
+          });
+        }
+      });
+      
+      return skus;
+    }
+    
+    // 切换单位制
+    function switchUnit(unit) {
+      currentUnit = unit;
+      
+      // 更新按钮状态
+      document.getElementById('btn-cm-kg').classList.toggle('active', unit === 'cm-kg');
+      document.getElementById('btn-inch-lbs').classList.toggle('active', unit === 'inch-lbs');
+      
+      // 更新单位显示
+      const lengthUnit = unit === 'cm-kg' ? 'cm' : 'inch';
+      const weightUnit = unit === 'cm-kg' ? 'kg' : 'lbs';
+      
+      for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById(`unit-length-${i}`);
+        if (el) el.textContent = lengthUnit;
+      }
+      
+      for (let i = 1; i <= 2; i++) {
+        const el = document.getElementById(`unit-weight-${i}`);
+        if (el) el.textContent = weightUnit;
+      }
+      
+      // 更新placeholder
+      if (unit === 'inch-lbs') {
+        document.getElementById('palletLength').placeholder = '47.2';
+        document.getElementById('palletWidth').placeholder = '31.5';
+        document.getElementById('palletHeight').placeholder = '70.9';
+        document.getElementById('palletWeight').placeholder = '2205';
+        document.getElementById('skuLength').placeholder = '11.8';
+        document.getElementById('skuWidth').placeholder = '7.9';
+        document.getElementById('skuHeight').placeholder = '5.9';
+        document.getElementById('skuWeight').placeholder = '11';
+      } else {
+        document.getElementById('palletLength').placeholder = '120';
+        document.getElementById('palletWidth').placeholder = '80';
+        document.getElementById('palletHeight').placeholder = '180';
+        document.getElementById('palletWeight').placeholder = '1000';
+        document.getElementById('skuLength').placeholder = '30';
+        document.getElementById('skuWidth').placeholder = '20';
+        document.getElementById('skuHeight').placeholder = '15';
+        document.getElementById('skuWeight').placeholder = '5';
+      }
+    }
+    
+    // 转换为cm和kg（内部计算统一使用公制）
+    function convertToMetric(value, type) {
+      if (currentUnit === 'cm-kg') return value;
+      
+      if (type === 'length') {
+        return value * INCH_TO_CM;
+      } else if (type === 'weight') {
+        return value * LBS_TO_KG;
+      }
+      return value;
+    }
+    
+    // 计算最大装载件数
+    function calculate() {
+      // 读取托盘输入值并转换为公制单位
+      const pallet = {
+        length: convertToMetric(parseFloat(document.getElementById('palletLength').value) || 0, 'length'),
+        width: convertToMetric(parseFloat(document.getElementById('palletWidth').value) || 0, 'length'),
+        height: convertToMetric(parseFloat(document.getElementById('palletHeight').value) || 0, 'length'),
+        weight: convertToMetric(parseFloat(document.getElementById('palletWeight').value) || 0, 'weight')
+      };
+
+      // 验证托盘输入
+      if (!validatePalletInputs(pallet)) return;
+
+      // 获取所有SKU
+      const skus = getAllSkus();
+      
+      if (skus.length === 0) {
+        alert('请至少添加一个SKU');
+        return;
+      }
+
+      // 计算每个SKU的最优方案
+      const results = [];
+      
+      skus.forEach(sku => {
+        // 尝试所有6种摆放方向
+        const orientations = [
+          { l: sku.length, w: sku.width, h: sku.height, name: '平放（正常）', desc: '长沿托盘长，宽沿托盘宽' },
+          { l: sku.length, w: sku.height, h: sku.width, name: '平放（旋转）', desc: '长沿托盘长，高沿托盘宽' },
+          { l: sku.width, w: sku.length, h: sku.height, name: '侧放（正常）', desc: '宽沿托盘长，长沿托盘宽' },
+          { l: sku.width, w: sku.height, h: sku.length, name: '侧放（旋转）', desc: '宽沿托盘长，高沿托盘宽' },
+          { l: sku.height, w: sku.length, h: sku.width, name: '竖放（正常）', desc: '高沿托盘长，长沿托盘宽' },
+          { l: sku.height, w: sku.width, h: sku.length, name: '竖放（旋转）', desc: '高沿托盘长，宽沿托盘宽' }
+        ];
+
+        let bestResult = null;
+        let maxQuantity = 0;
+
+        orientations.forEach(orientation => {
+          const result = calculateForOrientation(pallet, orientation, sku.weight);
+          if (result.quantity > maxQuantity) {
+            maxQuantity = result.quantity;
+            bestResult = { 
+              ...result, 
+              orientation: orientation.name,
+              desc: orientation.desc,
+              skuL: orientation.l,
+              skuW: orientation.w,
+              skuH: orientation.h
+            };
+          }
+        });
+
+        results.push({
+          sku,
+          result: bestResult
+        });
+      });
+
+      // 显示结果
+      displayMultipleResults(results, pallet);
+    }
+
+    // 计算特定摆放方向的装载量
+    function calculateForOrientation(pallet, sku, skuWeight) {
+      // 沿托盘长度方向可放的件数
+      const countL = Math.floor(pallet.length / sku.l);
+      // 沿托盘宽度方向可放的件数
+      const countW = Math.floor(pallet.width / sku.w);
+      // 沿托盘高度方向可放的层数
+      const countH = Math.floor(pallet.height / sku.h);
+
+      // 基于尺寸的最大件数
+      const maxBySize = countL * countW * countH;
+
+      // 基于重量的最大件数
+      const maxByWeight = skuWeight > 0 ? Math.floor(pallet.weight / skuWeight) : Infinity;
+
+      // 最终件数（取较小值）
+      const quantity = Math.min(maxBySize, maxByWeight);
+
+      return {
+        quantity,
+        countL,
+        countW,
+        countH,
+        maxBySize,
+        maxByWeight,
+        limitByWeight: maxByWeight < maxBySize
+      };
+    }
+
+    // 验证输入
+    function validateInputs(pallet, sku) {
+      const errors = [];
+
+      if (pallet.length <= 0 || pallet.width <= 0 || pallet.height <= 0) {
+        errors.push('请输入有效的托盘尺寸');
+      }
+      if (pallet.weight <= 0) {
+        errors.push('请输入有效的托盘限重');
+      }
+      if (sku.length <= 0 || sku.width <= 0 || sku.height <= 0) {
+        errors.push('请输入有效的SKU尺寸');
+      }
+      if (sku.weight <= 0) {
+        errors.push('请输入有效的SKU重量');
+      }
+
+      if (errors.length > 0) {
+        alert(errors.join('\n'));
+        return false;
+      }
+
+      return true;
+    }
+
+    // 验证托盘输入
+    function validatePalletInputs(pallet) {
+      const errors = [];
+
+      if (pallet.length <= 0 || pallet.width <= 0 || pallet.height <= 0) {
+        errors.push('请输入有效的托盘尺寸');
+      }
+      if (pallet.weight <= 0) {
+        errors.push('请输入有效的托盘限重');
+      }
+
+      if (errors.length > 0) {
+        alert(errors.join('\n'));
+        return false;
+      }
+
+      return true;
+    }
+
+    // 显示多个SKU的结果
+    function displayMultipleResults(results, pallet) {
+      document.getElementById('resultSection').style.display = 'block';
+      
+      // 找出最大件数
+      const maxQuantity = Math.max(...results.map(r => r.result.quantity));
+      document.getElementById('maxQuantity').textContent = maxQuantity;
+      
+      // 显示第一个SKU的布局信息（或显示总数）
+      const firstResult = results[0];
+      document.getElementById('layoutInfo').textContent =
+        `共 ${results.length} 个SKU | 最优方案：${firstResult.sku.name} 可放 ${firstResult.result.quantity} 件`;
+
+      // 详细信息 - 显示所有SKU的结果
+      const weightUnit = currentUnit === 'cm-kg' ? 'kg' : 'lbs';
+      
+      let detailsHTML = '';
+      results.forEach((item, index) => {
+        const { sku, result } = item;
+        const totalWeight = currentUnit === 'cm-kg' 
+          ? (result.quantity * sku.weight).toFixed(1)
+          : (result.quantity * sku.weight / LBS_TO_KG).toFixed(1);
+        
+        const volumeUsed = result.quantity * result.skuL * result.skuW * result.skuH;
+        const volumeTotal = pallet.length * pallet.width * pallet.height;
+        const spaceUtilization = (volumeUsed / volumeTotal * 100).toFixed(1);
+        
+        detailsHTML += `
+          <div class="detail-section" style="margin-bottom: 16px; padding: 12px; background: ${index === 0 ? '#f0f9ff' : '#f9fafb'}; border-radius: 6px; border-left: 3px solid ${index === 0 ? 'var(--color-primary)' : 'var(--color-border)'};">
+            <div style="font-weight: 600; color: var(--color-primary); margin-bottom: 8px; font-size: 14px;">
+              ${index === 0 ? '⭐ ' : ''}${sku.name}
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12px;">
+              <div>
+                <div style="color: var(--color-text-secondary);">最大件数</div>
+                <div style="font-weight: 600; color: var(--color-text);">${result.quantity} 件</div>
+              </div>
+              <div>
+                <div style="color: var(--color-text-secondary);">摆放方向</div>
+                <div style="font-weight: 600; color: var(--color-text);">${result.orientation}</div>
+              </div>
+              <div>
+                <div style="color: var(--color-text-secondary);">布局</div>
+                <div style="font-weight: 600; color: var(--color-text);">${result.countL}×${result.countW}×${result.countH}</div>
+              </div>
+              <div>
+                <div style="color: var(--color-text-secondary);">总重量</div>
+                <div style="font-weight: 600; color: var(--color-text);">${totalWeight} ${weightUnit}</div>
+              </div>
+              <div>
+                <div style="color: var(--color-text-secondary);">空间利用率</div>
+                <div style="font-weight: 600; color: var(--color-text);">${spaceUtilization}%</div>
+              </div>
+              <div>
+                <div style="color: var(--color-text-secondary);">重量利用率</div>
+                <div style="font-weight: 600; color: var(--color-text);">${((result.quantity * sku.weight) / pallet.weight * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      document.getElementById('resultDetails').innerHTML = detailsHTML;
+
+      // 警告信息
+      const warningBox = document.getElementById('warningBox');
+      const hasWeightLimit = results.some(r => r.result.limitByWeight);
+      if (hasWeightLimit) {
+        warningBox.style.display = 'flex';
+        const warnings = results
+          .filter(r => r.result.limitByWeight)
+          .map(r => `${r.sku.name}: 尺寸可放 ${r.result.maxBySize} 件，重量限制 ${r.result.maxByWeight} 件`)
+          .join('\n');
+        document.getElementById('warningText').textContent = `部分SKU受重量限制影响：\n${warnings}`;
+      } else {
+        warningBox.style.display = 'none';
+      }
+
+      // 摆放方向信息
+      document.getElementById('orientationInfo').textContent = `${results.length} 个SKU`;
+
+      // 生成摆放方向示例（使用第一个SKU）
+      generateOrientationExamples(pallet, results[0].sku, results[0].result);
+
+      // 可视化预览（使用第一个SKU）
+      drawVisualization(results[0].result, pallet, results[0].sku);
+    }
+
+    // 显示结果
+    function displayResult(result, pallet, sku) {
+      document.getElementById('resultSection').style.display = 'block';
+      document.getElementById('maxQuantity').textContent = result.quantity;
+      document.getElementById('layoutInfo').textContent =
+        `摆放方向：${result.orientation} | 每层 ${result.countL}×${result.countW} = ${result.countL * result.countW} 件，共 ${result.countH} 层`;
+
+      // 详细信息
+      const weightUnit = currentUnit === 'cm-kg' ? 'kg' : 'lbs';
+      const totalWeight = currentUnit === 'cm-kg' 
+        ? (result.quantity * sku.weight).toFixed(1)
+        : (result.quantity * sku.weight / LBS_TO_KG).toFixed(1);
+      
+      // 计算空间利用率（使用最优摆放方向的尺寸）
+      const volumeUsed = result.quantity * result.skuL * result.skuW * result.skuH;
+      const volumeTotal = pallet.length * pallet.width * pallet.height;
+      const spaceUtilization = (volumeUsed / volumeTotal * 100).toFixed(1);
+      
+      const detailsHTML = `
+        <div class="detail-item">
+          <div class="detail-label">沿长度方向</div>
+          <div class="detail-value">${result.countL} 件</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">沿宽度方向</div>
+          <div class="detail-value">${result.countW} 件</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">堆叠层数</div>
+          <div class="detail-value">${result.countH} 层</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">总重量</div>
+          <div class="detail-value">${totalWeight} ${weightUnit}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">空间利用率</div>
+          <div class="detail-value">${spaceUtilization}%</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">重量利用率</div>
+          <div class="detail-value">${((result.quantity * sku.weight) / pallet.weight * 100).toFixed(1)}%</div>
+        </div>
+      `;
+      document.getElementById('resultDetails').innerHTML = detailsHTML;
+
+      // 警告信息
+      const warningBox = document.getElementById('warningBox');
+      if (result.limitByWeight) {
+        warningBox.style.display = 'flex';
+        document.getElementById('warningText').textContent =
+          `受重量限制影响，尺寸上可放 ${result.maxBySize} 件，但重量限制只能放 ${result.maxByWeight} 件`;
+      } else {
+        warningBox.style.display = 'none';
+      }
+
+      // 摆放方向信息
+      document.getElementById('orientationInfo').textContent = result.orientation;
+
+      // 生成摆放方向示例
+      generateOrientationExamples(pallet, sku, result);
+
+      // 可视化预览
+      drawVisualization(result, pallet, sku);
+    }
+
+    // 生成摆放方向示例
+    function generateOrientationExamples(pallet, sku, bestResult) {
+      const orientations = [
+        { l: sku.length, w: sku.width, h: sku.height, name: '平放（正常）', desc: '长沿托盘长，宽沿托盘宽' },
+        { l: sku.length, w: sku.height, h: sku.width, name: '平放（旋转）', desc: '长沿托盘长，高沿托盘宽' },
+        { l: sku.width, w: sku.length, h: sku.height, name: '侧放（正常）', desc: '宽沿托盘长，长沿托盘宽' },
+        { l: sku.width, w: sku.height, h: sku.length, name: '侧放（旋转）', desc: '宽沿托盘长，高沿托盘宽' },
+        { l: sku.height, w: sku.length, h: sku.width, name: '竖放（正常）', desc: '高沿托盘长，长沿托盘宽' },
+        { l: sku.height, w: sku.width, h: sku.length, name: '竖放（旋转）', desc: '高沿托盘长，宽沿托盘宽' }
+      ];
+
+      let html = '';
+      orientations.forEach((orientation, index) => {
+        const result = calculateForOrientation(pallet, orientation, sku.weight);
+        const isActive = orientation.name === bestResult.orientation;
+        
+        html += `
+          <div class="orientation-item ${isActive ? 'active' : ''}" 
+               onclick="applyOrientation(${index})"
+               data-index="${index}">
+            <div class="orientation-name">${orientation.name}</div>
+            <div class="orientation-count">${result.quantity}</div>
+            <div class="orientation-label">件</div>
+            <div class="orientation-preview">
+              <div class="preview-info">
+                <strong>摆放：</strong>${orientation.desc}<br>
+                <strong>布局：</strong>${result.countL}×${result.countW}×${result.countH}<br>
+                <strong>每层：</strong>${result.countL * result.countW} 件<br>
+                <strong>层数：</strong>${result.countH} 层
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('orientationGrid').innerHTML = html;
+      document.getElementById('orientationExamples').style.display = 'block';
+    }
+
+    // 应用特定摆放方向
+    function applyOrientation(index) {
+      const pallet = {
+        length: convertToMetric(parseFloat(document.getElementById('palletLength').value) || 0, 'length'),
+        width: convertToMetric(parseFloat(document.getElementById('palletWidth').value) || 0, 'length'),
+        height: convertToMetric(parseFloat(document.getElementById('palletHeight').value) || 0, 'length'),
+        weight: convertToMetric(parseFloat(document.getElementById('palletWeight').value) || 0, 'weight')
+      };
+
+      const sku = {
+        length: convertToMetric(parseFloat(document.getElementById('skuLength').value) || 0, 'length'),
+        width: convertToMetric(parseFloat(document.getElementById('skuWidth').value) || 0, 'length'),
+        height: convertToMetric(parseFloat(document.getElementById('skuHeight').value) || 0, 'length'),
+        weight: convertToMetric(parseFloat(document.getElementById('skuWeight').value) || 0, 'weight')
+      };
+
+      const orientations = [
+        { l: sku.length, w: sku.width, h: sku.height, name: '平放（正常）', desc: '长沿托盘长，宽沿托盘宽' },
+        { l: sku.length, w: sku.height, h: sku.width, name: '平放（旋转）', desc: '长沿托盘长，高沿托盘宽' },
+        { l: sku.width, w: sku.length, h: sku.height, name: '侧放（正常）', desc: '宽沿托盘长，长沿托盘宽' },
+        { l: sku.width, w: sku.height, h: sku.length, name: '侧放（旋转）', desc: '宽沿托盘长，高沿托盘宽' },
+        { l: sku.height, w: sku.length, h: sku.width, name: '竖放（正常）', desc: '高沿托盘长，长沿托盘宽' },
+        { l: sku.height, w: sku.width, h: sku.length, name: '竖放（旋转）', desc: '高沿托盘长，宽沿托盘宽' }
+      ];
+
+      const orientation = orientations[index];
+      const result = calculateForOrientation(pallet, orientation, sku.weight);
+      
+      const bestResult = { 
+        ...result, 
+        orientation: orientation.name,
+        skuL: orientation.l,
+        skuW: orientation.w,
+        skuH: orientation.h
+      };
+
+      // 更新显示
+      document.getElementById('maxQuantity').textContent = result.quantity;
+      document.getElementById('layoutInfo').textContent =
+        `摆放方向：${orientation.name} | 每层 ${result.countL}×${result.countW} = ${result.countL * result.countW} 件，共 ${result.countH} 层`;
+      document.getElementById('orientationInfo').textContent = orientation.name;
+
+      // 更新active状态
+      document.querySelectorAll('.orientation-item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+
+      // 重新绘制3D可视化
+      drawVisualization(bestResult, pallet, sku);
+    }
+
+    // Three.js 全局变量
+    let scene, camera, renderer, controls;
+    let palletGroup, skuGroup;
+
+    // 页面初始化
+    function initPage() {
+      // 添加一个默认的SKU输入项
+      addSkuInput();
+      // 初始化3D场景
+      init3DScene();
+    }
+
+    // 初始化3D场景
+    function init3DScene() {
+      const canvas = document.getElementById('canvas3d');
+      const container = canvas.parentElement;
+
+      // 创建场景
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf8fafc);
+
+      // 创建相机
+      camera = new THREE.PerspectiveCamera(
+        45,
+        container.clientWidth / 500,
+        0.1,
+        10000
+      );
+      camera.position.set(200, 200, 200);
+
+      // 创建渲染器
+      renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true
+      });
+      renderer.setSize(container.clientWidth, 500);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.shadowMap.enabled = true;
+
+      // 添加轨道控制器
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 50;
+      controls.maxDistance = 1000;
+
+      // 添加环境光
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      // 添加平行光
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(100, 200, 100);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+      // 创建组
+      palletGroup = new THREE.Group();
+      skuGroup = new THREE.Group();
+      scene.add(palletGroup);
+      scene.add(skuGroup);
+
+      // 添加网格辅助
+      const gridHelper = new THREE.GridHelper(300, 30, 0xcccccc, 0xe5e5e5);
+      gridHelper.position.y = -1;
+      scene.add(gridHelper);
+
+      // 动画循环
+      animate();
+    }
+
+    // 动画循环
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // 绘制3D可视化
+    function drawVisualization(result, pallet, sku) {
+      // 如果场景未初始化，先初始化
+      if (!scene) {
+        init3DScene();
+      }
+
+      // 清空之前的对象
+      while (palletGroup.children.length > 0) {
+        palletGroup.remove(palletGroup.children[0]);
+      }
+      while (skuGroup.children.length > 0) {
+        skuGroup.remove(skuGroup.children[0]);
+      }
+
+      // 缩放因子（将cm转换为渲染单位）
+      const scale = 1;
+
+      // 创建托盘（线框）
+      const palletGeometry = new THREE.BoxGeometry(
+        pallet.length * scale,
+        pallet.height * scale,
+        pallet.width * scale
+      );
+      const edges = new THREE.EdgesGeometry(palletGeometry);
+      const palletMaterial = new THREE.LineBasicMaterial({
+        color: 0x1B3A4B,
+        linewidth: 2
+      });
+      const palletWireframe = new THREE.LineSegments(edges, palletMaterial);
+      palletWireframe.position.y = pallet.height * scale / 2;
+      palletGroup.add(palletWireframe);
+
+      // 创建托盘底板
+      const bottomGeometry = new THREE.BoxGeometry(
+        pallet.length * scale,
+        2,
+        pallet.width * scale
+      );
+      const bottomMaterial = new THREE.MeshLambertMaterial({
+        color: 0x8B7355,
+        transparent: true,
+        opacity: 0.8
+      });
+      const bottom = new THREE.Mesh(bottomGeometry, bottomMaterial);
+      bottom.position.y = 1;
+      bottom.receiveShadow = true;
+      palletGroup.add(bottom);
+
+      // 创建SKU盒子（使用最优摆放方向的尺寸）
+      const skuL = result.skuL * scale;
+      const skuW = result.skuW * scale;
+      const skuH = result.skuH * scale;
+
+      const skuGeometry = new THREE.BoxGeometry(skuL, skuH, skuW);
+      const skuMaterial = new THREE.MeshLambertMaterial({
+        color: 0xE8A838,
+        transparent: true,
+        opacity: 0.7
+      });
+
+      const skuEdgesMaterial = new THREE.LineBasicMaterial({
+        color: 0xD4880F
+      });
+
+      // 放置SKU
+      let count = 0;
+      for (let layer = 0; layer < result.countH; layer++) {
+        for (let i = 0; i < result.countL; i++) {
+          for (let j = 0; j < result.countW; j++) {
+            if (count >= result.quantity) break;
+
+            const skuMesh = new THREE.Mesh(skuGeometry, skuMaterial);
+            skuMesh.position.x = (i - (result.countL - 1) / 2) * skuL;
+            skuMesh.position.y = layer * skuH + skuH / 2 + 2;
+            skuMesh.position.z = (j - (result.countW - 1) / 2) * skuW;
+            skuMesh.castShadow = true;
+            skuMesh.receiveShadow = true;
+            skuGroup.add(skuMesh);
+
+            // 添加边框
+            const skuEdges = new THREE.EdgesGeometry(skuGeometry);
+            const skuWireframe = new THREE.LineSegments(skuEdges, skuEdgesMaterial);
+            skuWireframe.position.copy(skuMesh.position);
+            skuGroup.add(skuWireframe);
+
+            count++;
+          }
+        }
+      }
+
+      // 调整相机位置
+      const maxDim = Math.max(pallet.length, pallet.width, pallet.height);
+      camera.position.set(maxDim * 1.5, maxDim * 1.5, maxDim * 1.5);
+      controls.target.set(0, pallet.height / 2, 0);
+      controls.update();
+    }
+
+    // 设置视图角度
+    function setView(viewType) {
+      const buttons = document.querySelectorAll('.view-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`btn-${viewType}`).classList.add('active');
+
+      const maxDim = Math.max(
+        parseFloat(document.getElementById('palletLength').value) || 120,
+        parseFloat(document.getElementById('palletWidth').value) || 80,
+        parseFloat(document.getElementById('palletHeight').value) || 180
+      );
+
+      switch (viewType) {
+        case 'perspective':
+          camera.position.set(maxDim * 1.5, maxDim * 1.5, maxDim * 1.5);
+          break;
+        case 'top':
+          camera.position.set(0, maxDim * 2, 0.1);
+          break;
+        case 'front':
+          camera.position.set(0, maxDim * 0.5, maxDim * 2);
+          break;
+        case 'side':
+          camera.position.set(maxDim * 2, maxDim * 0.5, 0);
+          break;
+      }
+
+      controls.update();
+    }
+
+    // 重置表单
+    function resetForm() {
+      document.getElementById('palletLength').value = '';
+      document.getElementById('palletWidth').value = '';
+      document.getElementById('palletHeight').value = '';
+      document.getElementById('palletWeight').value = '';
+      document.getElementById('skuLength').value = '';
+      document.getElementById('skuWidth').value = '';
+      document.getElementById('skuHeight').value = '';
+      document.getElementById('skuWeight').value = '';
+      document.getElementById('resultSection').style.display = 'none';
+    }
+    
+    // 暴露函数到全局（供HTML onclick调用）
+    window.calculate = calculate;
+    window.resetForm = resetForm;
+    window.setView = setView;
+    window.switchUnit = switchUnit;
+    window.applyOrientation = applyOrientation;
+    window.addSkuInput = addSkuInput;
+    window.removeSkuInput = removeSkuInput;
+    window.initPage = initPage;
+  </script>
+
+  <script>
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', function() {
+      initPage();
+    });
+  </script>
+</body>
+</html>

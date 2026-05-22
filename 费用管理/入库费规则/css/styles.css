@@ -62,6 +62,63 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ========== 分类Tab栏 ========== */
+.category-tabs {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+}
+
+.category-tabs-header {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid var(--color-border-light);
+  padding-bottom: 16px;
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: inherit;
+}
+
+.category-tab:hover {
+  background: var(--color-hover);
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.category-tab.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(232, 168, 56, 0.3);
+}
+
+.category-tab i {
+  font-size: 16px;
+}
+
+/* ========== 内容展示区域 ========== */
+.content-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-md);
+}
+
 /* ========== 筛选区域（与仓储规则完全一致）========== */
 .filter-section {
   background: white;
@@ -737,6 +794,90 @@ body {
   gap: 8px;
   background: #fafafa;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* ========== 表单样式 ========== */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--color-text);
+  background: white;
+  transition: all var(--transition-fast);
+  outline: none;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(232, 168, 56, 0.15);
+}
+
+.form-input:disabled {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+select.form-input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B93A5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* 面包屑导航 */
+nav {
+  font-size: 13px;
+}
+
+nav a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+nav a:hover {
+  color: var(--color-primary);
+}
+
+/* 卡片网格响应式 */
+@media (max-width: 1024px) {
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-cols-2,
+  .grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* 响应式设计（与仓储规则完全一致）*/

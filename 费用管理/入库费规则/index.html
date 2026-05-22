@@ -141,85 +141,28 @@
   <!-- 原型内容区域 -->
   <main id="main-prototype" class="main-content active">
     <div class="container mx-auto px-4 py-6 max-w-[1920px]">
-
-      <!-- 筛选区域（使用统一的 filter-section 样式）-->
-      <div class="filter-section animate-fade-in-up">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-display font-semibold text-dark">检索条件</h3>
-        </div>
-
-        <div class="filter-grid" id="filterContainer">
-          <div class="filter-item">
-            <label>收费项目</label>
-            <select id="filterCategory">
-              <option value="">请选择</option>
-              <option value="整柜入库">整柜入库</option>
-              <option value="快递散货入库">快递散货入库</option>
-              <option value="托盘入库">托盘入库</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>操作项目</label>
-            <select id="filterOperation">
-              <option value="">请选择</option>
-              <option value="卸柜费">卸柜费</option>
-              <option value="收货费">收货费</option>
-              <option value="卸货费">卸货费</option>
-              <option value="拆托费">拆托费</option>
-              <option value="分拣费">分拣费</option>
-              <option value="入库附加费">入库附加费</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>计费模式</label>
-            <select id="filterChargeMode">
-              <option value="">请选择</option>
-              <option value="按票计费">按票计费</option>
-              <option value="SKU数量">SKU数量</option>
-              <option value="按箱计费">按箱计费</option>
-              <option value="按件计费">按件计费</option>
-              <option value="按托计费">按托计费</option>
-              <option value="重量阶梯">重量阶梯</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>发布状态</label>
-            <select id="filterPublishStatus">
-              <option value="">请选择</option>
-              <option value="published">已发布</option>
-              <option value="draft">草稿</option>
-              <option value="cancelled">已作废</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>关键词搜索</label>
-            <input type="text" id="filterKeyword" placeholder="规则名称/备注/条件">
-          </div>
-        </div>
-
-        <div class="filter-actions">
-          <button id="btnReset" class="erp-btn erp-btn-secondary">
-            <i class="fa fa-refresh mr-1"></i> 重置
+      <!-- 分类Tab栏 -->
+      <div class="category-tabs animate-fade-in-up">
+        <div class="category-tabs-header">
+          <button class="category-tab active" data-category="整柜入库" onclick="engine.switchCategory('整柜入库')">
+            <i class="fa fa-cube"></i>
+            <span>整柜入库</span>
           </button>
-          <button id="btnSearch" class="erp-btn erp-btn-primary">
-            <i class="fa fa-search mr-1"></i> 搜索
+          <button class="category-tab" data-category="快递散货入库" onclick="engine.switchCategory('快递散货入库')">
+            <i class="fa fa-cube"></i>
+            <span>快递散货入库</span>
           </button>
-          <button id="btnExpandAll" class="erp-btn erp-btn-secondary">
-            <i class="fa fa-expand mr-1"></i> 展开全部
-          </button>
-          <button id="btnCollapseAll" class="erp-btn erp-btn-secondary">
-            <i class="fa fa-compress mr-1"></i> 折叠全部
+          <button class="category-tab" data-category="托盘入库" onclick="engine.switchCategory('托盘入库')">
+            <i class="fa fa-cube"></i>
+            <span>托盘入库</span>
           </button>
         </div>
       </div>
 
-      <!-- 表格区域（使用统一的 table-section 样式）-->
-      <div class="table-section animate-fade-in-up stagger-1">
-        <!-- 操作按钮栏（使用 erp-btn 组件）-->
-        <div class="table-toolbar">
-          <button id="btnAddCategory" class="erp-btn erp-btn-success">
-            <i class="fa fa-plus mr-1"></i> 新增分类
-          </button>
+      <!-- 内容展示区域 -->
+      <div class="content-section animate-fade-in-up stagger-1">
+        <!-- 操作按钮栏 -->
+        <div class="table-toolbar" id="tableToolbar">
           <button id="btnAddRule" class="erp-btn erp-btn-success">
             <i class="fa fa-plus-circle mr-1"></i> 新增规则
           </button>
@@ -234,23 +177,19 @@
           </button>
         </div>
 
-        <!-- 数据表格（使用 data-table 统一样式）-->
+        <!-- 数据表格 -->
         <div class="table-container">
-          <table class="data-table tree-table" id="ruleTable">
-            <thead>
+          <table class="data-table" id="dataTable">
+            <thead id="tableHead">
               <tr>
-                <th style="width:40px;">展开</th>
-                <th style="width:180px;">收费项目</th>
-                <th style="width:200px;">仓库操作项目</th>
-                <th style="width:120px;">计费单位</th>
-                <th style="width:150px;">费率</th>
-                <th style="flex:1;min-width:300px;">备注</th>
-                <th style="width:350px;">计费举例</th>
+                <th style="width:60px;">序号</th>
+                <th style="width:200px;">收费项目</th>
+                <th style="width:100px;">计费单位</th>
                 <th style="width:80px;">状态</th>
-                <th style="width:60px;">操作</th>
+                <th style="width:100px;">操作</th>
               </tr>
             </thead>
-            <tbody id="treeTableBody">
+            <tbody id="tableBody">
               <!-- 动态渲染 -->
             </tbody>
           </table>
@@ -258,10 +197,8 @@
 
         <!-- 统计信息 -->
         <div class="table-footer">
-          <span>
-            共 <strong id="totalCategories">0</strong> 个分类，
-            <strong id="totalOperations">0</strong> 个操作项，
-            <strong id="totalRules">0</strong> 条规则
+          <span id="statisticsText">
+            共 <strong>0</strong> 个收费项目
           </span>
         </div>
       </div>
@@ -270,10 +207,10 @@
   </main>
 
   <!-- 配置模式按钮（与仓储规则一致）-->
-  <a href="config.html" class="config-toggle-btn" id="configToggleBtn">
+  <!-- <a href="config.html" class="config-toggle-btn" id="configToggleBtn">
     <i class="fa fa-cog"></i>
     <span>配置模式</span>
-  </a>
+  </a> -->
 
   <!-- 模块 JS -->
   <script src="js/main.js"></script>
