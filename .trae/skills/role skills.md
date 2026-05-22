@@ -23,6 +23,7 @@
 | 生成模块文档套件（PRD+原型+测试用例） | `tob-design-template` + `module-generator` | 生成模块、文档套件、三件套 |
 | 需求分析/需求澄清 | `requirements-analysis` | 需求分析、需求澄清、需求拆解 |
 | 创建新的Skill | `skill-creator` | 创建skill、新建skill、添加skill |
+| 检查/更新/维护Skills | `tob-design-template`（读取18-skill-maintenance.md） | 检查skills、更新skills、冗余检测、健康检查、扫描冗余 |
 
 **违反此规则的典型错误**：
 - ❌ 用户说"重构页面"，直接开始改代码，没有调用 `tob-design-template`

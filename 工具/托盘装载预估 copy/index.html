@@ -46,6 +46,20 @@
 <body>
 
   <header class="header-nav">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-14">
+        <div class="flex items-center gap-10">
+          <span class="text-lg font-semibold" style="font-family: 'DM Sans', sans-serif;">ELSA</span>
+          <nav class="flex gap-6">
+            <a href="/" class="text-white hover:text-yellow-300 transition-colors">首页</a>
+            <a href="/工具/托盘装载预估/index.html" class="text-yellow-300 font-medium">托盘装载预估</a>
+          </nav>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm">工具</span>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main class="container mx-auto px-4 py-6 max-w-5xl">
@@ -89,74 +103,16 @@
         <div class="mode-switcher">
           <button class="mode-btn active" id="btn-mode-independent" onclick="switchCalcMode('independent')">
             <i class="fas fa-cube"></i>
-            <span>非混托</span>
+            <span>独立计算</span>
           </button>
-          <!-- <button class="mode-btn" disabled id="btn-mode-combined" onclick="switchCalcMode('combined')">
+          <button class="mode-btn" id="btn-mode-combined" onclick="switchCalcMode('combined')">
             <i class="fas fa-cubes"></i>
-            <span>混拖（暂未开放）</span>
-          </button> -->
+            <span>混合装载</span>
+          </button>
         </div>
       </div>
       <div class="mode-desc" id="modeDesc">
         每个SKU独立计算最大装载量，互不影响
-      </div>
-    </div>
-
-    <div class="tool-card" style="padding: 16px 24px;" id="packingModeSection">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <i class="fas fa-cube text-accent"></i>
-          <span class="text-sm font-medium text-gray-700">摆放模式：</span>
-        </div>
-        <div class="packing-mode-switcher">
-          <div class="packing-mode-btn-wrapper">
-            <button class="packing-mode-btn active" id="btn-packing-single" onclick="switchPackingMode('single')">
-              <i class="fas fa-square"></i>
-              <span>单一方向</span>
-            </button>
-            <div class="packing-mode-tooltip">
-              <div class="tooltip-title">单一方向摆放</div>
-              <div class="tooltip-diagram" id="diagram-single"></div>
-              <div class="tooltip-desc">所有货物统一方向，选择装载量最大的方向</div>
-            </div>
-          </div>
-          <div class="packing-mode-btn-wrapper">
-            <button class="packing-mode-btn" id="btn-packing-between" onclick="switchPackingMode('between')">
-              <i class="fas fa-layer-group"></i>
-              <span>层间混合</span>
-            </button>
-            <div class="packing-mode-tooltip">
-              <div class="tooltip-title">层间混合摆放</div>
-              <div class="tooltip-diagram" id="diagram-between"></div>
-              <div class="tooltip-desc">不同层可不同方向，每层内部统一</div>
-            </div>
-          </div>
-          <div class="packing-mode-btn-wrapper">
-            <button class="packing-mode-btn" id="btn-packing-layer" onclick="switchPackingMode('layer')">
-              <i class="fas fa-table-cells"></i>
-              <span>层内混合</span>
-            </button>
-            <div class="packing-mode-tooltip">
-              <div class="tooltip-title">层内混合摆放</div>
-              <div class="tooltip-diagram" id="diagram-layer"></div>
-              <div class="tooltip-desc">同一层内混合不同方向，拼图填充</div>
-            </div>
-          </div>
-          <!-- <div class="packing-mode-btn-wrapper">
-            <button class="packing-mode-btn" disabled id="btn-packing-full" onclick="switchPackingMode('full')">
-              <i class="fas fa-table-cells-large"></i>
-              <span>完全混合（暂未开放）</span>
-            </button>
-            <div class="packing-mode-tooltip">
-              <div class="tooltip-title">完全混合摆放</div>
-              <div class="tooltip-diagram" id="diagram-full"></div>
-              <div class="tooltip-desc">层间+层内混合，最大化装载量</div>
-            </div>
-          </div> -->
-        </div>
-      </div>
-      <div class="packing-mode-desc" id="packingModeDesc">
-        所有货物使用同一摆放方向，选择最优方向计算
       </div>
     </div>
 

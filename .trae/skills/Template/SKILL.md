@@ -43,31 +43,33 @@ server/                      # Node.js 服务器
 
 | 文件 | 说明 |
 |------|------|
-| [00-design-tokens.md](00-design-tokens.md) | **🆕 设计令牌系统**（统一色彩/字体/间距变量 - **唯一数据源**） |
-| [01-design-spec.md](01-design-spec.md) | **5分钟速查卡**（Top 10最常用设计变量） |
-| [02-css-styles.md](02-css-styles.md) | CSS 样式模板（完整样式定义） |
+| [00-design-tokens.md](00-design-tokens.md) | **设计令牌系统**（统一色彩/字体/间距变量 - **唯一数据源**） |
+| [01-design-spec.md](01-design-spec.md) | **5分钟速查卡 v2.2**（Top 10最常用设计变量，其余引用 00） |
+| [02-css-styles.md](02-css-styles.md) | CSS 样式模板（变量引用 00-design-tokens，.prose 引用 16） |
 | [03-html-structure.md](03-html-structure.md) | HTML 页面结构模板（模块化 + FA6升级） |
-| [04-javascript.md](04-javascript.md) | **JavaScript 交互函数库 v2.2**（6大分区统一入口） |
+| [04-javascript.md](04-javascript.md) | **JavaScript 交互函数库 v2.3**（Part1 已迁移至 17，保留模块独有逻辑） |
 | [05-logic-description.md](05-logic-description.md) | 逻辑说明区域模板 |
-| [06-components.md](06-components.md) | **✨ 业务组件库 v2.0**（含空状态/骨架屏/通知等新组件） |
+| [06-components.md](06-components.md) | **业务组件库 v2.0**（含空状态/骨架屏/通知等新组件） |
 | [07-usage-guide.md](07-usage-guide.md) | **使用说明 v2.2**（5分钟快速上手 + Top 10 FAQ） |
 | [08-interaction-states.md](08-interaction-states.md) | 交互状态规范 |
 | [09-prd-spec.md](09-prd-spec.md) | PRD文档规范 |
 | [10-testcase-spec.md](10-testcase-spec.md) | 测试用例文档规范 |
-| [11-testcase-html-template.md](11-testcase-html-template.md) | 测试用例HTML页面模板 |
+| [11-testcase-html-template.md](11-testcase-html-template.md) | 测试用例HTML模板（精简版，样式引用 common.css） |
 | [12-review-checklist.md](12-review-checklist.md) | 评审检查清单 |
 | ~~[13-button-interaction.md]~~ | 🗄️ **已合并**入04-javascript.md |
 | ~~[14-config-panel.md]~~ | 🗄️ 已归档至 `/archive/` 目录 |
-| [15-data-persistence.md](15-data-persistence.md) | 数据持久化模板 |
-| [16-common-css.md](16-common-css.md) | 公共 CSS 模板（v2.1 新命名体系） |
-| [17-common-js.md](17-common-js.md) | 公共 JS 模板 |
+| [15-data-persistence.md](15-data-persistence.md) | 数据持久化**架构指南**（代码实现见 17-common-js.md） |
+| [16-common-css.md](16-common-css.md) | 公共 CSS（.prose 增强版权威定义 + 补充变量） |
+| [17-common-js.md](17-common-js.md) | 公共 JS（APIDataManager/StateManager/Toast/Mermaid/Tab **唯一代码源**） |
+| [18-skill-maintenance.md](18-skill-maintenance.md) | 🧠 **Skills 自我维护指南**（漂移检测/冗余检测/索引同步/变更记录） |
 
 ### 🆕 版本更新记录
 
 | 版本 | 日期 | 更新内容 |
 |:----:|:----:|----------|
-| **v2.3** | 2026-01-18 | **第4批优化**：合并13-button-interaction.md到04-javascript.md(按6大功能分区重组)、精简01-design-spec.md为"5分钟速查卡"(仅保留Top 10变量)、归档14-config-panel.md至/archive/、重构07-usage-guide.md为3章精简结构(快速上手/FAQ/索引)、消除冗余内容提升查找效率 |
-| **v2.2** | 2026-01-18 | 合并13-button-interaction.md全部业务逻辑，按6大分区重组（框架/UI/表单/CRUD/数据/列表） |
+| **v2.5** | 2026-05-22 | **新增自我维护**：新增18-skill-maintenance.md元技能（漂移检测/冗余检测/索引同步/变更记录），skills体系具备自我总结和更新能力 |
+| **v2.4** | 2026-05-22 | **去重优化**：消除CSS变量三重定义(02/16→00)、.prose三重定义(02/11→16)、JS核心函数重复(04 Part1→17)、01字体/间距/动画表格→引用00；15标记为架构指南、11标记为精简版 |
+| **v2.3** | 2026-01-18 | 合并13-button-interaction.md到04-javascript.md、精简01-design-spec.md为速查卡、归档14-config-panel.md、重构07-usage-guide.md |
 | **v2.1** | 2026-01-18 | **第3批优化**：交互状态全面引入设计令牌(80+硬编码消除)、新增5类v2.0组件完整JS实现(Toast/标签页/骨架屏/Alert/面包屑)、响应式设计系统(6断点+自适应布局)、暗色模式双方案框架(系统跟随+手动切换) |
 | **v2.0** | 2026-01-15 | **第1批优化**：新增设计令牌系统、升级前端依赖(FA6/marked9/mermaid11)、补充5个核心组件库（空状态/骨架屏/通知提醒/面包屑/标签页）、移除重复Tailwind配置 |
 | **v1.5** | 2026-01-14 | 增加按钮交互逻辑模板、数据持久化支持、公共资源分离 |
@@ -173,7 +175,7 @@ PRD评审、原型评审、测试用例评审的检查项详细清单请参考 [
 
 ## ⚙️ 可视化配置面板
 
-可视化配置面板为非技术人员提供友好的原型配置界面，详细模板请参考 [14-config-panel.md](14-config-panel.md)
+> 🗄️ 已归档至 `/archive/` 目录，不再维护。
 
 ## 📖 使用指南
 

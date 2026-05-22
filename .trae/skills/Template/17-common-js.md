@@ -211,6 +211,12 @@ const StateManager = {
         this.saveState(state);
     },
     
+    saveSelectedRows: function(ids) {
+        const state = this.getState();
+        state.selectedRows = ids;
+        this.saveState(state);
+    },
+    
     clearState: function() {
         const key = 'erp_state_' + this.pageId;
         localStorage.removeItem(key);

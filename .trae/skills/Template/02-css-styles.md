@@ -14,84 +14,31 @@
 
 > **v2.0 新增** - 集中管理所有设计变量，确保全局一致性
 >
-> **来源**：[00-design-tokens.md](00-design-tokens.md)
+> **⚠️ 唯一权威定义**：[00-design-tokens.md](00-design-tokens.md)
+>
+> 本节不再重复 CSS 变量定义。以下仅列出**最常用的 10 个变量速查**，完整定义请查看上方链接。
+
+| 优先级 | 变量名 | 值 | 使用场景 |
+|:------:|--------|-----|----------|
+| ⭐⭐⭐ | `--color-primary` | `#2a3b7d` | 主按钮、导航、标题 |
+| ⭐⭐⭐ | `--color-success` | `#00B42A` | 成功提示、启用状态 |
+| ⭐⭐⭐ | `--color-danger` | `#F53F3F` | 错误提示、删除操作 |
+| ⭐⭐ | `--color-warning` | `#FF7D00` | 警告提示 |
+| ⭐⭐ | `--color-neutral-500` | `#6b7280` | 次要文字 |
+| ⭐⭐ | `--text-primary` | `#1D2129` | 正文颜色 |
+| ⭐⭐ | `--border-color` | `#e5e6eb` | 边框、分割线 |
+| ⭐ | `--bg-color-page` | `#f2f3f5` | 页面背景 |
+| ⭐ | `--radius-md` | `6px` | 按钮圆角 |
+| ⭐ | `--shadow-sm` | `0 1px 3px rgba(0,0,0,0.1)` | 卡片阴影 |
 
 ```css
 /* ============================================
-   TOB产品设计令牌系统 v2.0
-   来源: 00-design-tokens.md
+   设计令牌引用声明
+   完整变量定义请查看: 00-design-tokens.md
+   公共样式中的 :root 定义请查看: 16-common-css.md
    ============================================ */
 
-:root {
-    /* === 品牌主色 === */
-    --color-primary: #2a3b7d;
-    --color-primary-light: #3a4ca7;
-    --color-primary-dark: #1e2d5f;
-    
-    /* === 功能色 === */
-    --color-success: #00B42A;
-    --color-warning: #FF7D00;
-    --color-danger: #F53F3F;
-    --color-info: #1677FF;
-    
-    /* === 中性色阶 === */
-    --color-neutral-50: #f9fafb;
-    --color-neutral-100: #f3f4f6;
-    --color-neutral-200: #e5e7eb;
-    --color-neutral-300: #d1d5db;
-    --color-neutral-400: #9ca3af;
-    --color-neutral-500: #6b7280;
-    --color-neutral-600: #4b5563;
-    --color-neutral-700: #374151;
-    --color-neutral-800: #1f2937;
-    --color-neutral-900: #111827;
-    
-    /* === 文本色 === */
-    --text-primary: #1D2129;
-    --text-secondary: #4e5969;
-    --text-tertiary: #86909c;
-    --text-disabled: #c9cdd4;
-    
-    /* === 背景色 === */
-    --bg-color-page: #f2f3f5;
-    --bg-color-white: #ffffff;
-    --bg-color-hover: var(--color-neutral-50);
-    --bg-color-active: #e8f3ff;
-    --bg-color-disabled: #f2f3f5;
-    
-    /* === 边框色 === */
-    --border-color: #e5e6eb;
-    --border-color-light: #f2f3f5;
-    --border-color-dark: #c9cdd4;
-    
-    /* === 阴影 === */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    
-    /* === 圆角 === */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
-    --radius-xl: 12px;
-    --radius-full: 9999px;
-    
-    /* === 字体大小 === */
-    --font-size-xs: 0.75rem;     /* 12px */
-    --font-size-sm: 0.875rem;    /* 14px */
-    --font-size-base: 1rem;      /* 16px */
-    --font-size-lg: 1.125rem;    /* 18px */
-    --font-size-xl: 1.25rem;     /* 20px */
-    --font-size-2xl: 1.5rem;     /* 24px */
-    
-    /* === 间距 === */
-    --spacing-xs: 0.25rem;       /* 4px */
-    --spacing-sm: 0.5rem;        /* 8px */
-    --spacing-md: 1rem;          /* 16px */
-    --spacing-lg: 1.5rem;        /* 24px */
-    --spacing-xl: 2rem;          /* 32px */
-}
+/* 本文件直接使用设计令牌变量，无需重复定义 :root */
 ```
 
 ---
@@ -114,182 +61,27 @@ body {
 
 ## 2. PRD/测试用例 Markdown 渲染样式
 
+> **⚠️ .prose 样式已统一至 [16-common-css.md §14](16-common-css.md)**（唯一权威定义）
+>
+> 以下仅列出 `.prose` 样式的**分类概览**，完整 CSS 代码请查看上方链接。
+> 引入 `common.css` 后即可直接使用 `.prose` 类名，无需重复定义。
+
+### .prose 样式分类概览
+
+| 分类 | 覆盖元素 | 关键特性 |
+|------|----------|----------|
+| **标题** | h1-h4 | 渐变文字、左侧色带、底部边框 |
+| **段落/列表** | p, ul, ol, li | 统一间距、主色标记符 |
+| **表格** | table, th, td | 渐变表头、圆角、悬停高亮、斑马纹 |
+| **代码块** | pre, code | 深色渐变背景、行内代码高亮 |
+| **引用** | blockquote | 左侧色带、渐变背景、斜体 |
+| **强调** | strong, a | 黄色高亮背景、主色链接 |
+| **标签** | .badge, .badge-p0/p1 | 圆角药丸、渐变背景 |
+| **分隔线** | hr | 渐变线条 |
+
 ```css
-/* PRD Markdown 渲染样式 */
-.prose { 
-    color: var(--color-neutral-700);                  /* ✅ #374151 → 变量 */ 
-    line-height: 1.8; 
-    font-size: 0.95rem;
-    max-width: 100%;
-}
-
-.prose h1 { 
-    font-size: 2rem; 
-    font-weight: 700; 
-    color: var(--color-neutral-900);                 /* ✅ #1e293b → 变量 */
-    margin-bottom: 1.5rem; 
-    padding-bottom: 1rem; 
-    border-bottom: 3px solid var(--color-primary);    /* ✅ #2a3b7d → 变量 */
-    background: linear-gradient(135deg, #667eea 0%, var(--color-primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.prose h2 { 
-    font-size: 1.4rem; 
-    font-weight: 600; 
-    color: var(--color-primary);                     /* ✅ 使用令牌 */
-    margin: 2.5rem 0 1.2rem; 
-    padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
-    border-left: 4px solid var(--color-primary);      /* ✅ 使用令牌 */
-    border-radius: 0 8px 8px 0;
-}
-
-.prose h3 { 
-    font-size: 1.15rem; 
-    font-weight: 600; 
-    color: var(--color-neutral-600);                 /* ✅ #475569 → 变量 */
-    margin: 2rem 0 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);     /* ✅ #e5e7eb → 变量 */
-}
-
-.prose h4 { 
-    font-size: 1rem; 
-    font-weight: 600; 
-    color: var(--color-primary);                     /* ✅ 使用令牌 */
-    margin: 1.5rem 0 0.5rem; 
-}
-
-.prose p { margin-bottom: 1rem; color: var(--color-neutral-600); }  /* ✅ #4b5563 → 变量 */
-.prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
-.prose li { margin-bottom: 0.5rem; color: var(--color-neutral-600); }  /* ✅ 使用令牌 */
-.prose li::marker { color: var(--color-primary); }                    /* ✅ 使用令牌 */
-
-/* 增强表格样式 */
-.prose table { 
-    width: 100%; 
-    border-collapse: separate; 
-    border-spacing: 0;
-    margin: 1.5rem 0; 
-    font-size: 0.85rem; 
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);                   /* ✅ 使用令牌 */
-}
-
-.prose th { 
-    padding: 0.875rem 1rem; 
-    background: linear-gradient(135deg, var(--color-primary) 0%, #4f46e5 100%);
-    color: white;
-    font-weight: 600;
-    text-align: left;
-    border: none;
-    white-space: nowrap;
-}
-
-.prose th:first-child { border-top-left-radius: 12px; }
-.prose th:last-child { border-top-right-radius: 12px; }
-
-.prose td { 
-    padding: 0.75rem 1rem; 
-    border: none;
-    border-bottom: 1px solid var(--border-color);     /* ✅ 使用令牌 */
-    background: white;
-}
-
-.prose tr:last-child td { border-bottom: none; }
-.prose tr:nth-child(even) td { background: var(--bg-color-page); }       /* ✅ #f9fafb → 变量 */
-.prose tr:hover td { background: #f0f4ff; }
-
-/* 代码块样式 */
-.prose pre { 
-    background: linear-gradient(135deg, var(--color-neutral-800) 0%, var(--color-neutral-900) 100%); 
-    padding: 1.25rem; 
-    border-radius: 12px; 
-    font-size: 0.8rem; 
-    border: 1px solid #334155;
-    overflow-x: auto; 
-    margin: 1.5rem 0;
-    box-shadow: var(--shadow-md);                   /* ✅ 使用令牌 */
-}
-
-.prose code { 
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-    color: #dc2626;
-    padding: 0.2rem 0.4rem; 
-    border-radius: 4px; 
-    font-size: 0.875em;
-    font-family: 'Monaco', 'Menlo', monospace;
-}
-
-.prose pre code { 
-    background: none; 
-    padding: 0; 
-    color: #e2e8f0;
-}
-
-.prose blockquote { 
-    border-left: 4px solid var(--color-primary);     /* ✅ 使用令牌 */
-    padding: 1rem 1.5rem; 
-    margin: 1.5rem 0; 
-    color: var(--color-neutral-500);                /* ✅ #64748b → 变量 */
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-radius: 0 8px 8px 0;
-    font-style: italic;
-}
-
-.prose strong { 
-    color: var(--color-neutral-900);                 /* ✅ 使用令牌 */
-    font-weight: 700;
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    padding: 0.1rem 0.3rem;
-    border-radius: 4px;
-}
-
-.prose a { 
-    color: var(--color-primary);                     /* ✅ 使用令牌 */
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-primary);    /* ✅ 使用令牌 */
-    transition: all 0.2s;
-}
-
-.prose a:hover { 
-    color: #4f46e5;
-    border-bottom-color: #4f46e5;
-}
-
-/* 标签样式 */
-.prose .badge { 
-    display: inline-block; 
-    padding: 0.25rem 0.75rem; 
-    border-radius: 9999px; 
-    font-size: 0.75rem; 
-    font-weight: 600;
-    margin: 0.125rem;
-}
-
-.prose .badge-p0 { 
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
-    color: #dc2626;
-    border: 1px solid #fca5a5;
-}
-
-.prose .badge-p1 { 
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
-    color: #d97706;
-    border: 1px solid #fcd34d;
-}
-
-/* 分隔线 */
-.prose hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);  /* ✅ 使用令牌 */
-    margin: 2.5rem 0;
-}
+/* .prose 样式已统一至 common.css（16-common-css.md §14）
+   引入公共样式后直接使用 .prose 类名即可 */
 ```
 
 ## 3. 目录导航样式

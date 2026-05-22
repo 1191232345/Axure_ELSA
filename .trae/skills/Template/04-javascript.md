@@ -1,8 +1,9 @@
-# JavaScript 交互模板 (v2.2)
+# JavaScript 交互模板 (v2.3)
 
-本文件包含TOB产品的完整 JavaScript 交互函数库（**统一入口**）。
+本文件包含TOB产品的**模块级** JavaScript 交互函数库。
 
-> **v2.2 更新说明**：
+> **v2.3 更新说明**：
+> - 📦 **去重优化**：Part1 核心框架函数已统一至 [17-common-js.md](17-common-js.md)，本文件仅保留模块特有逻辑
 > - 📦 **合并优化**：已整合原 `13-button-interaction.md` 的全部业务逻辑函数
 > - ✨ 新增 **Toast 通知系统**（完整实现，支持4种类型+自动消失）
 > - 🆕 新增 **标签页切换组件**（线型/卡片型，含动画过渡）
@@ -15,18 +16,29 @@
 
 ## 📚 目录结构
 
-### **Part1：核心框架函数**（页面级交互）
-- [1. 主标签切换](#1-主标签切换)
-- [2. Mermaid 图表预览](#2-mermaid-图表放大预览)
-- [3. 加载 PRD 文档](#3-加载-prd-文档)
-- [4. 加载测试用例文档](#4-加载测试用例文档)
-- [5. 生成目录导航](#5-生成目录导航)
-- [6. 切换逻辑说明展开/收起](#6-切换逻辑说明展开收起)
-- [7. 页面切换](#7-页面切换原型内多页面)
-- [8. 页面初始化](#8-页面加载完成后初始化)
+### **Part1：核心框架函数**（→ 已统一至 [17-common-js.md](17-common-js.md)）
 
-### **Part2：UI 组件库**（可复用组件）
-- [9. Toast 通知系统](#9-toast-通知系统完整实现)
+以下函数已迁移至公共 JS，引入 `common.js` 即可使用：
+
+| 函数 | 说明 | 详见 |
+|------|------|------|
+| `switchMainTab(tab)` | 主标签切换 | [17-common-js.md §3](17-common-js.md) |
+| `openMermaidModal(container)` | Mermaid 图表放大 | [17-common-js.md §6](17-common-js.md) |
+| `closeMermaidModal(event)` | 关闭 Mermaid 模态框 | [17-common-js.md §6](17-common-js.md) |
+| `loadPRD()` | 加载 PRD 文档 | [17-common-js.md §7](17-common-js.md) |
+| `loadTestCases()` | 加载测试用例 | [17-common-js.md §8](17-common-js.md) |
+| `generateTOC()` | 生成目录导航 | [17-common-js.md §9](17-common-js.md) |
+| `toggleLogic()` | 切换逻辑说明 | [17-common-js.md §10](17-common-js.md) |
+| `showToast(message, type)` | Toast 提示 | [17-common-js.md §4](17-common-js.md) |
+| `openModal(modalId)` | 打开模态框 | [17-common-js.md §5](17-common-js.md) |
+| `closeModal(modalId)` | 关闭模态框 | [17-common-js.md §5](17-common-js.md) |
+| `APIDataManager` | 数据持久化管理器 | [17-common-js.md §1](17-common-js.md) |
+| `StateManager` | 状态管理器 | [17-common-js.md §2](17-common-js.md) |
+| `formatDate(date, format)` | 日期格式化 | [17-common-js.md §12](17-common-js.md) |
+| `exportData(data, filename)` | 导出数据 | [17-common-js.md §11](17-common-js.md) |
+
+### **Part2：UI 组件库**（可复用组件 - 本文件独有）
+- [9. Toast 通知系统（增强版）](#9-toast-通知系统完整实现)
 - [10. 标签页切换组件](#10-标签页切换组件)
 - [11. 骨架屏加载控制](#11-骨架屏加载控制)
 - [12. Alert 提示框组件](#12-alert-提示框组件)
@@ -54,207 +66,41 @@
 
 ---
 
-# Part1：核心框架函数
+# Part1：核心框架函数（已迁移至公共 JS）
+
+> **⚠️ 以下函数已统一至 [17-common-js.md](17-common-js.md)（common.js）**
+>
+> 引入 `<script src="/common/js/common.js"></script>` 即可使用，无需在模块 JS 中重复定义。
+>
+> 以下仅保留本文件独有的增强版实现（如 Toast 增强版），公共版实现请查看 17-common-js.md。
 
 ## 1. 主标签切换
 
-```javascript
-function switchMainTab(tab) {
-    document.querySelectorAll('.main-content').forEach(function(content) {
-        content.classList.remove('active');
-        content.style.display = 'none';
-    });
-
-    document.querySelectorAll('.tab').forEach(function(t) {
-        t.classList.remove('active');
-    });
-
-    const targetContent = document.getElementById('main-' + tab);
-    if (targetContent) {
-        targetContent.classList.add('active');
-        targetContent.style.display = 'block';
-    }
-
-    const targetTab = document.getElementById('tab-' + tab);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
-
-    if (tab === 'prd' && !prdLoaded) {
-        loadPRD();
-    } else if (tab === 'testcases' && !testCasesLoaded) {
-        loadTestCases();
-    }
-}
-```
+> 已迁移至 [17-common-js.md §3](17-common-js.md)
 
 ## 2. Mermaid 图表放大预览
 
-```javascript
-function openMermaidModal(container) {
-    const mermaidDiv = container.querySelector('.mermaid');
-    if (!mermaidDiv) return;
-
-    const modal = document.getElementById('mermaidModal');
-    const modalContent = document.getElementById('mermaidModalContent');
-
-    modalContent.innerHTML = mermaidDiv.innerHTML;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    if (window.mermaid) {
-        mermaid.init(undefined, modalContent.querySelectorAll('.mermaid'));
-    }
-}
-
-function closeMermaidModal(event) {
-    if (event && event.target !== event.currentTarget && !event.target.closest('.mermaid-modal-close')) {
-        return;
-    }
-
-    const modal = document.getElementById('mermaidModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeMermaidModal();
-    }
-});
-```
+> 已迁移至 [17-common-js.md §6](17-common-js.md)
 
 ## 3. 加载 PRD 文档
 
-```javascript
-let prdLoaded = false;
-let testCasesLoaded = false;
-
-function loadPRD() {
-    if (prdLoaded) return;
-
-    const prdContentDiv = document.getElementById('prd-content');
-
-    if (typeof marked === 'undefined') {
-        prdContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
-        return;
-    }
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'prd.md', true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            const markdown = xhr.responseText;
-            const html = marked.parse(markdown);
-            prdContentDiv.innerHTML = html;
-            generateTOC();
-
-            if (window.mermaid) {
-                setTimeout(function() {
-                    mermaid.init(undefined, prdContentDiv.querySelectorAll('.mermaid'));
-                }, 100);
-            }
-
-            prdLoaded = true;
-        }
-    };
-    xhr.send();
-}
-```
+> 已迁移至 [17-common-js.md §7](17-common-js.md)
 
 ## 4. 加载测试用例文档
 
-```javascript
-function loadTestCases() {
-    if (testCasesLoaded) return;
-
-    const testCasesContentDiv = document.getElementById('testcases-content');
-
-    if (typeof marked === 'undefined') {
-        testCasesContentDiv.innerHTML = '<div class="text-center py-8"><p class="text-red-500">Marked库未加载</p></div>';
-        return;
-    }
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'test-cases.md', true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            const markdown = xhr.responseText;
-            const html = marked.parse(markdown);
-            testCasesContentDiv.innerHTML = html;
-            generateTestCasesTOC();
-
-            if (window.mermaid) {
-                setTimeout(function() {
-                    mermaid.init(undefined, testCasesContentDiv.querySelectorAll('.mermaid'));
-                }, 100);
-            }
-
-            testCasesLoaded = true;
-        }
-    };
-    xhr.send();
-}
-```
+> 已迁移至 [17-common-js.md §8](17-common-js.md)
 
 ## 5. 生成目录导航
 
-```javascript
-function generateTOC() {
-    const tocNav = document.getElementById('toc-nav');
-    const headings = document.querySelectorAll('#prd-content h1, #prd-content h2, #prd-content h3');
-
-    let tocHTML = '';
-    headings.forEach(function(heading, index) {
-        const id = 'heading-' + index;
-        heading.id = id;
-
-        const level = parseInt(heading.tagName.substring(1));
-        const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
-
-        tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
-    });
-
-    tocNav.innerHTML = tocHTML;
-}
-
-function generateTestCasesTOC() {
-    const tocNav = document.getElementById('testcases-toc-nav');
-    const headings = document.querySelectorAll('#testcases-content h1, #testcases-content h2, #testcases-content h3');
-
-    let tocHTML = '';
-    headings.forEach(function(heading, index) {
-        const id = 'testcases-heading-' + index;
-        heading.id = id;
-
-        const level = parseInt(heading.tagName.substring(1));
-        const className = level === 2 ? 'toc-level-2' : (level === 3 ? 'toc-level-3' : '');
-
-        tocHTML += '<a href="#' + id + '" class="' + className + '">' + heading.textContent + '</a>';
-    });
-
-    tocNav.innerHTML = tocHTML;
-}
-```
+> 已迁移至 [17-common-js.md §9](17-common-js.md)
 
 ## 6. 切换逻辑说明展开/收起
 
-```javascript
-function togglePrdLogic(module) {
-    const content = document.getElementById(module + '-logic-content');
-    const icon = document.getElementById(module + '-logic-icon');
-
-    if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-        if (icon) icon.style.transform = 'rotate(180deg)';
-    } else {
-        content.classList.add('hidden');
-        if (icon) icon.style.transform = 'rotate(0deg)';
-    }
-}
-```
+> 已迁移至 [17-common-js.md §10](17-common-js.md)
 
 ## 7. 页面切换（原型内多页面）
+
+> 本函数为 `04-javascript.md` 独有，用于原型内多页面切换（非 Tab 切换）。
 
 ```javascript
 function switchPage(pageId) {
@@ -270,6 +116,8 @@ function switchPage(pageId) {
 ```
 
 ## 8. 页面加载完成后初始化
+
+> 本函数为 `04-javascript.md` 独有，用于初始化模块级组件。
 
 ```javascript
 document.addEventListener('DOMContentLoaded', function() {

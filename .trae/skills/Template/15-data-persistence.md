@@ -1,4 +1,8 @@
-# 数据持久化模板
+# 数据持久化模板（架构指南）
+
+> **⚠️ 本文件为架构指南，不含重复代码。**
+> - **代码实现**：[17-common-js.md](17-common-js.md)（APIDataManager / StateManager 唯一权威代码源）
+> - **本文件内容**：架构设计、服务器配置、页面配置、集成示例、API 接口说明
 
 本文件定义TOB产品原型的数据持久化方案，使用 Node.js 服务器读写数据文件，支持 Git 同步。
 
@@ -83,262 +87,51 @@ npx pm2 save
 
 ## 3. 前端 API 管理器
 
-### 3.1 核心管理器
+> **⚠️ 代码已统一至 [17-common-js.md](17-common-js.md)**，本节仅保留架构说明和补充内容。
+>
+> `APIDataManager` 和 `StateManager` 的完整实现请查看：
+> - **[17-common-js.md §1. API 数据管理器](17-common-js.md)** — 唯一权威代码源
+> - **[17-common-js.md §2. 状态管理器](17-common-js.md)** — 唯一权威代码源
+
+### 3.1 APIDataManager 方法速查
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `init(config)` | `{pageId, dataFile, apiBase}` | - | 初始化配置 |
+| `loadData()` | - | `{success, data, source}` | 加载数据（API优先，localStorage降级） |
+| `saveData(data)` | `Array` | `{success, message}` | 保存数据（双写） |
+| `addRow(row)` | `Object` | `row` | 新增一行 |
+| `updateRow(id, updates)` | `id, Object` | `row \| null` | 更新指定行 |
+| `deleteRow(id)` | `id` | `boolean` | 删除指定行 |
+| `batchDelete(ids)` | `Array<id>` | `number` | 批量删除，返回剩余行数 |
+| `search(data, keyword, fields)` | `Array, string, Array` | `Array` | 关键词搜索 |
+| `filter(data, conditions)` | `Array, Object` | `Array` | 条件筛选 |
+| `sort(data, field, order)` | `Array, string, string` | `Array` | 排序 |
+| `paginate(data, page, pageSize)` | `Array, number, number` | `{data, pagination}` | 分页 |
+
+### 3.2 StateManager 方法速查
+
+| 方法 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `init(pageId)` | `string` | - | 初始化页面ID |
+| `getState()` | - | `Object` | 获取完整状态 |
+| `saveState(state)` | `Object` | - | 保存完整状态 |
+| `saveFilters(filters)` | `Object` | - | 保存筛选条件 |
+| `savePagination(pagination)` | `Object` | - | 保存分页状态 |
+| `saveSort(field, order)` | `string, string` | - | 保存排序状态 |
+| `clearState()` | - | - | 清除所有状态 |
+
+### 3.3 15-data-persistence.md 独有补充：saveSelectedRows
+
+> 以下方法在 [17-common-js.md](17-common-js.md) 的 `StateManager` 中尚未包含，属于本文件的补充定义。
 
 ```javascript
-const APIDataManager = {
-    apiBase: 'http://localhost:3100/api/data',
-    pageId: null,
-    dataPath: null,
-    cache: null,
-    
-    init: function(config) {
-        this.pageId = config.pageId;
-        this.dataPath = config.dataFile;
-        this.apiBase = config.apiBase || 'http://localhost:3100/api/data';
-    },
-    
-    loadData: async function() {
-        try {
-            const response = await fetch(`${this.apiBase}/${this.dataPath}`);
-            const result = await response.json();
-            
-            if (result.success) {
-                this.cache = result.data;
-                return {
-                    success: true,
-                    data: result.data,
-                    source: 'api'
-                };
-            }
-            
-            return {
-                success: false,
-                data: [],
-                message: result.message
-            };
-        } catch (e) {
-            console.warn('API 加载失败，使用 localStorage:', e);
-            return this.loadFromLocalStorage();
-        }
-    },
-    
-    saveData: async function(data) {
-        try {
-            const response = await fetch(`${this.apiBase}/${this.dataPath}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: data })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                this.cache = data;
-                this.saveToLocalStorage(data);
-                return { success: true, message: '保存成功' };
-            }
-            
-            return { success: false, message: result.message };
-        } catch (e) {
-            console.warn('API 保存失败，使用 localStorage:', e);
-            this.saveToLocalStorage(data);
-            return { success: true, message: '已保存到本地缓存' };
-        }
-    },
-    
-    loadFromLocalStorage: function() {
-        try {
-            const key = `erp_prototype_${this.pageId}`;
-            const data = localStorage.getItem(key);
-            return {
-                success: true,
-                data: data ? JSON.parse(data) : [],
-                source: 'localStorage'
-            };
-        } catch (e) {
-            return { success: false, data: [], message: e.message };
-        }
-    },
-    
-    saveToLocalStorage: function(data) {
-        try {
-            const key = `erp_prototype_${this.pageId}`;
-            localStorage.setItem(key, JSON.stringify(data));
-        } catch (e) {
-            console.error('localStorage 保存失败:', e);
-        }
-    },
-    
-    addRow: async function(row) {
-        const result = await this.loadData();
-        const data = result.data || [];
-        
-        row.id = row.id || Date.now();
-        row.createdAt = new Date().toISOString();
-        row.updatedAt = new Date().toISOString();
-        
-        data.push(row);
-        await this.saveData(data);
-        
-        return row;
-    },
-    
-    updateRow: async function(id, updates) {
-        const result = await this.loadData();
-        const data = result.data || [];
-        
-        const index = data.findIndex(row => row.id === id);
-        if (index !== -1) {
-            data[index] = { 
-                ...data[index], 
-                ...updates,
-                updatedAt: new Date().toISOString()
-            };
-            await this.saveData(data);
-            return data[index];
-        }
-        return null;
-    },
-    
-    deleteRow: async function(id) {
-        const result = await this.loadData();
-        const data = result.data || [];
-        
-        const filtered = data.filter(row => row.id !== id);
-        await this.saveData(filtered);
-        
-        return filtered.length < data.length;
-    },
-    
-    batchDelete: async function(ids) {
-        const result = await this.loadData();
-        const data = result.data || [];
-        
-        const filtered = data.filter(row => !ids.includes(row.id));
-        await this.saveData(filtered);
-        
-        return filtered.length;
-    },
-    
-    search: function(data, keyword, fields) {
-        if (!keyword) return data;
-        
-        const lowerKeyword = keyword.toLowerCase();
-        return data.filter(row => {
-            return fields.some(field => {
-                const value = row[field];
-                return value && String(value).toLowerCase().includes(lowerKeyword);
-            });
-        });
-    },
-    
-    filter: function(data, conditions) {
-        return data.filter(row => {
-            return Object.keys(conditions).every(field => {
-                const value = conditions[field];
-                if (value === '' || value === null || value === undefined) {
-                    return true;
-                }
-                return row[field] === value;
-            });
-        });
-    },
-    
-    sort: function(data, field, order) {
-        return [...data].sort((a, b) => {
-            const aVal = a[field];
-            const bVal = b[field];
-            
-            if (order === 'desc') {
-                return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-            }
-            return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
-        });
-    },
-    
-    paginate: function(data, page, pageSize) {
-        const total = data.length;
-        const totalPages = Math.ceil(total / pageSize);
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize;
-        
-        return {
-            data: data.slice(start, end),
-            pagination: {
-                current: page,
-                pageSize: pageSize,
-                total: total,
-                totalPages: totalPages
-            }
-        };
-    }
-};
-```
-
-### 3.2 状态管理器
-
-```javascript
-const StateManager = {
-    pageId: null,
-    
-    init: function(pageId) {
-        this.pageId = pageId;
-    },
-    
-    getState: function() {
-        const key = `erp_state_${this.pageId}`;
-        try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : this.getDefaultState();
-        } catch (e) {
-            return this.getDefaultState();
-        }
-    },
-    
-    saveState: function(state) {
-        const key = `erp_state_${this.pageId}`;
-        localStorage.setItem(key, JSON.stringify(state));
-    },
-    
-    getDefaultState: function() {
-        return {
-            filters: {},
-            pagination: { current: 1, pageSize: 10 },
-            sort: { field: '', order: 'asc' },
-            selectedRows: []
-        };
-    },
-    
-    saveFilters: function(filters) {
-        const state = this.getState();
-        state.filters = filters;
-        this.saveState(state);
-    },
-    
-    savePagination: function(pagination) {
-        const state = this.getState();
-        state.pagination = pagination;
-        this.saveState(state);
-    },
-    
-    saveSort: function(field, order) {
-        const state = this.getState();
-        state.sort = { field, order };
-        this.saveState(state);
-    },
-    
-    saveSelectedRows: function(ids) {
-        const state = this.getState();
-        state.selectedRows = ids;
-        this.saveState(state);
-    },
-    
-    clearState: function() {
-        const key = `erp_state_${this.pageId}`;
-        localStorage.removeItem(key);
-    }
-};
+// 补充方法：保存选中行（如需此功能，添加到 StateManager 对象中）
+saveSelectedRows: function(ids) {
+    const state = this.getState();
+    state.selectedRows = ids;
+    this.saveState(state);
+}
 ```
 
 ## 4. 页面配置

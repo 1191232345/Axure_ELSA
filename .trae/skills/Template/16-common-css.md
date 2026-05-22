@@ -25,28 +25,13 @@ body {
     line-height: 1.6;
 }
 
-/* 2. CSS 变量（统一设计令牌） */
+/* 2. CSS 变量（统一设计令牌）
+   完整变量定义请查看: 00-design-tokens.md
+   此处仅保留公共样式所需的少量补充变量 */
 :root {
-    /* 品牌色系 */
-    --color-primary: #2a3b7d;
     --color-primary-hover: #3a4ca7;
-
-    /* 功能色系 */
     --color-secondary: #36CFC9;
     --color-accent: #722ED1;
-    --color-success: #00B42A;
-    --color-warning: #FF7D00;
-    --color-danger: #F53F3F;
-
-    /* 中性色系 */
-    --color-text-primary: #1D2129;
-    --color-border: #E5E7EB;
-    --color-card-bg: #FFFFFF;
-
-    /* 阴影和圆角 */
-    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --radius-lg: 8px;
-    --radius-md: 6px;
 }
 
 /* 3. 按钮样式 */
@@ -472,70 +457,177 @@ body {
     color: var(--color-primary);
 }
 
-/* 14. 文档样式 */
-.prose {
-    line-height: 1.8;
+/* 14. 文档样式（.prose 增强版 - 唯一权威定义）
+   02-css-styles.md 和 11-testcase-html-template.md 引用此版本 */
+.prose { 
+    color: var(--color-neutral-700);
+    line-height: 1.8; 
+    font-size: 0.95rem;
+    max-width: 100%;
 }
 
-.prose h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 24px;
-    color: var(--color-text-primary);
+.prose h1 { 
+    font-size: 2rem; 
+    font-weight: 700; 
+    color: var(--color-neutral-900); 
+    margin-bottom: 1.5rem; 
+    padding-bottom: 1rem; 
+    border-bottom: 3px solid var(--color-primary);
+    background: linear-gradient(135deg, #667eea 0%, var(--color-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-.prose h2 {
-    font-size: 22px;
+.prose h2 { 
+    font-size: 1.4rem; 
+    font-weight: 600; 
+    color: var(--color-primary); 
+    margin: 2.5rem 0 1.2rem; 
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+    border-left: 4px solid var(--color-primary);
+    border-radius: 0 8px 8px 0;
+}
+
+.prose h3 { 
+    font-size: 1.15rem; 
+    font-weight: 600; 
+    color: var(--color-neutral-600); 
+    margin: 2rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.prose h4 { 
+    font-size: 1rem; 
+    font-weight: 600; 
+    color: var(--color-primary); 
+    margin: 1.5rem 0 0.5rem; 
+}
+
+.prose p { margin-bottom: 1rem; color: var(--color-neutral-600); }
+.prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.2rem; }
+.prose li { margin-bottom: 0.5rem; color: var(--color-neutral-600); }
+.prose li::marker { color: var(--color-primary); }
+
+.prose table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0;
+    margin: 1.5rem 0; 
+    font-size: 0.85rem; 
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.prose th { 
+    padding: 0.875rem 1rem; 
+    background: linear-gradient(135deg, var(--color-primary) 0%, #4f46e5 100%);
+    color: white;
     font-weight: 600;
-    margin-top: 32px;
-    margin-bottom: 16px;
-    color: var(--color-text-primary);
-    border-bottom: 2px solid var(--color-primary);
-    padding-bottom: 8px;
-}
-
-.prose h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-top: 24px;
-    margin-bottom: 12px;
-    color: var(--color-text-primary);
-}
-
-.prose p {
-    margin-bottom: 16px;
-    color: #4b5563;
-}
-
-.prose table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 16px 0;
-}
-
-.prose th,
-.prose td {
-    padding: 12px;
-    border: 1px solid var(--color-border);
     text-align: left;
+    border: none;
+    white-space: nowrap;
 }
 
-.prose th {
-    background: #f9fafb;
-    font-weight: 600;
+.prose th:first-child { border-top-left-radius: 12px; }
+.prose th:last-child { border-top-right-radius: 12px; }
+
+.prose td { 
+    padding: 0.75rem 1rem; 
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
 }
 
-.prose pre {
-    background: #1e293b;
-    color: #e2e8f0;
-    padding: 16px;
-    border-radius: var(--radius-md);
-    overflow-x: auto;
+.prose tr:last-child td { border-bottom: none; }
+.prose tr:nth-child(even) td { background: var(--bg-color-page); }
+.prose tr:hover td { background: #f0f4ff; }
+
+.prose pre { 
+    background: linear-gradient(135deg, var(--color-neutral-800) 0%, var(--color-neutral-900) 100%); 
+    padding: 1.25rem; 
+    border-radius: 12px; 
+    font-size: 0.8rem; 
+    border: 1px solid #334155;
+    overflow-x: auto; 
+    margin: 1.5rem 0;
+    box-shadow: var(--shadow-md);
 }
 
-.prose code {
+.prose code { 
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    color: #dc2626;
+    padding: 0.2rem 0.4rem; 
+    border-radius: 4px; 
+    font-size: 0.875em;
     font-family: 'Monaco', 'Menlo', monospace;
-    font-size: 14px;
+}
+
+.prose pre code { 
+    background: none; 
+    padding: 0; 
+    color: #e2e8f0;
+}
+
+.prose blockquote { 
+    border-left: 4px solid var(--color-primary); 
+    padding: 1rem 1.5rem; 
+    margin: 1.5rem 0; 
+    color: var(--color-neutral-500);
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+}
+
+.prose strong { 
+    color: var(--color-neutral-900); 
+    font-weight: 700;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+}
+
+.prose a { 
+    color: var(--color-primary); 
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-primary);
+    transition: all 0.2s;
+}
+
+.prose a:hover { 
+    color: #4f46e5;
+    border-bottom-color: #4f46e5;
+}
+
+.prose .badge { 
+    display: inline-block; 
+    padding: 0.25rem 0.75rem; 
+    border-radius: 9999px; 
+    font-size: 0.75rem; 
+    font-weight: 600;
+    margin: 0.125rem;
+}
+
+.prose .badge-p0 { 
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.prose .badge-p1 { 
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
+    color: #d97706;
+    border: 1px solid #fcd34d;
+}
+
+.prose hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    margin: 2.5rem 0;
 }
 
 /* 15. 响应式适配 */
