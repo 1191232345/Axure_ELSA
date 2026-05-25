@@ -201,6 +201,393 @@
         </div>
       </div>
 
+      <!-- 逻辑说明 -->
+      <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('inbound-fee')">
+          <div class="flex items-center">
+            <i class="fa fa-book text-primary mr-2"></i>
+            <span class="font-semibold text-primary">逻辑说明</span>
+            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+          </div>
+          <i class="fa fa-chevron-down text-primary transition-transform" id="inbound-fee-logic-icon"></i>
+        </div>
+        <div id="inbound-fee-logic-content" style="display: none;">
+          <!-- 初始化页面（数据展示逻辑） -->
+          <div class="p-4 border-b border-gray-100">
+            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fa fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">分类Tab加载</td>
+                    <td class="px-3 py-2 text-gray-600">页面加载时展示三大分类Tab：整柜入库、快递散货入库、托盘入库</td>
+                    <td class="px-3 py-2 text-gray-600">入库费规则配置表</td>
+                    <td class="px-3 py-2 text-gray-600">默认选中第一个Tab（整柜入库）</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">收费项列表加载</td>
+                    <td class="px-3 py-2 text-gray-600">根据选中的分类Tab，展示对应的收费项列表</td>
+                    <td class="px-3 py-2 text-gray-600">入库费规则配置表</td>
+                    <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">统计信息展示</td>
+                    <td class="px-3 py-2 text-gray-600">显示当前分类下的收费项总数</td>
+                    <td class="px-3 py-2 text-gray-600">前端计算</td>
+                    <td class="px-3 py-2 text-gray-600">格式：[分类名称] - 共 X 个收费项</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 按钮逻辑 -->
+          <div class="p-4 border-b border-gray-100">
+            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fa fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">新增规则</td>
+                    <td class="px-3 py-2 text-gray-600">页面右上角</td>
+                    <td class="px-3 py-2 text-gray-600">打开新增收费规则弹窗</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">填写表单后保存，刷新列表</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">导出</td>
+                    <td class="px-3 py-2 text-gray-600">页面右上角</td>
+                    <td class="px-3 py-2 text-gray-600">导出当前分类下的收费项数据为CSV文件</td>
+                    <td class="px-3 py-2 text-gray-600">当前分类下有数据</td>
+                    <td class="px-3 py-2 text-gray-600">下载CSV文件</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">查看详情</td>
+                    <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                    <td class="px-3 py-2 text-gray-600">打开收费项详情弹窗</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">展示详细信息，只读模式</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">编辑</td>
+                    <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                    <td class="px-3 py-2 text-gray-600">打开编辑收费规则弹窗，预填充当前数据</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">修改后保存，刷新列表</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">删除</td>
+                    <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                    <td class="px-3 py-2 text-gray-600">弹出确认对话框</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">确认后删除，刷新列表</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 属性取值逻辑（主表） -->
+          <div class="p-4">
+            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">序号</td>
+                    <td class="px-3 py-2 text-gray-600">行号</td>
+                    <td class="px-3 py-2 text-gray-600">前端计算</td>
+                    <td class="px-3 py-2 text-gray-600">从1开始递增</td>
+                    <td class="px-3 py-2 text-gray-600">数字</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">数值型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">收费项</td>
+                    <td class="px-3 py-2 text-gray-600">收费项目名称</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：卸货费、入库附加费</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">二级分类</td>
+                    <td class="px-3 py-2 text-gray-600">收费项的二级分类</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">当收费项为"入库附加费"时显示，可选：SKU超量费、超重费、清单费等</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">计费单位</td>
+                    <td class="px-3 py-2 text-gray-600">收费的计价单位</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：柜、票、件、箱、托、KG、个</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-600">32</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">创建人</td>
+                    <td class="px-3 py-2 text-gray-600">创建该规则的用户</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">新增时自动获取当前登录用户</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">创建时间</td>
+                    <td class="px-3 py-2 text-gray-600">规则创建的时间</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">新增时自动生成当前时间</td>
+                    <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">DATETIME</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">更新人</td>
+                    <td class="px-3 py-2 text-gray-600">最后更新该规则的用户</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">编辑保存时自动获取当前登录用户</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">更新时间</td>
+                    <td class="px-3 py-2 text-gray-600">规则最后更新的时间</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">编辑保存时自动更新为当前时间</td>
+                    <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">DATETIME</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 属性取值逻辑（新增弹窗） -->
+          <div class="p-4 border-t border-gray-100">
+            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fa fa-list-alt text-primary mr-2"></i>属性取值逻辑（新增弹窗）
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">收费分类</td>
+                    <td class="px-3 py-2 text-gray-600">收费项所属分类</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">默认为当前选中的Tab分类，禁用不可修改</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">收费项 <span style="color:#C44536;">*</span></td>
+                    <td class="px-3 py-2 text-gray-600">收费项目名称</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：卸货费、入库附加费；选择后触发不同的表单展示逻辑</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">二级收费项 <span style="color:#C44536;">*</span></td>
+                    <td class="px-3 py-2 text-gray-600">收费项的二级分类</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">当收费项为"入库附加费"时显示并必填；可选：SKU超量费、超重费、清单费、轻点费、分货费、拆拖、分货、超重、清点、SKU超重费</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">计费单位 <span style="color:#C44536;">*</span></td>
+                    <td class="px-3 py-2 text-gray-600">收费的计价单位</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：柜、票、件、箱、托、KG、个</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-600">32</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">费率标准</td>
+                    <td class="px-3 py-2 text-gray-600">不同规格的价格标准</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">当收费项为"卸货费"时显示表格，支持添加多行：规格（如20GP）、价格（数字）、备注（文本）</td>
+                    <td class="px-3 py-2 text-gray-600">表格录入</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">JSON</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">阶梯价格</td>
+                    <td class="px-3 py-2 text-gray-600">按数量范围的价格阶梯</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">当选择二级收费项时显示表格，支持添加多行：开始量（数字）、结束量（数字）、价格（数字）</td>
+                    <td class="px-3 py-2 text-gray-600">表格录入</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">JSON</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">费率规则</td>
+                    <td class="px-3 py-2 text-gray-600">费率规则文本描述</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">当收费项为"入库附加费"但未选择二级收费项时显示，每行一条：规格|价格|备注</td>
+                    <td class="px-3 py-2 text-gray-600">多行文本</td>
+                    <td class="px-3 py-2 text-gray-600">512</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">重量阶梯</td>
+                    <td class="px-3 py-2 text-gray-600">重量阶梯价格描述</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">可选，每行一条：范围|价格|单位</td>
+                    <td class="px-3 py-2 text-gray-600">多行文本</td>
+                    <td class="px-3 py-2 text-gray-600">512</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">条件说明</td>
+                    <td class="px-3 py-2 text-gray-600">收费规则的适用条件</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">可选，描述收费规则的适用条件，如"单箱重量超过35kg时收取超重费"</td>
+                    <td class="px-3 py-2 text-gray-600">多行文本</td>
+                    <td class="px-3 py-2 text-gray-600">256</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">计费举例</td>
+                    <td class="px-3 py-2 text-gray-600">计费示例说明</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">可选，提供计费示例说明，帮助用户理解计费规则</td>
+                    <td class="px-3 py-2 text-gray-600">多行文本</td>
+                    <td class="px-3 py-2 text-gray-600">512</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">备注</td>
+                    <td class="px-3 py-2 text-gray-600">规则补充说明</td>
+                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                    <td class="px-3 py-2 text-gray-600">可选，规则说明或特殊条件</td>
+                    <td class="px-3 py-2 text-gray-600">多行文本</td>
+                    <td class="px-3 py-2 text-gray-600">256</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 新增弹窗交互逻辑 -->
+          <div class="p-4 border-t border-gray-100">
+            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fa fa-exchange-alt text-primary mr-2"></i>新增弹窗交互逻辑
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互逻辑</th>
+                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示内容</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">打开新增弹窗</td>
+                    <td class="px-3 py-2 text-gray-600">1. 收费分类默认为当前选中的Tab分类<br>2. 根据分类加载对应的收费项选项<br>3. 默认显示第一个收费项</td>
+                    <td class="px-3 py-2 text-gray-600">显示新增弹窗，收费分类字段禁用</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">选择收费项="卸货费"</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示"费率标准"表格区域<br>2. 隐藏"二级收费项"选择框<br>3. 隐藏"阶梯价格"表格<br>4. 显示"费率规则"、"重量阶梯"等文本输入区</td>
+                    <td class="px-3 py-2 text-gray-600">费率标准表格（规格、价格、备注）</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">选择收费项="入库附加费"</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示"二级收费项"选择框<br>2. 隐藏"费率标准"表格<br>3. 显示"费率规则"、"重量阶梯"等文本输入区</td>
+                    <td class="px-3 py-2 text-gray-600">二级收费项下拉选择框</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">选择二级收费项</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示"阶梯价格"表格<br>2. 隐藏"费率规则"、"重量阶梯"等文本输入区</td>
+                    <td class="px-3 py-2 text-gray-600">阶梯价格表格（开始量、结束量、价格）</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">点击"添加费率"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">在费率标准表格中新增一行空白行</td>
+                    <td class="px-3 py-2 text-gray-600">新增一行：规格输入框、价格输入框、备注输入框、删除按钮</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">点击"添加阶梯"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">在阶梯价格表格中新增一行空白行</td>
+                    <td class="px-3 py-2 text-gray-600">新增一行：开始量输入框、结束量输入框、价格输入框、删除按钮</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">点击"保存"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">1. 校验必填字段<br>2. 收集表单数据<br>3. 自动设置创建人、创建时间<br>4. 保存到数据源<br>5. 刷新列表</td>
+                    <td class="px-3 py-2 text-gray-600">保存成功提示，关闭弹窗，刷新主表</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 

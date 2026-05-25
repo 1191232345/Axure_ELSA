@@ -1147,4 +1147,17 @@ function switchMainTab(tabName) {
   document.getElementById(`main-${tabName}`).classList.add('active');
 }
 
+function togglePrdLogic(moduleId) {
+  const content = document.getElementById(`${moduleId}-logic-content`);
+  const icon = document.getElementById(`${moduleId}-logic-icon`);
+  
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    icon.style.transform = 'rotate(180deg)';
+  } else {
+    content.style.display = 'none';
+    icon.style.transform = 'rotate(0deg)';
+  }
+}
+
 const engine = new InboundFeeRuleEngine();
