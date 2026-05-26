@@ -119,54 +119,72 @@
     
     <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
         <div class="container mx-auto px-4 py-6">            
-            <div class="bg-white rounded shadow-card p-4 mb-4">
-                <div class="flex flex-wrap gap-4 items-center">
-                    <div class="flex items-center">
-                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">订单号</label>
-                        <div class="filter-combo">
-                            <select class="filter-combo-select">
-                                <option>精确查询</option>
-                                <option>模糊查询</option>
-                            </select>
-                            <input type="text" placeholder="请输入订单号" class="filter-combo-input">
+            <div class="bg-white rounded shadow-card mb-4">
+                <div class="border-b border-gray-100 px-4 py-3">
+                    <div class="flex gap-2">
+                        <button id="outboundTabBtn" class="tab-btn tab-btn-active">
+                            出库单
+                        </button>
+                        <button id="storageTabBtn" class="tab-btn tab-btn-inactive">
+                            仓储费
+                        </button>
+                        <button id="inboundTabBtn" class="tab-btn tab-btn-inactive">
+                            入库费
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <div class="flex flex-wrap gap-4 items-center justify-between">
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div class="flex items-center">
+                                <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">订单号</label>
+                                <div class="filter-combo">
+                                    <select class="filter-combo-select">
+                                        <option>精确查询</option>
+                                        <option>模糊查询</option>
+                                    </select>
+                                    <input type="text" placeholder="请输入订单号" class="filter-combo-input">
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">客户代码</label>
+                                <select class="form-input bg-white text-sm">
+                                    <option>DEMO - demo</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">仓库</label>
+                                <select class="form-input bg-white text-sm">
+                                    <option>请选择仓库</option>
+                                    <option>DE001</option>
+                                    <option>DE002</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">配送渠道</label>
+                                <select class="form-input bg-white text-sm">
+                                    <option>请选择配送渠道</option>
+                                    <option>FEDEX_MPS</option>
+                                    <option>FEDEX_HOME_GROUND</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">客户代码</label>
-                        <select class="form-input bg-white text-sm">
-                            <option>DEMO - demo</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">仓库</label>
-                        <select class="form-input bg-white text-sm">
-                            <option>请选择仓库</option>
-                            <option>DE001</option>
-                            <option>DE002</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">配送渠道</label>
-                        <select class="form-input bg-white text-sm">
-                            <option>请选择配送渠道</option>
-                            <option>FEDEX_MPS</option>
-                            <option>FEDEX_HOME_GROUND</option>
-                        </select>
-                    </div>
-                    
-                    <div class="ml-auto flex items-center gap-2">
-                        <button id="resetBtn" class="erp-btn erp-btn-secondary">
-                            重置
-                        </button>
-                        <button id="searchBtn" class="erp-btn erp-btn-primary">
-                            <i class="fa fa-search mr-1"></i> 搜索
-                        </button>
-                        <button class="flex items-center text-primary text-sm hover:text-primary/80">
-                            展开 <i class="fa fa-angle-down ml-1"></i>
-                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                            <button id="resetBtn" class="erp-btn erp-btn-secondary">
+                                重置
+                            </button>
+                            <button id="searchBtn" class="erp-btn erp-btn-primary">
+                                <i class="fa fa-search mr-1"></i> 搜索
+                            </button>
+                            <button class="flex items-center text-primary text-sm hover:text-primary/80">
+                                展开 <i class="fa fa-angle-down ml-1"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -183,17 +201,8 @@
                         <button id="recalculateBtn" class="erp-btn erp-btn-secondary">
                             <i class="fa fa-calculator mr-1"></i> 重计明细
                         </button>
-                        <button id="importRecalculateBtn" class="erp-btn erp-btn-secondary hidden">
+                        <button id="importRecalculateBtn" class="erp-btn erp-btn-secondary">
                             <i class="fa fa-upload mr-1"></i> 导入重计
-                        </button>
-                    </div>
-                    
-                    <div class="flex gap-2">
-                        <button id="outboundTabBtn" class="tab-btn tab-btn-active">
-                            出库单
-                        </button>
-                        <button id="storageTabBtn" class="tab-btn tab-btn-inactive">
-                            仓储费
                         </button>
                     </div>
                 </div>
@@ -202,7 +211,7 @@
             <div class="bg-white rounded shadow-card overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm data-table">
-                        <thead>
+                        <thead id="mainTableHead">
                             <tr class="bg-gray-50 text-left">
                                 <th class="px-4 py-3 w-10"><input type="checkbox" id="selectAllCheckbox" class="rounded text-primary focus:ring-primary"></th>
                                 <th class="px-4 py-3 font-medium text-gray-500">下单时间</th>
@@ -210,7 +219,7 @@
                                 <th class="px-4 py-3 font-medium text-gray-500">仓库</th>
                                 <th class="px-4 py-3 font-medium text-gray-500">客户代码</th>
                                 <th class="px-4 py-3 font-medium text-gray-500">订单号</th>
-                                <th class="px-4 py-3 font-medium text-gray-500">物流产品</th>
+                                <th class="px-4 py-3 font-medium text-gray-500 logistics-product-col">物流产品</th>
                                 <th class="px-4 py-3 font-medium text-gray-500">计费总金额</th>
                                 <th class="px-4 py-3 font-medium text-gray-500">币种</th>
                                 <th class="px-4 py-3 font-medium text-gray-500">操作</th>
@@ -307,7 +316,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center">
+                    <div class="flex items-center logistics-product-filter">
                         <label class="text-gray-500 mr-2 whitespace-nowrap text-sm">物流产品</label>
                         <select class="form-input text-sm">
                             <option>全部</option>

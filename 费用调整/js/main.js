@@ -57,6 +57,19 @@ var STORAGE_TABLE_HEADERS = [
     { key: 'failReason', label: '失败原因' }
 ];
 
+var INBOUND_TABLE_HEADERS = [
+    { key: 'operateTime', label: '操作时间' },
+    { key: 'operator', label: '操作人' },
+    { key: 'warehouse', label: '仓库代码' },
+    { key: 'customerCode', label: '客户代码' },
+    { key: 'orderNo', label: '订单号' },
+    { key: 'chargeType', label: '计费类型' },
+    { key: 'originalAmount', label: '原金额' },
+    { key: 'amount', label: '重计金额' },
+    { key: 'status', label: '状态' },
+    { key: 'failReason', label: '失败原因' }
+];
+
 function initAPIDataManager() {
     if (typeof APIDataManager !== 'undefined') {
         APIDataManager.init({
@@ -105,19 +118,32 @@ function generateMockData(count) {
     var warehouses = ['DE001', 'DE002', 'DE003'];
     var customers = ['DEMO - demo', 'TEST - test', 'PROD - prod'];
     var channels = ['FEDEX_MPS', 'FEDEX_HOME_GROUND', 'ZYBQ'];
-    var currencies = ['USD', 'EUR', 'GBP'];
+    
+    var billTypeLabel;
+    if (currentTabType === 'storage') {
+        billTypeLabel = '仓储费';
+    } else if (currentTabType === 'inbound') {
+        billTypeLabel = '入库费';
+    } else {
+        billTypeLabel = '出库费';
+    }
     
     for (var i = 1; i <= count; i++) {
+        var logisticsProduct = '';
+        if (currentTabType === 'outbound') {
+            logisticsProduct = channels[Math.floor(Math.random() * channels.length)];
+        }
+        
         data.push({
             id: i,
             orderTime: '2024-01-' + String(Math.floor(Math.random() * 28) + 1).padStart(2, '0') + ' 10:30:00',
-            billType: Math.random() > 0.5 ? '出库费' : '仓储费',
+            billType: billTypeLabel,
             warehouse: warehouses[Math.floor(Math.random() * warehouses.length)],
             customerCode: customers[Math.floor(Math.random() * customers.length)],
             orderNo: 'ORD' + String(Date.now()).slice(-8) + String(i).padStart(4, '0'),
-            logisticsProduct: channels[Math.floor(Math.random() * channels.length)],
+            logisticsProduct: logisticsProduct,
             amount: (Math.random() * 10000 + 500).toFixed(2),
-            currency: currencies[Math.floor(Math.random() * currencies.length)]
+            currency: 'USD'
         });
     }
     
@@ -242,11 +268,24 @@ function openRecalculateModal(chargeType) {
     var modalChargeType = document.getElementById('modalChargeType');
     
     if (modal && modalChargeType) {
-        var tabTitle = currentTabType === 'outbound' ? '出库费' : '仓储费';
-        modalChargeType.textContent = chargeType + ' - ' + tabTitle;
+        var tabTitle;
+        if (currentTabType === 'outbound') {
+            tabTitle = '出库单';
+        } else if (currentTabType === 'storage') {
+            tabTitle = '仓储费';
+        } else {
+            tabTitle = '入库费';
+        }
+        modalChargeType.textContent = tabTitle;
         modal.classList.remove('hidden');
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
+        
+        var showLogisticsProduct = currentTabType === 'outbound';
+        var logisticsProductFilters = document.querySelectorAll('.logistics-product-filter');
+        logisticsProductFilters.forEach(function(filter) {
+            filter.style.display = showLogisticsProduct ? '' : 'none';
+        });
         
         renderTableHeaders(currentTabType);
         loadRecalculateDetailData();
@@ -266,7 +305,14 @@ function renderTableHeaders(tabType) {
     var thead = document.getElementById('recalculateTableHead');
     if (!thead) return;
     
-    var headers = tabType === 'storage' ? STORAGE_TABLE_HEADERS : OUTBOUND_TABLE_HEADERS;
+    var headers;
+    if (tabType === 'storage') {
+        headers = STORAGE_TABLE_HEADERS;
+    } else if (tabType === 'inbound') {
+        headers = INBOUND_TABLE_HEADERS;
+    } else {
+        headers = OUTBOUND_TABLE_HEADERS;
+    }
     
     var html = '<tr class="bg-gray-50 text-left">';
     headers.forEach(function(header) {
@@ -285,6 +331,8 @@ function loadRecalculateDetailData() {
         
         if (currentTabType === 'storage') {
             mockDetailData = generateMockStorageRecalculateData(20);
+        } else if (currentTabType === 'inbound') {
+            mockDetailData = generateMockInboundRecalculateData(20);
         } else {
             mockDetailData = generateMockOutboundRecalculateData(20);
         }
@@ -359,12 +407,50 @@ function generateMockStorageRecalculateData(count) {
     return data;
 }
 
+function generateMockInboundRecalculateData(count) {
+    var data = [];
+    var statuses = ['success', 'processing', 'failed'];
+    var warehouses = ['WH001', 'WH002', 'WH003'];
+    var customers = ['INBOUND_A', 'INBOUND_B', 'INBOUND_C'];
+    var inboundTypes = ['入库费'];
+    
+    for (var i = 1; i <= count; i++) {
+        var status = statuses[Math.floor(Math.random() * statuses.length)];
+        var originalAmount = (Math.random() * 3000 + 300).toFixed(2);
+        var recalculatedAmount = status === 'failed' ? '-' : (parseFloat(originalAmount) * (0.9 + Math.random() * 0.2)).toFixed(2);
+        
+        data.push({
+            id: i,
+            operateTime: '2024-01-16 09:' + String(Math.floor(Math.random() * 60)).padStart(2, '0') + ':' + String(Math.floor(Math.random() * 60)).padStart(2, '0'),
+            operator: '入库员',
+            warehouse: warehouses[Math.floor(Math.random() * warehouses.length)],
+            customerCode: customers[Math.floor(Math.random() * customers.length)],
+            orderNo: 'INB-' + String(Date.now()).slice(-6) + String(i).padStart(3, '0'),
+            chargeType: inboundTypes[Math.floor(Math.random() * inboundTypes.length)],
+            originalAmount: originalAmount,
+            amount: recalculatedAmount,
+            status: status,
+            failReason: status === 'failed' ? '入库数据异常或计费规则未配置' : '-'
+        });
+    }
+    
+    return data;
+}
+
 function renderOrderTable(data) {
     var tbody = document.getElementById('orderTableBody');
     if (!tbody) return;
     
+    var showLogisticsProduct = currentTabType === 'outbound';
+    var logisticsProductCols = document.querySelectorAll('.logistics-product-col');
+    logisticsProductCols.forEach(function(col) {
+        col.style.display = showLogisticsProduct ? '' : 'none';
+    });
+    
+    var colCount = showLogisticsProduct ? 10 : 9;
+    
     if (data.length === 0) {
-        tbody.innerHTML = '<tr class="border-t border-gray-100"><td colspan="11" class="px-4 py-12 text-center text-gray-400"><i class="fa fa-inbox text-4xl mb-2 block"></i><p>暂无数据</p></td></tr>';
+        tbody.innerHTML = '<tr class="border-t border-gray-100"><td colspan="' + colCount + '" class="px-4 py-12 text-center text-gray-400"><i class="fa fa-inbox text-4xl mb-2 block"></i><p>暂无数据</p></td></tr>';
         return;
     }
     
@@ -381,7 +467,9 @@ function renderOrderTable(data) {
         html += '<td class="px-4 py-3 text-sm">' + row.warehouse + '</td>';
         html += '<td class="px-4 py-3 text-sm">' + row.customerCode + '</td>';
         html += '<td class="px-4 py-3 text-sm font-medium text-primary">' + row.orderNo + '</td>';
-        html += '<td class="px-4 py-3 text-sm">' + row.logisticsProduct + '</td>';
+        if (showLogisticsProduct) {
+            html += '<td class="px-4 py-3 text-sm">' + row.logisticsProduct + '</td>';
+        }
         html += '<td class="px-4 py-3 text-sm font-semibold">' + parseFloat(row.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) + '</td>';
         html += '<td class="px-4 py-3 text-sm">' + row.currency + '</td>';
         html += '<td class="px-4 py-3 text-sm"><button class="table-action-btn" onclick="viewOrderDetail(\'' + row.orderNo + '\')">查看</button></td>';
@@ -396,7 +484,14 @@ function renderRecalculateTable(data, tabType) {
     var tbody = document.getElementById('recalculateTableBody');
     if (!tbody) return;
     
-    var headers = tabType === 'storage' ? STORAGE_TABLE_HEADERS : OUTBOUND_TABLE_HEADERS;
+    var headers;
+    if (tabType === 'storage') {
+        headers = STORAGE_TABLE_HEADERS;
+    } else if (tabType === 'inbound') {
+        headers = INBOUND_TABLE_HEADERS;
+    } else {
+        headers = OUTBOUND_TABLE_HEADERS;
+    }
     var colCount = headers.length;
     
     if (data.length === 0) {
@@ -589,7 +684,15 @@ function bindRecalculateDetailButton() {
     if (recalculateBtn) {
         recalculateBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            openRecalculateModal('出库单');
+            var chargeType;
+            if (currentTabType === 'outbound') {
+                chargeType = '出库单';
+            } else if (currentTabType === 'storage') {
+                chargeType = '仓储费';
+            } else {
+                chargeType = '入库费';
+            }
+            openRecalculateModal(chargeType);
         });
     }
 }
@@ -797,32 +900,37 @@ function handleFileUpload() {
 function bindTabButtons() {
     var outboundTabBtn = document.getElementById('outboundTabBtn');
     var storageTabBtn = document.getElementById('storageTabBtn');
-    var importRecalculateBtn = document.getElementById('importRecalculateBtn');
+    var inboundTabBtn = document.getElementById('inboundTabBtn');
     
-    if (outboundTabBtn && storageTabBtn) {
+    if (outboundTabBtn && storageTabBtn && inboundTabBtn) {
         outboundTabBtn.addEventListener('click', function() {
-            setActiveTab(outboundTabBtn, storageTabBtn);
+            setActiveTabMulti(outboundTabBtn, [storageTabBtn, inboundTabBtn]);
             currentTabType = 'outbound';
-            if (importRecalculateBtn) {
-                importRecalculateBtn.classList.add('hidden');
-            }
             console.log('切换到：出库单');
+            loadInitialData();
         });
         
         storageTabBtn.addEventListener('click', function() {
-            setActiveTab(storageTabBtn, outboundTabBtn);
+            setActiveTabMulti(storageTabBtn, [outboundTabBtn, inboundTabBtn]);
             currentTabType = 'storage';
-            if (importRecalculateBtn) {
-                importRecalculateBtn.classList.remove('hidden');
-            }
             console.log('切换到：仓储费');
+            loadInitialData();
+        });
+        
+        inboundTabBtn.addEventListener('click', function() {
+            setActiveTabMulti(inboundTabBtn, [outboundTabBtn, storageTabBtn]);
+            currentTabType = 'inbound';
+            console.log('切换到：入库费');
+            loadInitialData();
         });
     }
 }
 
-function setActiveTab(activeBtn, inactiveBtn) {
+function setActiveTabMulti(activeBtn, inactiveBtns) {
     activeBtn.className = 'tab-btn tab-btn-active';
-    inactiveBtn.className = 'tab-btn tab-btn-inactive';
+    inactiveBtns.forEach(function(btn) {
+        btn.className = 'tab-btn tab-btn-inactive';
+    });
 }
 
 function bindSelectAllCheckbox() {
