@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELSA</title>
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.3/dist/mermaid.min.js"></script>
+
+    <link rel="stylesheet" href="/common/css/common.css">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script>
+        const DESIGN_TOKENS = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#2a3b7d',
+                            light: '#3a4ca7',
+                            dark: '#1e2d5f'
+                        },
+                        secondary: {
+                            DEFAULT: '#36CFC9'
+                        },
+                        accent: {
+                            DEFAULT: '#722ED1'
+                        },
+                        success: {
+                            DEFAULT: '#00B42A',
+                            bg: '#E8FFEC',
+                            text: '#006B19'
+                        },
+                        warning: {
+                            DEFAULT: '#FF7D00',
+                            bg: '#FFF7E8',
+                            text: '#994D00'
+                        },
+                        danger: {
+                            DEFAULT: '#F53F3F',
+                            bg: '#FFECE8',
+                            text: '#B3261E'
+                        },
+                        info: {
+                            DEFAULT: '#1677FF',
+                            bg: '#E8F3FF',
+                            text: '#094D8C'
+                        },
+                        neutral: {
+                            50: '#FAFAFA',
+                            100: '#F5F5F5',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827'
+                        },
+                        dark: '#1D2129',
+                        border: '#E5E7EB',
+                        'light-bg': '#FFFFFF',
+                        'card-bg': '#FFFFFF'
+                    },
+                    boxShadow: {
+                        'card': '0 2px 8px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 25px -5px rgba(42, 59, 125, 0.1)',
+                        'dropdown': '0 4px 16px rgba(0, 0, 0, 0.1)',
+                        'header': '0 2px 4px rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        };
+
+        tailwind.config = DESIGN_TOKENS;
+
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            logLevel: 3,
+            fontFamily: 'Inter, system-ui, sans-serif'
+        });
+
+        const DATA_CONFIG = {
+            pageId: 'ai-customer',
+            dataFile: 'ai/data/ai-customer-data.json',
+            apiBase: 'http://localhost:3100/api/data',
+            version: '2.0.0'
+        };
+
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            if (language === 'mermaid') {
+                return '<div class="mermaid-container" onclick="openMermaidModal(this)">' +
+                       '<div class="mermaid">' + code + '</div>' +
+                       '<span class="mermaid-hint"><i class="fas fa-magnifying-glass-plus mr-1"></i>点击放大</span>' +
+                       '</div>';
+            }
+            return '<pre><code class="language-' + (language || '') + '">' +
+                   code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+                   '</code></pre>';
+        };
+        marked.setOptions({ renderer: renderer, breaks: true, gfm: true });
+    </script>
+</head>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+    <div class="tabs fixed bottom-8 right-8 z-40">
+        <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+        <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+        <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+    </div>
+
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+        <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+            <div class="flex justify-between items-center h-14">
+                <div class="flex items-center">
+                    <span class="text-lg font-semibold">ELSA</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-prd" class="main-content" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex gap-6">
+                <aside class="w-64 flex-shrink-0 hidden lg:block">
+                    <div class="toc sticky top-4">
+                        <div class="toc-title"><i class="fas fa-list-alt mr-2"></i>目录导航</div>
+                        <div id="toc-nav"></div>
+                    </div>
+                </aside>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+                        <div id="prd-content" class="prose max-w-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+        <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+            <button class="mermaid-modal-close" onclick="closeMermaidModal()">
+                <i class="fas fa-xmark"></i>
+            </button>
+            <div class="mermaid-modal-title">
+                <i class="fas fa-diagram-project mr-2"></i>流程图预览
+            </div>
+            <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+        </div>
+    </div>
+
+    <main id="main-testcases" class="main-content" style="display: none;"></main>
+
+    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+        <div class="container mx-auto px-2 py-6">
+
+            <div class="bg-white rounded shadow-card p-4 mb-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div class="flex items-center w-full sm:w-auto">
+                        <div class="flex gap-2">
+                            <button class="erp-btn erp-btn-primary tab-content-btn active" data-tab="tab1" onclick="switchContentTab('tab1')">
+                                <i class="fas fa-users mr-1.5"></i>客户群管理
+                            </button>
+                            <button class="erp-btn erp-btn-secondary tab-content-btn" data-tab="tab2" onclick="switchContentTab('tab2')">
+                                <i class="fas fa-comments mr-1.5"></i>群问答记录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-tab1" class="content-tab active">
+                <!-- 客户群列表 -->
+                <div id="groupListView">
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="text-xs text-neutral-600 mr-2">客户代码</label>
+                            <div class="relative flex-1 sm:w-48">
+                                <input type="text" id="filterCustomerCode" placeholder="请输入客户代码" class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="text-xs text-neutral-600 mr-2">群名称</label>
+                            <div class="relative flex-1 sm:w-48">
+                                <input type="text" id="filterGroupName" placeholder="请输入群名称" class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="handleResetFilter('tab1')">
+                                <i class="fas fa-rotate-right mr-1.5"></i> 重置
+                            </button>
+                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="handleSearchFilter('tab1')">
+                                <i class="fas fa-search mr-1.5"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex justify-start gap-3 flex-wrap">
+                        <button class="erp-btn erp-btn-primary" onclick="openAddModal('customerGroup')">
+                            <i class="fas fa-plus mr-1.5"></i> 添加关联
+                        </button>
+                        <button class="erp-btn erp-btn-secondary" onclick="exportData('customerGroup')">
+                            <i class="fas fa-download mr-1.5"></i> 导出
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-neutral-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">行号</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">客户代码</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">客户群</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">群ID</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">用户数</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">创建时间</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerGroupTableBody" class="divide-y divide-neutral-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyState1" class="hidden text-center py-12">
+                        <i class="fas fa-inbox text-6xl text-neutral-300 mb-4"></i>
+                        <h3 class="text-lg font-medium text-neutral-500 mb-2">暂无数据</h3>
+                        <p class="text-sm text-neutral-400 mb-4">您可以点击下方按钮添加新数据</p>
+                        <button class="erp-btn erp-btn-primary" onclick="openAddModal('customerGroup')">
+                            <i class="fas fa-plus mr-1.5"></i> 立即添加
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        共 <span id="totalCount1" class="font-medium text-gray-700">0</span> 条记录
+                    </div>
+                    <div id="pagination1" class="flex gap-1"></div>
+                </div>
+                </div>
+
+                <!-- 面包屑导航 -->
+                <div id="breadcrumb" class="bg-white rounded shadow-card p-3 mb-4 hidden">
+                    <div class="flex items-center gap-2 text-sm">
+                        <a href="javascript:goBackToGroupList()" class="text-primary hover:underline">
+                            <i class="fas fa-users mr-1"></i>客户群列表
+                        </a>
+                        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                        <span id="currentGroupName" class="text-gray-600 font-medium"></span>
+                        <span class="text-gray-400">（用户列表）</span>
+                    </div>
+                </div>
+
+                <!-- 用户列表（二级页面） -->
+                <div id="userListView" class="hidden">
+                    <div class="bg-white rounded shadow-card p-4 mb-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <div class="flex items-center w-full sm:w-auto">
+                                <label class="text-xs text-neutral-600 mr-2">账号名称</label>
+                                <div class="relative flex-1 sm:w-48">
+                                    <input type="text" id="filterUserName" placeholder="请输入账号名称" class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center w-full sm:w-auto">
+                                <label class="text-xs text-neutral-600 mr-2">角色</label>
+                                <select id="filterUserRole" class="px-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                    <option value="">全部</option>
+                                    <option value="客户">客户</option>
+                                    <option value="非客户">非客户</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                                <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="handleResetUserFilter()">
+                                    <i class="fas fa-rotate-right mr-1.5"></i> 重置
+                                </button>
+                                <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="handleSearchUserFilter()">
+                                    <i class="fas fa-search mr-1.5"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded shadow-card p-4 mb-4">
+                        <div class="flex justify-between items-center flex-wrap gap-3">
+                            <div class="flex gap-3">
+                                <button class="erp-btn erp-btn-primary" onclick="openAddUserModal()">
+                                    <i class="fas fa-plus mr-1.5"></i> 添加用户
+                                </button>
+                                <button class="erp-btn erp-btn-secondary" onclick="openBatchRoleModal()">
+                                    <i class="fas fa-tags mr-1.5"></i> 批量标注角色
+                                </button>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                已选择 <span id="selectedCount" class="font-medium text-primary">0</span> 个用户
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded shadow-card overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-neutral-200 text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700 w-10">
+                                            <input type="checkbox" id="selectAllUsers" onchange="toggleSelectAll()" class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary">
+                                        </th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">行号</th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">客户账号ID</th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">ELSA昵称</th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">ELSA用户名</th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">角色</th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">绑定时间</th>
+                                        <th class="px-4 py-3 text-left font-medium text-gray-700">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody" class="divide-y divide-neutral-100">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="emptyStateUser" class="hidden text-center py-12">
+                            <i class="fas fa-inbox text-6xl text-neutral-300 mb-4"></i>
+                            <h3 class="text-lg font-medium text-neutral-500 mb-2">暂无用户</h3>
+                            <p class="text-sm text-neutral-400 mb-4">该客户群下暂无用户数据</p>
+                            <button class="erp-btn erp-btn-primary" onclick="openAddUserModal()">
+                                <i class="fas fa-plus mr-1.5"></i> 立即添加
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center mt-4">
+                        <div class="text-sm text-gray-500">
+                            共 <span id="totalCountUser" class="font-medium text-gray-700">0</span> 条记录
+                        </div>
+                        <div id="paginationUser" class="flex gap-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-tab2" class="content-tab" style="display: none;">
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="text-xs text-neutral-600 mr-2">客户群</label>
+                            <div class="relative flex-1 sm:w-48">
+                                <input type="text" id="filterQAGroup" placeholder="请输入客户群" class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center w-full sm:w-auto">
+                            <label class="text-xs text-neutral-600 mr-2">关键词</label>
+                            <div class="relative flex-1 sm:w-48">
+                                <input type="text" id="filterQAKeyword" placeholder="请输入问题关键词" class="w-full pl-7 pr-3 py-1.5 text-sm border border-neutral-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                            <button class="erp-btn erp-btn-secondary flex items-center justify-center flex-1 sm:flex-none" onclick="handleResetFilter('tab2')">
+                                <i class="fas fa-rotate-right mr-1.5"></i> 重置
+                            </button>
+                            <button class="erp-btn erp-btn-primary flex items-center justify-center flex-1 sm:flex-none" onclick="handleSearchFilter('tab2')">
+                                <i class="fas fa-search mr-1.5"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex justify-start gap-3 flex-wrap">
+                        <button class="erp-btn erp-btn-secondary" onclick="exportData('qaRecord')">
+                            <i class="fas fa-download mr-1.5"></i> 导出记录
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-neutral-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">行号</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">客户群</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">提问者</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">问题</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">AI回复</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">问答时间</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">评分</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="qaRecordTableBody" class="divide-y divide-neutral-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyStateQA" class="hidden text-center py-12">
+                        <i class="fas fa-inbox text-6xl text-neutral-300 mb-4"></i>
+                        <h3 class="text-lg font-medium text-neutral-500 mb-2">暂无数据</h3>
+                        <p class="text-sm text-neutral-400 mb-4">当前没有问答记录</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        共 <span id="totalCountQA" class="font-medium text-gray-700">0</span> 条记录
+                    </div>
+                    <div id="paginationQA" class="flex gap-1"></div>
+                </div>
+            </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card p-4 mb-4">
+                    <div class="flex justify-start gap-3 flex-wrap">
+                        <button class="erp-btn erp-btn-secondary" onclick="exportData('qaRecord')">
+                            <i class="fas fa-download mr-1.5"></i> 导出记录
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded shadow-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-neutral-200 text-sm">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">行号</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">客户群</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">提问人</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">问题内容</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">AI回复</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">问答时间</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">评分</th>
+                                    <th class="px-4 py-3 text-left font-medium text-gray-700">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="qaRecordTableBody" class="divide-y divide-neutral-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyState3" class="hidden text-center py-12">
+                        <i class="fas fa-inbox text-6xl text-neutral-300 mb-4"></i>
+                        <h3 class="text-lg font-medium text-neutral-500 mb-2">暂无数据</h3>
+                        <p class="text-sm text-neutral-400 mb-4">当前没有问答记录</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <div class="text-sm text-gray-500">
+                        共 <span id="totalCount3" class="font-medium text-gray-700">0</span> 条记录
+                    </div>
+                    <div id="pagination3" class="flex gap-1"></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+                <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer hover:from-primary/10 hover:to-primary/15 transition-all"
+                     onclick="toggleLogic()">
+                    <div class="flex items-center">
+                        <i class="fas fa-book text-primary mr-2"></i>
+                        <span class="font-semibold text-primary">逻辑说明</span>
+                        <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-primary transition-transform duration-300" id="logicIcon"></i>
+                </div>
+                <div id="logicContent" class="hidden">
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-sitemap text-primary mr-2"></i>系统架构
+                        </h4>
+                        <div class="mermaid">
+                            flowchart LR
+                                A[微信群消息] --> B[第三方平台]
+                                B --> C[本地LLM]
+                                C --> D[第三方平台]
+                                D --> E[微信群回复]
+                        </div>
+                    </div>
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户群列表加载</td>
+                                        <td class="px-3 py-2 text-gray-600">页面加载时展示所有客户代码与客户群关联</td>
+                                        <td class="px-3 py-2 text-gray-600">JSON数据文件 / API</td>
+                                        <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
+                                        <td class="px-3 py-2 text-gray-600">支持本地存储和服务器双模式</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">账号关系列表加载</td>
+                                        <td class="px-3 py-2 text-gray-600">展示客户群与账号的绑定关系</td>
+                                        <td class="px-3 py-2 text-gray-600">JSON数据文件 / API</td>
+                                        <td class="px-3 py-2 text-gray-600">按绑定时间倒序排列</td>
+                                        <td class="px-3 py-2 text-gray-600">-</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">问答记录列表加载</td>
+                                        <td class="px-3 py-2 text-gray-600">展示LLM自动生成的问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">JSON数据文件 / API</td>
+                                        <td class="px-3 py-2 text-gray-600">按问答时间倒序排列</td>
+                                        <td class="px-3 py-2 text-gray-600">包含评分星级展示</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">Tab切换</td>
+                                        <td class="px-3 py-2 text-gray-600">切换三个功能模块的显示</td>
+                                        <td class="px-3 py-2 text-gray-600">前端状态管理</td>
+                                        <td class="px-3 py-2 text-gray-600">点击切换，保持数据状态</td>
+                                        <td class="px-3 py-2 text-gray-600">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-search text-primary mr-2"></i>检索条件
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">所属模块</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码与客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">模糊匹配客户代码字段</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">群名称</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码与客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">模糊匹配客户群字段</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">客户群与账号关系</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">模糊匹配客户群字段</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">账号名称</td>
+                                        <td class="px-3 py-2 text-gray-600">客户群与账号关系</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">模糊匹配账号名称字段</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">群问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">模糊匹配客户群字段</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">关键词</td>
+                                        <td class="px-3 py-2 text-gray-600">群问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                                        <td class="px-3 py-2 text-gray-600">模糊匹配问题和答案内容</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">时间范围</td>
+                                        <td class="px-3 py-2 text-gray-600">群问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">日期选择器</td>
+                                        <td class="px-3 py-2 text-gray-600">按问答时间范围筛选</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-4 border-b border-gray-100">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-mouse-pointer text-primary mr-2"></i>按钮逻辑
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">所属模块</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">添加关联</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码与客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                        <td class="px-3 py-2 text-gray-600">打开添加弹窗</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">填写表单后保存，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">导出</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码与客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                        <td class="px-3 py-2 text-gray-600">导出JSON文件</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">下载JSON文件</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">编辑</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码与客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">打开编辑弹窗</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">修改后保存，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">删除</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码与客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">删除确认弹窗</td>
+                                        <td class="px-3 py-2 text-gray-600">用户确认</td>
+                                        <td class="px-3 py-2 text-gray-600">删除数据，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">添加账号</td>
+                                        <td class="px-3 py-2 text-gray-600">客户群与账号关系</td>
+                                        <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                        <td class="px-3 py-2 text-gray-600">打开添加弹窗</td>
+                                        <td class="px-3 py-2 text-gray-600">存在客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">填写表单后保存，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">移除</td>
+                                        <td class="px-3 py-2 text-gray-600">客户群与账号关系</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">移除确认弹窗</td>
+                                        <td class="px-3 py-2 text-gray-600">用户确认</td>
+                                        <td class="px-3 py-2 text-gray-600">移除绑定关系，刷新列表</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">导出记录</td>
+                                        <td class="px-3 py-2 text-gray-600">群问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">操作区域</td>
+                                        <td class="px-3 py-2 text-gray-600">导出JSON文件</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">下载JSON文件</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">查看详情</td>
+                                        <td class="px-3 py-2 text-gray-600">群问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">打开详情弹窗</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">展示完整问答内容</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">重新回复</td>
+                                        <td class="px-3 py-2 text-gray-600">群问答记录</td>
+                                        <td class="px-3 py-2 text-gray-600">每行操作列</td>
+                                        <td class="px-3 py-2 text-gray-600">调用LLM重新生成</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">更新AI回复内容</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">同步数据</td>
+                                        <td class="px-3 py-2 text-gray-600">全局</td>
+                                        <td class="px-3 py-2 text-gray-600">Header导航栏</td>
+                                        <td class="px-3 py-2 text-gray-600">从服务器同步数据</td>
+                                        <td class="px-3 py-2 text-gray-600">服务器可用</td>
+                                        <td class="px-3 py-2 text-gray-600">刷新所有列表数据</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">重置</td>
+                                        <td class="px-3 py-2 text-gray-600">全局</td>
+                                        <td class="px-3 py-2 text-gray-600">搜索区域</td>
+                                        <td class="px-3 py-2 text-gray-600">清空搜索条件</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">显示全部数据</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">搜索</td>
+                                        <td class="px-3 py-2 text-gray-600">全局</td>
+                                        <td class="px-3 py-2 text-gray-600">搜索区域</td>
+                                        <td class="px-3 py-2 text-gray-600">根据条件筛选数据</td>
+                                        <td class="px-3 py-2 text-gray-600">无</td>
+                                        <td class="px-3 py-2 text-gray-600">显示筛选结果</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-list-alt text-primary mr-2"></i>属性取值逻辑（主表）
+                        </h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm border border-gray-200 rounded">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">customerCode</td>
+                                        <td class="px-3 py-2 text-gray-600">客户代码</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">唯一标识客户</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">32</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">groupName</td>
+                                        <td class="px-3 py-2 text-gray-600">客户群</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">微信群名称</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">64</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">groupId</td>
+                                        <td class="px-3 py-2 text-gray-600">群ID</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">微信群唯一标识</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">64</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">createTime</td>
+                                        <td class="px-3 py-2 text-gray-600">创建时间</td>
+                                        <td class="px-3 py-2 text-gray-600">系统生成</td>
+                                        <td class="px-3 py-2 text-gray-600">创建时自动记录</td>
+                                        <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm</td>
+                                        <td class="px-3 py-2 text-gray-600">-</td>
+                                        <td class="px-3 py-2 text-gray-600">DATETIME</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">accountName</td>
+                                        <td class="px-3 py-2 text-gray-600">账号名称</td>
+                                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                                        <td class="px-3 py-2 text-gray-600">微信用户ELSA</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">64</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">role</td>
+                                        <td class="px-3 py-2 text-gray-600">角色</td>
+                                        <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                                        <td class="px-3 py-2 text-gray-600">群主/管理员/普通成员</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">16</td>
+                                        <td class="px-3 py-2 text-gray-600">枚举型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">question</td>
+                                        <td class="px-3 py-2 text-gray-600">问题内容</td>
+                                        <td class="px-3 py-2 text-gray-600">LLM生成</td>
+                                        <td class="px-3 py-2 text-gray-600">用户提问内容</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">512</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">answer</td>
+                                        <td class="px-3 py-2 text-gray-600">AI回复</td>
+                                        <td class="px-3 py-2 text-gray-600">LLM生成</td>
+                                        <td class="px-3 py-2 text-gray-600">本地LLM自动生成</td>
+                                        <td class="px-3 py-2 text-gray-600">文本显示</td>
+                                        <td class="px-3 py-2 text-gray-600">1024</td>
+                                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-3 py-2 text-gray-800">rating</td>
+                                        <td class="px-3 py-2 text-gray-600">评分</td>
+                                        <td class="px-3 py-2 text-gray-600">用户评价</td>
+                                        <td class="px-3 py-2 text-gray-600">1-5星</td>
+                                        <td class="px-3 py-2 text-gray-600">星级显示</td>
+                                        <td class="px-3 py-2 text-gray-600">-</td>
+                                        <td class="px-3 py-2 text-gray-600">数值型</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="formModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">添加</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeModal()">取消</button>
+                <button class="erp-btn erp-btn-primary" onclick="submitModal()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">问答详情</h3>
+                <button class="modal-close" onclick="closeDetailModal()">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="detailModalBody">
+            </div>
+            <div class="modal-footer">
+                <button class="erp-btn erp-btn-secondary" onclick="closeDetailModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/common/js/common.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

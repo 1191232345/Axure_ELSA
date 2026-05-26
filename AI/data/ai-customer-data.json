@@ -1,0 +1,140 @@
+{
+    "version": "1.0.0",
+    "updateTime": "2024-01-15 10:00:00",
+    "customerGroups": [
+        {
+            "id": 1,
+            "customerCode": "CUST001",
+            "groupName": "大客户VIP群",
+            "groupId": "wxg_123456789",
+            "createTime": "2024-01-15 10:30:00",
+            "status": "normal"
+        },
+        {
+            "id": 2,
+            "customerCode": "CUST002",
+            "groupName": "合作伙伴交流群",
+            "groupId": "wxg_987654321",
+            "createTime": "2024-01-20 14:45:00",
+            "status": "normal"
+        },
+        {
+            "id": 3,
+            "customerCode": "CUST003",
+            "groupName": "技术支持群",
+            "groupId": "wxg_112233445",
+            "createTime": "2024-02-01 09:00:00",
+            "status": "pending"
+        },
+        {
+            "id": 4,
+            "customerCode": "CUST004",
+            "groupName": "产品反馈群",
+            "groupId": "wxg_556677889",
+            "createTime": "2024-02-10 11:20:00",
+            "status": "normal"
+        },
+        {
+            "id": 5,
+            "customerCode": "CUST005",
+            "groupName": "渠道商沟通群",
+            "groupId": "wxg_998877665",
+            "createTime": "2024-02-15 16:30:00",
+            "status": "normal"
+        }
+    ],
+    "accountRelations": [
+        {
+            "id": 1,
+            "groupName": "大客户VIP群",
+            "accountName": "张三",
+            "accountId": "user_001",
+            "bindTime": "2024-01-15 11:00:00",
+            "role": "群主",
+            "status": "normal"
+        },
+        {
+            "id": 2,
+            "groupName": "大客户VIP群",
+            "accountName": "李四",
+            "accountId": "user_002",
+            "bindTime": "2024-01-15 11:05:00",
+            "role": "管理员",
+            "status": "normal"
+        },
+        {
+            "id": 3,
+            "groupName": "合作伙伴交流群",
+            "accountName": "王五",
+            "accountId": "user_003",
+            "bindTime": "2024-01-20 15:00:00",
+            "role": "普通成员",
+            "status": "exited"
+        },
+        {
+            "id": 4,
+            "groupName": "技术支持群",
+            "accountName": "赵六",
+            "accountId": "user_004",
+            "bindTime": "2024-02-01 09:30:00",
+            "role": "管理员",
+            "status": "normal"
+        },
+        {
+            "id": 5,
+            "groupName": "产品反馈群",
+            "accountName": "钱七",
+            "accountId": "user_005",
+            "bindTime": "2024-02-10 11:45:00",
+            "role": "普通成员",
+            "status": "normal"
+        }
+    ],
+    "qaRecords": [
+        {
+            "id": 1,
+            "groupName": "大客户VIP群",
+            "questioner": "张三",
+            "question": "请问如何查询订单状态？",
+            "answer": "您可以通过官网的订单查询页面，输入订单号即可查询订单状态。",
+            "qaTime": "2024-01-15 11:30:00",
+            "rating": 4
+        },
+        {
+            "id": 2,
+            "groupName": "合作伙伴交流群",
+            "questioner": "李四",
+            "question": "关于API接口的使用文档在哪里？",
+            "answer": "API文档可以在开发者中心下载，地址是：developer.example.com",
+            "qaTime": "2024-01-20 16:45:00",
+            "rating": 5
+        },
+        {
+            "id": 3,
+            "groupName": "技术支持群",
+            "questioner": "王五",
+            "question": "系统登录失败怎么办？",
+            "answer": "请检查用户名和密码是否正确，如忘记密码可点击忘记密码进行找回。",
+            "qaTime": "2024-02-01 10:20:00",
+            "rating": 2
+        },
+        {
+            "id": 4,
+            "groupName": "产品反馈群",
+            "questioner": "钱七",
+            "question": "新版本什么时候发布？",
+            "answer": "新版本预计在下个月发布，具体日期请关注官方通知。",
+            "qaTime": "2024-02-10 14:00:00",
+            "rating": 4
+        },
+        {
+            "id": 5,
+            "groupName": "大客户VIP群",
+            "questioner": "张三",
+            "question": "如何申请API密钥？",
+            "answer": "请登录开发者平台，在账户设置中申请API密钥。",
+            "qaTime": "2024-02-15 09:15:00",
+            "rating": 5
+        }
+    ]
+}
