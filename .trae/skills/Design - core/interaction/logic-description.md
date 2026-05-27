@@ -1,0 +1,34 @@
+# 逻辑说明区域模板
+
+逻辑说明索引，代码拆分到 `logic/` 子目录。
+
+> 放置位置：原型tab页数据表格下方（非PRD/测试用例tab）
+
+## 子文件索引
+
+| 文件 | 用途 | 行数 |
+|------|------|------|
+| [init-page](logic/init-page.md) | 初始化页面（数据展示逻辑） | ~35 |
+| [search-conditions](logic/search-conditions.md) | 检索条件逻辑 | ~30 |
+| [button-logic](logic/button-logic.md) | 按钮逻辑（触发/前置/后续） | ~35 |
+| [field-values](logic/field-values.md) | 属性取值逻辑（主表+弹窗+字段说明） | ~90 |
+| [full-example](logic/full-example.md) | 完整示例（仓库管理） | ~90 |
+
+## 组装顺序
+
+1. 可折叠容器头部（见 [html/logic-section](../design/html/logic-section.md)）
+2. `init-page` → 初始化页面逻辑
+3. `search-conditions` → 检索条件
+4. `button-logic` → 按钮逻辑
+5. `field-values` → 属性取值逻辑（主表 + 弹窗）
+6. 容器尾部
+
+## 字段取值速查
+
+| 存储类型 | 说明 | 存储长度 | 适用场景 |
+|----------|------|----------|----------|
+| 字符型 | 文本字符串 | 32-512 | 名称、编码、描述 |
+| 数值型 | 数字 | 32 | 数量、金额、百分比 |
+| 枚举型 | 固定值集合 | 32 | 状态、类型 |
+| DATE | 年月日 | 32 | 创建日期、生效日期 |
+| DATETIME | 年月日时分秒 | 64 | 创建时间、更新时间 |

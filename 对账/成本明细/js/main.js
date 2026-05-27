@@ -145,6 +145,16 @@
 
     // 初始化页面
     document.addEventListener('DOMContentLoaded', function() {
+      // 初始化 mermaid
+      if (typeof mermaid !== 'undefined') {
+        mermaid.initialize({
+          startOnLoad: true,
+          theme: 'default',
+          securityLevel: 'loose',
+          logLevel: 3
+        });
+      }
+      
       // 打开费用获取弹窗
       document.getElementById('btnGetFee').addEventListener('click', function() {
         document.getElementById('feeModal').classList.add('show');
@@ -2786,4 +2796,21 @@
 
     // 绑定逻辑说明函数到window对象
     window.toggleLogicDescription = toggleLogicDescription;
+
+    // 筛选面板展开/折叠功能
+    function toggleFilterPanel() {
+      const content = document.getElementById('filterPanelContent');
+      const toggleIcon = document.getElementById('filterToggleIcon');
+      
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        toggleIcon.classList.remove('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        toggleIcon.classList.add('rotate-180');
+      }
+    }
+
+    // 绑定筛选面板函数到window对象
+    window.toggleFilterPanel = toggleFilterPanel;
 

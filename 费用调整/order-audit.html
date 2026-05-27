@@ -92,6 +92,15 @@
       .mermaid-hint {
         @apply text-xs text-gray-500 block text-center mt-1;
       }
+      .tab-btn {
+        @apply px-4 py-2 rounded-md font-medium transition-all duration-200 text-sm;
+      }
+      .tab-btn-active {
+        @apply bg-primary text-white;
+      }
+      .tab-btn-inactive {
+        @apply bg-gray-100 text-gray-600 hover:bg-gray-200;
+      }
     }
   </style>
 </head>
@@ -99,126 +108,141 @@
   <!-- 页面容器 -->
   <div class="container mx-auto px-4 py-6 max-w-[1920px]">
     <!-- 页面标题 -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900">费用调整</h1>
-      <p class="text-gray-500 mt-1">出库单费用明细调整</p>
-    </div>
-    
-    <!-- 搜索区域 -->
-    <div class="search-card">
-      <div class="flex flex-col md:flex-row gap-4 mb-4">
-        <div class="flex-1">
-          <label for="feeNumber" class="block text-sm font-medium text-gray-700 mb-1">出库单号</label>
-          <div class="flex items-center gap-2">
-            <input 
-              type="text" 
-              id="feeNumber" 
-              class="flex-1 form-input"
-              placeholder="输入出库单号查询（例如：HYNB-240126-0059）"
-              value="HYNB-240126-0059"
-            >
-            <button id="searchBtn" class="erp-btn erp-btn-primary">
-              <i class="fa fa-search mr-2"></i>搜索
-            </button>
-            <div class="relative">
-              <button id="adjustFeeBtn" class="erp-btn erp-btn-warning flex items-center">
-                <i class="fa fa-cog mr-2"></i>批量操作
-                <i class="fa fa-chevron-down ml-2"></i>
+    <!-- Tab栏和搜索区域 -->
+    <div class="bg-white rounded-lg shadow-sm mb-4">
+      <!-- Tab栏 -->
+      <div class="border-b border-gray-200 px-4 py-3">
+        <div class="flex gap-2">
+          <button id="outboundTabBtn" class="tab-btn tab-btn-active">
+            出库单
+          </button>
+          <button id="storageTabBtn" class="tab-btn tab-btn-inactive">
+            仓储费
+          </button>
+          <button id="inboundTabBtn" class="tab-btn tab-btn-inactive">
+            入库费
+          </button>
+        </div>
+      </div>
+      
+      <!-- 搜索区域 -->
+      <div class="p-4">
+        <div class="flex flex-col md:flex-row gap-4 mb-4">
+          <div class="flex-1">
+            <label for="feeNumber" class="block text-sm font-medium text-gray-700 mb-1">
+              <span id="orderNumberLabel">出库单号</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input 
+                type="text" 
+                id="feeNumber" 
+                class="flex-1 form-input"
+                placeholder="输入出库单号查询（例如：HYNB-240126-0059）"
+                value="HYNB-240126-0059"
+              >
+              <button id="searchBtn" class="erp-btn erp-btn-primary">
+                <i class="fa fa-search mr-2"></i>搜索
               </button>
-              <div id="adjustDropdown" class="absolute hidden top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                <div class="py-1">
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="cover">覆盖</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="update">更新</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="accumulate">累加</a>
+              <div class="relative">
+                <button id="adjustFeeBtn" class="erp-btn erp-btn-warning flex items-center">
+                  <i class="fa fa-cog mr-2"></i>批量操作
+                  <i class="fa fa-chevron-down ml-2"></i>
+                </button>
+                <div id="adjustDropdown" class="absolute hidden top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                  <div class="py-1">
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="cover">覆盖</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="update">更新</a>
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="accumulate">累加</a>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <!-- 功能按钮区域 -->
-      <div class="flex flex-wrap gap-3 mb-4">
-        <button id="addFeeBtn" class="erp-btn erp-btn-primary flex items-center">
-          <i class="fa fa-plus mr-2"></i>新增费用项
-        </button>
-      </div>
-      
-      <!-- 长宽高和体积重信息区域 -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-        <div class="flex items-center mb-3">
-          <i class="fa fa-cube text-blue-500 mr-2"></i>
-          <h4 class="text-sm font-semibold text-blue-800">包裹尺寸信息</h4>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="flex items-center">
-            <span class="text-sm text-gray-600 mr-2">长宽高:</span>
-            <span id="dimensionsDisplay" class="text-sm font-medium text-gray-900">-</span>
-            <span class="text-sm text-gray-500 ml-1">(cm³)</span>
-          </div>
-          <div class="flex items-center">
-            <span class="text-sm text-gray-600 mr-2">体积重:</span>
-            <span id="volumeWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
-            <span class="text-sm text-gray-500 ml-1">(kg)</span>
-          </div>
-          <div class="flex items-center">
-            <span class="text-sm text-gray-600 mr-2">计费重:</span>
-            <span id="chargeableWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
-            <span class="text-sm text-gray-500 ml-1">(kg)</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 费用明细表格 -->
-      <div class="table-card">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-gray-50 text-left">
-                <th class="px-4 py-3 font-medium text-gray-500">费用名称</th>
-                <th class="px-4 py-3 font-medium text-gray-500">计费单位</th>
-                <th class="px-4 py-3 font-medium text-gray-500">原金额</th>
-                <th class="px-4 py-3 font-medium text-gray-500">新金额</th>
-                <th class="px-4 py-3 font-medium text-gray-500">币别</th>
-                <th class="px-4 py-3 font-medium text-gray-500">备注</th>
-                <th class="px-4 py-3 font-medium text-gray-500">操作</th>
-              </tr>
-            </thead>
-            <tbody id="feeTableBody" class="bg-white divide-y divide-gray-200">
-              <!-- 表格数据将通过JS动态生成 -->
-            </tbody>
-          </table>
+        
+        <!-- 功能按钮区域 -->
+        <div class="flex flex-wrap gap-3 mb-4">
+          <button id="addFeeBtn" class="erp-btn erp-btn-primary flex items-center">
+            <i class="fa fa-plus mr-2"></i>新增费用项
+          </button>
         </div>
         
-        <!-- 无数据提示 -->
-        <div id="emptyState" class="hidden py-16 text-center">
-          <i class="fa fa-inbox text-4xl mb-2 block text-gray-400"></i>
-          <p class="text-gray-500">暂无费用数据，请点击"新增费用项"添加</p>
-        </div>
-      </div>
-      
-      <!-- 逻辑说明区域 -->
-      <div class="bg-white rounded shadow-sm mt-4 overflow-hidden">
-        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('order-audit')">
-          <div class="flex items-center">
-            <i class="fa fa-book text-primary mr-2"></i>
-            <span class="font-semibold text-primary">逻辑说明</span>
-            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+        <!-- 长宽高和体积重信息区域 -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div class="flex items-center mb-3">
+            <i class="fa fa-cube text-blue-500 mr-2"></i>
+            <h4 class="text-sm font-semibold text-blue-800">包裹尺寸信息</h4>
           </div>
-          <i class="fa fa-chevron-down text-primary transition-transform" id="order-audit-logic-icon"></i>
-        </div>
-        <div id="order-audit-logic-content" class="hidden">
-          <div class="px-4 py-4">
-            <div class="flex border-b border-gray-200">
-              <button class="prd-tab-btn px-4 py-2 border-b-2 border-primary text-primary font-medium" onclick="switchTab('prd', 'order-audit')">PRD文档</button>
-              <button class="prd-tab-btn px-4 py-2 text-gray-500 hover:text-gray-700" onclick="switchTab('testcases', 'order-audit')">测试用例</button>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex items-center">
+              <span class="text-sm text-gray-600 mr-2">长宽高:</span>
+              <span id="dimensionsDisplay" class="text-sm font-medium text-gray-900">-</span>
+              <span class="text-sm text-gray-500 ml-1">(cm³)</span>
             </div>
-            <div class="pt-4">
-              <div id="order-audit-prd-content" class="prd-content">
-                <!-- PRD内容将通过JavaScript加载 -->
+            <div class="flex items-center">
+              <span class="text-sm text-gray-600 mr-2">体积重:</span>
+              <span id="volumeWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
+              <span class="text-sm text-gray-500 ml-1">(kg)</span>
+            </div>
+            <div class="flex items-center">
+              <span class="text-sm text-gray-600 mr-2">计费重:</span>
+              <span id="chargeableWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
+              <span class="text-sm text-gray-500 ml-1">(kg)</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 费用明细表格 -->
+        <div class="table-card">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-left">
+                  <th class="px-4 py-3 font-medium text-gray-500">费用名称</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">计费单位</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">原金额</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">新金额</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">币别</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">备注</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">操作</th>
+                </tr>
+              </thead>
+              <tbody id="feeTableBody" class="bg-white divide-y divide-gray-200">
+                <!-- 表格数据将通过JS动态生成 -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- 无数据提示 -->
+          <div id="emptyState" class="hidden py-16 text-center">
+            <i class="fa fa-inbox text-4xl mb-2 block text-gray-400"></i>
+            <p class="text-gray-500">暂无费用数据，请点击"新增费用项"添加</p>
+          </div>
+        </div>
+        
+        <!-- 逻辑说明区域 -->
+        <div class="bg-white rounded shadow-sm mt-4 overflow-hidden">
+          <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="togglePrdLogic('order-audit')">
+            <div class="flex items-center">
+              <i class="fa fa-book text-primary mr-2"></i>
+              <span class="font-semibold text-primary">逻辑说明</span>
+              <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+            </div>
+            <i class="fa fa-chevron-down text-primary transition-transform" id="order-audit-logic-icon"></i>
+          </div>
+          <div id="order-audit-logic-content" class="hidden">
+            <div class="px-4 py-4">
+              <div class="flex border-b border-gray-200">
+                <button class="prd-tab-btn px-4 py-2 border-b-2 border-primary text-primary font-medium" onclick="switchTab('prd', 'order-audit')">PRD文档</button>
+                <button class="prd-tab-btn px-4 py-2 text-gray-500 hover:text-gray-700" onclick="switchTab('testcases', 'order-audit')">测试用例</button>
               </div>
-              <div id="order-audit-testcases-content" class="prd-content hidden">
-                <!-- 测试用例内容将通过JavaScript加载 -->
+              <div class="pt-4">
+                <div id="order-audit-prd-content" class="prd-content">
+                  <!-- PRD内容将通过JavaScript加载 -->
+                </div>
+                <div id="order-audit-testcases-content" class="prd-content hidden">
+                  <!-- 测试用例内容将通过JavaScript加载 -->
+                </div>
               </div>
             </div>
           </div>
@@ -332,6 +356,7 @@
     // 全局变量
     let feeData = [];
     let currentEditId = null;
+    let currentTabType = 'outbound'; // 'outbound', 'storage', 'inbound'
     
     // DOM 元素
     const feeTableBody = document.getElementById('feeTableBody');
@@ -636,6 +661,9 @@
     
     // 绑定事件
     function bindEvents() {
+      // 绑定Tab切换事件
+      bindTabButtons();
+      
       // 使用事件委托优化事件处理
       const container = document.querySelector('.container');
       
@@ -1248,6 +1276,80 @@ flowchart TD
       const modal = document.getElementById('mermaidModal');
       modal.classList.add('hidden');
       document.body.style.overflow = '';
+    }
+    
+    // Tab切换相关函数
+    function bindTabButtons() {
+      const outboundTabBtn = document.getElementById('outboundTabBtn');
+      const storageTabBtn = document.getElementById('storageTabBtn');
+      const inboundTabBtn = document.getElementById('inboundTabBtn');
+      
+      if (outboundTabBtn && storageTabBtn && inboundTabBtn) {
+        outboundTabBtn.addEventListener('click', function() {
+          setActiveTabMulti(outboundTabBtn, [storageTabBtn, inboundTabBtn]);
+          currentTabType = 'outbound';
+          updatePageContent();
+        });
+        
+        storageTabBtn.addEventListener('click', function() {
+          setActiveTabMulti(storageTabBtn, [outboundTabBtn, inboundTabBtn]);
+          currentTabType = 'storage';
+          updatePageContent();
+        });
+        
+        inboundTabBtn.addEventListener('click', function() {
+          setActiveTabMulti(inboundTabBtn, [outboundTabBtn, storageTabBtn]);
+          currentTabType = 'inbound';
+          updatePageContent();
+        });
+      }
+    }
+    
+    function setActiveTabMulti(activeBtn, inactiveBtns) {
+      activeBtn.className = 'tab-btn tab-btn-active';
+      inactiveBtns.forEach(function(btn) {
+        btn.className = 'tab-btn tab-btn-inactive';
+      });
+    }
+    
+    function updatePageContent() {
+      const pageDescription = document.getElementById('pageDescription');
+      const orderNumberLabel = document.getElementById('orderNumberLabel');
+      const feeNumberInput = document.getElementById('feeNumber');
+      
+      let description, label, placeholder, exampleValue;
+      
+      switch(currentTabType) {
+        case 'storage':
+          description = '仓储费费用明细调整';
+          label = '仓储单号';
+          placeholder = '输入仓储单号查询（例如：STR-240126-0059）';
+          exampleValue = 'STR-240126-0059';
+          break;
+        case 'inbound':
+          description = '入库费费用明细调整';
+          label = '入库单号';
+          placeholder = '输入入库单号查询（例如：INB-240126-0059）';
+          exampleValue = 'INB-240126-0059';
+          break;
+        default:
+          description = '出库单费用明细调整';
+          label = '出库单号';
+          placeholder = '输入出库单号查询（例如：HYNB-240126-0059）';
+          exampleValue = 'HYNB-240126-0059';
+      }
+      
+      if (pageDescription) pageDescription.textContent = description;
+      if (orderNumberLabel) orderNumberLabel.textContent = label;
+      if (feeNumberInput) {
+        feeNumberInput.placeholder = placeholder;
+        feeNumberInput.value = exampleValue;
+      }
+      
+      // 重新加载数据
+      loadFeeData();
+      renderFeeTable();
+      updateDimensionsDisplay();
     }
   </script>
 

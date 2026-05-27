@@ -74,8 +74,7 @@ function initAPIDataManager() {
     if (typeof APIDataManager !== 'undefined') {
         APIDataManager.init({
             pageId: DATA_CONFIG.pageId,
-            dataFile: DATA_CONFIG.dataFile,
-            apiBase: DATA_CONFIG.apiBase
+            dataFile: DATA_CONFIG.dataFile
         });
     }
 }

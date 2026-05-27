@@ -11,7 +11,6 @@
     var DATA_CONFIG = {
         pageId: 'virtual-warehouse',
         dataFile: 'data/virtual-warehouse-data.json',
-        apiBase: 'http://localhost:3100/api/data',
         version: '1.0.0'
     };
 
