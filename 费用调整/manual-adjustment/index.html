@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>财务管理 - 费用调整</title>
+  <title>财务管理 - 手工调价</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../common/styles.css">
   
   <script>
     tailwind.config = {
@@ -17,63 +18,23 @@
             success: '#00B42A',
             warning: '#FF7D00',
             danger: '#F53F3F',
-            gray: {
-              100: '#F2F3F5',
-              200: '#E5E6EB',
-              300: '#C9CDD4',
-              400: '#86909C',
-              500: '#4E5969',
-              600: '#272E3B',
-              700: '#1D2129',
-            }
-          },
-          fontFamily: {
-            inter: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
+          }
+        }
       }
-    }
+    };
   </script>
-  
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .erp-btn {
-        @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
-      }
-      .erp-btn-primary {
-        @apply bg-primary text-white hover:bg-primary/90;
-      }
-      .erp-btn-secondary {
-        @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50;
-      }
-      .erp-btn-warning {
-        @apply bg-warning text-white hover:bg-warning/90;
-      }
-      .form-input {
-        @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary;
-      }
-      .table-card {
-        @apply bg-white rounded-lg shadow-sm overflow-hidden mb-4;
-      }
-      .tab-btn {
-        @apply px-4 py-2 rounded-md font-medium transition-all duration-200 text-sm;
-      }
-      .tab-btn-active {
-        @apply bg-primary text-white;
-      }
-      .tab-btn-inactive {
-        @apply bg-gray-100 text-gray-600 hover:bg-gray-200;
-      }
-    }
-  </style>
 </head>
-<body class="bg-gray-100 font-inter text-gray-700 min-h-screen">
+<body class="bg-gray-100 font-sans text-gray-700 min-h-screen">
   <div class="container mx-auto px-4 py-6 max-w-[1920px]">
     <div class="bg-white rounded-lg shadow-sm mb-4">
       <div class="border-b border-gray-200 px-4 py-3">
+        <h2 class="text-lg font-semibold text-gray-900">手工调价</h2>
+      </div>
+      
+      <div class="border-b border-gray-200 px-4 py-3">
         <div class="flex gap-2">
-          <button id="outboundTabBtn" class="tab-btn tab-btn-inactive">出库单</button>
-          <button id="inboundTabBtn" class="tab-btn tab-btn-active">入库费</button>
+          <button id="outboundTabBtn" class="tab-btn tab-btn-active">出库单</button>
+          <button id="inboundTabBtn" class="tab-btn tab-btn-inactive">入库费</button>
         </div>
       </div>
       
@@ -81,12 +42,12 @@
         <div class="flex flex-col md:flex-row gap-4 mb-4">
           <div class="flex-1">
             <label for="feeNumber" class="block text-sm font-medium text-gray-700 mb-1">
-              <span id="orderNumberLabel">入库单号</span>
+              <span id="orderNumberLabel">出库单号</span>
             </label>
             <div class="flex items-center gap-2">
               <input type="text" id="feeNumber" class="flex-1 form-input" 
-                     placeholder="输入入库单号查询（例如：INB-240126-0059）" 
-                     value="INB-240126-0059">
+                     placeholder="输入出库单号查询（例如：HYNB-240126-0059）" 
+                     value="HYNB-240126-0059">
               <button id="searchBtn" class="erp-btn erp-btn-primary">
                 <i class="fa fa-search mr-2"></i>搜索
               </button>
@@ -95,11 +56,11 @@
                   <i class="fa fa-cog mr-2"></i>批量操作
                   <i class="fa fa-chevron-down ml-2"></i>
                 </button>
-                <div id="adjustDropdown" class="absolute hidden top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                <div id="adjustDropdown" class="dropdown-menu hidden">
                   <div class="py-1">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="cover">覆盖</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="update">更新</a>
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-action="accumulate">累加</a>
+                    <a href="#" class="dropdown-item" data-action="cover">覆盖</a>
+                    <a href="#" class="dropdown-item" data-action="update">更新</a>
+                    <a href="#" class="dropdown-item" data-action="accumulate">累加</a>
                   </div>
                 </div>
               </div>
@@ -116,7 +77,7 @@
           </button>
         </div>
         
-        <div id="outboundInfoSection" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 hidden">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
           <div class="flex items-center mb-3">
             <i class="fa fa-cube text-blue-500 mr-2"></i>
             <h4 class="text-sm font-semibold text-blue-800">包裹尺寸信息</h4>
@@ -136,23 +97,6 @@
               <span class="text-sm text-gray-600 mr-2">计费重:</span>
               <span id="chargeableWeightDisplay" class="text-sm font-medium text-gray-900">-</span>
               <span class="text-sm text-gray-500 ml-1">(kg)</span>
-            </div>
-          </div>
-        </div>
-        
-        <div id="inboundInfoSection" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-          <div class="flex items-center mb-3">
-            <i class="fa fa-cube text-blue-500 mr-2"></i>
-            <h4 class="text-sm font-semibold text-blue-800">入库单信息</h4>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex items-center">
-              <span class="text-sm text-gray-600 mr-2">业务类型:</span>
-              <span id="businessTypeDisplay" class="text-sm font-medium text-gray-900">存储</span>
-            </div>
-            <div class="flex items-center">
-              <span class="text-sm text-gray-600 mr-2">入库类型:</span>
-              <span id="inboundTypeDisplay" class="text-sm font-medium text-gray-900">整柜</span>
             </div>
           </div>
         </div>
@@ -183,10 +127,35 @@
         </div>
       </div>
     </div>
+    
+    <div class="logic-section">
+      <div class="logic-header" onclick="togglePrdLogic('manual')">
+        <div class="flex items-center">
+          <i class="fa fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+        </div>
+        <i class="fa fa-chevron-down text-primary logic-header-icon" id="manual-logic-icon"></i>
+      </div>
+      <div id="manual-logic-content" class="logic-content hidden">
+        <div class="flex border-b border-gray-200 mb-4">
+          <button class="prd-tab-btn active" style="border-bottom-color: var(--primary-color); color: var(--primary-color);" onclick="switchPrdTab('prd', 'manual')">PRD文档</button>
+          <button class="prd-tab-btn" onclick="switchPrdTab('testcases', 'manual')">测试用例</button>
+        </div>
+        <div>
+          <div id="manual-prd-content" class="prose max-w-none">
+            <p class="text-gray-500">点击"PRD文档"标签查看详细需求说明...</p>
+          </div>
+          <div id="manual-testcases-content" class="prose max-w-none hidden">
+            <p class="text-gray-500">点击"测试用例"标签查看详细测试用例...</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   
-  <div id="uploadModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-auto relative">
+  <div id="uploadModal" class="modal-overlay hidden">
+    <div class="modal-content max-w-3xl">
       <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <h3 class="text-lg font-medium text-gray-900">
           <i class="fa fa-upload text-primary mr-2"></i>批量操作
@@ -251,17 +220,25 @@
     </div>
   </div>
 
-  <div id="toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 flex items-center">
+  <div id="toast" class="toast-container translate-x-full">
     <i id="toastIcon" class="mr-2 text-xl"></i>
     <span id="toastMessage"></span>
   </div>
-
-  <script src="common/utils.js"></script>
-  <script src="common/api.js"></script>
-  <script src="common/renderer.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/renderer.js"></script>
-  <script src="js/page.js"></script>
+  
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="bg-white rounded-lg p-6">
+      <div class="loading-spinner mb-4"></div>
+      <p id="loadingText" class="text-gray-600">加载中...</p>
+    </div>
+  </div>
+  
+  <script src="../common/utils.js"></script>
+  <script src="../common/api.js"></script>
+  <script src="../common/renderer.js"></script>
+  <script src="../../common/js/common.js"></script>
+  <script src="utils.js"></script>
+  <script src="api.js"></script>
+  <script src="renderer.js"></script>
+  <script src="page.js"></script>
 </body>
 </html>

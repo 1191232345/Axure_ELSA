@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>财务管理 - 未出账管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../common/styles.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2a3b7d',
+            secondary: '#36CFC9',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-700 min-h-screen">
+  <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+    <div class="bg-white rounded-lg shadow-sm mb-4">
+      <div class="border-b border-gray-200 px-4 py-3">
+        <h2 class="text-lg font-semibold text-gray-900">未出账订单管理</h2>
+      </div>
+      
+      <div class="border-b border-gray-200 px-4 py-3">
+        <div class="flex gap-2">
+          <button id="outboundTabBtn" class="tab-btn tab-btn-active">出库单</button>
+          <button id="storageTabBtn" class="tab-btn tab-btn-inactive">仓储费</button>
+          <button id="inboundTabBtn" class="tab-btn tab-btn-inactive">入库费</button>
+        </div>
+      </div>
+      
+      <div class="p-4">
+        <div class="flex flex-wrap gap-3 mb-4">
+          <button id="searchBtn" class="erp-btn erp-btn-primary">
+            <i class="fa fa-search mr-2"></i>搜索
+          </button>
+          <button id="resetBtn" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-refresh mr-2"></i>重置
+          </button>
+          <button id="batchRecalculateBtn" class="erp-btn erp-btn-warning">
+            <i class="fa fa-calculator mr-2"></i>批量重计
+          </button>
+          <button id="recalculateDetailBtn" class="erp-btn erp-btn-primary">
+            <i class="fa fa-list mr-2"></i>重计明细
+          </button>
+          <button id="importRecalculateBtn" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-upload mr-2"></i>导入
+          </button>
+        </div>
+        
+        <div class="table-card">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-left">
+                  <th class="px-4 py-3 font-medium text-gray-500">
+                    <input type="checkbox" id="selectAllCheckbox" class="rounded text-primary focus:ring-primary">
+                  </th>
+                  <th class="px-4 py-3 font-medium text-gray-500">订单时间</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">计费类型</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">仓库代码</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">客户代码</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">订单号</th>
+                  <th class="px-4 py-3 font-medium text-gray-500 logistics-product-filter">物流产品</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">金额</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">币别</th>
+                  <th class="px-4 py-3 font-medium text-gray-500">操作</th>
+                </tr>
+              </thead>
+              <tbody id="orderTableBody" class="bg-white divide-y divide-gray-200">
+              </tbody>
+            </table>
+          </div>
+          <div id="paginationContainer"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="logic-section">
+      <div class="logic-header" onclick="togglePrdLogic('unbill')">
+        <div class="flex items-center">
+          <i class="fa fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+        </div>
+        <i class="fa fa-chevron-down text-primary logic-header-icon" id="unbill-logic-icon"></i>
+      </div>
+      <div id="unbill-logic-content" class="logic-content hidden">
+        <div class="flex border-b border-gray-200 mb-4">
+          <button class="prd-tab-btn active" style="border-bottom-color: var(--primary-color); color: var(--primary-color);" onclick="switchPrdTab('prd', 'unbill')">PRD文档</button>
+          <button class="prd-tab-btn" onclick="switchPrdTab('testcases', 'unbill')">测试用例</button>
+        </div>
+        <div>
+          <div id="unbill-prd-content" class="prose max-w-none">
+            <p class="text-gray-500">点击"PRD文档"标签查看详细需求说明...</p>
+          </div>
+          <div id="unbill-testcases-content" class="prose max-w-none hidden">
+            <p class="text-gray-500">点击"测试用例"标签查看详细测试用例...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="recalculateModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fa fa-list-alt text-primary mr-2"></i>
+          <span id="modalChargeType">出库单</span>重计明细
+        </h3>
+        <button class="modal-close text-gray-400 hover:text-gray-600">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="table-card">
+          <table class="w-full text-sm">
+            <thead id="recalculateTableHead"></thead>
+            <tbody id="recalculateTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="successModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fa fa-check-circle text-success mr-2"></i>批量重计成功
+        </h3>
+      </div>
+      <div class="p-6 text-center">
+        <p class="text-gray-600 mb-4">已成功提交批量重计任务</p>
+        <p class="text-2xl font-bold text-primary mb-4">
+          <span id="successCount">0</span> 条
+        </p>
+        <button class="modal-close erp-btn erp-btn-primary">确定</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="limitExceededModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fa fa-exclamation-triangle text-warning mr-2"></i>数量超限提醒
+        </h3>
+      </div>
+      <div class="p-6">
+        <p class="text-gray-600 mb-4">当前选择数量超过限制</p>
+        <p class="text-xl font-bold text-warning mb-4">
+          <span id="exceededCount">0</span> 条
+        </p>
+        <p class="text-sm text-gray-500 mb-6">单次批量重计最多支持 50,000 条数据</p>
+        <div class="flex gap-3 justify-center">
+          <button class="erp-btn erp-btn-secondary modal-close">取消操作</button>
+          <button class="erp-btn erp-btn-warning modal-close">仅处理前50,000条</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50 flex items-center">
+    <i id="toastIcon" class="mr-2 text-xl"></i>
+    <span id="toastMessage"></span>
+  </div>
+  
+  <div id="loadingOverlay" class="fixed inset-0 bg-black/50 z-100 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg p-6">
+      <div class="loading-spinner mb-4"></div>
+      <p id="loadingText" class="text-gray-600">加载中...</p>
+    </div>
+  </div>
+  
+  <script src="../common/utils.js"></script>
+  <script src="../common/api.js"></script>
+  <script src="../common/renderer.js"></script>
+  <script src="../../common/js/common.js"></script>
+  <script src="utils.js"></script>
+  <script src="api.js"></script>
+  <script src="renderer.js"></script>
+  <script src="page.js"></script>
+</body>
+</html>

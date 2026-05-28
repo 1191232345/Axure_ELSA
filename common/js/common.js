@@ -386,12 +386,44 @@ function togglePrdLogic(moduleId) {
     
     if (!content || !icon) return;
     
-    if (content.style.display === 'none' || content.style.display === '') {
-        content.style.display = 'block';
-        icon.style.transform = 'rotate(180deg)';
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotated');
     } else {
-        content.style.display = 'none';
-        icon.style.transform = 'rotate(0deg)';
+        content.classList.add('hidden');
+        icon.classList.remove('rotated');
+    }
+}
+
+function switchPrdTab(tabType, moduleId) {
+    var prdContent = document.getElementById(moduleId + '-prd-content');
+    var testcasesContent = document.getElementById(moduleId + '-testcases-content');
+    var tabButtons = document.querySelectorAll('#' + moduleId + '-logic-content .prd-tab-btn');
+    
+    if (!prdContent || !testcasesContent) return;
+    
+    tabButtons.forEach(function(btn) {
+        btn.classList.remove('active');
+        btn.style.borderBottomColor = 'transparent';
+        btn.style.color = '#4E5969';
+    });
+    
+    if (tabType === 'prd') {
+        prdContent.classList.remove('hidden');
+        testcasesContent.classList.add('hidden');
+        if (tabButtons[0]) {
+            tabButtons[0].classList.add('active');
+            tabButtons[0].style.borderBottomColor = 'var(--primary-color)';
+            tabButtons[0].style.color = 'var(--primary-color)';
+        }
+    } else if (tabType === 'testcases') {
+        prdContent.classList.add('hidden');
+        testcasesContent.classList.remove('hidden');
+        if (tabButtons[1]) {
+            tabButtons[1].classList.add('active');
+            tabButtons[1].style.borderBottomColor = 'var(--primary-color)';
+            tabButtons[1].style.color = 'var(--primary-color)';
+        }
     }
 }
 
