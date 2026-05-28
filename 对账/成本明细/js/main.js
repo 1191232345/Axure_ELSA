@@ -1,4 +1,43 @@
 // 主JavaScript代码
+
+function safeAddEventListener(elementId, event, handler) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.addEventListener(event, handler);
+  } else {
+    console.warn(`Element with id "${elementId}" not found, skipping event binding`);
+  }
+}
+
+function safeGetElement(elementId) {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    console.warn(`Element with id "${elementId}" not found`);
+  }
+  return element;
+}
+
+function safeSetValue(elementId, value) {
+  const element = safeGetElement(elementId);
+  if (element) {
+    element.value = value;
+  }
+}
+
+function safeSetTextContent(elementId, text) {
+  const element = safeGetElement(elementId);
+  if (element) {
+    element.textContent = text;
+  }
+}
+
+function safeSetInnerHTML(elementId, html) {
+  const element = safeGetElement(elementId);
+  if (element) {
+    element.innerHTML = html;
+  }
+}
+
     // 模拟数据
     let reconciliationData = [];
     let modalData = [];
@@ -32,19 +71,22 @@
             { value: '费用调整', text: '费用调整' }
           ],
           defaultVisible: true,
-          defaultValue: '出库+快递(YC)'
+          defaultValue: '出库+快递(YC)',
+          row: 1
         },
         {
           id: 'billMonth',
           label: '账单月',
           type: 'month',
-          defaultVisible: true
+          defaultVisible: true,
+          row: 1
         },
         {
           id: 'voyagePeriod',
           label: '航期',
           type: 'month',
-          defaultVisible: true
+          defaultVisible: true,
+          row: 1
         },
         {
           id: 'customerCode',
@@ -56,7 +98,8 @@
             { value: 'ZJHW', text: 'ZJHW' },
             { value: 'ZJWL', text: 'ZJWL' }
           ],
-          defaultVisible: true
+          defaultVisible: true,
+          row: 1
         },
         // {
         //   id: 'operator',
@@ -80,25 +123,31 @@
             { value: '钱七', text: '钱七' },
             { value: '吴十', text: '吴十' }
           ],
-          defaultVisible: true
+          defaultVisible: true,
+          row: 2
         },
         {
           id: 'operateTimeRange',
           label: '操作时间',
           type: 'daterange',
-          defaultVisible: true
+          defaultVisible: true,
+          row: 2
         }
       ]
     };
     
     // 渲染基础筛选条件
     function renderBasicFilters() {
-      const container = document.getElementById('basicFilters');
-      container.innerHTML = '';
+      const coreContainer = document.getElementById('coreFilters');
+      const auxContainer = document.getElementById('auxFilters');
+      if (coreContainer) coreContainer.innerHTML = '';
+      if (auxContainer) auxContainer.innerHTML = '';
 
       const visibleFilters = filterConfigDefinitions.basic.filter(f => f.defaultVisible);
+      const coreFilters = visibleFilters.filter(f => f.row === 1);
+      const auxFilters = visibleFilters.filter(f => f.row !== 1);
 
-      visibleFilters.forEach(filter => {
+      function renderFilterItem(filter, container) {
         const div = document.createElement('div');
         div.className = 'flex items-center gap-2';
 
@@ -139,7 +188,10 @@
             input.value = filter.defaultValue;
           }
         }
-      });
+      }
+
+      coreFilters.forEach(f => renderFilterItem(f, coreContainer));
+      auxFilters.forEach(f => renderFilterItem(f, auxContainer));
     }
     
 
@@ -155,116 +207,92 @@
         });
       }
       
-      // 打开费用获取弹窗
-      document.getElementById('btnGetFee').addEventListener('click', function() {
-        document.getElementById('feeModal').classList.add('show');
-        // 初始化客户代码和仓库为全部
+      safeAddEventListener('btnGetFee', 'click', function() {
+        safeGetElement('feeModal')?.classList.add('show');
         initCustomerCodeAll();
         initWarehouseCodeAll();
-        // 如果已选择账单类型，更新表头和检索条件
-        const billType = document.getElementById('modalBillType').value;
+        const billType = safeGetElement('modalBillType')?.value;
         if (billType) {
           updateModalTableHeader();
         }
-        updateSearchConditions(); // 打开弹窗时更新检索条件显示
+        updateSearchConditions();
       });
 
-      // 打开批量获取费用弹窗
-      document.getElementById('btnBatchGetFee').addEventListener('click', function() {
+      safeAddEventListener('btnBatchGetFee', 'click', function() {
         if (isBatchTaskRunning) {
           alert('任务正在执行中，请勿重复操作');
           return;
         }
         
-        document.getElementById('batchFeeModal').classList.add('show');
-        // 初始化客户代码和仓库为全部
+        safeGetElement('batchFeeModal')?.classList.add('show');
         initBatchCustomerCodeAll();
         initBatchWarehouseCodeAll();
-        // 打开弹窗时更新检索条件显示
         updateBatchSearchConditions();
         
-        // 如果数据已加载，直接显示
         if (batchModalDataLoaded && batchModalData.length > 0) {
           renderBatchModalTable();
           updateBatchModalPagination();
         }
       });
 
-      // 关闭费用获取弹窗
-      document.getElementById('closeFeeModal').addEventListener('click', closeFeeModal);
-      document.getElementById('modalCancel').addEventListener('click', closeFeeModal);
+      safeAddEventListener('closeFeeModal', 'click', closeFeeModal);
+      safeAddEventListener('modalCancel', 'click', closeFeeModal);
       
-      // 点击弹窗外部关闭
-      document.getElementById('feeModal').addEventListener('click', function(e) {
+      safeAddEventListener('feeModal', 'click', function(e) {
         if (e.target === this) {
           closeFeeModal();
         }
       });
 
-      // 关闭批量获取费用弹窗
-      document.getElementById('closeBatchFeeModal').addEventListener('click', closeBatchFeeModal);
-      document.getElementById('batchModalCancel').addEventListener('click', closeBatchFeeModal);
+      safeAddEventListener('closeBatchFeeModal', 'click', closeBatchFeeModal);
+      safeAddEventListener('batchModalCancel', 'click', closeBatchFeeModal);
       
-      // 点击弹窗外部关闭
-      document.getElementById('batchFeeModal').addEventListener('click', function(e) {
+      safeAddEventListener('batchFeeModal', 'click', function(e) {
         if (e.target === this) {
           closeBatchFeeModal();
         }
       });
 
-      // 关闭详情弹窗
-      document.getElementById('closeDetailModal').addEventListener('click', closeDetailModal);
-      document.getElementById('detailClose').addEventListener('click', closeDetailModal);
+      safeAddEventListener('closeDetailModal', 'click', closeDetailModal);
+      safeAddEventListener('detailClose', 'click', closeDetailModal);
       
-      document.getElementById('detailModal').addEventListener('click', function(e) {
+      safeAddEventListener('detailModal', 'click', function(e) {
         if (e.target === this) {
           closeDetailModal();
         }
       });
 
-      // 弹窗搜索
-      document.getElementById('modalSearch').addEventListener('click', searchModalData);
-      document.getElementById('modalReset').addEventListener('click', resetModalForm);
+      safeAddEventListener('modalSearch', 'click', searchModalData);
+      safeAddEventListener('modalReset', 'click', resetModalForm);
 
-      // 批量弹窗搜索
-      document.getElementById('batchModalSearch').addEventListener('click', searchBatchModalData);
-      document.getElementById('batchModalReset').addEventListener('click', resetBatchModalForm);
+      safeAddEventListener('batchModalSearch', 'click', searchBatchModalData);
+      safeAddEventListener('batchModalReset', 'click', resetBatchModalForm);
 
-      // 费用列表区域的出库单号搜索（已注释，暂不启用）
-      // document.getElementById('modalListSearchBtn').addEventListener('click', searchByOutboundNo);
-
-      // 账单类型变化时更新表头和检索条件
-      document.getElementById('modalBillType').addEventListener('change', function() {
+      safeAddEventListener('modalBillType', 'change', function() {
         updateModalTableHeader();
         updateSearchConditions();
-        // 清空数据列表
-        document.getElementById('modalDataTableBody').innerHTML = '';
+        const tbody = safeGetElement('modalDataTableBody');
+        if (tbody) tbody.innerHTML = '';
         modalData = [];
         modalSelectedItems.clear();
         updateModalSelectedCount();
-        
-        // 类型变更时，清空费用列表检索条件和数据列表
         clearModalFeeListConditions();
       });
 
-      // 批量费用类型变化时更新检索条件
-      document.getElementById('batchModalFeeType').addEventListener('change', function() {
+      safeAddEventListener('batchModalFeeType', 'change', function() {
         updateBatchSearchConditions();
-        // 清空数据列表
-        document.getElementById('batchModalDataTableBody').innerHTML = '';
+        const tbody = safeGetElement('batchModalDataTableBody');
+        if (tbody) tbody.innerHTML = '';
         batchModalData = [];
         batchModalSelectedItems.clear();
         updateBatchModalSelectedCount();
       });
 
-      // 弹窗提交
-      document.getElementById('modalSubmit').addEventListener('click', submitModalData);
+      safeAddEventListener('modalSubmit', 'click', submitModalData);
 
-      // 批量弹窗提交
-      document.getElementById('batchModalSubmit').addEventListener('click', submitBatchModalData);
+      safeAddEventListener('batchModalSubmit', 'click', submitBatchModalData);
 
-      // 主表格全选
-      document.getElementById('tableCheckAll').addEventListener('change', function() {
+      safeAddEventListener('tableCheckAll', 'change', function() {
         const checkboxes = document.querySelectorAll('#reconciliationTableBody input[type="checkbox"]');
         checkboxes.forEach(cb => {
           cb.checked = this.checked;
@@ -277,8 +305,7 @@
         updateSummary();
       });
 
-      // 弹窗表格全选
-      document.getElementById('modalCheckAll').addEventListener('change', function() {
+      safeAddEventListener('modalCheckAll', 'change', function() {
         const checkboxes = document.querySelectorAll('#modalDataTableBody input[type="checkbox"]');
         checkboxes.forEach(cb => {
           cb.checked = this.checked;
@@ -291,8 +318,7 @@
         updateModalSelectedCount();
       });
 
-      // 批量弹窗表格全选
-      document.getElementById('batchModalCheckAll').addEventListener('change', function() {
+      safeAddEventListener('batchModalCheckAll', 'change', function() {
         const checkboxes = document.querySelectorAll('#batchModalDataTableBody input[type="checkbox"]');
         checkboxes.forEach(cb => {
           cb.checked = this.checked;
@@ -305,32 +331,28 @@
         updateBatchModalSelectedCount();
       });
 
-      // 筛选功能
-      document.getElementById('btnFilter').addEventListener('click', filterData);
-      document.getElementById('btnResetFilter').addEventListener('click', resetFilter);
+      safeAddEventListener('btnFilter', 'click', filterData);
+      safeAddEventListener('btnResetFilter', 'click', resetFilter);
 
-      // 费用获取弹窗 - 客户代码下拉框点击事件
-      document.getElementById('modalCustomerCodeDropdown').addEventListener('click', function(e) {
+      safeAddEventListener('modalCustomerCodeDropdown', 'click', function(e) {
         e.stopPropagation();
         toggleCustomerCodeDropdown();
       });
 
-      // 费用获取弹窗 - 仓库下拉框点击事件
-      document.getElementById('modalWarehouseCodeDropdown').addEventListener('click', function(e) {
+      safeAddEventListener('modalWarehouseCodeDropdown', 'click', function(e) {
         e.stopPropagation();
         toggleWarehouseCodeDropdown();
       });
 
-      // 点击页面其他地方关闭下拉框
       document.addEventListener('click', function(e) {
-        const customerCodeDropdown = document.getElementById('modalCustomerCodeDropdown');
-        const customerCodeOptions = document.getElementById('modalCustomerCodeOptions');
-        const warehouseCodeDropdown = document.getElementById('modalWarehouseCodeDropdown');
-        const warehouseCodeOptions = document.getElementById('modalWarehouseCodeOptions');
-        const batchCustomerCodeDropdown = document.getElementById('batchModalCustomerCodeDropdown');
-        const batchCustomerCodeOptions = document.getElementById('batchModalCustomerCodeOptions');
-        const batchWarehouseCodeDropdown = document.getElementById('batchModalWarehouseCodeDropdown');
-        const batchWarehouseCodeOptions = document.getElementById('batchModalWarehouseCodeOptions');
+        const customerCodeDropdown = safeGetElement('modalCustomerCodeDropdown');
+        const customerCodeOptions = safeGetElement('modalCustomerCodeOptions');
+        const warehouseCodeDropdown = safeGetElement('modalWarehouseCodeDropdown');
+        const warehouseCodeOptions = safeGetElement('modalWarehouseCodeOptions');
+        const batchCustomerCodeDropdown = safeGetElement('batchModalCustomerCodeDropdown');
+        const batchCustomerCodeOptions = safeGetElement('batchModalCustomerCodeOptions');
+        const batchWarehouseCodeDropdown = safeGetElement('batchModalWarehouseCodeDropdown');
+        const batchWarehouseCodeOptions = safeGetElement('batchModalWarehouseCodeOptions');
         
         if (customerCodeDropdown && customerCodeOptions && !customerCodeDropdown.contains(e.target)) {
           customerCodeOptions.classList.add('hidden');
@@ -346,14 +368,12 @@
         }
       });
 
-      // 批量获取费用弹窗 - 客户代码下拉框点击事件
-      document.getElementById('batchModalCustomerCodeDropdown').addEventListener('click', function(e) {
+      safeAddEventListener('batchModalCustomerCodeDropdown', 'click', function(e) {
         e.stopPropagation();
         toggleBatchCustomerCodeDropdown();
       });
 
-      // 批量获取费用弹窗 - 仓库下拉框点击事件
-      document.getElementById('batchModalWarehouseCodeDropdown').addEventListener('click', function(e) {
+      safeAddEventListener('batchModalWarehouseCodeDropdown', 'click', function(e) {
         e.stopPropagation();
         toggleBatchWarehouseCodeDropdown();
       });
@@ -361,36 +381,30 @@
       // 初始化检索条件
       renderBasicFilters();
 
-      // 初始化账单月为当前月份
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const currentMonth = `${year}-${month}`;
-      const billMonthInput = document.getElementById('filterBillMonth');
+      const billMonthInput = safeGetElement('filterBillMonth');
       if (billMonthInput) {
         billMonthInput.value = currentMonth;
       }
 
-      // 导出功能
-      document.getElementById('btnExport').addEventListener('click', exportData);
-      
-      // 批量提交功能（已隐藏）
-      // document.getElementById('btnBatchSubmit').addEventListener('click', batchSubmitBills);
+      safeAddEventListener('btnExport', 'click', exportData);
 
-      // 初始化
       renderTable();
       updateSummary();
     });
 
-    // 关闭费用获取弹窗
     function closeFeeModal() {
-      document.getElementById('feeModal').classList.remove('show');
+      const modal = safeGetElement('feeModal');
+      if (modal) modal.classList.remove('show');
       resetModalForm();
     }
 
-    // 关闭详情弹窗
     function closeDetailModal() {
-      document.getElementById('detailModal').classList.remove('show');
+      const modal = safeGetElement('detailModal');
+      if (modal) modal.classList.remove('show');
     }
 
     // 切换客户代码下拉框
@@ -515,25 +529,25 @@
 
     // 重置弹窗表单
     function resetModalForm() {
-      document.getElementById('modalBillMonth').value = '';
-      document.getElementById('modalVoyagePeriod').value = '';
-      document.getElementById('modalBillType').value = '';
+      safeSetValue('modalBillMonth', '');
+      safeSetValue('modalVoyagePeriod', '');
+      safeSetValue('modalBillType', '');
       initCustomerCodeAll();
       initWarehouseCodeAll();
-      document.getElementById('modalChannel').value = '';
-      document.getElementById('modalShippingMethod').value = '';
-      document.getElementById('modalCreateStartDate').value = '';
-      document.getElementById('modalCreateEndDate').value = '';
-      document.getElementById('modalOutboundStartDate').value = '';
-      document.getElementById('modalOutboundEndDate').value = '';
-      document.getElementById('modalSettlementStartDate').value = '';
-      document.getElementById('modalSettlementEndDate').value = '';
-      document.getElementById('modalCompensationStartDate').value = '';
-      document.getElementById('modalCompensationEndDate').value = '';
-      document.getElementById('modalDataTableBody').innerHTML = '';
+      safeSetValue('modalChannel', '');
+      safeSetValue('modalShippingMethod', '');
+      safeSetValue('modalCreateStartDate', '');
+      safeSetValue('modalCreateEndDate', '');
+      safeSetValue('modalOutboundStartDate', '');
+      safeSetValue('modalOutboundEndDate', '');
+      safeSetValue('modalSettlementStartDate', '');
+      safeSetValue('modalSettlementEndDate', '');
+      safeSetValue('modalCompensationStartDate', '');
+      safeSetValue('modalCompensationEndDate', '');
+      safeSetInnerHTML('modalDataTableBody', '');
       modalSelectedItems.clear();
       updateModalSelectedCount();
-      updateSearchConditions(); // 重置后更新检索条件显示
+      updateSearchConditions();
     }
 
     // 关闭批量获取费用弹窗
@@ -551,22 +565,22 @@
 
     // 重置批量弹窗表单
     function resetBatchModalForm() {
-      document.getElementById('batchModalBillMonth').value = '';
-      document.getElementById('batchModalVoyagePeriod').value = '';
-      document.getElementById('batchModalFeeType').value = '';
+      safeSetValue('batchModalBillMonth', '');
+      safeSetValue('batchModalVoyagePeriod', '');
+      safeSetValue('batchModalFeeType', '');
       initBatchCustomerCodeAll();
       initBatchWarehouseCodeAll();
-      document.getElementById('batchModalChannel').value = '';
-      document.getElementById('batchModalShippingMethod').value = '';
-      document.getElementById('batchModalCreateStartDate').value = '';
-      document.getElementById('batchModalCreateEndDate').value = '';
-      document.getElementById('batchModalOutboundStartDate').value = '';
-      document.getElementById('batchModalOutboundEndDate').value = '';
-      document.getElementById('batchModalSettlementStartDate').value = '';
-      document.getElementById('batchModalSettlementEndDate').value = '';
-      document.getElementById('batchModalCompensationStartDate').value = '';
-      document.getElementById('batchModalCompensationEndDate').value = '';
-      document.getElementById('batchModalDataTableBody').innerHTML = '';
+      safeSetValue('batchModalChannel', '');
+      safeSetValue('batchModalShippingMethod', '');
+      safeSetValue('batchModalCreateStartDate', '');
+      safeSetValue('batchModalCreateEndDate', '');
+      safeSetValue('batchModalOutboundStartDate', '');
+      safeSetValue('batchModalOutboundEndDate', '');
+      safeSetValue('batchModalSettlementStartDate', '');
+      safeSetValue('batchModalSettlementEndDate', '');
+      safeSetValue('batchModalCompensationStartDate', '');
+      safeSetValue('batchModalCompensationEndDate', '');
+      safeSetInnerHTML('batchModalDataTableBody', '');
       batchModalData = [];
       batchModalTotalItems = 0;
       batchModalCurrentPage = 1;
@@ -1139,8 +1153,7 @@
       
       tr.innerHTML = headerHTML;
       
-      // 重新绑定全选事件
-      document.getElementById('modalCheckAll').addEventListener('change', function() {
+      safeAddEventListener('modalCheckAll', 'change', function() {
         const checkboxes = document.querySelectorAll('#modalDataTableBody input[type="checkbox"]');
         checkboxes.forEach(cb => {
           cb.checked = this.checked;
@@ -2080,9 +2093,13 @@
     // 重置筛选
     function resetFilter() {
       // 动态获取所有筛选输入框并重置
-      const basicContainer = document.getElementById('basicFilters');
-      basicContainer.querySelectorAll('select, input').forEach(el => {
-        el.value = '';
+      const coreContainer = document.getElementById('coreFilters');
+      const auxContainer = document.getElementById('auxFilters');
+      [coreContainer, auxContainer].forEach(container => {
+        if (!container) return;
+        container.querySelectorAll('select, input').forEach(el => {
+          el.value = '';
+        });
       });
 
       // 重新设置账单月为当前月份

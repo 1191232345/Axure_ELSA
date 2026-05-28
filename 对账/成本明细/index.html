@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>成本明细 - ELSA</title>
+  <title>ELSA</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,93 +12,15 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.3/dist/mermaid.min.js"></script>
   
   <link rel="stylesheet" href="../common/css/common.css">
+  <link rel="stylesheet" href="css/main.css">
   
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { DEFAULT: '#1A365D', light: '#2C5282', dark: '#0F2942' },
-            secondary: { DEFAULT: '#2D3748', light: '#4A5568', dark: '#1A202C' },
-            accent: { DEFAULT: '#38A169', light: '#48BB78', dark: '#2F855A' },
-            success: { DEFAULT: '#38A169', light: '#48BB78', dark: '#2F855A', bg: '#F0FFF4', text: '#22543D' },
-            warning: { DEFAULT: '#D69E2E', light: '#ECC94B', dark: '#B7791F', bg: '#FFFFF0', text: '#744210' },
-            danger: { DEFAULT: '#E53E3E', light: '#FC8181', dark: '#C53030', bg: '#FFF5F5', text: '#742A2A' },
-            info: { DEFAULT: '#3182CE', light: '#63B3ED', dark: '#2B6CB0', bg: '#EBF8FF', text: '#2C5282' },
-            neutral: { 50: '#F7FAFC', 100: '#EDF2F7', 200: '#E2E8F0', 300: '#CBD5E0', 400: '#A0AEC0', 500: '#718096', 600: '#4A5568', 700: '#2D3748', 800: '#1A202C', 900: '#171923' },
-            dark: '#1A202C',
-            border: '#E2E8F0',
-            'light-bg': '#F7FAFC',
-            'card-bg': '#FFFFFF'
-          },
-          boxShadow: {
-            'card': '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
-            'card-hover': '0 3px 6px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12)',
-            'dropdown': '0 4px 12px rgba(0, 0, 0, 0.15)',
-            'header': '0 1px 2px rgba(0, 0, 0, 0.05)',
-            'modal': '0 10px 25px rgba(0, 0, 0, 0.2)'
-          },
-          fontFamily: {
-            sans: ['IBM Plex Sans', 'Source Sans Pro', 'sans-serif'],
-            mono: ['IBM Plex Mono', 'monospace']
-          },
-          transitionTimingFunction: {
-            'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)'
-          }
-        }
-      }
-    };
-    
-    const DATA_CONFIG = {
-      pageId: 'cost-detail',
-      dataFile: 'data/cost-detail-data.json',
-      version: '1.0.0'
-    };
-    
-    const renderer = new marked.Renderer();
-    renderer.code = function(code, language) {
-      if (language === 'mermaid') {
-        return '<div class="mermaid-container" onclick="openMermaidModal(this)"><div class="mermaid">' + code + '</div><span class="mermaid-hint"><i class="fas fa-search-plus mr-1"></i>点击放大</span></div>';
-      }
-      return '<pre><code class="language-' + language + '">' + code + '</code></pre>';
-    };
-    marked.setOptions({ renderer: renderer, breaks: true, gfm: true });
-  </script>
-  
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .card-shadow {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      }
-      .modal-overlay {
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(4px);
-      }
-      .modal-content {
-        animation: slideUp 0.3s ease-out;
-      }
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .table-row-hover:hover {
-        background-color: #F7FAFC;
-      }
-    }
-  </style>
-  
-  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/init-config.js"></script>
 </head>
 <body class="font-sans bg-light-bg text-dark min-h-screen">
   <div class="tabs fixed bottom-8 right-8 z-40">
@@ -142,122 +64,49 @@
     </div>
   </header>
   
-  <main id="main-prd" class="main-content" style="display: none;">
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex gap-6">
-        <aside class="w-64 flex-shrink-0 hidden lg:block">
-          <div class="toc sticky top-4">
-            <div class="toc-title">
-              <i class="fas fa-list-alt mr-2"></i>目录导航
-            </div>
-            <div id="toc-nav"></div>
-          </div>
-        </aside>
-        <div class="flex-1 min-w-0">
-          <div class="bg-white rounded shadow-card p-8 lg:p-12">
-            <div id="prd-content" class="prose max-w-none">
-              <div class="text-center py-16">
-                <div class="animate-pulse">
-                  <i class="fas fa-spinner fa-spin text-5xl text-primary mb-4"></i>
-                  <p class="text-lg text-gray-500">正在加载PRD文档...</p>
-                  <button onclick="loadPRD()" class="mt-6 px-6 py-3 bg-primary text-white rounded hover:bg-primary-light transition-colors">
-                    <i class="fas fa-refresh mr-2"></i>手动加载PRD
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-  
-  <main id="main-testcases" class="main-content" style="display: none;">
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex gap-6">
-        <aside class="w-64 flex-shrink-0 hidden lg:block">
-          <div class="toc sticky top-4">
-            <div class="toc-title">
-              <i class="fas fa-list-alt mr-2"></i>目录导航
-            </div>
-            <div id="testcases-toc-nav"></div>
-          </div>
-        </aside>
-        <div class="flex-1 min-w-0">
-          <div class="bg-white rounded shadow-card p-8 lg:p-12">
-            <div id="testcases-content" class="prose max-w-none">
-              <div class="text-center py-16">
-                <div class="animate-pulse">
-                  <i class="fas fa-spinner fa-spin text-5xl text-primary mb-4"></i>
-                  <p class="text-lg text-gray-500">正在加载测试用例文档...</p>
-                  <button onclick="loadTestCases()" class="mt-6 px-6 py-3 bg-primary text-white rounded hover:bg-primary-light transition-colors">
-                    <i class="fas fa-refresh mr-2"></i>手动加载测试用例
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-  
-  <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
-    <div class="mermaid-modal-content" onclick="event.stopPropagation()">
-      <button class="mermaid-modal-close" onclick="closeMermaidModal()">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="mermaid-modal-title">
-        <i class="fas fa-sitemap mr-2"></i>流程图预览
-      </div>
-      <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
-    </div>
-  </div>
-  
   <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-light-bg">
-    <div class="flex min-h-[calc(100vh-56px)]">
-      <aside class="w-72 bg-secondary text-white flex-shrink-0 overflow-y-auto">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-base font-semibold flex items-center">
-              <i class="fas fa-filter mr-2"></i>检索条件
-            </h2>
-            <button onclick="toggleFilterPanel()" class="text-white/60 hover:text-white transition-colors">
-              <i class="fas fa-chevron-up" id="filterToggleIcon"></i>
-            </button>
-          </div>
-          
-          <div id="filterPanelContent">
-            <div id="basicFilters" class="space-y-4">
-            </div>
-
-            <div class="mt-6 pt-6 border-t border-white/20">
-              <button id="btnFilter" class="w-full erp-btn erp-btn-primary mb-3">
-                <i class="fas fa-search mr-1.5"></i>筛选
-              </button>
-              <button id="btnResetFilter" class="w-full erp-btn erp-btn-secondary-outline">
-                <i class="fas fa-refresh mr-1.5"></i>重置
-              </button>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <div class="flex-1 overflow-y-auto">
-        <div class="container mx-auto px-6 py-6 max-w-[1600px]">
-          <div class="bg-white rounded shadow-card mb-6">
-            <div class="px-6 py-4 border-b border-gray-200">
+    <div class="container mx-auto px-6 py-6 max-w-[1600px] min-h-[calc(100vh-56px)]">
+          <div class="px-4 py-3 border-b border-gray-200">
               <div class="flex items-center justify-between">
-                <h1 class="text-xl font-bold text-dark">成本明细</h1>
+                <h1 class="text-lg font-bold text-dark">成本明细</h1>
                 <div class="flex items-center gap-2 text-sm text-gray-600">
                   <i class="fas fa-clock"></i>
                   <span id="lastUpdateTime">最后更新: -</span>
                 </div>
               </div>
             </div>
+          <div class="bg-white rounded shadow-card">
+            <div class="px-4 py-3 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <h2 class="text-base font-semibold text-dark flex items-center">
+                  <i class="fas fa-filter mr-2"></i>检索条件
+                </h2>
+                <button onclick="toggleFilterPanel()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                  <i class="fas fa-chevron-up" id="filterToggleIcon"></i>
+                </button>
+              </div>
+            </div>
             
-            <div class="px-6 py-4">
-              <div class="flex items-center gap-3 flex-wrap">
+            <div id="filterPanelContent" class="px-4 py-3">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div id="coreFilters" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 flex-1"></div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button id="btnFilter" class="erp-btn erp-btn-primary">
+                    <i class="fas fa-search mr-1.5"></i>筛选
+                  </button>
+                  <button id="btnResetFilter" class="erp-btn erp-btn-secondary-outline">
+                    <i class="fas fa-refresh mr-1.5"></i>重置
+                  </button>
+                </div>
+              </div>
+              
+              <div id="auxFilters" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-gray-200"></div>
+            </div>
+          </div>
+
+
+          <div class="px-4 py-3">
+              <div class="flex items-center gap-2 flex-wrap">
                 <button id="btnGetFee" class="erp-btn erp-btn-primary">
                   <i class="fas fa-download mr-1.5"></i>
                   <span>费用获取</span>
@@ -276,19 +125,18 @@
                 </button>
               </div>
             </div>
-          </div>
-
-          <div class="bg-white rounded shadow-card">
-            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-600">
-                  已选: <span id="selectedRecords" class="font-semibold text-primary">0</span> 条
-                </span>
-                <span class="text-sm text-gray-600">
-                  金额合计: <span id="totalAmount" class="font-semibold text-accent font-mono">$0.00</span>
-                </span>
-              </div>
-              <div id="paginationInfo" class="text-sm text-gray-500">显示 0-0 条，共 0 条</div>
+        
+            <div class="bg-white rounded shadow-card">
+              <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <span class="text-sm text-gray-600">
+                    已选: <span id="selectedRecords" class="font-semibold text-primary">0</span> 条
+                  </span>
+                  <span class="text-sm text-gray-600">
+                    金额合计: <span id="totalAmount" class="font-semibold text-accent font-mono">$0.00</span>
+                  </span>
+                </div>
+                <div id="paginationInfo" class="text-sm text-gray-500">显示 0-0 条，共 0 条</div>
             </div>
             
             <div class="overflow-x-auto">
@@ -313,8 +161,7 @@
                     <th class="text-center py-3 px-4 font-semibold text-gray-700 w-32">操作</th>
                   </tr>
                 </thead>
-                <tbody id="reconciliationTableBody">
-                </tbody>
+                <tbody id="reconciliationTableBody"></tbody>
               </table>
             </div>
             
@@ -333,144 +180,27 @@
                 <button id="prevPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
                   <i class="fas fa-chevron-left text-xs"></i>
                 </button>
-                <div id="pageButtons" class="flex gap-2">
-                </div>
+                <div id="pageButtons" class="flex gap-2"></div>
                 <button id="nextPageBtn" class="w-8 h-8 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-all">
                   <i class="fas fa-chevron-right text-xs"></i>
                 </button>
               </div>
             </div>
           </div>
-
-          <div class="bg-white rounded shadow-card mt-6 overflow-hidden">
-            <div class="px-6 py-4 bg-neutral-50 border-b border-gray-200 flex justify-between items-center cursor-pointer" onclick="toggleLogicDescription()">
-              <div class="flex items-center">
-                <i class="fas fa-book text-primary mr-2"></i>
-                <span class="font-semibold text-primary">逻辑说明</span>
-                <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
-              </div>
-              <i class="fas fa-chevron-down text-primary transition-transform" id="logicDescriptionToggleIcon"></i>
-            </div>
-            <div id="logicDescriptionContent" class="hidden">
-              <div class="p-6 border-b border-gray-100">
-                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                  <i class="fas fa-database text-primary mr-2"></i>初始化页面（数据展示逻辑）
-                </h4>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-sm border border-gray-200 rounded">
-                    <thead class="bg-neutral-50">
-                      <tr>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">费用列表加载</td>
-                        <td class="px-3 py-2 text-gray-600">页面加载时默认展示费用明细列表</td>
-                        <td class="px-3 py-2 text-gray-600">费用明细表(expense_detail)</td>
-                        <td class="px-3 py-2 text-gray-600">按创建时间倒序展示，支持分页</td>
-                        <td class="px-3 py-2 text-gray-600">默认每页10条数据</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">筛选条件默认值</td>
-                        <td class="px-3 py-2 text-gray-600">页面加载时设置筛选条件默认值</td>
-                        <td class="px-3 py-2 text-gray-600">配置项</td>
-                        <td class="px-3 py-2 text-gray-600">费用类型默认选择"出库+快递(YC)"，其他条件为空</td>
-                        <td class="px-3 py-2 text-gray-600">-</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div class="p-6 border-b border-gray-100">
-                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                  <i class="fas fa-search text-primary mr-2"></i>检索条件
-                </h4>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-sm border border-gray-200 rounded">
-                    <thead class="bg-neutral-50">
-                      <tr>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">费用类型</td>
-                        <td class="px-3 py-2 text-gray-600">下拉选择框</td>
-                        <td class="px-3 py-2 text-gray-600">根据选择的费用类型动态更新表头和筛选条件</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">账单号</td>
-                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                        <td class="px-3 py-2 text-gray-600">支持模糊查询，输入账单号关键字进行筛选</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">客户代码</td>
-                        <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                        <td class="px-3 py-2 text-gray-600">支持模糊查询，输入客户代码进行筛选</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">账单状态</td>
-                        <td class="px-3 py-2 text-gray-600">下拉选择框</td>
-                        <td class="px-3 py-2 text-gray-600">选择账单状态进行筛选（待处理、已处理、已取消等）</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div class="p-6">
-                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                  <i class="fas fa-cogs text-primary mr-2"></i>操作按钮
-                </h4>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-sm border border-gray-200 rounded">
-                    <thead class="bg-neutral-50">
-                      <tr>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮名称</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
-                        <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">操作逻辑</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">费用获取</td>
-                        <td class="px-3 py-2 text-gray-600">选中单条记录</td>
-                        <td class="px-3 py-2 text-gray-600">获取选中记录的费用明细，更新到系统</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">批量获取费用</td>
-                        <td class="px-3 py-2 text-gray-600">选中多条记录</td>
-                        <td class="px-3 py-2 text-gray-600">批量获取选中记录的费用明细</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">导出账单</td>
-                        <td class="px-3 py-2 text-gray-600">可选</td>
-                        <td class="px-3 py-2 text-gray-600">导出筛选后的账单数据为Excel文件</td>
-                      </tr>
-                      <tr class="hover:bg-neutral-50">
-                        <td class="px-3 py-2 text-gray-800">导出明细</td>
-                        <td class="px-3 py-2 text-gray-600">可选</td>
-                        <td class="px-3 py-2 text-gray-600">导出筛选后的明细数据为Excel文件</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-  </main>
-
+    </main>
+  
+  <div id="feeModal" class="modal-overlay"></div>
+  <div id="batchFeeModal" class="modal-overlay"></div>
+  <div id="detailModal" class="modal-overlay"></div>
+  <div id="mermaidModal" class="mermaid-modal"></div>
+  
+  <script>
+    if (typeof initAll !== 'undefined') {
+      initAll();
+    }
+  </script>
   <script src="js/main.js"></script>
 </body>
 </html>

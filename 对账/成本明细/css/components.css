@@ -1,0 +1,229 @@
+.erp-btn {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.erp-btn:hover {
+  opacity: 0.9;
+}
+
+.erp-btn:active {
+  opacity: 0.8;
+}
+
+.erp-btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.erp-btn-primary:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-light);
+}
+
+.erp-btn-secondary {
+  background-color: white;
+  color: var(--neutral-600);
+  border-color: var(--border);
+}
+
+.erp-btn-secondary:hover {
+  border-color: var(--neutral-300);
+  color: var(--neutral-700);
+}
+
+.erp-btn-secondary-outline {
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.erp-btn-secondary-outline:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.erp-btn-warning {
+  background-color: var(--warning);
+  color: white;
+  border-color: var(--warning);
+}
+
+.erp-btn-warning:hover {
+  background-color: #ECC94B;
+  border-color: #ECC94B;
+}
+
+.erp-btn-danger {
+  background-color: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.erp-btn-danger:hover {
+  background-color: #FC8181;
+  border-color: #FC8181;
+}
+
+.erp-btn-success {
+  background-color: var(--success);
+  color: white;
+  border-color: var(--success);
+}
+
+.erp-btn-success:hover {
+  background-color: var(--accent-light);
+  border-color: var(--accent-light);
+}
+
+.table-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+}
+
+.table-btn:hover {
+  opacity: 0.9;
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--neutral-700);
+  margin-bottom: 6px;
+}
+
+.form-group .required {
+  color: var(--danger);
+}
+
+.form-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neutral-800);
+  background-color: white;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(26, 54, 93, 0.1);
+}
+
+.form-select:disabled {
+  background-color: var(--neutral-50);
+  cursor: not-allowed;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neutral-800);
+  background-color: white;
+  transition: all 0.15s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(26, 54, 93, 0.1);
+}
+
+.form-input:disabled {
+  background-color: var(--neutral-50);
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neutral-800);
+  background-color: white;
+  transition: all 0.15s ease;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(26, 54, 93, 0.1);
+}
+
+#reconciliationTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#reconciliationTable thead tr {
+  border-bottom: 2px solid var(--border);
+}
+
+#reconciliationTable th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--neutral-700);
+  background: var(--neutral-50);
+  font-size: 0.875rem;
+}
+
+#reconciliationTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--neutral-600);
+  font-size: 0.875rem;
+}
+
+#reconciliationTable tbody tr:nth-child(even) {
+  background: var(--neutral-50);
+}
+
+#reconciliationTable tbody tr:hover {
+  background: var(--neutral-100);
+}
+
+#reconciliationTable .font-mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
