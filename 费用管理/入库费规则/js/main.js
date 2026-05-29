@@ -7,8 +7,6 @@ class InboundFeeRuleEngine {
   constructor() {
     this.treeData = null;
     this.flatItems = [];
-    this.filteredItems = [];
-    this.currentCategory = '整柜入库';
     this.init();
   }
 
@@ -16,7 +14,8 @@ class InboundFeeRuleEngine {
     await this.loadData();
     this.flattenData();
     this.bindEvents();
-    this.switchCategory('整柜入库');
+    this.renderItemList();
+    this.updateStatistics();
   }
 
   async loadData() {
@@ -65,27 +64,11 @@ class InboundFeeRuleEngine {
     document.getElementById('btnExport').addEventListener('click', () => this.exportData());
   }
 
-  switchCategory(categoryName) {
-    this.currentCategory = categoryName;
-
-    document.querySelectorAll('.category-tab').forEach(tab => {
-      tab.classList.remove('active');
-      if (tab.dataset.category === categoryName) {
-        tab.classList.add('active');
-      }
-    });
-
-    this.filteredItems = this.flatItems.filter(item => item.categoryName === categoryName);
-
-    this.renderItemList();
-    this.updateStatistics();
-  }
-
   renderItemList() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
-    if (!this.filteredItems || this.filteredItems.length === 0) {
+    if (!this.flatItems || this.flatItems.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="9" style="text-align:center; padding:60px; color:#8B93A5;">
@@ -97,7 +80,7 @@ class InboundFeeRuleEngine {
       return;
     }
 
-    this.filteredItems.forEach((item, index) => {
+    this.flatItems.forEach((item, index) => {
       const row = this.createItemRow(item, index);
       tbody.appendChild(row);
     });
@@ -106,10 +89,23 @@ class InboundFeeRuleEngine {
   createItemRow(item, index) {
     const row = document.createElement('tr');
     row.className = 'cursor-pointer hover:bg-hover transition-colors';
+    
+    let feeItemDisplay = '';
+    if (item.subCategory) {
+      feeItemDisplay = `
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <div style="font-weight:600; color:#1B3A4B;">${item.feeItem}</div>
+          <div style="color:#5A6275; font-size:13px; padding-left:12px;">${item.subCategory}</div>
+        </div>
+      `;
+    } else {
+      feeItemDisplay = `<span style="font-weight:600; color:#1B3A4B;">${item.feeItem}</span>`;
+    }
+    
     row.innerHTML = `
       <td style="text-align:center; font-weight:600; color:#1B3A4B;">${index + 1}</td>
-      <td style="font-weight:500;">${item.feeItem}</td>
-      <td>${item.subCategory || '-'}</td>
+      <td style="color:#5A6275;">${item.categoryName}</td>
+      <td>${feeItemDisplay}</td>
       <td>${item.unit || '-'}</td>
       <td>${item.creator || '-'}</td>
       <td>${item.createTime || '-'}</td>
@@ -138,8 +134,8 @@ class InboundFeeRuleEngine {
   }
 
   updateStatistics() {
-    const totalItems = this.filteredItems.length;
-    document.getElementById('statisticsText').innerHTML = `${this.currentCategory} - 共 <strong>${totalItems}</strong> 个收费项`;
+    const totalItems = this.flatItems.length;
+    document.getElementById('statisticsText').innerHTML = `共 <strong>${totalItems}</strong> 个收费项`;
   }
 
   viewDetail(itemId) {
@@ -154,12 +150,26 @@ class InboundFeeRuleEngine {
     overlay.className = 'modal-overlay';
     overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 
+    let feeItemDisplay = '';
+    if (item.subCategory) {
+      feeItemDisplay = `
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div style="font-weight:600; color:#1B3A4B; font-size:15px;">${item.feeItem}</div>
+          <div style="color:#5A6275; font-size:14px; padding-left:16px;">${item.subCategory}</div>
+        </div>
+      `;
+    } else {
+      feeItemDisplay = `
+        <span style="font-weight:600; color:#1B3A4B; font-size:15px;">${item.feeItem}</span>
+      `;
+    }
+
     overlay.innerHTML = `
       <div class="modal-dialog" style="max-width:800px;">
         <div class="modal-header">
           <h3 class="modal-title">
             <i class="fa fa-file-text-o" style="color:#E8A838;"></i>
-            收费项详情 - ${item.feeItem}
+            收费项详情
           </h3>
           <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
         </div>
@@ -171,19 +181,12 @@ class InboundFeeRuleEngine {
               <input type="text" class="form-input" value="${item.categoryName}" disabled>
             </div>
             <div class="form-group">
-              <label class="form-label">收费项</label>
-              <input type="text" class="form-input" value="${item.feeItem}" disabled>
+              <label class="form-label">收费项（含二级）</label>
+              <div style="padding:8px 12px; background:#F9FAFB; border-radius:6px; border:1px solid #D8D5CE;">
+                ${feeItemDisplay}
+              </div>
             </div>
           </div>
-
-          ${item.subCategory ? `
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
-            <div class="form-group">
-              <label class="form-label">二级收费项</label>
-              <input type="text" class="form-input" value="${item.subCategory}" disabled>
-            </div>
-          </div>
-          ` : ''}
 
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
             <div class="form-group">
@@ -260,6 +263,10 @@ class InboundFeeRuleEngine {
     `;
 
     document.body.appendChild(overlay);
+    document.getElementById('addCategory').value = '整柜入库';
+    this.updateFeeItemTree();
+    document.getElementById('addFeeItemTree').value = 'level1_卸货费';
+    this.onFeeItemTreeChange();
   }
 
   formatCalculationExample(text) {
@@ -300,29 +307,21 @@ class InboundFeeRuleEngine {
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
             <div class="form-group">
               <label class="form-label">收费分类 <span style="color:#C44536;">*</span></label>
-              <select id="addCategory" class="form-input" onchange="engine.updateFeeItemOptions()">
+              <select id="addCategory" class="form-input" onchange="engine.updateFeeItemTree()">
                 <option value="">请选择分类</option>
-                <option value="整柜入库">整柜入库</option>
+                <option value="整柜入库" selected>整柜入库</option>
                 <option value="快递散货入库">快递散货入库</option>
                 <option value="托盘入库">托盘入库</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">收费项 <span style="color:#C44536;">*</span></label>
-              <select id="addFeeItem" class="form-input" onchange="engine.togglePricingTable()">
-              </select>
-            </div>
-          </div>
-
-          <div id="subCategorySection" style="display:none; margin-bottom:16px;">
-            <div class="form-group">
-              <label class="form-label">二级收费项 <span style="color:#C44536;">*</span></label>
-              <select id="addSubCategory" class="form-input" onchange="engine.toggleTierPricing()">
-                <option value="">请选择二级收费项</option>
-                <option value="SKU超量费">SKU超量费</option>
-                <option value="超重费">超重费</option>
-                <option value="清单费">清单费</option>
-              </select>
+              <label class="form-label">收费项（含二级） <span style="color:#C44536;">*</span></label>
+              <div style="position:relative;" id="feeItemTreeContainer">
+                <select id="addFeeItemTree" class="form-input" onchange="engine.onFeeItemTreeChange()" style="appearance:none;">
+                  <option value="">请先选择收费分类</option>
+                </select>
+                <i class="fa fa-angle-down" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#8B93A5;"></i>
+              </div>
             </div>
           </div>
 
@@ -335,6 +334,7 @@ class InboundFeeRuleEngine {
               <option value="箱">箱</option>
               <option value="托">托</option>
               <option value="KG">KG</option>
+              <option value="个">个</option>
             </select>
           </div>
 
@@ -422,13 +422,12 @@ class InboundFeeRuleEngine {
     `;
 
     document.body.appendChild(overlay);
-    document.getElementById('addCategory').value = this.currentCategory;
-    this.updateFeeItemOptions();
+    this.updateFeeItemTree();
   }
 
-  updateFeeItemOptions() {
+  updateFeeItemTree() {
     const category = document.getElementById('addCategory').value;
-    const feeItemSelect = document.getElementById('addFeeItem');
+    const feeItemSelect = document.getElementById('addFeeItemTree');
     
     feeItemSelect.innerHTML = '<option value="">请选择收费项</option>';
     
@@ -437,110 +436,141 @@ class InboundFeeRuleEngine {
       return;
     }
 
-    const feeItemOptions = {
+    const feeItemTreeData = {
       '整柜入库': [
-        { value: '卸货费', label: '卸货费' },
-        { value: '入库附加费', label: '入库附加费' }
+        {
+          level: 1,
+          name: '卸货费',
+          value: 'level1_卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '入库附加费',
+          value: 'level1_入库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_超重费' },
+            { level: 2, name: '清单费', value: 'level2_清单费' }
+          ]
+        }
       ],
       '快递散货入库': [
-        { value: '入库附加费', label: '入库附加费' }
+        {
+          level: 1,
+          name: '卸货费',
+          value: 'level1_卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '入库附加费',
+          value: 'level1_入库附加费',
+          children: [
+            { level: 2, name: '轻点费', value: 'level2_轻点费' },
+            { level: 2, name: '分货费', value: 'level2_分货费' },
+            { level: 2, name: 'SKU超量费', value: 'level2_SKU超量费' }
+          ]
+        }
       ],
       '托盘入库': [
-        { value: '卸货费', label: '卸货费' },
-        { value: '入库附加费', label: '入库附加费' }
+        {
+          level: 1,
+          name: '卸货费',
+          value: 'level1_卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '入库附加费',
+          value: 'level1_入库附加费',
+          children: [
+            { level: 2, name: '拆拖', value: 'level2_拆拖' },
+            { level: 2, name: '分货', value: 'level2_分货' },
+            { level: 2, name: '超重', value: 'level2_超重' },
+            { level: 2, name: '清点', value: 'level2_清点' },
+            { level: 2, name: 'SKU超重费', value: 'level2_SKU超重费' }
+          ]
+        }
       ]
     };
 
-    const options = feeItemOptions[category] || [];
-    options.forEach(opt => {
-      const option = document.createElement('option');
-      option.value = opt.value;
-      option.textContent = opt.label;
-      feeItemSelect.appendChild(option);
+    const treeItems = feeItemTreeData[category] || [];
+    
+    treeItems.forEach(item => {
+      if (item.children && item.children.length > 0) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = `├ ${item.name}`;
+        
+        item.children.forEach(child => {
+          const option = document.createElement('option');
+          option.value = child.value;
+          option.textContent = `│  └─ ${child.name}`;
+          option.dataset.level = child.level;
+          option.dataset.parentName = item.name;
+          option.dataset.feeItemName = child.name;
+          optgroup.appendChild(option);
+        });
+        
+        feeItemSelect.appendChild(optgroup);
+      } else {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.name;
+        option.dataset.level = item.level;
+        option.dataset.feeItemName = item.name;
+        feeItemSelect.appendChild(option);
+      }
     });
 
-    if (options.length > 0) {
-      feeItemSelect.value = options[0].value;
-      this.togglePricingTable();
+    if (feeItemSelect.options.length > 1) {
+      feeItemSelect.selectedIndex = 1;
+      this.onFeeItemTreeChange();
     }
   }
 
-  togglePricingTable() {
-    const category = document.getElementById('addCategory').value;
-    const feeItem = document.getElementById('addFeeItem').value;
-    const pricingTableSection = document.getElementById('pricingTableSection');
-    const pricingTextSection = document.getElementById('pricingTextSection');
-    const subCategorySection = document.getElementById('subCategorySection');
-    const tierPricingSection = document.getElementById('tierPricingSection');
-
-    subCategorySection.style.display = 'none';
-    tierPricingSection.style.display = 'none';
-    document.getElementById('addSubCategory').value = '';
-
-    if (feeItem === '卸货费') {
-      pricingTableSection.style.display = 'block';
-      pricingTextSection.style.display = 'none';
-      const tbody = document.getElementById('pricingTableBody');
-      tbody.innerHTML = '';
-      this.addPricingRow();
-    } else if (feeItem === '入库附加费') {
-      pricingTableSection.style.display = 'none';
-      pricingTextSection.style.display = 'none';
-      subCategorySection.style.display = 'block';
-      this.updateSubCategoryOptions();
-    } else {
-      pricingTableSection.style.display = 'none';
-      pricingTextSection.style.display = 'block';
-    }
-  }
-
-  updateSubCategoryOptions() {
-    const category = document.getElementById('addCategory').value;
-    const subCategorySelect = document.getElementById('addSubCategory');
+  onFeeItemTreeChange() {
+    const select = document.getElementById('addFeeItemTree');
+    const selectedOption = select.options[select.selectedIndex];
     
-    subCategorySelect.innerHTML = '<option value="">请选择二级收费项</option>';
-    
-    const subCategoryOptions = {
-      '整柜入库': [
-        { value: 'SKU超量费', label: 'SKU超量费' },
-        { value: '超重费', label: '超重费' },
-        { value: '清单费', label: '清单费' }
-      ],
-      '快递散货入库': [
-        { value: '轻点费', label: '轻点费' },
-        { value: '分货费', label: '分货费' },
-        { value: 'SKU超量费', label: 'SKU超量费' }
-      ],
-      '托盘入库': [
-        { value: '拆拖', label: '拆拖' },
-        { value: '分货', label: '分货' },
-        { value: '超重', label: '超重' },
-        { value: '清点', label: '清点' },
-        { value: 'SKU超重费', label: 'SKU超重费' }
-      ]
-    };
+    if (!selectedOption || !selectedOption.value) {
+      return;
+    }
 
-    const options = subCategoryOptions[category] || [];
-    options.forEach(opt => {
-      const option = document.createElement('option');
-      option.value = opt.value;
-      option.textContent = opt.label;
-      subCategorySelect.appendChild(option);
-    });
+    const level = parseInt(selectedOption.dataset.level);
+    const feeItemName = selectedOption.dataset.feeItemName;
+    
+    if (level === 2) {
+      this.showTierPricingForm();
+    } else {
+      if (feeItemName === '卸货费') {
+        this.showPricingTableForm();
+      } else {
+        this.hideAllForms();
+      }
+    }
   }
 
-  toggleTierPricing() {
-    const subCategory = document.getElementById('addSubCategory').value;
-    const tierPricingSection = document.getElementById('tierPricingSection');
+  showPricingTableForm() {
+    document.getElementById('pricingTableSection').style.display = 'block';
+    document.getElementById('pricingTextSection').style.display = 'none';
+    document.getElementById('tierPricingSection').style.display = 'none';
+    
+    const tbody = document.getElementById('pricingTableBody');
+    tbody.innerHTML = '';
+    this.addPricingRow();
+  }
 
-    if (subCategory) {
-      tierPricingSection.style.display = 'block';
-      const tbody = document.getElementById('tierPricingTableBody');
-      tbody.innerHTML = '';
-      this.addTierRow();
-    } else {
-      tierPricingSection.style.display = 'none';
-    }
+  showTierPricingForm() {
+    document.getElementById('pricingTableSection').style.display = 'none';
+    document.getElementById('pricingTextSection').style.display = 'none';
+    document.getElementById('tierPricingSection').style.display = 'block';
+  }
+
+  hideAllForms() {
+    document.getElementById('pricingTableSection').style.display = 'none';
+    document.getElementById('pricingTextSection').style.display = 'block';
+    document.getElementById('tierPricingSection').style.display = 'none';
   }
 
   addPricingRow() {

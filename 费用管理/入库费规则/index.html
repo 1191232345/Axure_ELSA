@@ -141,26 +141,8 @@
   <!-- 原型内容区域 -->
   <main id="main-prototype" class="main-content active">
     <div class="container mx-auto px-4 py-6 max-w-[1920px]">
-      <!-- 分类Tab栏 -->
-      <div class="category-tabs animate-fade-in-up">
-        <div class="category-tabs-header">
-          <button class="category-tab active" data-category="整柜入库" onclick="engine.switchCategory('整柜入库')">
-            <i class="fa fa-cube"></i>
-            <span>整柜入库</span>
-          </button>
-          <button class="category-tab" data-category="快递散货入库" onclick="engine.switchCategory('快递散货入库')">
-            <i class="fa fa-cube"></i>
-            <span>快递散货入库</span>
-          </button>
-          <button class="category-tab" data-category="托盘入库" onclick="engine.switchCategory('托盘入库')">
-            <i class="fa fa-cube"></i>
-            <span>托盘入库</span>
-          </button>
-        </div>
-      </div>
-
       <!-- 内容展示区域 -->
-      <div class="content-section animate-fade-in-up stagger-1">
+      <div class="content-section animate-fade-in-up">
         <!-- 操作按钮栏 -->
         <div class="table-toolbar" id="tableToolbar">
           <button id="btnAddRule" class="erp-btn erp-btn-success">
@@ -177,8 +159,8 @@
             <thead id="tableHead">
               <tr>
                 <th style="width:60px;">序号</th>
-                <th style="width:200px;">收费项</th>
-                <th style="width:150px;">二级分类</th>
+                <th style="width:150px;">收费分类</th>
+                <th style="width:250px;">收费项</th>
                 <th style="width:100px;">计费单位</th>
                 <th style="width:100px;">创建人</th>
                 <th style="width:150px;">创建时间</th>
@@ -230,24 +212,17 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">分类Tab加载</td>
-                    <td class="px-3 py-2 text-gray-600">页面加载时展示三大分类Tab：整柜入库、快递散货入库、托盘入库</td>
-                    <td class="px-3 py-2 text-gray-600">入库费规则配置表</td>
-                    <td class="px-3 py-2 text-gray-600">默认选中第一个Tab（整柜入库）</td>
-                    <td class="px-3 py-2 text-gray-600">-</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-800">收费项列表加载</td>
-                    <td class="px-3 py-2 text-gray-600">根据选中的分类Tab，展示对应的收费项列表</td>
+                    <td class="px-3 py-2 text-gray-600">展示所有分类的收费项列表，包含收费分类列</td>
                     <td class="px-3 py-2 text-gray-600">入库费规则配置表</td>
-                    <td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td>
+                    <td class="px-3 py-2 text-gray-600">按创建时间倒序排列，显示所有分类的数据</td>
                     <td class="px-3 py-2 text-gray-600">-</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-800">统计信息展示</td>
-                    <td class="px-3 py-2 text-gray-600">显示当前分类下的收费项总数</td>
+                    <td class="px-3 py-2 text-gray-600">显示所有收费项的总数</td>
                     <td class="px-3 py-2 text-gray-600">前端计算</td>
-                    <td class="px-3 py-2 text-gray-600">格式：[分类名称] - 共 X 个收费项</td>
+                    <td class="px-3 py-2 text-gray-600">格式：共 X 个收费项</td>
                     <td class="px-3 py-2 text-gray-600">-</td>
                   </tr>
                 </tbody>
@@ -341,20 +316,20 @@
                     <td class="px-3 py-2 text-gray-600">数值型</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">收费项</td>
-                    <td class="px-3 py-2 text-gray-600">收费项目名称</td>
-                    <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：卸货费、入库附加费</td>
+                    <td class="px-3 py-2 text-gray-800">收费分类</td>
+                    <td class="px-3 py-2 text-gray-600">收费项所属的分类</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：整柜入库、快递散货入库、托盘入库</td>
                     <td class="px-3 py-2 text-gray-600">文本显示</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">二级分类</td>
-                    <td class="px-3 py-2 text-gray-600">收费项的二级分类</td>
-                    <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">当收费项为"入库附加费"时显示，可选：SKU超量费、超重费、清单费等</td>
-                    <td class="px-3 py-2 text-gray-600">文本显示</td>
+                    <td class="px-3 py-2 text-gray-800">收费项（含二级）</td>
+                    <td class="px-3 py-2 text-gray-600">一级和二级收费项的统一展示</td>
+                    <td class="px-3 py-2 text-gray-600">系统生成</td>
+                    <td class="px-3 py-2 text-gray-600">使用树形结构展示：一级项直接显示，二级项以缩进形式显示在对应一级项下</td>
+                    <td class="px-3 py-2 text-gray-600">文本显示（带缩进层次）</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
@@ -437,20 +412,20 @@
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">收费项 <span style="color:#C44536;">*</span></td>
-                    <td class="px-3 py-2 text-gray-600">收费项目名称</td>
+                    <td class="px-3 py-2 text-gray-800">收费分类 <span style="color:#C44536;">*</span></td>
+                    <td class="px-3 py-2 text-gray-600">收费项所属的分类</td>
                     <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：卸货费、入库附加费；选择后触发不同的表单展示逻辑</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：整柜入库、快递散货入库、托盘入库</td>
                     <td class="px-3 py-2 text-gray-600">下拉选择</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">二级收费项 <span style="color:#C44536;">*</span></td>
-                    <td class="px-3 py-2 text-gray-600">收费项的二级分类</td>
-                    <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">当收费项为"入库附加费"时显示并必填；可选：SKU超量费、超重费、清单费、轻点费、分货费、拆拖、分货、超重、清点、SKU超重费</td>
-                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-800">收费项（含二级） <span style="color:#C44536;">*</span></td>
+                    <td class="px-3 py-2 text-gray-600">一级和二级收费项的统一选择</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择（树形下拉框）</td>
+                    <td class="px-3 py-2 text-gray-600">使用树形下拉框选择，一级项直接显示，二级项缩进显示在对应一级项下；选择后显示选择结果</td>
+                    <td class="px-3 py-2 text-gray-600">树形下拉选择</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
@@ -548,23 +523,18 @@
                 <tbody class="divide-y divide-gray-100">
                   <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-800">打开新增弹窗</td>
-                    <td class="px-3 py-2 text-gray-600">1. 收费分类默认为当前选中的Tab分类<br>2. 根据分类加载对应的收费项选项<br>3. 默认显示第一个收费项</td>
-                    <td class="px-3 py-2 text-gray-600">显示新增弹窗，收费分类字段禁用</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示新增弹窗<br>2. 收费分类为空，需要用户手动选择<br>3. 收费项下拉框显示"请先选择收费分类"</td>
+                    <td class="px-3 py-2 text-gray-600">显示新增弹窗，所有字段为空或默认值</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择收费项="卸货费"</td>
-                    <td class="px-3 py-2 text-gray-600">1. 显示"费率标准"表格区域<br>2. 隐藏"二级收费项"选择框<br>3. 隐藏"阶梯价格"表格<br>4. 显示"费率规则"、"重量阶梯"等文本输入区</td>
-                    <td class="px-3 py-2 text-gray-600">费率标准表格（规格、价格、备注）</td>
+                    <td class="px-3 py-2 text-gray-800">选择一级收费项（如：卸货费）</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示选择结果区域<br>2. 如果是卸货费，显示"费率标准"表格<br>3. 其他一级项显示文本输入区</td>
+                    <td class="px-3 py-2 text-gray-600">选择结果展示 + 对应的表单字段</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择收费项="入库附加费"</td>
-                    <td class="px-3 py-2 text-gray-600">1. 显示"二级收费项"选择框<br>2. 隐藏"费率标准"表格<br>3. 显示"费率规则"、"重量阶梯"等文本输入区</td>
-                    <td class="px-3 py-2 text-gray-600">二级收费项下拉选择框</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择二级收费项</td>
-                    <td class="px-3 py-2 text-gray-600">1. 显示"阶梯价格"表格<br>2. 隐藏"费率规则"、"重量阶梯"等文本输入区</td>
-                    <td class="px-3 py-2 text-gray-600">阶梯价格表格（开始量、结束量、价格）</td>
+                    <td class="px-3 py-2 text-gray-800">选择二级收费项（如：SKU超量费）</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示选择结果区域，包含一级和二级名称<br>2. 显示"阶梯价格"表格<br>3. 隐藏其他表单区域</td>
+                    <td class="px-3 py-2 text-gray-600">选择结果展示 + 阶梯价格表格</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-800">点击"添加费率"按钮</td>

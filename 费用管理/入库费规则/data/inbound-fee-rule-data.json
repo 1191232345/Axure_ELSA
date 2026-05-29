@@ -160,6 +160,50 @@
       "children": [
         {
           "id": "sub_2_1",
+          "name": "卸货费",
+          "parentId": "cat_2",
+          "level": 2,
+          "type": "operation",
+          "expanded": true,
+          "children": [
+            {
+              "id": "rule_2_1_0",
+              "feeItem": "卸货费",
+              "unit": "件",
+              "pricingRules": [
+                {
+                  "spec": "小件（≤5kg）",
+                  "price": 2.0,
+                  "remark": "单件重量不超过5公斤"
+                },
+                {
+                  "spec": "中件（5-15kg）",
+                  "price": 4.0,
+                  "remark": "单件重量5-15公斤"
+                },
+                {
+                  "spec": "大件（15-30kg）",
+                  "price": 8.0,
+                  "remark": "单件重量15-30公斤"
+                },
+                {
+                  "spec": "超大件（>30kg）",
+                  "price": 15.0,
+                  "remark": "单件重量超过30公斤"
+                }
+              ],
+              "calculationExample": "客户快递散货入库100件，其中：\n小件50件、中件30件、大件15件、超大件5件\n卸货费：50×2 + 30×4 + 15×8 + 5×15 = 100+120+120+75 = 415元",
+              "level": 3,
+              "type": "rule",
+              "publishStatus": "published",
+              "validityPeriod": "2025-01-01 至 2026-12-31",
+              "updater": "admin",
+              "updateTime": "2025-07-22 13:00:00"
+            }
+          ]
+        },
+        {
+          "id": "sub_2_2",
           "name": "入库附加费",
           "parentId": "cat_2",
           "level": 2,
@@ -518,11 +562,11 @@
     }
   ],
   "metadata": {
-    "version": "3.0",
+    "version": "3.1",
     "description": "入库费规则树形结构数据 - 包含整柜入库、快递散货入库、托盘入库三大分类，所有二级分类均采用阶梯式计费",
-    "lastUpdated": "2026-05-22",
+    "lastUpdated": "2026-05-29",
     "totalCategories": 3,
-    "totalOperations": 5,
-    "totalRules": 12
+    "totalOperations": 6,
+    "totalRules": 13
   }
 }
