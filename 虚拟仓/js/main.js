@@ -1,13 +1,11 @@
-/**
- * 虚拟仓管理系统 - 模块交互逻辑
- */
-
 (function() {
     'use strict';
-    
+
     var currentDepartmentId = '';
-    var pageCache = {};
-    
+    var Api = window.VirtualWarehouseApi;
+    var Renderer = window.VirtualWarehouseRenderer;
+    var Utils = window.VirtualWarehouseUtils;
+
     var DATA_CONFIG = {
         pageId: 'virtual-warehouse',
         dataFile: 'data/virtual-warehouse-data.json',
@@ -17,8 +15,9 @@
     function init() {
         bindUserSelectEvents();
         bindModalEvents();
-        initMermaid();
+        Renderer.initMermaid();
         loadDefaultPage();
+        initSplitView();
     }
 
     function loadDefaultPage() {
@@ -26,6 +25,123 @@
         if (container && container.children.length === 0) {
             switchPage('organization');
         }
+    }
+
+    function initSplitView() {
+        var STORAGE_KEY = 'elsa-virtual-warehouse-split-state';
+        var currentRatio = 0.55;
+        var isCollapsed = false;
+        var isDragging = false;
+
+        var splitContainer = document.getElementById('splitContainer');
+        var splitLeft = document.getElementById('splitLeft');
+        var splitRight = document.getElementById('splitRight');
+        var splitDivider = document.getElementById('splitDivider');
+        var expandBtn = document.getElementById('expandBtn');
+
+        if (!splitContainer || !splitLeft || !splitRight || !splitDivider) return;
+
+        function loadState() {
+            var saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    var state = JSON.parse(saved);
+                    currentRatio = state.ratio || 0.55;
+                    isCollapsed = state.collapsed || false;
+                } catch (e) {
+                    currentRatio = 0.55;
+                    isCollapsed = false;
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                ratio: currentRatio,
+                collapsed: isCollapsed
+            }));
+        }
+
+        function applyLayout() {
+            if (isCollapsed) {
+                splitLeft.style.flex = '1 1 100%';
+                splitRight.classList.add('collapsed');
+                if (expandBtn) expandBtn.classList.add('show');
+            } else {
+                splitLeft.style.flex = '0 0 ' + (currentRatio * 100) + '%';
+                splitRight.classList.remove('collapsed');
+                splitRight.style.flex = '0 0 ' + ((1 - currentRatio) * 100) + '%';
+                if (expandBtn) expandBtn.classList.remove('show');
+            }
+        }
+
+        loadState();
+        applyLayout();
+
+        splitDivider.addEventListener('mousedown', function(e) {
+            if (isCollapsed) return;
+            isDragging = true;
+            splitDivider.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            splitRight.style.transition = 'none';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            var containerRect = splitContainer.getBoundingClientRect();
+            var availableWidth = containerRect.width;
+            var ratio = (e.clientX - containerRect.left) / availableWidth;
+            currentRatio = Math.max(0.35, Math.min(0.75, ratio));
+            splitLeft.style.flex = '0 0 ' + (currentRatio * 100) + '%';
+            splitRight.style.flex = '0 0 ' + ((1 - currentRatio) * 100) + '%';
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isDragging) {
+                isDragging = false;
+                splitDivider.classList.remove('active');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                splitRight.style.transition = '';
+                saveState();
+            }
+        });
+
+        splitDivider.addEventListener('dblclick', function() {
+            if (isCollapsed) return;
+            currentRatio = 0.55;
+            applyLayout();
+            saveState();
+        });
+
+        window.toggleLogicPanel = function() {
+            isCollapsed = !isCollapsed;
+            applyLayout();
+            saveState();
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+                e.preventDefault();
+                window.toggleLogicPanel();
+            }
+        });
+    }
+
+    function switchPage(pageName) {
+        var container = document.getElementById('page-container');
+        if (!container) return;
+
+        Api.fetchPage(pageName)
+            .then(function(html) {
+                Renderer.renderPage(container, html);
+                Renderer.initMermaid();
+            })
+            .catch(function(error) {
+                console.error('Error loading page:', error);
+                container.innerHTML = '<div class="p-8 text-center text-red-500">加载页面失败: ' + pageName + '</div>';
+            });
     }
 
     function bindUserSelectEvents() {
@@ -36,10 +152,10 @@
                 checkboxes.forEach(function(cb) {
                     cb.checked = this.checked;
                 }.bind(this));
-                updateSelectedCount();
+                Renderer.updateSelectedCount();
             });
         }
-        
+
         var selectAllRightUsers = document.getElementById('select-all-right-users');
         if (selectAllRightUsers) {
             selectAllRightUsers.addEventListener('change', function() {
@@ -47,15 +163,15 @@
                 checkboxes.forEach(function(cb) {
                     cb.checked = this.checked;
                 }.bind(this));
-                updateSelectedCount();
+                Renderer.updateSelectedCount();
             });
         }
-        
+
         var leftUserList = document.getElementById('left-user-list');
         if (leftUserList) {
             leftUserList.addEventListener('change', function(e) {
                 if (e.target.classList.contains('left-user-checkbox')) {
-                    updateSelectedCount();
+                    Renderer.updateSelectedCount();
                     var allCheckboxes = document.querySelectorAll('.left-user-checkbox');
                     var checkedCheckboxes = document.querySelectorAll('.left-user-checkbox:checked');
                     var selectAllLeft = document.getElementById('select-all-left-users');
@@ -65,12 +181,12 @@
                 }
             });
         }
-        
+
         var rightUserList = document.getElementById('right-user-list');
         if (rightUserList) {
             rightUserList.addEventListener('change', function(e) {
                 if (e.target.classList.contains('right-user-checkbox')) {
-                    updateSelectedCount();
+                    Renderer.updateSelectedCount();
                     var allCheckboxes = document.querySelectorAll('.right-user-checkbox');
                     var checkedCheckboxes = document.querySelectorAll('.right-user-checkbox:checked');
                     var selectAllRight = document.getElementById('select-all-right-users');
@@ -91,129 +207,98 @@
         });
     }
 
-    function initMermaid() {
-        if (window.mermaid) {
-            setTimeout(function() {
-                mermaid.run();
-            }, 100);
-        }
-    }
+    window.openModal = Renderer.openModal;
+    window.closeModal = Renderer.closeModal;
+    window.switchPage = switchPage;
 
-    function openModal(modalId) {
-        var modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-    }
+    window.openNewDepartmentModal = function() {
+        Renderer.openModal('new-department-modal');
+        var nameInput = document.getElementById('new-department-name');
+        var parentInput = document.getElementById('new-department-parent');
+        if (nameInput) nameInput.value = '';
+        if (parentInput) parentInput.value = '';
+    };
 
-    function closeModal(modalId) {
-        var modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('show');
-            document.body.style.overflow = '';
-        }
-    }
-
-    function openNewDepartmentModal() {
-        openModal('new-department-modal');
-        document.getElementById('new-department-name').value = '';
-        document.getElementById('new-department-parent').value = '';
-    }
-
-    function saveNewDepartment() {
+    window.saveNewDepartment = function() {
         var name = document.getElementById('new-department-name').value;
-        var parentId = document.getElementById('new-department-parent').value;
-        
         if (!name) {
-            alert('请输入部门名称');
+            Utils.showAlert('请输入部门名称');
             return;
         }
-        
-        alert('部门创建成功');
-        closeModal('new-department-modal');
-    }
+        Utils.showAlert('部门创建成功');
+        Renderer.closeModal('new-department-modal');
+    };
 
-    function editDepartment(id, name, parentId) {
-        openModal('edit-department-modal');
-        document.getElementById('edit-department-id').value = id;
-        document.getElementById('edit-department-name').value = name;
-        document.getElementById('edit-department-parent').value = parentId;
-    }
+    window.editDepartment = function(id, name, parentId) {
+        Renderer.openModal('edit-department-modal');
+        var idInput = document.getElementById('edit-department-id');
+        var nameInput = document.getElementById('edit-department-name');
+        var parentInput = document.getElementById('edit-department-parent');
+        if (idInput) idInput.value = id;
+        if (nameInput) nameInput.value = name;
+        if (parentInput) parentInput.value = parentId;
+    };
 
-    function saveEditDepartment() {
-        var id = document.getElementById('edit-department-id').value;
+    window.saveEditDepartment = function() {
         var name = document.getElementById('edit-department-name').value;
-        var parentId = document.getElementById('edit-department-parent').value;
-        
         if (!name) {
-            alert('请输入部门名称');
+            Utils.showAlert('请输入部门名称');
             return;
         }
-        
-        alert('部门编辑成功');
-        closeModal('edit-department-modal');
-    }
+        Utils.showAlert('部门编辑成功');
+        Renderer.closeModal('edit-department-modal');
+    };
 
-    function deleteDepartment(id, name) {
-        if (confirm('确定要删除部门 ' + name + ' 吗？')) {
-            alert('部门删除成功');
+    window.deleteDepartment = function(id, name) {
+        if (Utils.showConfirm('确定要删除部门 ' + name + ' 吗？')) {
+            Utils.showAlert('部门删除成功');
         }
-    }
+    };
 
-    function toggleDepartment(id) {
-        var children = document.querySelectorAll('.department-child.department-' + id);
-        var button = document.querySelector('button[onclick="toggleDepartment(' + id + ')"] i');
-        
-        children.forEach(function(child) {
-            if (child.style.display === 'none') {
-                child.style.display = 'table-row';
-                if (button) button.className = 'fa fa-chevron-down';
-            } else {
-                child.style.display = 'none';
-                if (button) button.className = 'fa fa-chevron-right';
-            }
-        });
-    }
+    window.toggleDepartment = Renderer.toggleDepartment;
 
-    function viewWarehouses(departmentId, departmentName) {
-        document.getElementById('view-warehouses-department-name').textContent = departmentName;
-        openModal('view-warehouses-modal');
-    }
+    window.viewWarehouses = function(departmentId, departmentName) {
+        var nameEl = document.getElementById('view-warehouses-department-name');
+        if (nameEl) nameEl.textContent = departmentName;
+        Renderer.openModal('view-warehouses-modal');
+    };
 
-    function viewUsers(departmentId, departmentName) {
-        document.getElementById('view-users-department-name').textContent = departmentName;
-        openModal('view-users-modal');
-    }
+    window.viewUsers = function(departmentId, departmentName) {
+        var nameEl = document.getElementById('view-users-department-name');
+        if (nameEl) nameEl.textContent = departmentName;
+        Renderer.openModal('view-users-modal');
+    };
 
-    function manageUsers(departmentId, departmentName) {
+    window.manageUsers = function(departmentId, departmentName) {
         currentDepartmentId = departmentId;
-        document.getElementById('add-user-department-name').textContent = departmentName;
-        document.getElementById('left-user-search').value = '';
-        document.getElementById('right-user-search').value = '';
+        var nameEl = document.getElementById('add-user-department-name');
+        if (nameEl) nameEl.textContent = departmentName;
+
+        var leftSearch = document.getElementById('left-user-search');
+        var rightSearch = document.getElementById('right-user-search');
+        if (leftSearch) leftSearch.value = '';
+        if (rightSearch) rightSearch.value = '';
+
         document.querySelectorAll('.left-user-checkbox, .right-user-checkbox').forEach(function(cb) {
             cb.checked = false;
         });
-        document.getElementById('select-all-left-users').checked = false;
-        document.getElementById('select-all-right-users').checked = false;
-        updateSelectedCount();
-        openModal('add-user-modal');
-    }
-    
-    function updateSelectedCount() {
-        var leftChecked = document.querySelectorAll('.left-user-checkbox:checked').length;
-        var rightChecked = document.querySelectorAll('.right-user-checkbox:checked').length;
-        document.getElementById('left-selected-count').textContent = leftChecked;
-        document.getElementById('right-selected-count').textContent = rightChecked;
-    }
-    
-    function addSelectedToLeft() {
+
+        var selectAllLeft = document.getElementById('select-all-left-users');
+        var selectAllRight = document.getElementById('select-all-right-users');
+        if (selectAllLeft) selectAllLeft.checked = false;
+        if (selectAllRight) selectAllRight.checked = false;
+
+        Renderer.updateSelectedCount();
+        Renderer.openModal('add-user-modal');
+    };
+
+    window.addSelectedToLeft = function() {
         var selectedItems = document.querySelectorAll('.left-user-checkbox:checked');
         if (selectedItems.length === 0) {
-            alert('请选择要添加的用户');
+            Utils.showAlert('请选择要添加的用户');
             return;
         }
-        
+
         var rightList = document.getElementById('right-user-list');
         selectedItems.forEach(function(checkbox) {
             var userItem = checkbox.closest('.user-item');
@@ -222,18 +307,19 @@
             checkbox.checked = false;
             rightList.appendChild(userItem);
         });
-        
-        document.getElementById('select-all-left-users').checked = false;
-        updateSelectedCount();
-    }
-    
-    function removeSelectedFromRight() {
+
+        var selectAllLeft = document.getElementById('select-all-left-users');
+        if (selectAllLeft) selectAllLeft.checked = false;
+        Renderer.updateSelectedCount();
+    };
+
+    window.removeSelectedFromRight = function() {
         var selectedItems = document.querySelectorAll('.right-user-checkbox:checked');
         if (selectedItems.length === 0) {
-            alert('请选择要移除的用户');
+            Utils.showAlert('请选择要移除的用户');
             return;
         }
-        
+
         var leftList = document.getElementById('left-user-list');
         selectedItems.forEach(function(checkbox) {
             var userItem = checkbox.closest('.user-item');
@@ -242,344 +328,186 @@
             checkbox.checked = false;
             leftList.appendChild(userItem);
         });
-        
-        document.getElementById('select-all-right-users').checked = false;
-        updateSelectedCount();
-    }
-    
-    function saveUserRelations() {
+
+        var selectAllRight = document.getElementById('select-all-right-users');
+        if (selectAllRight) selectAllRight.checked = false;
+        Renderer.updateSelectedCount();
+    };
+
+    window.saveUserRelations = function() {
         var rightUsers = document.querySelectorAll('#right-user-list .user-item');
         var userNames = Array.from(rightUsers).map(function(item) {
             return item.dataset.userName;
         }).join('、');
-        
-        if (confirm('确定保存当前的用户关联关系吗？\n已关联用户：' + userNames)) {
-            alert('保存成功');
-            closeModal('add-user-modal');
-        }
-    }
-    
-    function togglePrdLogic(module) {
-        var content = document.getElementById(module + '-logic-content');
-        var icon = document.getElementById(module + '-logic-icon');
-        
-        if (content.classList.contains('hidden')) {
-            content.classList.remove('hidden');
-            if (icon) icon.style.transform = 'rotate(180deg)';
-        } else {
-            content.classList.add('hidden');
-            if (icon) icon.style.transform = 'rotate(0deg)';
-        }
-    }
 
-    function togglePrdFlow(module) {
-        var content = document.getElementById(module + '-flow-content');
-        var icon = document.getElementById(module + '-flow-icon');
-        
-        if (content) {
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                if (icon) icon.style.transform = 'rotate(180deg)';
-                
-                setTimeout(function() {
-                    var mermaidElements = content.querySelectorAll('.mermaid');
-                    if (mermaidElements.length > 0 && window.mermaid) {
-                        mermaid.run();
-                    }
-                }, 50);
-            } else {
-                content.classList.add('hidden');
-                if (icon) icon.style.transform = 'rotate(0deg)';
-            }
+        if (Utils.showConfirm('确定保存当前的用户关联关系吗？\n已关联用户：' + userNames)) {
+            Utils.showAlert('保存成功');
+            Renderer.closeModal('add-user-modal');
         }
-    }
+    };
 
-    function openNewWarehouseModal() {
-        openModal('new-warehouse-modal');
-        document.getElementById('new-warehouse-name').value = '';
-        document.getElementById('new-warehouse-type').value = 'department';
-        document.getElementById('new-warehouse-department').value = '1';
-        document.getElementById('new-warehouse-entity').value = 'DE001';
-        updateWarehouseFields();
-    }
+    window.openNewWarehouseModal = function() {
+        Renderer.openModal('new-warehouse-modal');
+        var nameInput = document.getElementById('new-warehouse-name');
+        var typeInput = document.getElementById('new-warehouse-type');
+        var deptInput = document.getElementById('new-warehouse-department');
+        var entityInput = document.getElementById('new-warehouse-entity');
+        if (nameInput) nameInput.value = '';
+        if (typeInput) typeInput.value = 'department';
+        if (deptInput) deptInput.value = '1';
+        if (entityInput) entityInput.value = 'DE001';
+        Renderer.updateWarehouseFields('department');
+    };
 
-    function updateWarehouseFields() {
-        var warehouseType = document.getElementById('new-warehouse-type').value;
-        var departmentField = document.getElementById('department-field');
-        var channelField = document.getElementById('channel-field');
-        
-        if (warehouseType === 'department') {
-            departmentField.style.display = 'block';
-            channelField.style.display = 'none';
-        } else if (warehouseType === 'channel') {
-            departmentField.style.display = 'none';
-            channelField.style.display = 'block';
-        } else if (warehouseType === 'stock') {
-            departmentField.style.display = 'none';
-            channelField.style.display = 'none';
+    window.updateWarehouseFields = function() {
+        var typeInput = document.getElementById('new-warehouse-type');
+        if (typeInput) {
+            Renderer.updateWarehouseFields(typeInput.value);
         }
-    }
+    };
 
-    function saveNewWarehouse() {
+    window.saveNewWarehouse = function() {
         var name = document.getElementById('new-warehouse-name').value;
-        var type = document.getElementById('new-warehouse-type').value;
-        var departmentId = '';
-        var channelId = '';
-        var entityWarehouse = document.getElementById('new-warehouse-entity').value;
-        
-        if (type === 'department') {
-            departmentId = document.getElementById('new-warehouse-department').value;
-        } else if (type === 'channel') {
-            channelId = document.getElementById('new-warehouse-channel').value;
-        }
-        
         if (!name) {
-            alert('请输入虚拟仓名称');
+            Utils.showAlert('请输入虚拟仓名称');
             return;
         }
-        
-        alert('虚拟仓名称创建成功');
-        closeModal('new-warehouse-modal');
-    }
+        Utils.showAlert('虚拟仓名称创建成功');
+        Renderer.closeModal('new-warehouse-modal');
+    };
 
-    function updateEditWarehouseFields() {
-        var warehouseType = document.getElementById('edit-warehouse-type').value;
-        var departmentField = document.getElementById('edit-department-field');
-        var channelField = document.getElementById('edit-channel-field');
-        
-        if (warehouseType === 'main' || warehouseType === 'department') {
-            departmentField.style.display = 'block';
-            channelField.style.display = 'none';
-        } else if (warehouseType === 'channel') {
-            departmentField.style.display = 'none';
-            channelField.style.display = 'block';
-        } else if (warehouseType === 'stock') {
-            departmentField.style.display = 'none';
-            channelField.style.display = 'none';
+    window.updateEditWarehouseFields = function() {
+        var typeInput = document.getElementById('edit-warehouse-type');
+        if (typeInput) {
+            Renderer.updateWarehouseFields(typeInput.value);
         }
-    }
+    };
 
-    function editWarehouse(id, name, type, departmentId, entityWarehouse) {
-        openModal('edit-warehouse-modal');
-        document.getElementById('edit-warehouse-id').value = id;
-        document.getElementById('edit-warehouse-name').value = name;
-        document.getElementById('edit-warehouse-type').value = type;
-        document.getElementById('edit-warehouse-department').value = departmentId;
-        document.getElementById('edit-warehouse-entity').value = entityWarehouse;
-        updateEditWarehouseFields();
-    }
+    window.editWarehouse = function(id, name, type, departmentId, entityWarehouse) {
+        Renderer.openModal('edit-warehouse-modal');
+        var idInput = document.getElementById('edit-warehouse-id');
+        var nameInput = document.getElementById('edit-warehouse-name');
+        var typeInput = document.getElementById('edit-warehouse-type');
+        var deptInput = document.getElementById('edit-warehouse-department');
+        var entityInput = document.getElementById('edit-warehouse-entity');
+        if (idInput) idInput.value = id;
+        if (nameInput) nameInput.value = name;
+        if (typeInput) typeInput.value = type;
+        if (deptInput) deptInput.value = departmentId;
+        if (entityInput) entityInput.value = entityWarehouse;
+        Renderer.updateWarehouseFields(type);
+    };
 
-    function saveEditWarehouse() {
-        var id = document.getElementById('edit-warehouse-id').value;
+    window.saveEditWarehouse = function() {
         var name = document.getElementById('edit-warehouse-name').value;
-        var type = document.getElementById('edit-warehouse-type').value;
-        var departmentId = '';
-        var channelId = '';
-        var entityWarehouse = document.getElementById('edit-warehouse-entity').value;
-        
-        if (type === 'main' || type === 'department') {
-            departmentId = document.getElementById('edit-warehouse-department').value;
-        } else if (type === 'channel') {
-            channelId = document.getElementById('edit-warehouse-channel').value;
-        }
-        
         if (!name) {
-            alert('请输入虚拟仓名称');
+            Utils.showAlert('请输入虚拟仓名称');
             return;
         }
-        
-        alert('虚拟仓名称编辑成功');
-        closeModal('edit-warehouse-modal');
-    }
+        Utils.showAlert('虚拟仓名称编辑成功');
+        Renderer.closeModal('edit-warehouse-modal');
+    };
 
-    function moveSelectedUsers(from, to) {
-        var fromCheckboxes = document.querySelectorAll('.' + from + '-user-checkbox:checked');
-        var toContainer = document.querySelector('.' + to + '-user-checkbox').parentElement.parentElement.parentElement;
-        
-        fromCheckboxes.forEach(function(checkbox) {
-            var userItem = checkbox.parentElement.parentElement;
-            var newUserItem = userItem.cloneNode(true);
-            newUserItem.querySelector('input').classList.remove(from + '-user-checkbox');
-            newUserItem.querySelector('input').classList.add(to + '-user-checkbox');
-            toContainer.appendChild(newUserItem);
-            userItem.remove();
-        });
-        
-        updateSelectedCount();
-    }
-
-    function saveUsers() {
-        alert('用户关联成功');
-        closeModal('add-user-modal');
-    }
-
-    function deleteWarehouse(id, name) {
-        if (confirm('确定要删除虚拟仓名称 ' + name + ' 吗？')) {
-            alert('虚拟仓名称删除成功');
+    window.deleteWarehouse = function(id, name) {
+        if (Utils.showConfirm('确定要删除虚拟仓名称 ' + name + ' 吗？')) {
+            Utils.showAlert('虚拟仓名称删除成功');
         }
-    }
+    };
 
-    function updateInventoryWarehouseList() {
-        var warehouseType = document.getElementById('inventory-warehouse-type').value;
-        var warehouseSelect = document.getElementById('inventory-warehouse');
-        
-        warehouseSelect.innerHTML = '';
-        
-        if (!warehouseType) {
-            var option = document.createElement('option');
-            option.value = '';
-            option.textContent = '请先选择仓库类型';
-            warehouseSelect.appendChild(option);
-            return;
+    window.updateInventoryWarehouseList = function() {
+        var typeInput = document.getElementById('inventory-warehouse-type');
+        if (typeInput) {
+            Renderer.updateInventoryWarehouseList(typeInput.value);
         }
-        
-        var warehouses = {
-            'main': [
-                { value: 'NBFX', text: 'NBFX主仓' }
-            ],
-            'department': [
-                { value: 'DEPT001', text: '运营部1仓' },
-                { value: 'DEPT002', text: '运营部2仓' },
-                { value: 'DEPT003', text: '运营部3仓' }
-            ],
-            'channel': [
-                { value: 'NBFX002', text: 'NBFX渠道仓A' },
-                { value: 'NBFX003', text: 'NBFX渠道仓B' },
-                { value: 'NBFX004', text: 'NBFX渠道仓C' }
-            ],
-            'stock': [
-                { value: 'STOCK001', text: '备货仓1' },
-                { value: 'STOCK002', text: '备货仓2' }
-            ]
-        };
-        
-        var warehouseList = warehouses[warehouseType] || [];
-        warehouseList.forEach(function(warehouse) {
-            var option = document.createElement('option');
-            option.value = warehouse.value;
-            option.textContent = warehouse.text;
-            warehouseSelect.appendChild(option);
-        });
-    }
+    };
 
-    function saveInventory() {
+    window.saveInventory = function() {
         var sku = document.getElementById('inventory-sku').value;
         var name = document.getElementById('inventory-name').value;
         var warehouseType = document.getElementById('inventory-warehouse-type').value;
         var warehouse = document.getElementById('inventory-warehouse').value;
         var quantity = document.getElementById('inventory-quantity').value;
-        
+
         if (!sku || !name || !warehouseType || !warehouse || !quantity) {
-            alert('请填写所有必填字段');
+            Utils.showAlert('请填写所有必填字段');
             return;
         }
-        
-        alert('库存新增成功');
-        closeModal('inventory-modal');
-    }
+        Utils.showAlert('库存新增成功');
+        Renderer.closeModal('inventory-modal');
+    };
 
-    function getWarehouseType(warehouseCode) {
-        var mainWarehouses = ['NBFX'];
-        var channelWarehouses = ['NBFX002', 'NBFX003', 'NBFX004'];
-        var stockWarehouses = ['STOCK001', 'STOCK002'];
-        
-        if (mainWarehouses.indexOf(warehouseCode) !== -1) return 'main';
-        if (channelWarehouses.indexOf(warehouseCode) !== -1) return 'channel';
-        if (stockWarehouses.indexOf(warehouseCode) !== -1) return 'stock';
-        
-        return 'department';
-    }
+    window.switchLogicTab = function(tabName) {
+        document.querySelectorAll('.logic-tab').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        document.querySelectorAll('.logic-section-panel').forEach(function(p) {
+            p.classList.remove('active');
+        });
 
-    function switchPage(pageName) {
-        var container = document.getElementById('page-container');
-        
-        if (pageCache[pageName]) {
-            container.innerHTML = pageCache[pageName];
-            var pageDiv = container.querySelector('.page');
-            if (pageDiv) pageDiv.classList.add('active');
-            return;
+        var tab = document.querySelector('.logic-tab[data-tab="' + tabName + '"]');
+        var panel = document.getElementById('panel-' + tabName);
+
+        if (tab) tab.classList.add('active');
+        if (panel) panel.classList.add('active');
+    };
+
+    window.switchMainTab = function(tabName) {
+        document.querySelectorAll('.tab').forEach(function(t) {
+            t.classList.remove('active');
+        });
+        document.querySelectorAll('.main-content').forEach(function(m) {
+            m.classList.remove('active');
+            m.style.display = 'none';
+        });
+
+        var tabBtn = document.getElementById('tab-' + tabName);
+        var mainContent = document.getElementById('main-' + tabName);
+
+        if (tabBtn) tabBtn.classList.add('active');
+        if (mainContent) {
+            mainContent.classList.add('active');
+            mainContent.style.display = 'block';
         }
-        
-        fetch('pages/' + pageName + '.html')
+
+        if (tabName === 'prd') {
+            loadPRD();
+        } else if (tabName === 'testcases') {
+            loadTestCases();
+        }
+    };
+
+    function loadPRD() {
+        fetch('prd.md')
             .then(function(response) {
-                if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
                 return response.text();
             })
-            .then(function(html) {
-                pageCache[pageName] = html;
-                container.innerHTML = html;
-                var pageDiv = container.querySelector('.page');
-                if (pageDiv) pageDiv.classList.add('active');
+            .then(function(text) {
+                var contentEl = document.getElementById('prd-content');
+                if (contentEl) {
+                    contentEl.innerHTML = marked.parse(text);
+                    Renderer.initMermaid();
+                }
             })
             .catch(function(error) {
-                console.error('Error loading page:', error);
-                container.innerHTML = '<div class="bg-white rounded shadow-card p-8 text-center"><i class="fa fa-exclamation-triangle text-5xl text-warning mb-4"></i><p class="text-lg text-gray-600">页面加载失败</p><p class="text-sm text-gray-500 mt-2">' + error.message + '</p><button onclick="switchPage(\'' + pageName + '\')" class="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-light"><i class="fa fa-refresh mr-2"></i>重试</button></div>';
+                console.error('Error loading PRD:', error);
             });
     }
 
-    function openMermaidModal(container) {
-        var mermaidDiv = container.querySelector('.mermaid');
-        if (!mermaidDiv) return;
-        
-        var modal = document.getElementById('mermaid-modal');
-        var content = document.getElementById('mermaidModalContent');
-        
-        if (!modal || !content) return;
-        
-        content.innerHTML = '<div class="mermaid">' + mermaidDiv.textContent + '</div>';
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        
-        if (window.mermaid) {
-            try {
-                mermaid.init(undefined, content.querySelector('.mermaid'));
-            } catch (e) {
-                console.warn('mermaid init', e);
-            }
-        }
+    function loadTestCases() {
+        fetch('test-cases.md')
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(text) {
+                var contentEl = document.getElementById('testcases-content');
+                if (contentEl) {
+                    contentEl.innerHTML = marked.parse(text);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading test cases:', error);
+            });
     }
-
-    function closeMermaidModal(event) {
-        if (event && event.target !== event.currentTarget) return;
-        var modal = document.getElementById('mermaid-modal');
-        if (modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    }
-
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.openNewDepartmentModal = openNewDepartmentModal;
-    window.saveNewDepartment = saveNewDepartment;
-    window.editDepartment = editDepartment;
-    window.saveEditDepartment = saveEditDepartment;
-    window.deleteDepartment = deleteDepartment;
-    window.toggleDepartment = toggleDepartment;
-    window.viewWarehouses = viewWarehouses;
-    window.viewUsers = viewUsers;
-    window.manageUsers = manageUsers;
-    window.updateSelectedCount = updateSelectedCount;
-    window.addSelectedToLeft = addSelectedToLeft;
-    window.removeSelectedFromRight = removeSelectedFromRight;
-    window.saveUserRelations = saveUserRelations;
-    window.togglePrdLogic = togglePrdLogic;
-    window.togglePrdFlow = togglePrdFlow;
-    window.openNewWarehouseModal = openNewWarehouseModal;
-    window.updateWarehouseFields = updateWarehouseFields;
-    window.saveNewWarehouse = saveNewWarehouse;
-    window.updateEditWarehouseFields = updateEditWarehouseFields;
-    window.editWarehouse = editWarehouse;
-    window.saveEditWarehouse = saveEditWarehouse;
-    window.moveSelectedUsers = moveSelectedUsers;
-    window.saveUsers = saveUsers;
-    window.deleteWarehouse = deleteWarehouse;
-    window.updateInventoryWarehouseList = updateInventoryWarehouseList;
-    window.saveInventory = saveInventory;
-    window.getWarehouseType = getWarehouseType;
-    window.switchPage = switchPage;
-    window.openMermaidModal = openMermaidModal;
-    window.closeMermaidModal = closeMermaidModal;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);

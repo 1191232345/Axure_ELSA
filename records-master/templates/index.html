@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>员工绩效评价 - 后台管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="/static/css/admin.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#FF7D00',
+            danger: '#F53F3F',
+            success: '#00B42A',
+            neutral: {
+              100: '#F5F7FA',
+              200: '#E5E6EB',
+              300: '#C9CDD4',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+</head>
+<body class="font-inter bg-neutral-100 text-neutral-700 min-h-screen flex overflow-hidden">
+  <!-- 侧边栏 -->
+  <aside class="w-64 bg-white shadow-md h-screen flex-shrink-0 hidden md:block transition-all duration-300" id="sidebar">
+    <div class="p-4 border-b border-neutral-200">
+      <h1 class="text-lg font-bold text-primary flex items-center">
+        <i class="fa fa-tachometer mr-2"></i>绩效评价系统
+      </h1>
+    </div>
+    <nav class="mt-2">
+      <div class="sidebar-item active" data-target="employees">
+        <i class="fa fa-users w-5 text-center mr-3"></i>
+        <span>员工管理</span>
+      </div>
+      <div class="sidebar-item" data-target="departments">
+        <i class="fa fa-building w-5 text-center mr-3"></i>
+        <span>部门管理</span>
+      </div>
+      <div class="sidebar-item" data-target="sources">
+        <i class="fa fa-tags w-5 text-center mr-3"></i>
+        <span>来源管理</span>
+      </div>
+      <div class="sidebar-item" data-target="rating-items">
+        <i class="fa fa-list-ul w-5 text-center mr-3"></i>
+        <span>评分项管理</span>
+      </div>
+      <div class="sidebar-item" data-target="evaluation-results">
+        <i class="fa fa-bar-chart w-5 text-center mr-3"></i>
+        <span>评价结果</span>
+      </div>
+    </nav>
+  </aside>
+  
+  <!-- 主内容区 -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6">
+      <div class="flex items-center">
+        <button class="md:hidden mr-4 text-neutral-600" id="toggleSidebar">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="/" class="text-primary hover:text-primary/80">
+          <i class="fa fa-external-link mr-1"></i>评价页面
+        </a>
+      </div>
+    </header>
+    
+    <!-- 主内容 -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <!-- 员工管理页面 -->
+      <div class="page-content" id="employees-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <div class="flex flex-wrap gap-2">
+              <button id="batchDeleteEmployeesBtn" class="btn-danger" style="display: none;">
+                <i class="fa fa-trash mr-1"></i> 批量删除选中
+              </button>
+              <button id="addEmployeeBtn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 添加员工
+              </button>
+            </div>
+          </div>
+          <!-- 员工管理筛选区域 -->
+          <div class="mb-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <input type="text" id="employeeSearch" placeholder="搜索员工姓名..." class="form-input pl-10">
+                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+              </div>
+              <div class="w-full sm:w-48">
+                <select id="employeeDepartmentFilter" class="form-input">
+                  <option value="">所有部门</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- 员工表格 -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium" style="width: 50px;">
+                    <input type="checkbox" id="selectAllEmployees" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50">
+                  </th>
+                  <th class="table-cell text-left font-medium">ID</th>
+                  <th class="table-cell text-left font-medium">姓名</th>
+                  <th class="table-cell text-left font-medium">部门</th>
+                  <th class="table-cell text-left font-medium">关联评分项数量</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="employeesTableBody">
+              </tbody>
+            </table>
+          </div>
+          <!-- 员工分页 -->
+          <div class="mt-4 flex justify-between items-center" id="employeesPagination">
+          </div>
+        </div>
+      </div>
+      
+      <!-- 部门管理页面 -->
+      <div class="page-content hidden" id="departments-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <div class="flex flex-wrap gap-2">
+              <button id="addDepartmentBtn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 添加部门
+              </button>
+            </div>
+          </div>
+          <!-- 部门筛选区域 -->
+          <div class="mb-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <input type="text" id="departmentSearch" placeholder="搜索部门名称..." class="form-input pl-10">
+                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+              </div>
+              <div class="w-full sm:w-48">
+                <select id="departmentStatusFilter" class="form-input">
+                  <option value="">所有状态</option>
+                  <option value="1">启用</option>
+                  <option value="0">禁用</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- 部门表格 -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium">ID</th>
+                  <th class="table-cell text-left font-medium">部门名称</th>
+                  <th class="table-cell text-left font-medium">描述</th>
+                  <th class="table-cell text-left font-medium">员工数量</th>
+                  <th class="table-cell text-left font-medium">状态</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="departmentsTableBody">
+              </tbody>
+            </table>
+          </div>
+          <!-- 部门分页 -->
+          <div class="mt-4 flex justify-between items-center" id="departmentsPagination">
+          </div>
+        </div>
+      </div>
+      
+      <!-- 来源管理页面 -->
+      <div class="page-content hidden" id="sources-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <div class="flex flex-wrap gap-2">
+              <button id="addSourceBtn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 添加来源
+              </button>
+            </div>
+          </div>
+          <!-- 来源筛选区域 -->
+          <div class="mb-6">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative flex-1">
+                <input type="text" id="sourceSearch" placeholder="搜索来源名称..." class="form-input pl-10">
+                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+              </div>
+              <div class="w-full sm:w-48">
+                <select id="sourceStatusFilter" class="form-input">
+                  <option value="">所有状态</option>
+                  <option value="1">启用</option>
+                  <option value="0">禁用</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- 来源表格 -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium">ID</th>
+                  <th class="table-cell text-left font-medium">来源名称</th>
+                  <th class="table-cell text-left font-medium">描述</th>
+                  <th class="table-cell text-left font-medium">评价数量</th>
+                  <th class="table-cell text-left font-medium">状态</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="sourcesTableBody">
+              </tbody>
+            </table>
+          </div>
+          <!-- 来源分页 -->
+          <div class="mt-4 flex justify-between items-center" id="sourcesPagination">
+          </div>
+        </div>
+      </div>
+      
+      <!-- 评分项管理页面 -->
+      <div class="page-content hidden" id="rating-items-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <div class="flex flex-wrap gap-2">
+              <button id="batchDeleteRatingItemsBtn" class="btn-danger" style="display: none;">
+                <i class="fa fa-trash mr-1"></i> 批量删除选中
+              </button>
+              <button id="addRatingItemBtn" class="btn-primary">
+                <i class="fa fa-plus mr-1"></i> 添加评分项
+              </button>
+            </div>
+          </div>
+          <!-- 评分项表格 -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium" style="width: 50px;">
+                    <input type="checkbox" id="selectAllRatingItems" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50">
+                  </th>
+                  <th class="table-cell text-left font-medium">ID</th>
+                  <th class="table-cell text-left font-medium">名称</th>
+                  <th class="table-cell text-left font-medium">状态</th>
+                  <th class="table-cell text-left font-medium">关联员工数</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="ratingItemsTableBody">
+              </tbody>
+            </table>
+          </div>
+          <!-- 评分项分页 -->
+          <div class="mt-4 flex justify-between items-center" id="ratingItemsPagination">
+          </div>
+        </div>
+      </div>
+      
+      <!-- 评价结果页面 -->
+      <div class="page-content hidden" id="evaluation-results-page">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <div class="flex flex-wrap gap-2">
+              <button id="exportEvaluationBtn" class="btn-secondary">
+                <i class="fa fa-download mr-1"></i> 导出数据
+              </button>
+              <button id="exportEvaluationStatsBtn" class="btn-secondary">
+                <i class="fa fa-file-text-o mr-1"></i> 导出统计
+              </button>
+            </div>
+          </div>
+          <!-- 评价结果表格 -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium">ID</th>
+                  <th class="table-cell text-left font-medium">员工姓名</th>
+                  <th class="table-cell text-left font-medium">部门</th>
+                  <th class="table-cell text-left font-medium">评价人</th>
+                  <th class="table-cell text-left font-medium">平均得分</th>
+                  <th class="table-cell text-left font-medium">评价时间</th>
+                  <th class="table-cell text-left font-medium">操作</th>
+                </tr>
+              </thead>
+              <tbody id="evaluationResultsTableBody">
+              </tbody>
+            </table>
+          </div>
+          <!-- 评价结果分页和统计 -->
+          <div class="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="text-sm text-neutral-600" id="evaluationResultsStats">
+            </div>
+            <div class="flex justify-between items-center" id="evaluationResultsPagination">
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- 模态框组件 -->
+  <!-- 员工模态框 -->
+  <div id="employeeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg" id="employeeModalTitle">添加员工</h3>
+          <button class="close-modal text-neutral-400 hover:text-neutral-700">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <form id="employeeForm" class="p-6 space-y-4">
+        <input type="hidden" name="employeeId" id="employeeId">
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            姓名 <span class="required-indicator">*</span>
+          </label>
+          <input type="text" name="employeeName" id="employeeName" class="form-input" required>
+          <div class="error-message hidden">请输入姓名</div>
+        </div>
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            部门 <span class="required-indicator">*</span>
+          </label>
+          <select name="employeeDepartment" id="employeeDepartment" class="form-input" required>
+            <option value="">请选择部门</option>
+          </select>
+          <div class="error-message hidden">请选择部门</div>
+        </div>
+        
+        <!-- 关联评分项 -->
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            关联评分项 <span class="required-indicator">*</span>
+          </label>
+          <div id="ratingItemsGroup" class="checkbox-group">
+          </div>
+          <div class="error-message hidden" id="ratingItemsError">请至少选择一项评分项</div>
+        </div>
+        
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 评分项模态框 -->
+  <div id="ratingItemModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg" id="ratingItemModalTitle">添加评分项</h3>
+          <button class="close-modal text-neutral-400 hover:text-neutral-700">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <form id="ratingItemForm" class="p-6 space-y-4">
+        <input type="hidden" name="ratingItemId" id="ratingItemId">
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">
+            评分项名称 <span class="required-indicator">*</span>
+          </label>
+          <input type="text" name="ratingItemName" id="ratingItemName" class="form-input" required>
+          <div class="error-message hidden">请输入评分项名称</div>
+        </div>
+        
+        <div>
+          <label class="block text-neutral-700 mb-2">描述</label>
+          <textarea name="ratingItemDescription" id="ratingItemDescription" rows="3" class="form-input" placeholder="请输入评分项的详细描述"></textarea>
+        </div>
+        
+        <div>
+          <label class="flex items-center">
+            <input type="checkbox" name="ratingItemEnabled" id="ratingItemEnabled" class="mr-2" checked>
+            <span>启用该评分项</span>
+          </label>
+        </div>
+        
+        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+          <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 评价详情模态框 -->
+  <div id="evaluationDetailModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div class="p-6 border-b border-neutral-200">
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-lg">评价详情</h3>
+          <button class="close-modal text-neutral-400 hover:text-neutral-700">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6 space-y-6 overflow-y-auto flex-grow" id="evaluationDetailContent" style="max-height: 60vh;">
+      </div>
+      <div class="p-6 border-t border-neutral-200" id="evaluationDetailFooter">
+      </div>
+    </div>
+  </div>
+  
+  <!-- 通知提示 -->
+  <div id="notification" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm flex items-start">
+    <div id="notificationIcon" class="mr-3 text-success text-xl">
+      <i class="fa fa-check-circle"></i>
+    </div>
+    <div>
+      <h4 id="notificationTitle" class="font-medium text-neutral-800">操作成功</h4>
+      <p id="notificationMessage" class="text-sm text-neutral-600 mt-1">您的操作已成功完成。</p>
+    </div>
+    <button id="closeNotification" class="ml-auto text-neutral-400 hover:text-neutral-600">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+
+  <!-- JS 模块引入 -->
+  <script src="/static/js/admin/config.js"></script>
+  <script src="/static/js/common/toast.js"></script>
+  <script src="/static/js/common/modal.js"></script>
+  <script src="/static/js/common/pagination.js"></script>
+  <script src="/static/js/admin/api.js"></script>
+  <script src="/static/js/admin/state.js"></script>
+  <script src="/static/js/admin/ui.js"></script>
+  <script src="/static/js/admin/renderer.js"></script>
+  <script src="/static/js/admin/config.js"></script>
+  <script src="/static/js/admin/department_api.js"></script>
+  <script src="/static/js/admin/department.js"></script>
+  <script src="/static/js/admin/source_api.js"></script>
+  <script src="/static/js/admin/source.js"></script>
+  <script src="/static/js/admin/events.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      AdminEvents.init();
+      AdminEvents.loadDataAndRefresh();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>员工绩效评价 - 列表视图</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#FF7D00',
+            danger: '#F53F3F',
+            neutral: {
+              100: '#F5F7FA',
+              200: '#E5E6EB',
+              300: '#C9CDD4',
+              400: '#86909C',
+              500: '#4E5969',
+              600: '#272E3B',
+              700: '#1D2129',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+</head>
+<body class="font-inter bg-neutral-100 text-neutral-700 min-h-screen">
+  <header class="bg-white shadow-sm sticky top-0 z-30">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between py-4">
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold text-neutral-700">员工绩效评价</h1>
+          <p class="text-sm text-neutral-500 mt-1">请为以下员工进行评分评价</p>
+        </div>
+        <div class="flex items-center mt-4 md:mt-0 flex-wrap gap-2">
+          <a href="/admin" class="btn-secondary text-sm">
+            <i class="fa fa-cog mr-1"></i>管理后台
+          </a>
+          <div class="relative w-full md:w-auto mr-0 md:mr-4">
+            <input type="text" id="searchInput" placeholder="搜索员工姓名或部门..."
+                  class="pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all w-full md:w-64">
+            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+          </div>
+          <button id="expandAllBtn" class="btn-secondary text-sm">
+            <i class="fa fa-plus-square-o mr-1"></i>全部展开
+          </button>
+          <button id="collapseAllBtn" class="btn-secondary text-sm">
+            <i class="fa fa-minus-square-o mr-1"></i>全部折叠
+          </button>
+          <button id="submitAllBtn" class="btn-disabled text-sm" disabled>
+            <i class="fa fa-paper-plane mr-1"></i>提交评价
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mx-auto px-4 py-6 max-w-6xl">
+    <div class="bg-white rounded-xl p-4 md:p-6 list-shadow mb-6">
+      <div class="flex items-start">
+        <div>
+          <h2 class="text-lg font-semibold mb-2 text-neutral-700">评价说明</h2>
+          <ul class="space-y-1 text-sm text-neutral-500">
+            <li class="flex items-start">
+              <i class="fa fa-check-circle text-primary/70 mt-0.5 mr-2 text-xs"></i>
+              <span>请根据实际表现对每位员工进行客观评价</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-check-circle text-primary/70 mt-0.5 mr-2 text-xs"></i>
+              <span>评分范围为0-10分，可通过拖拽进度条进行评分</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-check-circle text-primary/70 mt-0.5 mr-2 text-xs"></i>
+              <span>评分低于5分时，备注为必填项</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 md:p-6 list-shadow mb-6 filter-container">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-sm text-neutral-500">部门筛选：</span>
+      </div>
+    </div>
+
+    <form id="evaluationForm" class="space-y-4">
+      <div id="employeeTemplate" class="hidden">
+        <div class="evaluation-item bg-white rounded-xl overflow-hidden list-shadow" data-employee-id="__ID__">
+          <div class="evaluation-header p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between cursor-pointer">
+            <div class="flex items-center w-full md:w-auto">
+              <div class="min-w-0">
+                <h3 class="font-bold text-neutral-700 truncate">__NAME__</h3>
+                <p class="text-sm text-neutral-500">__DEPARTMENT__ · __POSITION__</p>
+              </div>
+            </div>
+            <div class="flex items-center mt-3 md:mt-0">
+              <div class="flex items-center mr-4">
+                <span class="evaluation-status text-sm px-2 py-1 rounded-full bg-neutral-100 text-neutral-500">未评价</span>
+              </div>
+              <button type="button" class="clear-evaluation-btn text-xs text-neutral-500 hover:text-danger mr-3 py-1 px-2 transition-colors" title="清空评价">
+                <i class="fa fa-eraser mr-1"></i>清空
+              </button>
+              <div class="expand-icon transition-transform duration-300">
+                <i class="fa fa-chevron-down text-neutral-400"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="evaluation-content px-4 md:px-5 pb-5 hidden section-transition">
+            <div class="pt-2 border-t border-neutral-100 space-y-5">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ratingItemTemplate" class="hidden">
+        <div class="rating-item" data-rating-id="__RATING_ID__">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+            <label class="font-medium text-neutral-700 mb-2 md:mb-0">
+              __RATING_TITLE__
+              <span class="comment-required required-indicator hidden">*</span>
+            </label>
+            <div class="flex items-center w-full md:w-1/2">
+              <input type="range" min="0" max="10" step="0.5" value="" class="rating-slider slider-track w-full mr-3" data-for="rating___ID___RATING_ID__">
+              <span class="rating-value text-sm font-medium text-neutral-700 min-w-[3rem] text-center">未评分</span>
+              <input type="hidden" name="rating___ID___RATING_ID__" class="rating-input">
+            </div>
+          </div>
+          <div class="flex items-center text-xs text-neutral-500 mb-2">
+            <button type="button" class="rating-description-btn text-primary flex items-center">
+              <i class="fa fa-info-circle mr-1"></i>
+              <span>评分说明</span>
+            </button>
+            <span class="rating-description-content hidden">__RATING_DESCRIPTION__</span>
+          </div>
+          <textarea name="comment___ID___RATING_ID__" rows="2" class="comment-textarea w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm" placeholder="请输入具体评价（可选）"></textarea>
+          <div class="comment-error error-message hidden"></div>
+        </div>
+      </div>
+
+      <div id="loadingIndicator" class="text-center py-12 text-neutral-500">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+        <p>正在加载评价数据...</p>
+      </div>
+    </form>
+
+    <div id="paginationContainer" class="bg-white rounded-xl p-4 md:p-6 list-shadow mt-6 flex flex-col items-center justify-center">
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/common/toast.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/common/modal.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/state.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/renderer.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/validator.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/events.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      Events.initAll();
+    });
+  </script>
+</body>
+</html>

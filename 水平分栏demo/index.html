@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水平分栏 Demo - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            'card': '0 4px 16px rgba(27, 58, 75, 0.08)',
+            'card-hover': '0 8px 32px rgba(27, 58, 75, 0.1)',
+            'dropdown': '0 4px 16px rgba(27, 58, 75, 0.1)',
+            'header': '0 1px 3px rgba(27, 58, 75, 0.06)',
+            'accent': '0 4px 20px rgba(232, 168, 56, 0.15)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-primary {
+      background-color: #1B3A4B;
+      color: white;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+    }
+    .btn-primary:hover {
+      background-color: #2A5568;
+    }
+    .btn-secondary {
+      background-color: white;
+      color: #1B3A4B;
+      border: 1px solid #D8D5CE;
+    }
+    .btn-secondary:hover {
+      background-color: #EDE9E3;
+    }
+    .btn-danger {
+      background-color: #C44536;
+      color: white;
+    }
+    .btn-danger:hover {
+      background-color: #D65F52;
+    }
+
+    .split-container {
+      display: flex;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    .split-left {
+      flex: 1;
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    .split-divider {
+      width: 12px;
+      cursor: col-resize;
+      background: transparent;
+      position: relative;
+      flex-shrink: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .split-divider::before {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #E8E5DF;
+      transition: all 0.25s ease;
+    }
+
+    .split-divider:hover::before,
+    .split-divider.active::before {
+      width: 4px;
+      left: 4px;
+      background: #E8A838;
+      border-radius: 2px;
+    }
+
+    .divider-grip {
+      position: relative;
+      z-index: 2;
+      width: 20px;
+      height: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+
+    .split-divider:hover .divider-grip,
+    .split-divider.active .divider-grip {
+      opacity: 1;
+    }
+
+    .divider-grip-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #8B93A5;
+      transition: background 0.25s ease;
+    }
+
+    .split-divider:hover .divider-grip-dot,
+    .split-divider.active .divider-grip-dot {
+      background: #E8A838;
+    }
+
+    .split-right {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      min-width: 0;
+      border-left: 1px solid #E8E5DF;
+      transition: min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.2s ease;
+    }
+
+    .split-right.collapsed {
+      min-width: 0 !important;
+      max-width: 0 !important;
+      flex: none !important;
+      border-left-color: transparent;
+      overflow: hidden;
+    }
+
+    .split-right.collapsed .logic-content {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .logic-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      transition: opacity 0.2s ease;
+    }
+
+    .expand-btn {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 30;
+      width: 32px;
+      height: 72px;
+      background: linear-gradient(135deg, #1B3A4B 0%, #2A5568 100%);
+      border-radius: 8px 0 0 8px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      box-shadow: -4px 0 16px rgba(27, 58, 75, 0.2);
+      transition: all 0.25s ease;
+    }
+
+    .expand-btn:hover {
+      width: 36px;
+      background: linear-gradient(135deg, #E8A838 0%, #F0C060 100%);
+      box-shadow: -4px 0 20px rgba(232, 168, 56, 0.3);
+    }
+
+    .expand-btn:hover i {
+      animation: pulse-right 1s ease infinite;
+    }
+
+    .expand-btn.visible {
+      display: flex;
+    }
+
+    @keyframes pulse-right {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(3px); }
+    }
+
+    .logic-tab-bar {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px 0;
+      background: white;
+      border-bottom: 1px solid #E8E5DF;
+    }
+
+    .logic-tab {
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #5A6275;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      border-bottom: none;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logic-tab:hover {
+      color: #1B3A4B;
+      background: #F5F3EF;
+    }
+
+    .logic-tab.active {
+      color: #1B3A4B;
+      background: white;
+      border-color: #E8E5DF;
+    }
+
+    .logic-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: white;
+    }
+
+    .logic-tab .tab-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .logic-tab .tab-icon.icon-init {
+      background: #E8F5E9;
+      color: #2D936C;
+    }
+
+    .logic-tab .tab-icon.icon-search {
+      background: #E3F2FD;
+      color: #1976D2;
+    }
+
+    .logic-tab .tab-icon.icon-button {
+      background: #FFF3E0;
+      color: #E8A838;
+    }
+
+    .logic-tab .tab-icon.icon-field {
+      background: #F3E5F5;
+      color: #7B1FA2;
+    }
+
+    .logic-table {
+      width: 100%;
+      font-size: 0.875rem;
+      border: 1px solid #D8D5CE;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .logic-table thead {
+      background-color: #F5F3EF;
+    }
+
+    .logic-table th {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      font-weight: 500;
+      color: #5A6275;
+      border-bottom: 1px solid #D8D5CE;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .logic-table td {
+      padding: 0.5rem 0.75rem;
+      color: #6B7280;
+      border-bottom: 1px solid #E8E5DF;
+    }
+
+    .logic-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .logic-table tbody tr:hover {
+      background-color: #EDE9E3;
+    }
+
+    .logic-table td:first-child {
+      color: #1F2937;
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge-success {
+      background-color: rgba(45, 147, 108, 0.1);
+      color: #2D936C;
+    }
+
+    .badge-warning {
+      background-color: rgba(212, 133, 58, 0.1);
+      color: #D4853A;
+    }
+
+    .badge-danger {
+      background-color: rgba(196, 69, 54, 0.1);
+      color: #C44536;
+    }
+
+    .badge-muted {
+      background-color: #F3F4F6;
+      color: #8B93A5;
+    }
+
+    .logic-section-panel {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .logic-section-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #D8D5CE;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #8B93A5;
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #E8E5DF;
+      background: #FAFAF8;
+    }
+
+    .panel-header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #1B3A4B;
+      font-size: 14px;
+    }
+
+    .panel-header-title .title-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #1B3A4B, #2A5568);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .collapse-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8B93A5;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .collapse-btn:hover {
+      background: #F5F3EF;
+      color: #1B3A4B;
+      border-color: #E8E5DF;
+    }
+
+    .shortcut-hint {
+      font-size: 10px;
+      color: #8B93A5;
+      background: #F5F3EF;
+      padding: 1px 5px;
+      border-radius: 3px;
+      border: 1px solid #E8E5DF;
+      margin-left: 8px;
+    }
+
+
+  </style>
+</head>
+
+<body class="font-body bg-surface text-dark min-h-screen overflow-hidden">
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <span class="text-lg font-display font-semibold tracking-wide">ELSA</span>
+          <span class="ml-4 text-sm text-white/60">水平分栏 Demo</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button id="toggleLogicBtn" onclick="toggleLogicPanel()"
+                  class="px-3 py-1.5 rounded-md text-sm bg-primary-light hover:bg-accent hover:text-primary transition-all flex items-center gap-1.5"
+                  title="切换逻辑说明面板 (⌘B)">
+            <i class="fas fa-columns text-xs"></i>
+            <span id="toggleBtnText">逻辑说明</span>
+          </button>
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fas fa-bell"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+            <i class="fas fa-user-circle text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="split-container" id="splitContainer">
+
+    <div class="split-left" id="splitLeft">
+      <div class="container mx-auto px-2 sm:px-3 lg:px-4 py-6">
+
+        <div class="bg-white rounded-lg shadow-card p-6 mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-primary">
+              <i class="fas fa-filter mr-2 text-accent"></i>筛选条件
+            </h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-2">价卡名称</label>
+              <input type="text" placeholder="请输入价卡名称"
+                     class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-2">状态</label>
+              <select class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+                <option value="">全部状态</option>
+                <option value="draft">草稿</option>
+                <option value="active">生效</option>
+                <option value="cancelled">已作废</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-2">客户代码</label>
+              <select class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+                <option value="">全部</option>
+                <option value="DEMO">DEMO</option>
+                <option value="DEMO1">DEMO1</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end gap-2">
+            <button class="btn btn-secondary"><i class="fas fa-redo mr-1"></i>重置</button>
+            <button class="btn btn-secondary"><i class="fas fa-search mr-2"></i>查询</button>
+          </div>
+        </div>
+
+        <div class="mb-6 flex justify-start">
+          <button class="btn btn-primary"><i class="fas fa-plus mr-2"></i>创建价卡</button>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-light-bg">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">价卡名称</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">包含费用项</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">生效时间</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">状态</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">关联客户</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">关联仓库</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">操作</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-light">
+                <tr class="hover:bg-hover transition-colors">
+                  <td class="px-4 py-3 font-medium text-dark">标准仓储价卡</td>
+                  <td class="px-4 py-3">
+                    <span class="badge badge-success">仓储费(3)</span>
+                    <span class="badge badge-warning ml-1">操作费(2)</span>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-text-secondary">2025-01-01</td>
+                  <td class="px-4 py-3"><span class="badge badge-success">生效</span></td>
+                  <td class="px-4 py-3"><span class="text-primary font-medium"><i class="fas fa-users mr-1"></i>5</span></td>
+                  <td class="px-4 py-3"><span class="text-success font-medium"><i class="fas fa-warehouse mr-1"></i>3</span></td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-eye"></i></button>
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-edit"></i></button>
+                      <button class="text-danger hover:text-danger-light text-sm"><i class="fas fa-ban"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-hover transition-colors">
+                  <td class="px-4 py-3 font-medium text-dark">FBA头程价卡</td>
+                  <td class="px-4 py-3">
+                    <span class="badge badge-success">仓储费(2)</span>
+                    <span class="badge badge-warning ml-1">操作费(4)</span>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-text-secondary">2025-03-15</td>
+                  <td class="px-4 py-3"><span class="badge badge-success">生效</span></td>
+                  <td class="px-4 py-3"><span class="text-primary font-medium"><i class="fas fa-users mr-1"></i>8</span></td>
+                  <td class="px-4 py-3"><span class="text-success font-medium"><i class="fas fa-warehouse mr-1"></i>5</span></td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-eye"></i></button>
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-edit"></i></button>
+                      <button class="text-danger hover:text-danger-light text-sm"><i class="fas fa-ban"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-hover transition-colors">
+                  <td class="px-4 py-3 font-medium text-dark">特惠仓储价卡</td>
+                  <td class="px-4 py-3">
+                    <span class="badge badge-muted">仓储费(1)</span>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-text-secondary">2025-06-01</td>
+                  <td class="px-4 py-3"><span class="badge badge-muted">草稿</span></td>
+                  <td class="px-4 py-3"><span class="text-text-muted"><i class="fas fa-users mr-1"></i>0</span></td>
+                  <td class="px-4 py-3"><span class="text-text-muted"><i class="fas fa-warehouse mr-1"></i>0</span></td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-eye"></i></button>
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-edit"></i></button>
+                      <button class="text-danger hover:text-danger-light text-sm"><i class="fas fa-ban"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-hover transition-colors">
+                  <td class="px-4 py-3 font-medium text-dark">旧版仓储价卡</td>
+                  <td class="px-4 py-3">
+                    <span class="badge badge-danger">仓储费(2)</span>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-text-secondary">2024-01-01</td>
+                  <td class="px-4 py-3"><span class="badge badge-danger">已作废</span></td>
+                  <td class="px-4 py-3"><span class="text-text-muted"><i class="fas fa-users mr-1"></i>2</span></td>
+                  <td class="px-4 py-3"><span class="text-text-muted"><i class="fas fa-warehouse mr-1"></i>1</span></td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <button class="text-primary hover:text-accent text-sm"><i class="fas fa-eye"></i></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-between items-center px-4 py-3 border-t border-border-light">
+            <div class="text-sm text-text-secondary">共 <span class="font-medium text-dark">4</span> 条</div>
+            <div class="flex gap-1">
+              <button class="px-3 py-1 text-sm border border-border rounded hover:bg-hover disabled:opacity-50" disabled>&laquo;</button>
+              <button class="px-3 py-1 text-sm border border-accent bg-accent/10 text-primary rounded font-medium">1</button>
+              <button class="px-3 py-1 text-sm border border-border rounded hover:bg-hover disabled:opacity-50" disabled>&raquo;</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="split-divider" id="splitDivider">
+      <div class="divider-grip">
+        <div class="divider-grip-dot"></div>
+        <div class="divider-grip-dot"></div>
+        <div class="divider-grip-dot"></div>
+        <div class="divider-grip-dot"></div>
+        <div class="divider-grip-dot"></div>
+        <div class="divider-grip-dot"></div>
+      </div>
+    </div>
+
+    <div class="split-right" id="splitRight">
+
+      <div class="logic-content" id="logicContent">
+
+        <div class="panel-header">
+          <div class="panel-header-title">
+            <div class="title-icon"><i class="fas fa-book-open"></i></div>
+            逻辑说明
+            <span class="shortcut-hint">⌘B</span>
+          </div>
+          <div class="collapse-btn" onclick="toggleLogicPanel()" title="折叠面板 (⌘B)">
+            <i class="fas fa-angles-right"></i>
+          </div>
+        </div>
+
+        <div class="logic-tab-bar" id="logicTabs">
+          <div class="logic-tab active" data-tab="init" onclick="switchLogicTab('init')">
+            <span class="tab-icon icon-init"><i class="fas fa-play"></i></span>
+            初始化
+          </div>
+          <div class="logic-tab" data-tab="search" onclick="switchLogicTab('search')">
+            <span class="tab-icon icon-search"><i class="fas fa-filter"></i></span>
+            检索条件
+          </div>
+          <div class="logic-tab" data-tab="button" onclick="switchLogicTab('button')">
+            <span class="tab-icon icon-button"><i class="fas fa-hand-pointer"></i></span>
+            按钮逻辑
+          </div>
+          <div class="logic-tab" data-tab="field" onclick="switchLogicTab('field')">
+            <span class="tab-icon icon-field"><i class="fas fa-list-alt"></i></span>
+            属性取值
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4" id="logicTabContent">
+
+          <div class="logic-section-panel active" id="panel-init">
+
+            <div class="overflow-x-auto">
+              <table class="logic-table">
+                <thead>
+                  <tr>
+                    <th>逻辑项</th>
+                    <th>说明</th>
+                    <th>数据来源</th>
+                    <th>展示规则</th>
+                    <th>备注</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>价卡列表</td>
+                    <td>页面加载时展示所有价卡数据</td>
+                    <td>localStorage / packages数组</td>
+                    <td>按创建时间倒序排列，最新创建的显示在最上方</td>
+                    <td>首次加载时显示示例数据</td>
+                  </tr>
+                  <tr>
+                    <td>包含费用项</td>
+                    <td>统计价卡中各类型费用项的数量</td>
+                    <td>packages.feeItems</td>
+                    <td>按费用类型分组统计，格式：类型名(数量项)</td>
+                    <td>多个类型用顿号分隔</td>
+                  </tr>
+                  <tr>
+                    <td>状态显示</td>
+                    <td>根据价卡状态显示不同标签</td>
+                    <td>packages.status</td>
+                    <td>草稿(灰色)、生效(绿色)、已作废(红色)</td>
+                    <td>使用不同颜色区分状态</td>
+                  </tr>
+                  <tr>
+                    <td>关联客户</td>
+                    <td>显示价卡关联的客户数量</td>
+                    <td>packages.customers</td>
+                    <td>已关联显示蓝色标签（客户图标+数量），未关联显示灰色提示</td>
+                    <td>点击操作列"关联客户"按钮可修改</td>
+                  </tr>
+                  <tr>
+                    <td>关联仓库</td>
+                    <td>显示价卡关联的仓库数量</td>
+                    <td>packages.warehouses</td>
+                    <td>已关联显示绿色标签（仓库图标+数量），未关联显示灰色提示</td>
+                    <td>点击操作列"关联仓库"按钮可修改</td>
+                  </tr>
+                  <tr>
+                    <td>空状态</td>
+                    <td>无价卡数据时显示空状态提示</td>
+                    <td>packages.length === 0</td>
+                    <td>显示空状态图标和提示文案，提供"创建第一个价卡"按钮</td>
+                    <td>引导用户创建第一条数据</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="logic-section-panel" id="panel-search">
+
+            <div class="overflow-x-auto">
+              <table class="logic-table">
+                <thead>
+                  <tr>
+                    <th>检索项</th>
+                    <th>输入方式</th>
+                    <th>逻辑说明</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>价卡名称</td>
+                    <td>文本输入框</td>
+                    <td>模糊匹配价卡名称，不区分大小写</td>
+                  </tr>
+                  <tr>
+                    <td>状态</td>
+                    <td>下拉选择框</td>
+                    <td>精确匹配价卡状态，可选：全部/草稿/生效/已作废</td>
+                  </tr>
+                  <tr>
+                    <td>客户代码</td>
+                    <td>文本输入框</td>
+                    <td>模糊匹配价卡关联的客户代码，筛选包含该客户代码的价卡</td>
+                  </tr>
+                  <tr>
+                    <td>仓库代码</td>
+                    <td>文本输入框</td>
+                    <td>模糊匹配价卡关联的仓库代码，筛选包含该仓库代码的价卡</td>
+                  </tr>
+                  <tr>
+                    <td>生效时间（起）</td>
+                    <td>日期时间选择器</td>
+                    <td>筛选生效时间大于等于该时间的价卡</td>
+                  </tr>
+                  <tr>
+                    <td>生效时间（止）</td>
+                    <td>日期时间选择器</td>
+                    <td>筛选生效时间小于等于该时间的价卡</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="logic-section-panel" id="panel-button">
+
+            <div class="overflow-x-auto">
+              <table class="logic-table">
+                <thead>
+                  <tr>
+                    <th>按钮</th>
+                    <th>位置</th>
+                    <th>触发动作</th>
+                    <th>前置条件</th>
+                    <th>后续操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>创建价卡</td>
+                    <td>筛选区域下方</td>
+                    <td>打开创建价卡弹窗</td>
+                    <td>无</td>
+                    <td>清空表单，初始化费用项表格，显示弹窗</td>
+                  </tr>
+                  <tr>
+                    <td>查询</td>
+                    <td>筛选区域</td>
+                    <td>执行筛选查询</td>
+                    <td>无</td>
+                    <td>根据筛选条件过滤价卡列表并刷新表格</td>
+                  </tr>
+                  <tr>
+                    <td>重置</td>
+                    <td>筛选区域</td>
+                    <td>清空筛选条件</td>
+                    <td>无</td>
+                    <td>清空所有筛选输入框，显示全部价卡</td>
+                  </tr>
+                  <tr>
+                    <td>查看</td>
+                    <td>操作列</td>
+                    <td>打开价卡详情弹窗</td>
+                    <td>价卡存在</td>
+                    <td>展示价卡完整信息，包括基本信息、费用项明细、有效期</td>
+                  </tr>
+                  <tr>
+                    <td>编辑</td>
+                    <td>操作列</td>
+                    <td>打开编辑价卡弹窗</td>
+                    <td>价卡存在且状态不为"已作废"</td>
+                    <td>填充现有数据到表单，允许修改并保存</td>
+                  </tr>
+                  <tr>
+                    <td>作废</td>
+                    <td>操作列</td>
+                    <td>作废价卡</td>
+                    <td>价卡存在且状态不为"已作废"</td>
+                    <td>弹出确认对话框，确认后将状态改为"已作废"并刷新列表</td>
+                  </tr>
+                  <tr>
+                    <td>关联客户</td>
+                    <td>操作列</td>
+                    <td>打开关联客户弹窗</td>
+                    <td>价卡存在</td>
+                    <td>使用穿梭框选择要关联的客户，保存后更新价卡的客户关联数据并刷新列表</td>
+                  </tr>
+                  <tr>
+                    <td>关联仓库</td>
+                    <td>操作列</td>
+                    <td>打开关联仓库弹窗</td>
+                    <td>价卡存在</td>
+                    <td>使用穿梭框选择要关联的仓库，保存后更新价卡的仓库关联数据并刷新列表</td>
+                  </tr>
+                  <tr>
+                    <td>保存</td>
+                    <td>创建/编辑弹窗</td>
+                    <td>保存价卡数据</td>
+                    <td>价卡名称必填，至少选择一个费用项</td>
+                    <td>验证数据完整性，保存到localStorage，关闭弹窗，刷新列表，提示成功消息</td>
+                  </tr>
+                  <tr>
+                    <td>取消</td>
+                    <td>创建/编辑弹窗</td>
+                    <td>关闭弹窗</td>
+                    <td>无</td>
+                    <td>关闭弹窗，清空表单数据</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="logic-section-panel" id="panel-field">
+
+            <div class="overflow-x-auto">
+              <table class="logic-table">
+                <thead>
+                  <tr>
+                    <th>字段</th>
+                    <th>说明</th>
+                    <th>数据来源</th>
+                    <th>取值规则</th>
+                    <th>显示格式</th>
+                    <th>存储长度</th>
+                    <th>存储类型</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>价卡名称</td>
+                    <td>定义的价卡名称</td>
+                    <td>用户输入</td>
+                    <td>直接取值，必填</td>
+                    <td>文本显示</td>
+                    <td>64</td>
+                    <td>字符型</td>
+                  </tr>
+                  <tr>
+                    <td>包含费用项</td>
+                    <td>统计价卡中各类型费用项的数量</td>
+                    <td>系统计算</td>
+                    <td>按费用类型分组统计</td>
+                    <td>类型名(数量项)</td>
+                    <td>-</td>
+                    <td>计算型</td>
+                  </tr>
+                  <tr>
+                    <td>生效时间</td>
+                    <td>价卡开始生效的日期</td>
+                    <td>用户输入</td>
+                    <td>直接取值</td>
+                    <td>YYYY-MM-DD</td>
+                    <td>32</td>
+                    <td>DATE</td>
+                  </tr>
+                  <tr>
+                    <td>失效时间</td>
+                    <td>价卡失效的日期</td>
+                    <td>用户输入</td>
+                    <td>直接取值，需大于生效时间</td>
+                    <td>YYYY-MM-DD</td>
+                    <td>32</td>
+                    <td>DATE</td>
+                  </tr>
+                  <tr>
+                    <td>状态</td>
+                    <td>价卡当前状态</td>
+                    <td>系统配置</td>
+                    <td>枚举值：草稿/生效/已作废</td>
+                    <td>彩色标签</td>
+                    <td>32</td>
+                    <td>枚举型</td>
+                  </tr>
+                  <tr>
+                    <td>关联客户</td>
+                    <td>统计该价卡关联的客户数量</td>
+                    <td>系统计算</td>
+                    <td>统计该价卡关联的客户数量</td>
+                    <td>数字+图标</td>
+                    <td>32</td>
+                    <td>数值型</td>
+                  </tr>
+                  <tr>
+                    <td>关联仓库</td>
+                    <td>统计该价卡关联的仓库数量</td>
+                    <td>系统计算</td>
+                    <td>统计该价卡关联的仓库数量</td>
+                    <td>数字+图标</td>
+                    <td>32</td>
+                    <td>数值型</td>
+                  </tr>
+                  <tr>
+                    <td>创建时间</td>
+                    <td>价卡创建的时间</td>
+                    <td>系统自动</td>
+                    <td>创建时自动记录</td>
+                    <td>YYYY-MM-DD HH:mm:ss</td>
+                    <td>64</td>
+                    <td>DATETIME</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="expand-btn" id="expandBtn" onclick="toggleLogicPanel()" title="展开逻辑说明 (⌘B)">
+    <i class="fas fa-chevron-left"></i>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'elsa-split-view-state';
+
+    const splitContainer = document.getElementById('splitContainer');
+    const splitLeft = document.getElementById('splitLeft');
+    const splitDivider = document.getElementById('splitDivider');
+    const splitRight = document.getElementById('splitRight');
+    const expandBtn = document.getElementById('expandBtn');
+    const logicContent = document.getElementById('logicContent');
+    const toggleBtnText = document.getElementById('toggleBtnText');
+
+    let isDragging = false;
+    let isCollapsed = false;
+    let currentRatio = 0.6;
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const state = JSON.parse(saved);
+          currentRatio = state.ratio || 0.6;
+          isCollapsed = state.collapsed || false;
+        }
+      } catch (e) {}
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          ratio: currentRatio,
+          collapsed: isCollapsed
+        }));
+      } catch (e) {}
+    }
+
+    function applyLayout() {
+      if (isCollapsed) {
+        splitLeft.style.flex = '1';
+        splitRight.classList.add('collapsed');
+        splitDivider.style.display = 'none';
+        expandBtn.classList.add('visible');
+        toggleBtnText.textContent = '展开说明';
+      } else {
+        splitLeft.style.flex = `0 0 ${currentRatio * 100}%`;
+        splitRight.style.flex = `0 0 ${(1 - currentRatio) * 100}%`;
+        splitRight.classList.remove('collapsed');
+        splitDivider.style.display = 'flex';
+        expandBtn.classList.remove('visible');
+        toggleBtnText.textContent = '逻辑说明';
+      }
+    }
+
+    function toggleLogicPanel() {
+      isCollapsed = !isCollapsed;
+      applyLayout();
+      saveState();
+    }
+
+    function switchLogicTab(tabName) {
+      document.querySelectorAll('.logic-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.logic-section-panel').forEach(p => p.classList.remove('active'));
+
+      const tab = document.querySelector(`.logic-tab[data-tab="${tabName}"]`);
+      const panel = document.getElementById(`panel-${tabName}`);
+
+      if (tab) tab.classList.add('active');
+      if (panel) panel.classList.add('active');
+    }
+
+    splitDivider.addEventListener('mousedown', function(e) {
+      if (isCollapsed) return;
+      isDragging = true;
+      splitDivider.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      splitRight.style.transition = 'none';
+      splitLeft.style.transition = 'none';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+
+      const containerRect = splitContainer.getBoundingClientRect();
+      const dividerWidth = splitDivider.offsetWidth;
+      const availableWidth = containerRect.width - dividerWidth;
+
+      const leftWidth = e.clientX - containerRect.left;
+      let ratio = leftWidth / availableWidth;
+
+      ratio = Math.max(0.3, Math.min(0.75, ratio));
+
+      currentRatio = ratio;
+      splitLeft.style.flex = `0 0 ${ratio * 100}%`;
+      splitRight.style.flex = `0 0 ${(1 - ratio) * 100}%`;
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (isDragging) {
+        isDragging = false;
+        splitDivider.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        splitRight.style.transition = '';
+        splitLeft.style.transition = '';
+        saveState();
+      }
+    });
+
+    splitDivider.addEventListener('dblclick', function() {
+      if (isCollapsed) return;
+      currentRatio = 0.6;
+      applyLayout();
+      saveState();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        toggleLogicPanel();
+      }
+    });
+
+    loadState();
+    applyLayout();
+  </script>
+
+</body>
+</html>

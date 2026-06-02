@@ -111,7 +111,11 @@
                         </div>
                     </nav>
                 </div>
-                <div class="flex items-center">
+                <div class="flex items-center gap-4">
+                    <button class="flex items-center text-sm hover:bg-primary/80 px-3 py-2 rounded transition-colors" onclick="toggleLogicPanel()">
+                        <i class="fa fa-book-open mr-2"></i>
+                        逻辑说明
+                    </button>
                     <div class="relative">
                         <button class="flex items-center text-sm hover:bg-primary/80 px-3 py-2 rounded transition-colors">
                             <i class="fa fa-user-circle mr-2"></i>
@@ -184,9 +188,222 @@
         </div>
     </main>
 
-    <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
-        <div class="container mx-auto px-2 py-6">
-            <div id="page-container"></div>
+    <main id="main-prototype" class="main-content active" style="display: none;">
+        <div class="split-container" id="splitContainer">
+            <div class="split-left" id="splitLeft">
+                <div class="container mx-auto px-2 py-6">
+                    <div id="page-container"></div>
+                </div>
+            </div>
+            
+            <div class="split-divider" id="splitDivider">
+                <div class="divider-grip">
+                    <div class="divider-grip-dot"></div>
+                    <div class="divider-grip-dot"></div>
+                    <div class="divider-grip-dot"></div>
+                    <div class="divider-grip-dot"></div>
+                    <div class="divider-grip-dot"></div>
+                    <div class="divider-grip-dot"></div>
+                </div>
+            </div>
+            
+            <div class="split-right" id="splitRight">
+                <div class="logic-content">
+                    <div class="panel-header">
+                        <div class="panel-header-title">
+                            <div class="title-icon"><i class="fa fa-book-open"></i></div>
+                            逻辑说明
+                            <span class="shortcut-hint">⌘B</span>
+                        </div>
+                        <div class="collapse-btn" onclick="toggleLogicPanel()">
+                            <i class="fa fa-angle-double-right"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="logic-tab-bar">
+                        <div class="logic-tab active" data-tab="init" onclick="switchLogicTab('init')">
+                            <span class="tab-icon icon-init"><i class="fa fa-play"></i></span>
+                            初始化
+                        </div>
+                        <div class="logic-tab" data-tab="search" onclick="switchLogicTab('search')">
+                            <span class="tab-icon icon-search"><i class="fa fa-filter"></i></span>
+                            检索条件
+                        </div>
+                        <div class="logic-tab" data-tab="button" onclick="switchLogicTab('button')">
+                            <span class="tab-icon icon-button"><i class="fa fa-hand-pointer"></i></span>
+                            按钮逻辑
+                        </div>
+                        <div class="logic-tab" data-tab="field" onclick="switchLogicTab('field')">
+                            <span class="tab-icon icon-field"><i class="fa fa-list-alt"></i></span>
+                            属性取值
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="logic-section-panel active" id="panel-init">
+                            <div class="overflow-x-auto">
+                                <table class="logic-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 120px;">逻辑项</th>
+                                            <th style="width: 200px;">说明</th>
+                                            <th style="width: 120px;">数据来源</th>
+                                            <th>规则/条件</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>页面加载</td>
+                                            <td>默认加载组织机构列表</td>
+                                            <td>API请求</td>
+                                            <td>调用 /api/organization/list 获取部门树形结构</td>
+                                        </tr>
+                                        <tr>
+                                            <td>树形展开</td>
+                                            <td>默认展开一级部门</td>
+                                            <td>前端控制</td>
+                                            <td>通过 CSS display 属性控制子部门显示/隐藏</td>
+                                        </tr>
+                                        <tr>
+                                            <td>关联数据</td>
+                                            <td>显示关联虚拟仓和用户数量</td>
+                                            <td>API请求</td>
+                                            <td>部门数据包含 warehouseCount 和 userCount 字段</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-section-panel" id="panel-search">
+                            <div class="overflow-x-auto">
+                                <table class="logic-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 120px;">检索项</th>
+                                            <th style="width: 200px;">说明</th>
+                                            <th style="width: 120px;">输入类型</th>
+                                            <th>检索规则</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>部门名称</td>
+                                            <td>模糊搜索部门名称</td>
+                                            <td>文本输入</td>
+                                            <td>支持模糊匹配，调用 /api/organization/search?name=xxx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>部门编码</td>
+                                            <td>精确搜索部门编码</td>
+                                            <td>文本输入</td>
+                                            <td>精确匹配，调用 /api/organization/search?code=xxx</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-section-panel" id="panel-button">
+                            <div class="overflow-x-auto">
+                                <table class="logic-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 120px;">按钮名称</th>
+                                            <th style="width: 150px;">触发条件</th>
+                                            <th style="width: 120px;">操作类型</th>
+                                            <th>执行逻辑</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>新建部门</td>
+                                            <td>点击按钮</td>
+                                            <td>弹窗</td>
+                                            <td>打开新建部门模态框，填写名称和上级部门后提交</td>
+                                        </tr>
+                                        <tr>
+                                            <td>编辑</td>
+                                            <td>点击行操作按钮</td>
+                                            <td>弹窗</td>
+                                            <td>打开编辑模态框，修改部门名称和上级部门</td>
+                                        </tr>
+                                        <tr>
+                                            <td>删除</td>
+                                            <td>点击行操作按钮</td>
+                                            <td>确认+删除</td>
+                                            <td>弹出确认框，确认后调用删除API，刷新列表</td>
+                                        </tr>
+                                        <tr>
+                                            <td>关联用户</td>
+                                            <td>点击行操作按钮</td>
+                                            <td>穿梭框</td>
+                                            <td>打开用户穿梭框，左侧未关联用户，右侧已关联用户</td>
+                                        </tr>
+                                        <tr>
+                                            <td>展开/折叠</td>
+                                            <td>点击树形图标</td>
+                                            <td>前端切换</td>
+                                            <td>切换子部门的 display 属性，图标旋转动画</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-section-panel" id="panel-field">
+                            <div class="overflow-x-auto">
+                                <table class="logic-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 120px;">字段名称</th>
+                                            <th style="width: 150px;">取值来源</th>
+                                            <th style="width: 120px;">显示格式</th>
+                                            <th>取值规则</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>部门名称</td>
+                                            <td>API返回</td>
+                                            <td>文本</td>
+                                            <td>直接显示 department.name</td>
+                                        </tr>
+                                        <tr>
+                                            <td>部门编码</td>
+                                            <td>API返回</td>
+                                            <td>文本</td>
+                                            <td>直接显示 department.code</td>
+                                        </tr>
+                                        <tr>
+                                            <td>关联虚拟仓</td>
+                                            <td>API返回</td>
+                                            <td>数字+链接</td>
+                                            <td>显示 warehouseCount，点击弹出虚拟仓列表</td>
+                                        </tr>
+                                        <tr>
+                                            <td>关联用户</td>
+                                            <td>API返回</td>
+                                            <td>数字+链接</td>
+                                            <td>显示 userCount，点击弹出用户列表</td>
+                                        </tr>
+                                        <tr>
+                                            <td>创建时间</td>
+                                            <td>API返回</td>
+                                            <td>YYYY-MM-DD HH:mm:ss</td>
+                                            <td>格式化显示 department.createdAt</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="expand-btn" id="expandBtn" onclick="toggleLogicPanel()">
+            <i class="fa fa-chevron-left"></i>
         </div>
     </main>
 
@@ -319,6 +536,9 @@
     </div>
     
     <script src="../common/js/common.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/utils.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
