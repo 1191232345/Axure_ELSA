@@ -19,6 +19,10 @@ def index():
 def config():
     return render_template('config.html')
 
+@app.route('/intents')
+def intent_config():
+    return render_template('intent-config.html')
+
 def kill_port_process(port):
     if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
         return
