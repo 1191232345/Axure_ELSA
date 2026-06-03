@@ -72,11 +72,27 @@
         <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
     </div>
     
-    <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
         <div class="container mx-auto px-2 sm:px-3 lg:px-4">
             <div class="flex justify-between items-center h-14">
                 <div class="flex items-center">
                     <span class="text-lg font-semibold">ELSA</span>
+                    <nav class="hidden md:ml-10 md:flex md:space-x-6">
+                        <div class="relative group">
+                            <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                                费用管理
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </a>
+                            <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                <a href="/费用管理/价卡管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡管理</a>
+                                <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
+                                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
+                                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
+                                <a href="/费用管理/客户中心/价卡查询/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">价卡查询</a>
+                            </div>
+                        </div>
+                    </nav>
                 </div>
             </div>
         </div>

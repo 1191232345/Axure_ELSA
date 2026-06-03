@@ -1,4 +1,5 @@
 let inboundFeeRuleData = null;
+let feeCategoriesData = null;
 let packages = [];
 let feeRows = [];
 let editingPackageId = null;
@@ -85,18 +86,31 @@ function processDateTimeDefault(dateTimeStr, isEffective = true) {
 }
 
 async function init() {
-  await loadInboundFeeRuleData();
+  await Promise.all([
+    loadInboundFeeRuleData(),
+    loadFeeCategoriesData()
+  ]);
   loadPackages();
   renderPackageTable();
 }
 
 async function loadInboundFeeRuleData() {
   try {
-    const response = await fetch('../入库费规则/data/inbound-fee-rule-data.json');
+    const response = await fetch('data/inbound-fee-rule-data.json');
     inboundFeeRuleData = await response.json();
     console.log('✅ 入库费规则数据加载成功');
   } catch (error) {
     console.error('❌ 入库费规则数据加载失败:', error);
+  }
+}
+
+async function loadFeeCategoriesData() {
+  try {
+    const response = await fetch('data/fee-categories.json');
+    feeCategoriesData = await response.json();
+    console.log('✅ 收费分类数据加载成功');
+  } catch (error) {
+    console.error('❌ 收费分类数据加载失败:', error);
   }
 }
 
@@ -164,43 +178,72 @@ function switchFeeCategory(category) {
   renderFeeTable();
 }
 
-function getFeeTypes() {
-  if (!inboundFeeRuleData || !inboundFeeRuleData.categories) {
-    return [];
+function getFeeTypes(category = 'inbound') {
+  // 如果是入库费，使用入库费规则数据
+  if (category === 'inbound' && inboundFeeRuleData && inboundFeeRuleData.categories) {
+    return inboundFeeRuleData.categories.map(cat => ({
+      id: cat.id,
+      name: cat.name
+    }));
   }
   
-  return inboundFeeRuleData.categories.map(cat => ({
-    id: cat.id,
-    name: cat.name
-  }));
+  // 其他收费分类，使用fee-categories.json数据
+  if (feeCategoriesData && feeCategoriesData.feeCategories && feeCategoriesData.feeCategories[category]) {
+    const categoryData = feeCategoriesData.feeCategories[category];
+    return categoryData.categories.map(cat => ({
+      id: cat.id,
+      name: cat.name
+    }));
+  }
+  
+  return [];
 }
 
-function getFeeItemsByType(feeTypeId) {
-  if (!inboundFeeRuleData || !inboundFeeRuleData.categories) {
-    return [];
-  }
-  
-  const category = inboundFeeRuleData.categories.find(cat => cat.id === feeTypeId);
-  if (!category) {
-    return [];
-  }
-  
-  let feeItems = [];
-  
-  category.children.forEach(operation => {
-    if (operation.children && operation.children.length > 0) {
-      operation.children.forEach(rule => {
-        feeItems.push({
-          id: rule.id,
-          name: rule.subCategory ? `${rule.feeItem} - ${rule.subCategory}` : rule.feeItem,
-          unit: rule.unit,
-          operation: operation.name
-        });
-      });
+function getFeeItemsByType(feeTypeId, category = 'inbound') {
+  // 如果是入库费，使用入库费规则数据
+  if (category === 'inbound' && inboundFeeRuleData && inboundFeeRuleData.categories) {
+    const categoryData = inboundFeeRuleData.categories.find(cat => cat.id === feeTypeId);
+    if (!categoryData) {
+      return [];
     }
-  });
+    
+    let feeItems = [];
+    
+    categoryData.children.forEach(operation => {
+      if (operation.children && operation.children.length > 0) {
+        operation.children.forEach(rule => {
+          feeItems.push({
+            id: rule.id,
+            name: rule.subCategory ? `${rule.feeItem} - ${rule.subCategory}` : rule.feeItem,
+            unit: rule.unit,
+            operation: operation.name
+          });
+        });
+      }
+    });
+    
+    return feeItems;
+  }
   
-  return feeItems;
+  // 其他收费分类，使用fee-categories.json数据
+  if (feeCategoriesData && feeCategoriesData.feeCategories) {
+    for (const catKey in feeCategoriesData.feeCategories) {
+      const catData = feeCategoriesData.feeCategories[catKey];
+      if (catData.categories) {
+        const foundCategory = catData.categories.find(cat => cat.id === feeTypeId);
+        if (foundCategory && foundCategory.feeItems) {
+          return foundCategory.feeItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            unit: item.unit,
+            description: item.description
+          }));
+        }
+      }
+    }
+  }
+  
+  return [];
 }
 
 function addFeeRow() {
@@ -250,7 +293,7 @@ function renderFeeTable() {
     return;
   }
   
-  const feeTypes = getFeeTypes();
+  const feeTypes = getFeeTypes(currentFeeCategory);
   
   tbody.innerHTML = feeRows.map(row => {
     const feeTypeOptions = feeTypes.map(type => 
@@ -259,7 +302,7 @@ function renderFeeTable() {
       </option>`
     ).join('');
     
-    const feeItems = row.feeType ? getFeeItemsByType(row.feeType) : [];
+    const feeItems = row.feeType ? getFeeItemsByType(row.feeType, currentFeeCategory) : [];
     const feeOptions = row.feeType ? 
       feeItems.map(item =>
         `<option value="${item.id}" ${row.feeId === item.id ? 'selected' : ''}>
@@ -498,29 +541,61 @@ function savePackage() {
   }
   
   const feeItems = validFeeRows.map(row => {
-    const category = inboundFeeRuleData.categories.find(cat => cat.id === row.feeType);
-    let feeItem = null;
+    // 获取收费分类名称
+    const feeCategoryNames = {
+      'inbound': '入库费',
+      'outbound': '出库费',
+      'express': '快递费',
+      'other': '其他收费'
+    };
     
-    category.children.forEach(operation => {
-      if (operation.children && operation.children.length > 0) {
-        const found = operation.children.find(rule => rule.id === row.feeId);
-        if (found) {
-          feeItem = {
-            ...found,
-            operationName: operation.name
-          };
+    const feeCategoryName = feeCategoryNames[row.feeCategory] || '入库费';
+    
+    // 获取收费类型名称
+    let feeTypeName = '';
+    let feeName = '';
+    let unit = '';
+    
+    if (row.feeCategory === 'inbound') {
+      // 入库费使用入库费规则数据
+      const category = inboundFeeRuleData.categories.find(cat => cat.id === row.feeType);
+      if (category) {
+        feeTypeName = category.name;
+        
+        category.children.forEach(operation => {
+          if (operation.children && operation.children.length > 0) {
+            const found = operation.children.find(rule => rule.id === row.feeId);
+            if (found) {
+              feeName = found.subCategory ? `${found.feeItem} - ${found.subCategory}` : found.feeItem;
+              unit = found.unit;
+            }
+          }
+        });
+      }
+    } else {
+      // 其他收费分类使用fee-categories.json数据
+      if (feeCategoriesData && feeCategoriesData.feeCategories && feeCategoriesData.feeCategories[row.feeCategory]) {
+        const categoryData = feeCategoriesData.feeCategories[row.feeCategory];
+        const foundCategory = categoryData.categories.find(cat => cat.id === row.feeType);
+        if (foundCategory) {
+          feeTypeName = foundCategory.name;
+          const foundItem = foundCategory.feeItems.find(item => item.id === row.feeId);
+          if (foundItem) {
+            feeName = foundItem.name;
+            unit = foundItem.unit;
+          }
         }
       }
-    });
+    }
     
     return {
       feeCategory: row.feeCategory || currentFeeCategory,
-      feeCategoryName: '入库费',
+      feeCategoryName,
       feeType: row.feeType,
-      feeTypeName: category.name,
+      feeTypeName,
       feeId: row.feeId,
-      feeName: feeItem.subCategory ? `${feeItem.feeItem} - ${feeItem.subCategory}` : feeItem.feeItem,
-      unit: feeItem.unit,
+      feeName,
+      unit,
       discountType: row.discountType,
       discountValue: row.discountValue || 0
     };

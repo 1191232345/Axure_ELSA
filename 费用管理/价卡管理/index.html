@@ -71,11 +71,12 @@
                 <i class="fas fa-chevron-down ml-1 text-xs"></i>
               </a>
               <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/费用管理/价卡管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">价卡管理</a>
+                <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
+                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
                 <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
                 <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
-                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
-                <a href="/费用管理/价卡管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">价卡管理</a>
-                <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-dark hover:bg-hover">批量获取费用</a>
+                <a href="/费用管理/客户中心/价卡查询/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡查询</a>
               </div>
             </div>
             <div class="relative group">
@@ -778,18 +779,15 @@
                   <button type="button" class="fee-category-tab active" data-category="inbound" onclick="switchFeeCategory('inbound')">
                     <i class="fas fa-download mr-1"></i>入库费
                   </button>
-                  <!-- <button type="button" disabled class="fee-category-tab" data-category="outbound" onclick="switchFeeCategory('outbound')">
+                  <button type="button" class="fee-category-tab" data-category="outbound" onclick="switchFeeCategory('outbound')">
                     <i class="fas fa-upload mr-1"></i>出库费
                   </button>
-                  <button type="button" disabled class="fee-category-tab" data-category="storage" onclick="switchFeeCategory('storage')">
-                    <i class="fas fa-warehouse mr-1"></i>仓储费
-                  </button>
-                  <button type="button" disabled class="fee-category-tab" data-category="express" onclick="switchFeeCategory('express')">
+                  <button type="button" class="fee-category-tab" data-category="express" onclick="switchFeeCategory('express')">
                     <i class="fas fa-truck mr-1"></i>快递费
                   </button>
-                  <button type="button" disabled class="fee-category-tab" data-category="other" onclick="switchFeeCategory('other')">
-                    <i class="fas fa-ellipsis-h mr-1"></i>其他费用
-                  </button> -->
+                  <button type="button" class="fee-category-tab" data-category="other" onclick="switchFeeCategory('other')">
+                    <i class="fas fa-ellipsis-h mr-1"></i>其他收费
+                  </button>
                 </div>
               </div>
               

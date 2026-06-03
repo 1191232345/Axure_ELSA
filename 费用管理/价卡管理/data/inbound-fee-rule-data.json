@@ -1,0 +1,90 @@
+{
+  "categories": [
+    {
+      "id": "inbound_full_container",
+      "name": "整柜入库",
+      "children": [
+        {
+          "id": "unload_operation",
+          "name": "卸柜操作",
+          "children": [
+            {
+              "id": "unload_fee",
+              "feeItem": "卸货费",
+              "unit": "柜"
+            },
+            {
+              "id": "sku_excess_fee",
+              "feeItem": "SKU超量费",
+              "unit": "个"
+            },
+            {
+              "id": "overweight_fee",
+              "feeItem": "超重费",
+              "unit": "箱"
+            },
+            {
+              "id": "manifest_fee",
+              "feeItem": "清单费",
+              "unit": "票"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inbound_express",
+      "name": "快递散货入库",
+      "children": [
+        {
+          "id": "express_operation",
+          "name": "快递操作",
+          "children": [
+            {
+              "id": "express_receive_fee",
+              "feeItem": "收货费",
+              "unit": "件"
+            },
+            {
+              "id": "express_scan_fee",
+              "feeItem": "扫描费",
+              "unit": "件"
+            },
+            {
+              "id": "express_sort_fee",
+              "feeItem": "分拣费",
+              "unit": "件"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inbound_pallet",
+      "name": "托盘入库",
+      "children": [
+        {
+          "id": "pallet_operation",
+          "name": "托盘操作",
+          "children": [
+            {
+              "id": "pallet_receive_fee",
+              "feeItem": "收货费",
+              "unit": "托"
+            },
+            {
+              "id": "pallet_inspect_fee",
+              "feeItem": "质检费",
+              "unit": "托"
+            },
+            {
+              "id": "pallet_label_fee",
+              "feeItem": "贴标费",
+              "unit": "托"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
