@@ -71,7 +71,7 @@ class InboundFeeRuleEngine {
     if (!this.flatItems || this.flatItems.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align:center; padding:60px; color:#8B93A5;">
+          <td colspan="10" style="text-align:center; padding:60px; color:#8B93A5;">
             <i class="fa fa-inbox" style="font-size:48px; margin-bottom:16px; display:block; opacity:0.3;"></i>
             <div style="font-size:15px;">暂无收费项数据</div>
             <div style="font-size:13px; margin-top:8px;">点击"新增规则"开始配置入库费规则</div>
@@ -111,6 +111,7 @@ class InboundFeeRuleEngine {
       <td>${item.createTime || '-'}</td>
       <td>${item.updater || '-'}</td>
       <td>${item.updateTime || '-'}</td>
+      <td style="color:${item.expireTime && new Date(item.expireTime) < new Date() ? '#C44536' : '#5A6275'};">${item.expireTime || '-'}</td>
       <td>
         <div class="action-group">
           <button class="action-btn" title="查看详情" onclick="event.stopPropagation(); engine.viewDetail('${item.id}')">
@@ -263,9 +264,9 @@ class InboundFeeRuleEngine {
     `;
 
     document.body.appendChild(overlay);
-    document.getElementById('addCategory').value = '整柜入库';
+    document.getElementById('addCategory').value = '入库';
     this.updateFeeItemTree();
-    document.getElementById('addFeeItemTree').value = 'level1_卸货费';
+    document.getElementById('addFeeItemTree').value = 'level1_入库_整柜入库卸货费';
     this.onFeeItemTreeChange();
   }
 
@@ -309,9 +310,10 @@ class InboundFeeRuleEngine {
               <label class="form-label">收费分类 <span style="color:#C44536;">*</span></label>
               <select id="addCategory" class="form-input" onchange="engine.updateFeeItemTree()">
                 <option value="">请选择分类</option>
-                <option value="整柜入库" selected>整柜入库</option>
-                <option value="快递散货入库">快递散货入库</option>
-                <option value="托盘入库">托盘入库</option>
+                <option value="入库">入库</option>
+                <option value="出库">出库</option>
+                <option value="仓储">仓储</option>
+                <option value="其他">其他</option>
               </select>
             </div>
             <div class="form-group">
@@ -336,6 +338,11 @@ class InboundFeeRuleEngine {
               <option value="KG">KG</option>
               <option value="个">个</option>
             </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">失效时间</label>
+            <input type="date" id="addExpireTime" class="form-input" placeholder="选择失效时间">
           </div>
 
           <div id="pricingTableSection" style="display:none; margin-bottom:16px;">
@@ -436,60 +443,194 @@ class InboundFeeRuleEngine {
       return;
     }
 
+    // 收费项树形数据 - 融合收费分类枚举进行拼接（分类+一级+二级合并）
     const feeItemTreeData = {
-      '整柜入库': [
+      '入库': [
         {
           level: 1,
-          name: '卸货费',
-          value: 'level1_卸货费',
+          name: '整柜入库卸货费',
+          value: 'level1_入库_整柜入库卸货费',
           children: []
         },
         {
           level: 1,
-          name: '入库附加费',
-          value: 'level1_入库附加费',
+          name: '整柜入库附加费',
+          value: 'level1_入库_整柜入库附加费',
           children: [
-            { level: 2, name: 'SKU超量费', value: 'level2_SKU超量费' },
-            { level: 2, name: '超重费', value: 'level2_超重费' },
-            { level: 2, name: '清单费', value: 'level2_清单费' }
+            { level: 2, name: 'SKU超量费', value: 'level2_入库_整柜入库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_入库_整柜入库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_入库_整柜入库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_入库_整柜入库附加费_分货费' },
+            { level: 2, name: '拆托费', value: 'level2_入库_整柜入库附加费_拆托费' },
+            { level: 2, name: '拍照费', value: 'level2_入库_整柜入库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_入库_整柜入库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '快递散货入库卸货费',
+          value: 'level1_入库_快递散货入库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '快递散货入库附加费',
+          value: 'level1_入库_快递散货入库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_入库_快递散货入库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_入库_快递散货入库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_入库_快递散货入库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_入库_快递散货入库附加费_分货费' },
+            { level: 2, name: '拍照费', value: 'level2_入库_快递散货入库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_入库_快递散货入库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '托盘入库卸货费',
+          value: 'level1_入库_托盘入库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '托盘入库附加费',
+          value: 'level1_入库_托盘入库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_入库_托盘入库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_入库_托盘入库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_入库_托盘入库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_入库_托盘入库附加费_分货费' },
+            { level: 2, name: '拆托费', value: 'level2_入库_托盘入库附加费_拆托费' },
+            { level: 2, name: '拍照费', value: 'level2_入库_托盘入库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_入库_托盘入库附加费_换标费' }
           ]
         }
       ],
-      '快递散货入库': [
+      '出库': [
         {
           level: 1,
-          name: '卸货费',
-          value: 'level1_卸货费',
+          name: '整柜出库卸货费',
+          value: 'level1_出库_整柜出库卸货费',
           children: []
         },
         {
           level: 1,
-          name: '入库附加费',
-          value: 'level1_入库附加费',
+          name: '整柜出库附加费',
+          value: 'level1_出库_整柜出库附加费',
           children: [
-            { level: 2, name: '轻点费', value: 'level2_轻点费' },
-            { level: 2, name: '分货费', value: 'level2_分货费' },
-            { level: 2, name: 'SKU超量费', value: 'level2_SKU超量费' }
+            { level: 2, name: 'SKU超量费', value: 'level2_出库_整柜出库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_出库_整柜出库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_出库_整柜出库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_出库_整柜出库附加费_分货费' },
+            { level: 2, name: '拍照费', value: 'level2_出库_整柜出库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_出库_整柜出库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '快递散货出库卸货费',
+          value: 'level1_出库_快递散货出库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '快递散货出库附加费',
+          value: 'level1_出库_快递散货出库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_出库_快递散货出库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_出库_快递散货出库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_出库_快递散货出库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_出库_快递散货出库附加费_分货费' },
+            { level: 2, name: '拍照费', value: 'level2_出库_快递散货出库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_出库_快递散货出库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '托盘出库卸货费',
+          value: 'level1_出库_托盘出库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '托盘出库附加费',
+          value: 'level1_出库_托盘出库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_出库_托盘出库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_出库_托盘出库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_出库_托盘出库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_出库_托盘出库附加费_分货费' },
+            { level: 2, name: '拆托费', value: 'level2_出库_托盘出库附加费_拆托费' },
+            { level: 2, name: '拍照费', value: 'level2_出库_托盘出库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_出库_托盘出库附加费_换标费' }
           ]
         }
       ],
-      '托盘入库': [
+      '仓储': [
         {
           level: 1,
-          name: '卸货费',
-          value: 'level1_卸货费',
+          name: '整柜仓储费',
+          value: 'level1_仓储_整柜仓储费',
           children: []
         },
         {
           level: 1,
-          name: '入库附加费',
-          value: 'level1_入库附加费',
+          name: '整柜仓储附加费',
+          value: 'level1_仓储_整柜仓储附加费',
           children: [
-            { level: 2, name: '拆拖', value: 'level2_拆拖' },
-            { level: 2, name: '分货', value: 'level2_分货' },
-            { level: 2, name: '超重', value: 'level2_超重' },
-            { level: 2, name: '清点', value: 'level2_清点' },
-            { level: 2, name: 'SKU超重费', value: 'level2_SKU超重费' }
+            { level: 2, name: '超期费', value: 'level2_仓储_整柜仓储附加费_超期费' },
+            { level: 2, name: '超面积费', value: 'level2_仓储_整柜仓储附加费_超面积费' },
+            { level: 2, name: '温控费', value: 'level2_仓储_整柜仓储附加费_温控费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '快递散货仓储费',
+          value: 'level1_仓储_快递散货仓储费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '快递散货仓储附加费',
+          value: 'level1_仓储_快递散货仓储附加费',
+          children: [
+            { level: 2, name: '超期费', value: 'level2_仓储_快递散货仓储附加费_超期费' },
+            { level: 2, name: '超面积费', value: 'level2_仓储_快递散货仓储附加费_超面积费' },
+            { level: 2, name: '温控费', value: 'level2_仓储_快递散货仓储附加费_温控费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '托盘仓储费',
+          value: 'level1_仓储_托盘仓储费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '托盘仓储附加费',
+          value: 'level1_仓储_托盘仓储附加费',
+          children: [
+            { level: 2, name: '超期费', value: 'level2_仓储_托盘仓储附加费_超期费' },
+            { level: 2, name: '超面积费', value: 'level2_仓储_托盘仓储附加费_超面积费' },
+            { level: 2, name: '温控费', value: 'level2_仓储_托盘仓储附加费_温控费' }
+          ]
+        }
+      ],
+      '其他': [
+        {
+          level: 1,
+          name: '服务费',
+          value: 'level1_其他_服务费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '其他费用',
+          value: 'level1_其他_其他费用',
+          children: [
+            { level: 2, name: '特殊操作费', value: 'level2_其他_其他费用_特殊操作费' },
+            { level: 2, name: '代办费', value: 'level2_其他_其他费用_代办费' },
+            { level: 2, name: '手续费', value: 'level2_其他_其他费用_手续费' }
           ]
         }
       ]
@@ -541,12 +682,19 @@ class InboundFeeRuleEngine {
     const feeItemName = selectedOption.dataset.feeItemName;
     
     if (level === 2) {
+      // 二级收费项 - 显示阶梯价格表格
       this.showTierPricingForm();
     } else {
-      if (feeItemName === '卸货费') {
+      // 一级收费项 - 判断是否包含"卸货费"字样
+      if (feeItemName.includes('卸货费')) {
+        // 包含"卸货费"字样的一级收费项 - 显示费率标准表格
         this.showPricingTableForm();
+      } else if (feeItemName.includes('附加费')) {
+        // 包含"附加费"字样的一级收费项 - 显示费率规则文本区
+        this.showPricingTextForm();
       } else {
-        this.hideAllForms();
+        // 其他一级收费项（如仓储费、服务费等）- 显示费率规则文本区
+        this.showPricingTextForm();
       }
     }
   }
@@ -565,6 +713,12 @@ class InboundFeeRuleEngine {
     document.getElementById('pricingTableSection').style.display = 'none';
     document.getElementById('pricingTextSection').style.display = 'none';
     document.getElementById('tierPricingSection').style.display = 'block';
+  }
+
+  showPricingTextForm() {
+    document.getElementById('pricingTableSection').style.display = 'none';
+    document.getElementById('pricingTextSection').style.display = 'block';
+    document.getElementById('tierPricingSection').style.display = 'none';
   }
 
   hideAllForms() {
@@ -671,34 +825,52 @@ class InboundFeeRuleEngine {
 
   saveNewRule() {
     const category = document.getElementById('addCategory').value;
-    const feeItem = document.getElementById('addFeeItem').value;
+    const selectedFeeItemValue = document.getElementById('addFeeItemTree').value;
     const unit = document.getElementById('addUnit').value;
     const remark = document.getElementById('addRemark').value;
 
-    if (!category || !feeItem || !unit) {
+    if (!category || !selectedFeeItemValue || !unit) {
       showToast('请填写必填项', 'error');
       return;
+    }
+
+    // 解析收费项名称
+    let feeItem = '';
+    let subCategory = null;
+    const parts = selectedFeeItemValue.split('_');
+    
+    if (selectedFeeItemValue.startsWith('level1_')) {
+      // 一级收费项: level1_分类_收费项名（如：level1_入库_整柜入库卸货费）
+      feeItem = parts[2]; // 如：整柜入库卸货费
+    } else if (selectedFeeItemValue.startsWith('level2_')) {
+      // 二级收费项: level2_分类_一级收费项名_二级收费项名（如：level2_入库_整柜入库附加费_SKU超量费）
+      feeItem = parts[2]; // 如：整柜入库附加费
+      subCategory = parts[3]; // 如：SKU超量费
     }
 
     let pricingRules = [];
     let weightTiers = [];
     let condition = null;
     let calculationExample = null;
-    let subCategory = null;
     let tierPricing = [];
     
-    if (feeItem === '卸货费') {
+    // 判断收费项类型，决定显示哪些表单区域
+    const pricingTableSection = document.getElementById('pricingTableSection');
+    const tierPricingSection = document.getElementById('tierPricingSection');
+    
+    if (pricingTableSection && pricingTableSection.style.display !== 'none') {
+      // 费率标准表格
       const pricingRows = document.querySelectorAll('#pricingTableBody tr');
       pricingRows.forEach(row => {
-        const spec = row.querySelector('.pricing-spec').value;
-        const price = row.querySelector('.pricing-price').value;
-        const remark = row.querySelector('.pricing-remark').value;
+        const spec = row.querySelector('.pricing-spec')?.value;
+        const price = row.querySelector('.pricing-price')?.value;
+        const pricingRemark = row.querySelector('.pricing-remark')?.value;
         
         if (spec && price) {
           pricingRules.push({
             spec: spec.trim(),
             price: parseFloat(price.trim()),
-            remark: remark ? remark.trim() : null
+            remark: pricingRemark ? pricingRemark.trim() : null
           });
         }
       });
@@ -707,19 +879,13 @@ class InboundFeeRuleEngine {
         showToast('请至少添加一条费率记录', 'error');
         return;
       }
-    } else if (feeItem === '入库附加费') {
-      subCategory = document.getElementById('addSubCategory').value;
-      
-      if (!subCategory) {
-        showToast('请选择二级收费项', 'error');
-        return;
-      }
-
+    } else if (tierPricingSection && tierPricingSection.style.display !== 'none') {
+      // 阶梯价格表格
       const tierRows = document.querySelectorAll('#tierPricingTableBody tr');
       tierRows.forEach(row => {
-        const start = row.querySelector('.tier-start').value;
-        const end = row.querySelector('.tier-end').value;
-        const price = row.querySelector('.tier-price').value;
+        const start = row.querySelector('.tier-start')?.value;
+        const end = row.querySelector('.tier-end')?.value;
+        const price = row.querySelector('.tier-price')?.value;
         
         if (start && end && price) {
           tierPricing.push({
@@ -735,8 +901,9 @@ class InboundFeeRuleEngine {
         return;
       }
     } else {
-      const pricingRulesText = document.getElementById('addPricingRules').value;
-      if (pricingRulesText.trim()) {
+      // 文本输入区域
+      const pricingRulesText = document.getElementById('addPricingRules')?.value;
+      if (pricingRulesText && pricingRulesText.trim()) {
         const lines = pricingRulesText.trim().split('\n');
         lines.forEach(line => {
           const parts = line.split('|');
@@ -750,8 +917,8 @@ class InboundFeeRuleEngine {
         });
       }
 
-      const weightTiersText = document.getElementById('addWeightTiers').value;
-      if (weightTiersText.trim()) {
+      const weightTiersText = document.getElementById('addWeightTiers')?.value;
+      if (weightTiersText && weightTiersText.trim()) {
         const lines = weightTiersText.trim().split('\n');
         lines.forEach(line => {
           const parts = line.split('|');
@@ -765,8 +932,8 @@ class InboundFeeRuleEngine {
         });
       }
 
-      condition = document.getElementById('addCondition').value || null;
-      calculationExample = document.getElementById('addCalculationExample').value || null;
+      condition = document.getElementById('addCondition')?.value || null;
+      calculationExample = document.getElementById('addCalculationExample')?.value || null;
     }
 
     const newRule = {
@@ -778,6 +945,7 @@ class InboundFeeRuleEngine {
       condition: condition,
       remark: remark || null,
       calculationExample: calculationExample,
+      expireTime: document.getElementById('addExpireTime')?.value || null,
       publishStatus: 'draft',
       categoryName: category,
       operationName: feeItem,
@@ -822,30 +990,13 @@ class InboundFeeRuleEngine {
               <input type="text" class="form-input" value="${item.categoryName}" disabled>
             </div>
             <div class="form-group">
-              <label class="form-label">收费项 <span style="color:#C44536;">*</span></label>
-              <select id="editFeeItem" class="form-input" onchange="engine.toggleEditPricingTable()">
-                <option value="卸货费" ${item.feeItem === '卸货费' ? 'selected' : ''}>卸货费</option>
-                <option value="入库附加费" ${item.feeItem === '入库附加费' ? 'selected' : ''}>入库附加费</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="editSubCategorySection" style="display:${item.feeItem === '入库附加费' ? 'block' : 'none'}; margin-bottom:16px;">
-            <div class="form-group">
-              <label class="form-label">二级收费项 <span style="color:#C44536;">*</span></label>
-              <select id="editSubCategory" class="form-input" onchange="engine.toggleEditTierPricing()">
-                <option value="">请选择二级收费项</option>
-                <option value="SKU超量费" ${item.subCategory === 'SKU超量费' ? 'selected' : ''}>SKU超量费</option>
-                <option value="超重费" ${item.subCategory === '超重费' ? 'selected' : ''}>超重费</option>
-                <option value="清单费" ${item.subCategory === '清单费' ? 'selected' : ''}>清单费</option>
-                <option value="轻点费" ${item.subCategory === '轻点费' ? 'selected' : ''}>轻点费</option>
-                <option value="分货费" ${item.subCategory === '分货费' ? 'selected' : ''}>分货费</option>
-                <option value="拆拖" ${item.subCategory === '拆拖' ? 'selected' : ''}>拆拖</option>
-                <option value="分货" ${item.subCategory === '分货' ? 'selected' : ''}>分货</option>
-                <option value="超重" ${item.subCategory === '超重' ? 'selected' : ''}>超重</option>
-                <option value="清点" ${item.subCategory === '清点' ? 'selected' : ''}>清点</option>
-                <option value="SKU超重费" ${item.subCategory === 'SKU超重费' ? 'selected' : ''}>SKU超重费</option>
-              </select>
+              <label class="form-label">收费项（含二级） <span style="color:#C44536;">*</span></label>
+              <div style="position:relative;" id="editFeeItemTreeContainer">
+                <select id="editFeeItemTree" class="form-input" onchange="engine.onEditFeeItemTreeChange()" style="appearance:none;">
+                  <option value="">请选择收费项</option>
+                </select>
+                <i class="fa fa-angle-down" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#8B93A5;"></i>
+              </div>
             </div>
           </div>
 
@@ -862,7 +1013,12 @@ class InboundFeeRuleEngine {
             </select>
           </div>
 
-          <div id="editPricingTableSection" style="display:${item.feeItem === '卸货费' ? 'block' : 'none'}; margin-bottom:16px;">
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">失效时间</label>
+            <input type="date" id="editExpireTime" class="form-input" value="${item.expireTime || ''}" placeholder="选择失效时间">
+          </div>
+
+          <div id="editPricingTableSection" style="display:none; margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
               <label class="form-label" style="margin:0;">费率标准</label>
               <button class="erp-btn erp-btn-success" onclick="engine.addEditPricingRow()" style="padding:4px 12px; font-size:12px;">
@@ -885,7 +1041,7 @@ class InboundFeeRuleEngine {
             </div>
           </div>
 
-          <div id="editPricingTextSection" style="display:${item.feeItem === '入库附加费' ? 'block' : 'none'}; margin-bottom:16px;">
+          <div id="editPricingTextSection" style="display:block; margin-bottom:16px;">
             <div class="form-group" style="margin-bottom:16px;">
               <label class="form-label">费率规则（可选，每行一条：规格|价格|备注）</label>
               <textarea id="editPricingRules" class="form-input" rows="4" placeholder="示例：&#10;20GP|350|标准柜型&#10;40GP|450|大柜型&#10;40HC|500|高柜">${item.pricingRules ? item.pricingRules.map(pr => `${pr.spec}|${pr.price}|${pr.remark || ''}`).join('\n') : ''}</textarea>
@@ -947,6 +1103,22 @@ class InboundFeeRuleEngine {
 
     document.body.appendChild(overlay);
 
+    // 初始化编辑弹窗的收费项树形选择
+    this.updateEditFeeItemTree(item.categoryName);
+    
+    // 设置当前选中的收费项值
+    const editFeeItemTree = document.getElementById('editFeeItemTree');
+    if (item.subCategory) {
+      // 有二级收费项
+      const level2Value = `level2_${item.categoryName}_${item.subCategory}`;
+      editFeeItemTree.value = level2Value;
+    } else {
+      // 只有一级收费项
+      const level1Value = `level1_${item.categoryName}_${item.feeItem}`;
+      editFeeItemTree.value = level1Value;
+    }
+    this.onEditFeeItemTreeChange();
+
     if (item.pricingRules && item.pricingRules.length > 0) {
       item.pricingRules.forEach(pr => {
         this.addEditPricingRow(pr.spec, pr.price, pr.remark);
@@ -961,41 +1133,267 @@ class InboundFeeRuleEngine {
     }
   }
 
-  toggleEditPricingTable() {
-    const feeItem = document.getElementById('editFeeItem').value;
-    const pricingTableSection = document.getElementById('editPricingTableSection');
-    const pricingTextSection = document.getElementById('editPricingTextSection');
-    const subCategorySection = document.getElementById('editSubCategorySection');
-    const tierPricingSection = document.getElementById('editTierPricingSection');
-
-    subCategorySection.style.display = 'none';
-    tierPricingSection.style.display = 'none';
-    document.getElementById('editSubCategory').value = '';
-
-    if (feeItem === '卸货费') {
-      pricingTableSection.style.display = 'block';
-      pricingTextSection.style.display = 'none';
-    } else if (feeItem === '入库附加费') {
-      pricingTableSection.style.display = 'none';
-      pricingTextSection.style.display = 'block';
-      subCategorySection.style.display = 'block';
-    } else {
-      pricingTableSection.style.display = 'none';
-      pricingTextSection.style.display = 'block';
+  updateEditFeeItemTree(category) {
+    const feeItemSelect = document.getElementById('editFeeItemTree');
+    
+    feeItemSelect.innerHTML = '<option value="">请选择收费项</option>';
+    
+    if (!category) {
+      feeItemSelect.innerHTML = '<option value="">请先选择收费分类</option>';
+      return;
     }
+
+    // 收费项树形数据 - 融合收费分类枚举进行拼接（分类+一级+二级合并）
+    const feeItemTreeData = {
+      '入库': [
+        {
+          level: 1,
+          name: '整柜入库卸货费',
+          value: 'level1_入库_整柜入库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '整柜入库附加费',
+          value: 'level1_入库_整柜入库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_入库_整柜入库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_入库_整柜入库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_入库_整柜入库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_入库_整柜入库附加费_分货费' },
+            { level: 2, name: '拆托费', value: 'level2_入库_整柜入库附加费_拆托费' },
+            { level: 2, name: '拍照费', value: 'level2_入库_整柜入库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_入库_整柜入库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '快递散货入库卸货费',
+          value: 'level1_入库_快递散货入库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '快递散货入库附加费',
+          value: 'level1_入库_快递散货入库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_入库_快递散货入库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_入库_快递散货入库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_入库_快递散货入库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_入库_快递散货入库附加费_分货费' },
+            { level: 2, name: '拍照费', value: 'level2_入库_快递散货入库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_入库_快递散货入库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '托盘入库卸货费',
+          value: 'level1_入库_托盘入库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '托盘入库附加费',
+          value: 'level1_入库_托盘入库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_入库_托盘入库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_入库_托盘入库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_入库_托盘入库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_入库_托盘入库附加费_分货费' },
+            { level: 2, name: '拆托费', value: 'level2_入库_托盘入库附加费_拆托费' },
+            { level: 2, name: '拍照费', value: 'level2_入库_托盘入库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_入库_托盘入库附加费_换标费' }
+          ]
+        }
+      ],
+      '出库': [
+        {
+          level: 1,
+          name: '整柜出库卸货费',
+          value: 'level1_出库_整柜出库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '整柜出库附加费',
+          value: 'level1_出库_整柜出库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_出库_整柜出库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_出库_整柜出库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_出库_整柜出库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_出库_整柜出库附加费_分货费' },
+            { level: 2, name: '拍照费', value: 'level2_出库_整柜出库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_出库_整柜出库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '快递散货出库卸货费',
+          value: 'level1_出库_快递散货出库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '快递散货出库附加费',
+          value: 'level1_出库_快递散货出库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_出库_快递散货出库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_出库_快递散货出库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_出库_快递散货出库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_出库_快递散货出库附加费_分货费' },
+            { level: 2, name: '拍照费', value: 'level2_出库_快递散货出库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_出库_快递散货出库附加费_换标费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '托盘出库卸货费',
+          value: 'level1_出库_托盘出库卸货费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '托盘出库附加费',
+          value: 'level1_出库_托盘出库附加费',
+          children: [
+            { level: 2, name: 'SKU超量费', value: 'level2_出库_托盘出库附加费_SKU超量费' },
+            { level: 2, name: '超重费', value: 'level2_出库_托盘出库附加费_超重费' },
+            { level: 2, name: '清点费', value: 'level2_出库_托盘出库附加费_清点费' },
+            { level: 2, name: '分货费', value: 'level2_出库_托盘出库附加费_分货费' },
+            { level: 2, name: '拆托费', value: 'level2_出库_托盘出库附加费_拆托费' },
+            { level: 2, name: '拍照费', value: 'level2_出库_托盘出库附加费_拍照费' },
+            { level: 2, name: '换标费', value: 'level2_出库_托盘出库附加费_换标费' }
+          ]
+        }
+      ],
+      '仓储': [
+        {
+          level: 1,
+          name: '整柜仓储费',
+          value: 'level1_仓储_整柜仓储费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '整柜仓储附加费',
+          value: 'level1_仓储_整柜仓储附加费',
+          children: [
+            { level: 2, name: '超期费', value: 'level2_仓储_整柜仓储附加费_超期费' },
+            { level: 2, name: '超面积费', value: 'level2_仓储_整柜仓储附加费_超面积费' },
+            { level: 2, name: '温控费', value: 'level2_仓储_整柜仓储附加费_温控费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '快递散货仓储费',
+          value: 'level1_仓储_快递散货仓储费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '快递散货仓储附加费',
+          value: 'level1_仓储_快递散货仓储附加费',
+          children: [
+            { level: 2, name: '超期费', value: 'level2_仓储_快递散货仓储附加费_超期费' },
+            { level: 2, name: '超面积费', value: 'level2_仓储_快递散货仓储附加费_超面积费' },
+            { level: 2, name: '温控费', value: 'level2_仓储_快递散货仓储附加费_温控费' }
+          ]
+        },
+        {
+          level: 1,
+          name: '托盘仓储费',
+          value: 'level1_仓储_托盘仓储费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '托盘仓储附加费',
+          value: 'level1_仓储_托盘仓储附加费',
+          children: [
+            { level: 2, name: '超期费', value: 'level2_仓储_托盘仓储附加费_超期费' },
+            { level: 2, name: '超面积费', value: 'level2_仓储_托盘仓储附加费_超面积费' },
+            { level: 2, name: '温控费', value: 'level2_仓储_托盘仓储附加费_温控费' }
+          ]
+        }
+      ],
+      '其他': [
+        {
+          level: 1,
+          name: '服务费',
+          value: 'level1_其他_服务费',
+          children: []
+        },
+        {
+          level: 1,
+          name: '其他费用',
+          value: 'level1_其他_其他费用',
+          children: [
+            { level: 2, name: '特殊操作费', value: 'level2_其他_其他费用_特殊操作费' },
+            { level: 2, name: '代办费', value: 'level2_其他_其他费用_代办费' },
+            { level: 2, name: '手续费', value: 'level2_其他_其他费用_手续费' }
+          ]
+        }
+      ]
+    };
+
+    const treeItems = feeItemTreeData[category] || [];
+    
+    treeItems.forEach(item => {
+      // 添加一级项
+      const option = document.createElement('option');
+      option.value = item.value;
+      option.textContent = item.name;
+      option.style.fontWeight = '600';
+      feeItemSelect.appendChild(option);
+
+      // 添加二级项
+      if (item.children && item.children.length > 0) {
+        item.children.forEach(child => {
+          const childOption = document.createElement('option');
+          childOption.value = child.value;
+          childOption.textContent = `  └ ${child.name}`;
+          childOption.style.paddingLeft = '20px';
+          childOption.style.color = '#5A6275';
+          feeItemSelect.appendChild(childOption);
+        });
+      }
+    });
   }
 
-  toggleEditTierPricing() {
-    const subCategory = document.getElementById('editSubCategory').value;
-    const tierPricingSection = document.getElementById('editTierPricingSection');
+  onEditFeeItemTreeChange() {
+    const selectedValue = document.getElementById('editFeeItemTree').value;
+    const pricingTableSection = document.getElementById('editPricingTableSection');
     const pricingTextSection = document.getElementById('editPricingTextSection');
+    const tierPricingSection = document.getElementById('editTierPricingSection');
 
-    if (subCategory) {
+    // 重置所有区域
+    pricingTableSection.style.display = 'none';
+    tierPricingSection.style.display = 'none';
+    pricingTextSection.style.display = 'block';
+
+    if (!selectedValue) return;
+
+    // 判断是一级还是二级收费项
+    if (selectedValue.startsWith('level1_')) {
+      // 一级收费项 - 判断是否包含"卸货费"字样
+      const parts = selectedValue.split('_');
+      const feeItemName = parts[2]; // 如：整柜入库卸货费
+      
+      if (feeItemName.includes('卸货费')) {
+        // 包含"卸货费"字样的一级收费项 - 显示费率标准表格
+        pricingTableSection.style.display = 'block';
+        pricingTextSection.style.display = 'none';
+      } else if (feeItemName.includes('附加费')) {
+        // 包含"附加费"字样的一级收费项 - 显示费率规则文本区
+        pricingTextSection.style.display = 'block';
+      } else {
+        // 其他一级收费项（如仓储费、服务费等）- 显示费率规则文本区
+        pricingTextSection.style.display = 'block';
+      }
+    } else if (selectedValue.startsWith('level2_')) {
+      // 二级收费项 - 显示阶梯价格表格
       tierPricingSection.style.display = 'block';
       pricingTextSection.style.display = 'none';
-    } else {
-      tierPricingSection.style.display = 'none';
-      pricingTextSection.style.display = 'block';
     }
   }
 
@@ -1047,12 +1445,30 @@ class InboundFeeRuleEngine {
     const item = this.flatItems.find(i => i.id === ruleId);
     if (!item) return;
 
-    item.feeItem = document.getElementById('editFeeItem').value;
-    item.subCategory = document.getElementById('editSubCategory').value || null;
+    // 解析收费项树形选择值
+    const selectedValue = document.getElementById('editFeeItemTree').value;
+    if (!selectedValue) {
+      showToast('请选择收费项', 'error');
+      return;
+    }
+
+    // 解析收费项名称
+    const parts = selectedValue.split('_');
+    if (selectedValue.startsWith('level1_')) {
+      // 一级收费项: level1_分类_收费项名（如：level1_入库_整柜入库卸货费）
+      item.feeItem = parts[2]; // 如：整柜入库卸货费
+      item.subCategory = null;
+    } else if (selectedValue.startsWith('level2_')) {
+      // 二级收费项: level2_分类_一级收费项名_二级收费项名（如：level2_入库_整柜入库附加费_SKU超量费）
+      item.feeItem = parts[2]; // 如：整柜入库附加费
+      item.subCategory = parts[3]; // 如：SKU超量费
+    }
+
     item.unit = document.getElementById('editUnit').value;
     item.condition = document.getElementById('editCondition').value || null;
     item.calculationExample = document.getElementById('editCalculationExample').value || null;
     item.remark = document.getElementById('editRemark').value || null;
+    item.expireTime = document.getElementById('editExpireTime').value || null;
 
     const pricingTableBody = document.getElementById('editPricingTableBody');
     if (pricingTableBody && pricingTableBody.children.length > 0) {

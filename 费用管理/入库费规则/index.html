@@ -168,6 +168,7 @@
                 <th style="width:150px;">创建时间</th>
                 <th style="width:100px;">更新人</th>
                 <th style="width:150px;">更新时间</th>
+                <th style="width:150px;">失效时间</th>
                 <th style="width:100px;">操作</th>
               </tr>
             </thead>
@@ -321,7 +322,7 @@
                     <td class="px-3 py-2 text-gray-800">收费分类</td>
                     <td class="px-3 py-2 text-gray-600">收费项所属的分类</td>
                     <td class="px-3 py-2 text-gray-600">系统生成</td>
-                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：整柜入库、快递散货入库、托盘入库</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：入库、出库、仓储、其他</td>
                     <td class="px-3 py-2 text-gray-600">文本显示</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -330,7 +331,7 @@
                     <td class="px-3 py-2 text-gray-800">收费项（含二级）</td>
                     <td class="px-3 py-2 text-gray-600">一级和二级收费项的统一展示</td>
                     <td class="px-3 py-2 text-gray-600">系统生成</td>
-                    <td class="px-3 py-2 text-gray-600">使用树形结构展示：一级项直接显示，二级项以缩进形式显示在对应一级项下</td>
+                    <td class="px-3 py-2 text-gray-600">使用树形结构展示，融合分类+一级+二级进行合并：<br>入库：整柜入库卸货费、整柜入库附加费（SKU超量费、超重费、清点费、分货费、拆托费、拍照费、换标费）、快递散货入库卸货费、快递散货入库附加费（SKU超量费、超重费、清点费、分货费、拍照费、换标费）、托盘入库卸货费、托盘入库附加费（SKU超量费、超重费、清点费、分货费、拆托费、拍照费、换标费）<br>出库：整柜出库卸货费、整柜出库附加费（SKU超量费、超重费、清点费、分货费、拍照费、换标费）、快递散货出库卸货费、快递散货出库附加费（SKU超量费、超重费、清点费、分货费、拍照费、换标费）、托盘出库卸货费、托盘出库附加费（SKU超量费、超重费、清点费、分货费、拆托费、拍照费、换标费）<br>仓储：整柜仓储费、整柜仓储附加费（超期费、超面积费、温控费）、快递散货仓储费、快递散货仓储附加费（超期费、超面积费、温控费）、托盘仓储费、托盘仓储附加费（超期费、超面积费、温控费）<br>其他：服务费、其他费用（特殊操作费、代办费、手续费）</td>
                     <td class="px-3 py-2 text-gray-600">文本显示（带缩进层次）</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -380,6 +381,15 @@
                     <td class="px-3 py-2 text-gray-600">-</td>
                     <td class="px-3 py-2 text-gray-600">DATETIME</td>
                   </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">失效时间</td>
+                    <td class="px-3 py-2 text-gray-600">规则失效的时间</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">可选，选择规则的失效时间，超过该时间后规则不再生效</td>
+                    <td class="px-3 py-2 text-gray-600">YYYY-MM-DD</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">DATE</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -417,7 +427,7 @@
                     <td class="px-3 py-2 text-gray-800">收费分类 <span style="color:#C44536;">*</span></td>
                     <td class="px-3 py-2 text-gray-600">收费项所属的分类</td>
                     <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：整柜入库、快递散货入库、托盘入库</td>
+                    <td class="px-3 py-2 text-gray-600">从下拉列表选择：入库、出库、仓储、其他</td>
                     <td class="px-3 py-2 text-gray-600">下拉选择</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -426,7 +436,7 @@
                     <td class="px-3 py-2 text-gray-800">收费项（含二级） <span style="color:#C44536;">*</span></td>
                     <td class="px-3 py-2 text-gray-600">一级和二级收费项的统一选择</td>
                     <td class="px-3 py-2 text-gray-600">手工选择（树形下拉框）</td>
-                    <td class="px-3 py-2 text-gray-600">使用树形下拉框选择，一级项直接显示，二级项缩进显示在对应一级项下；选择后显示选择结果</td>
+                    <td class="px-3 py-2 text-gray-600">使用树形下拉框选择，融合分类+一级+二级进行合并，根据选择的收费分类动态显示对应的收费项树：<br>入库：整柜入库卸货费、整柜入库附加费（SKU超量费、超重费、清点费、分货费、拆托费、拍照费、换标费）、快递散货入库卸货费、快递散货入库附加费（SKU超量费、超重费、清点费、分货费、拍照费、换标费）、托盘入库卸货费、托盘入库附加费（SKU超量费、超重费、清点费、分货费、拆托费、拍照费、换标费）<br>出库：整柜出库卸货费、整柜出库附加费（SKU超量费、超重费、清点费、分货费、拍照费、换标费）、快递散货出库卸货费、快递散货出库附加费（SKU超量费、超重费、清点费、分货费、拍照费、换标费）、托盘出库卸货费、托盘出库附加费（SKU超量费、超重费、清点费、分货费、拆托费、拍照费、换标费）<br>仓储：整柜仓储费、整柜仓储附加费（超期费、超面积费、温控费）、快递散货仓储费、快递散货仓储附加费（超期费、超面积费、温控费）、托盘仓储费、托盘仓储附加费（超期费、超面积费、温控费）<br>其他：服务费、其他费用（特殊操作费、代办费、手续费）</td>
                     <td class="px-3 py-2 text-gray-600">树形下拉选择</td>
                     <td class="px-3 py-2 text-gray-600">64</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -441,10 +451,19 @@
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">失效时间</td>
+                    <td class="px-3 py-2 text-gray-600">规则失效的时间</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">可选，选择规则的失效时间，超过该时间后规则不再生效</td>
+                    <td class="px-3 py-2 text-gray-600">日期选择</td>
+                    <td class="px-3 py-2 text-gray-600">-</td>
+                    <td class="px-3 py-2 text-gray-600">DATE</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-800">费率标准</td>
                     <td class="px-3 py-2 text-gray-600">不同规格的价格标准</td>
                     <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                    <td class="px-3 py-2 text-gray-600">当收费项为"卸货费"时显示表格，支持添加多行：规格（如20GP）、价格（数字）、备注（文本）</td>
+                    <td class="px-3 py-2 text-gray-600">当收费项为"卸货费"类（如整柜入库卸货费、快递散货入库卸货费等）时显示表格，支持添加多行：规格（如20GP）、价格（数字）、备注（文本）</td>
                     <td class="px-3 py-2 text-gray-600">表格录入</td>
                     <td class="px-3 py-2 text-gray-600">-</td>
                     <td class="px-3 py-2 text-gray-600">JSON</td>
@@ -462,7 +481,7 @@
                     <td class="px-3 py-2 text-gray-800">费率规则</td>
                     <td class="px-3 py-2 text-gray-600">费率规则文本描述</td>
                     <td class="px-3 py-2 text-gray-600">键盘输入</td>
-                    <td class="px-3 py-2 text-gray-600">当收费项为"入库附加费"但未选择二级收费项时显示，每行一条：规格|价格|备注</td>
+                    <td class="px-3 py-2 text-gray-600">当收费项为"附加费"类一级项（如整柜入库附加费）但未选择二级收费项时显示，每行一条：规格|价格|备注</td>
                     <td class="px-3 py-2 text-gray-600">多行文本</td>
                     <td class="px-3 py-2 text-gray-600">512</td>
                     <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -525,16 +544,21 @@
                 <tbody class="divide-y divide-gray-100">
                   <tr class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-800">打开新增弹窗</td>
-                    <td class="px-3 py-2 text-gray-600">1. 显示新增弹窗<br>2. 收费分类为空，需要用户手动选择<br>3. 收费项下拉框显示"请先选择收费分类"</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示新增弹窗<br>2. 收费分类为空，需要用户手动选择（入库、出库、仓储、其他）<br>3. 收费项下拉框显示"请先选择收费分类"</td>
                     <td class="px-3 py-2 text-gray-600">显示新增弹窗，所有字段为空或默认值</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择一级收费项（如：卸货费）</td>
-                    <td class="px-3 py-2 text-gray-600">1. 显示选择结果区域<br>2. 如果是卸货费，显示"费率标准"表格<br>3. 其他一级项显示文本输入区</td>
-                    <td class="px-3 py-2 text-gray-600">选择结果展示 + 对应的表单字段</td>
+                    <td class="px-3 py-2 text-gray-800">选择收费分类</td>
+                    <td class="px-3 py-2 text-gray-600">1. 根据选择的收费分类动态加载对应的收费项树形数据<br>2. 收费项下拉框显示该分类下的合并收费项（如：整柜入库卸货费、整柜入库附加费等）<br>3. 一级项加粗显示，二级项缩进显示</td>
+                    <td class="px-3 py-2 text-gray-600">收费项下拉框动态更新</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择二级收费项（如：SKU超量费）</td>
+                    <td class="px-3 py-2 text-gray-800">选择一级收费项（如：整柜入库卸货费）</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示选择结果区域<br>2. 显示"费率标准"表格<br>3. 隐藏其他表单区域</td>
+                    <td class="px-3 py-2 text-gray-600">选择结果展示 + 费率标准表格</td>
+                  </tr>
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-800">选择二级收费项（如：SKU超量费、超重费）</td>
                     <td class="px-3 py-2 text-gray-600">1. 显示选择结果区域，包含一级和二级名称<br>2. 显示"阶梯价格"表格<br>3. 隐藏其他表单区域</td>
                     <td class="px-3 py-2 text-gray-600">选择结果展示 + 阶梯价格表格</td>
                   </tr>
