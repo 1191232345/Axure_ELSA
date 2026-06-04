@@ -120,6 +120,38 @@
           <input type="text" id="filterName" placeholder="请输入价卡名称" 
                  class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
         </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">创建人</label>
+          <select id="filterCreator" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+            <option value="">请选择创建人</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">创建时间</label>
+          <div class="flex items-center gap-2">
+            <input type="datetime-local" id="filterCreateTimeStart" 
+                   class="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors text-sm">
+            <span class="text-text-muted">至</span>
+            <input type="datetime-local" id="filterCreateTimeEnd" 
+                   class="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">更新人</label>
+          <select id="filterUpdater" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+            <option value="">请选择更新人</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">更新时间</label>
+          <div class="flex items-center gap-2">
+            <input type="datetime-local" id="filterUpdateTimeStart" 
+                   class="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors text-sm">
+            <span class="text-text-muted">至</span>
+            <input type="datetime-local" id="filterUpdateTimeEnd" 
+                   class="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors text-sm">
+          </div>
+        </div>
       </div>
       <div class="mt-4 flex justify-end">
         <button onclick="resetFilters()" class="btn btn-secondary">
@@ -267,6 +299,26 @@
                 <td class="px-3 py-2 text-gray-800">价卡名称</td>
                 <td class="px-3 py-2 text-gray-600">文本输入框</td>
                 <td class="px-3 py-2 text-gray-600">模糊匹配价卡名称，不区分大小写</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">创建人</td>
+                <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                <td class="px-3 py-2 text-gray-600">精确匹配创建人，从已有价卡中提取创建人列表</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">更新人</td>
+                <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                <td class="px-3 py-2 text-gray-600">精确匹配更新人，从已有价卡中提取更新人列表</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">创建时间</td>
+                <td class="px-3 py-2 text-gray-600">时间段选择</td>
+                <td class="px-3 py-2 text-gray-600">选择开始时间和结束时间，筛选该时间段内创建的价卡</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">更新时间</td>
+                <td class="px-3 py-2 text-gray-600">时间段选择</td>
+                <td class="px-3 py-2 text-gray-600">选择开始时间和结束时间，筛选该时间段内更新的价卡</td>
               </tr>
             </tbody>
           </table>

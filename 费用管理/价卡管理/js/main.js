@@ -51,7 +51,28 @@ async function init() {
     loadFeeCategoriesData()
   ]);
   loadPackages();
+  renderFilterOptions();
   renderPackageTable();
+}
+
+function renderFilterOptions() {
+  // 获取所有创建人和更新人
+  const creators = [...new Set(packages.map(pkg => pkg.createdBy).filter(Boolean))];
+  const updaters = [...new Set(packages.map(pkg => pkg.updatedBy).filter(Boolean))];
+  
+  // 填充创建人下拉选项
+  const creatorSelect = document.getElementById('filterCreator');
+  creatorSelect.innerHTML = '<option value="">请选择创建人</option>';
+  creators.forEach(creator => {
+    creatorSelect.innerHTML += `<option value="${creator}">${creator}</option>`;
+  });
+  
+  // 填充更新人下拉选项
+  const updaterSelect = document.getElementById('filterUpdater');
+  updaterSelect.innerHTML = '<option value="">请选择更新人</option>';
+  updaters.forEach(updater => {
+    updaterSelect.innerHTML += `<option value="${updater}">${updater}</option>`;
+  });
 }
 
 async function loadInboundFeeRuleData() {
@@ -677,9 +698,52 @@ function closeDetailModal() {
 
 function applyFilters() {
   const nameFilter = document.getElementById('filterName').value.toLowerCase();
+  const creatorFilter = document.getElementById('filterCreator').value;
+  const updaterFilter = document.getElementById('filterUpdater').value;
+  const createTimeStart = document.getElementById('filterCreateTimeStart').value;
+  const createTimeEnd = document.getElementById('filterCreateTimeEnd').value;
+  const updateTimeStart = document.getElementById('filterUpdateTimeStart').value;
+  const updateTimeEnd = document.getElementById('filterUpdateTimeEnd').value;
   
   const filteredPackages = packages.filter(pkg => {
-    return !nameFilter || pkg.name.toLowerCase().includes(nameFilter);
+    // 价卡名称筛选
+    if (nameFilter && !pkg.name.toLowerCase().includes(nameFilter)) {
+      return false;
+    }
+    
+    // 创建人筛选
+    if (creatorFilter && pkg.createdBy !== creatorFilter) {
+      return false;
+    }
+    
+    // 更新人筛选
+    if (updaterFilter && pkg.updatedBy !== updaterFilter) {
+      return false;
+    }
+    
+    // 创建时间范围筛选
+    if (createTimeStart || createTimeEnd) {
+      const pkgCreateTime = new Date(pkg.createdAt);
+      if (createTimeStart && pkgCreateTime < new Date(createTimeStart)) {
+        return false;
+      }
+      if (createTimeEnd && pkgCreateTime > new Date(createTimeEnd)) {
+        return false;
+      }
+    }
+    
+    // 更新时间范围筛选
+    if (updateTimeStart || updateTimeEnd) {
+      const pkgUpdateTime = new Date(pkg.updatedAt);
+      if (updateTimeStart && pkgUpdateTime < new Date(updateTimeStart)) {
+        return false;
+      }
+      if (updateTimeEnd && pkgUpdateTime > new Date(updateTimeEnd)) {
+        return false;
+      }
+    }
+    
+    return true;
   });
   
   const tbody = document.getElementById('packageTableBody');
@@ -701,6 +765,12 @@ function applyFilters() {
 
 function resetFilters() {
   document.getElementById('filterName').value = '';
+  document.getElementById('filterCreator').value = '';
+  document.getElementById('filterUpdater').value = '';
+  document.getElementById('filterCreateTimeStart').value = '';
+  document.getElementById('filterCreateTimeEnd').value = '';
+  document.getElementById('filterUpdateTimeStart').value = '';
+  document.getElementById('filterUpdateTimeEnd').value = '';
   
   renderPackageTable();
 }
