@@ -127,6 +127,12 @@
           </select>
         </div>
         <div>
+          <label class="block text-sm font-medium text-text-secondary mb-2">更新人</label>
+          <select id="filterUpdater" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
+            <option value="">请选择更新人</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-sm font-medium text-text-secondary mb-2">创建时间</label>
           <div class="flex items-center gap-2">
             <input type="datetime-local" id="filterCreateTimeStart" 
@@ -135,12 +141,6 @@
             <input type="datetime-local" id="filterCreateTimeEnd" 
                    class="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors text-sm">
           </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-text-secondary mb-2">更新人</label>
-          <select id="filterUpdater" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
-            <option value="">请选择更新人</option>
-          </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-text-secondary mb-2">更新时间</label>
@@ -251,8 +251,15 @@
                 <td class="px-3 py-2 text-gray-800">包含费用项</td>
                 <td class="px-3 py-2 text-gray-600">统计价卡中各类型费用项的数量</td>
                 <td class="px-3 py-2 text-gray-600">packages.feeItems</td>
-                <td class="px-3 py-2 text-gray-600">按费用类型分组统计，格式：类型名(数量项)</td>
+                <td class="px-3 py-2 text-gray-600">按费用类型分组统计，格式：类型名(数量项)。展示引用的入库费规则分类信息</td>
                 <td class="px-3 py-2 text-gray-600">多个类型用顿号分隔</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">入库费规则引用</td>
+                <td class="px-3 py-2 text-gray-600">展示价卡引用的入库费规则信息</td>
+                <td class="px-3 py-2 text-gray-600">packages.feeItems（关联入库费规则数据）</td>
+                <td class="px-3 py-2 text-gray-600">在价卡详情中展示每个费用项引用的入库费规则完整信息，包括：费用组分类、费用类型、操作类型、具体收费项、单位等</td>
+                <td class="px-3 py-2 text-gray-600">通过费用类型名称字段关联入库费规则</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">创建人/更新人</td>
@@ -368,7 +375,7 @@
                 <td class="px-3 py-2 text-gray-600">操作列</td>
                 <td class="px-3 py-2 text-gray-600">打开价卡详情弹窗</td>
                 <td class="px-3 py-2 text-gray-600">价卡存在</td>
-                <td class="px-3 py-2 text-gray-600">展示价卡完整信息，包括基本信息（创建人、创建时间、更新人、更新时间）、费用项明细（费用组、费用类型名称、单位、折扣方式、折扣金额、备注）</td>
+                <td class="px-3 py-2 text-gray-600">展示价卡完整信息，包括基本信息（创建人、创建时间、更新人、更新时间）、费用项明细（费用组、费用类型名称、单位、折扣方式、折扣金额、备注）。费用项明细中展示引用的入库费规则完整信息，包括：费用组分类、费用类型、操作类型、具体收费项、单位等</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">编辑</td>
@@ -547,7 +554,7 @@
                 <td class="px-3 py-2 text-gray-800">费用组</td>
                 <td class="px-3 py-2 text-gray-600">费用项分类</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                <td class="px-3 py-2 text-gray-600">从入库费规则数据中加载，选择后联动费用类型名称下拉</td>
+                <td class="px-3 py-2 text-gray-600">从入库费规则数据中加载，选择后联动费用类型名称下拉。支持引用入库费规则中的费用组分类（如：整柜入库、快递散货入库、托盘入库）</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -556,10 +563,19 @@
                 <td class="px-3 py-2 text-gray-800">费用类型名称</td>
                 <td class="px-3 py-2 text-gray-600">具体费用项</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                <td class="px-3 py-2 text-gray-600">根据费用组动态加载对应的费用项列表</td>
+                <td class="px-3 py-2 text-gray-600">根据费用组动态加载对应的费用项列表。引用入库费规则中的具体收费项（如：卸货费、收货费、质检费等），选择后自动填充单位字段，并在价卡详情中展示引用的入库费规则完整信息</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">字符型</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">入库费规则引用</td>
+                <td class="px-3 py-2 text-gray-600">引用的入库费规则信息</td>
+                <td class="px-3 py-2 text-gray-600">系统自动关联</td>
+                <td class="px-3 py-2 text-gray-600">当选择费用类型名称后，系统自动关联对应的入库费规则，在价卡详情中展示：费用组、费用类型名称、操作类型、单位等完整规则信息</td>
+                <td class="px-3 py-2 text-gray-600">价卡详情弹窗</td>
+                <td class="px-3 py-2 text-gray-600">-</td>
+                <td class="px-3 py-2 text-gray-600">关联型</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">折扣方式</td>
