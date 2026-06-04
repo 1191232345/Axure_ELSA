@@ -5,46 +5,6 @@ let feeRows = [];
 let editingPackageId = null;
 let currentFeeCategory = 'inbound';
 
-let availableCustomers = [];
-let selectedCustomers = [];
-let selectedCustomersInTransfer = [];
-
-let availableWarehouses = [];
-let selectedWarehouses = [];
-let selectedWarehousesInTransfer = [];
-
-let modalAvailableCustomers = [];
-let modalSelectedCustomers = [];
-let modalSelectedCustomersInTransfer = [];
-
-let modalAvailableWarehouses = [];
-let modalSelectedWarehouses = [];
-let modalSelectedWarehousesInTransfer = [];
-
-let currentAssociationPackageId = null;
-
-const CUSTOMERS_DATA = [
-  { id: 'cust_1', name: '华为技术有限公司' },
-  { id: 'cust_2', name: '小米科技有限公司' },
-  { id: 'cust_3', name: '阿里巴巴集团' },
-  { id: 'cust_4', name: '腾讯科技' },
-  { id: 'cust_5', name: '京东集团' },
-  { id: 'cust_6', name: '字节跳动' },
-  { id: 'cust_7', name: '美团点评' },
-  { id: 'cust_8', name: '拼多多' }
-];
-
-const WAREHOUSES_DATA = [
-  { id: 'wh_1', name: '深圳仓库' },
-  { id: 'wh_2', name: '广州仓库' },
-  { id: 'wh_3', name: '上海仓库' },
-  { id: 'wh_4', name: '北京仓库' },
-  { id: 'wh_5', name: '杭州仓库' },
-  { id: 'wh_6', name: '成都仓库' },
-  { id: 'wh_7', name: '武汉仓库' },
-  { id: 'wh_8', name: '南京仓库' }
-];
-
 const DATA_VERSION = '7.0';
 
 const FEE_TYPE_ENUMS = {
@@ -139,21 +99,14 @@ function loadPackages() {
             feeName: '卸货费',
             unit: '柜',
             discountType: 'percentage',
-            discountValue: 10
+            discountValue: 10,
+            remark: ''
           }
         ],
-        customers: [
-          { id: 'cust_1', name: '华为技术有限公司' },
-          { id: 'cust_2', name: '小米科技有限公司' }
-        ],
-        warehouses: [
-          { id: 'wh_1', name: '深圳仓库' },
-          { id: 'wh_2', name: '广州仓库' }
-        ],
-        effectiveDate: '2024-01-01T00:00',
-        expiryDate: '2024-12-31T23:00',
-        status: 'active',
-        createdAt: '2024-01-15 10:30:00'
+        createdBy: '系统管理员',
+        createdAt: '2024-01-15 10:30:00',
+        updatedBy: '系统管理员',
+        updatedAt: '2024-01-15 10:30:00'
       }
     ];
     savePackages();
@@ -254,7 +207,8 @@ function addFeeRow() {
     feeType: '',
     feeId: '',
     discountType: 'none',
-    discountValue: 0
+    discountValue: 0,
+    remark: ''
   });
   renderFeeTable();
 }
@@ -284,7 +238,7 @@ function renderFeeTable() {
   if (feeRows.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="px-4 py-8 text-center text-text-muted">
+        <td colspan="7" class="px-4 py-8 text-center text-text-muted">
           <i class="fas fa-inbox text-2xl mb-2"></i>
           <p>暂无费用项，请点击"新增行"添加</p>
         </td>
@@ -323,28 +277,28 @@ function renderFeeTable() {
     let discountValueInput = '';
     if (row.discountType === 'percentage') {
       discountValueInput = `
-        <div class="flex items-center gap-2 mt-2">
+        <div class="flex items-center gap-1">
           <input type="number" value="${row.discountValue || ''}" min="0" max="100" step="1"
                  onchange="updateFeeRow(${row.id}, 'discountValue', parseFloat(this.value) || 0)"
-                 class="form-input text-sm w-24" placeholder="输入百分比">
+                 class="form-input text-sm w-20" placeholder="百分比">
           <span class="text-sm text-text-secondary">%</span>
         </div>
       `;
     } else if (row.discountType === 'fixed') {
       discountValueInput = `
-        <div class="flex items-center gap-2 mt-2">
+        <div class="flex items-center gap-1">
           <input type="number" value="${row.discountValue || ''}" min="0" step="0.01"
                  onchange="updateFeeRow(${row.id}, 'discountValue', parseFloat(this.value) || 0)"
-                 class="form-input text-sm w-32" placeholder="输入金额">
+                 class="form-input text-sm w-24" placeholder="金额">
           <span class="text-sm text-text-secondary">元</span>
         </div>
       `;
     } else if (row.discountType === 'fixed_price') {
       discountValueInput = `
-        <div class="flex items-center gap-2 mt-2">
+        <div class="flex items-center gap-1">
           <input type="number" value="${row.discountValue || ''}" min="0" step="0.01"
                  onchange="updateFeeRow(${row.id}, 'discountValue', parseFloat(this.value) || 0)"
-                 class="form-input text-sm w-32" placeholder="输入一口价">
+                 class="form-input text-sm w-24" placeholder="一口价">
           <span class="text-sm text-text-secondary">元</span>
         </div>
       `;
@@ -374,7 +328,14 @@ function renderFeeTable() {
                   class="form-input text-sm">
             ${discountTypeOptions}
           </select>
-          ${discountValueInput}
+        </td>
+        <td class="px-4 py-3">
+          ${discountValueInput || '<span class="text-sm text-text-muted">-</span>'}
+        </td>
+        <td class="px-4 py-3">
+          <input type="text" value="${row.remark || ''}" 
+                 onchange="updateFeeRow(${row.id}, 'remark', this.value)"
+                 class="form-input text-sm" placeholder="输入备注">
         </td>
         <td class="px-4 py-3">
           <button type="button" onclick="removeFeeRow(${row.id})" 
@@ -423,44 +384,16 @@ function renderPackageTable() {
           <div class="text-sm text-text-secondary">${feeSummaryText}</div>
         </td>
         <td class="px-6 py-4">
-          <div class="text-sm text-text-secondary">${formatDateTime(pkg.effectiveDate)}</div>
-        </td>
-        <td class="px-6 py-4">
-          <div class="text-sm text-text-secondary">${formatDateTime(pkg.expiryDate)}</div>
-        </td>
-        <td class="px-6 py-4">
-          <span class="status-badge ${
-            pkg.status === 'active' ? 'status-active' : 
-            pkg.status === 'draft' ? 'status-draft' : 
-            pkg.status === 'cancelled' ? 'status-cancelled' : 'status-inactive'
-          }">
-            ${pkg.status === 'active' ? '生效' : 
-              pkg.status === 'draft' ? '草稿' : 
-              pkg.status === 'cancelled' ? '已作废' : '停用'}
-          </span>
-        </td>
-        <td class="px-6 py-4">
-          <div class="text-sm text-text-secondary">
-            ${pkg.customers && pkg.customers.length > 0 ? 
-              `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                <i class="fas fa-users mr-1"></i>${pkg.customers.length}个客户
-              </span>` : 
-              '<span class="text-xs text-text-muted">未关联</span>'
-            }
-          </div>
-        </td>
-        <td class="px-6 py-4">
-          <div class="text-sm text-text-secondary">
-            ${pkg.warehouses && pkg.warehouses.length > 0 ? 
-              `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <i class="fas fa-warehouse mr-1"></i>${pkg.warehouses.length}个仓库
-              </span>` : 
-              '<span class="text-xs text-text-muted">未关联</span>'
-            }
-          </div>
+          <div class="text-sm text-text-secondary">${pkg.createdBy || '-'}</div>
         </td>
         <td class="px-6 py-4">
           <div class="text-sm text-text-secondary">${pkg.createdAt}</div>
+        </td>
+        <td class="px-6 py-4">
+          <div class="text-sm text-text-secondary">${pkg.updatedBy || '-'}</div>
+        </td>
+        <td class="px-6 py-4">
+          <div class="text-sm text-text-secondary">${pkg.updatedAt || '-'}</div>
         </td>
         <td class="px-6 py-4">
           <div class="action-buttons">
@@ -469,15 +402,6 @@ function renderPackageTable() {
             </button>
             <button class="action-btn action-btn-edit" onclick="editPackage(${pkg.id})">
               <i class="fas fa-edit mr-1"></i>编辑
-            </button>
-            <button class="action-btn action-btn-customer" onclick="openCustomerModal(${pkg.id})">
-              <i class="fas fa-users mr-1"></i>关联客户
-            </button>
-            <button class="action-btn action-btn-warehouse" onclick="openWarehouseModal(${pkg.id})">
-              <i class="fas fa-warehouse mr-1"></i>关联仓库
-            </button>
-            <button class="action-btn action-btn-delete" onclick="cancelPackage(${pkg.id})">
-              <i class="fas fa-ban mr-1"></i>作废
             </button>
           </div>
         </td>
@@ -493,7 +417,6 @@ function openCreateModal() {
   
   document.getElementById('modalTitleText').textContent = '创建价卡';
   document.getElementById('packageForm').reset();
-  document.getElementById('packageStatus').checked = false;
   
   document.querySelectorAll('.fee-category-tab').forEach(tab => {
     tab.classList.remove('active');
@@ -515,14 +438,6 @@ function closeModal() {
 function savePackage() {
   const name = document.getElementById('packageName').value.trim();
   const description = document.getElementById('packageDescription').value.trim();
-  let effectiveDate = document.getElementById('effectiveDate').value;
-  let expiryDate = document.getElementById('expiryDate').value;
-  const isActive = document.getElementById('packageStatus').checked;
-  
-  effectiveDate = processDateTimeDefault(effectiveDate, true);
-  expiryDate = processDateTimeDefault(expiryDate, false);
-  
-  const status = isActive ? 'active' : 'draft';
   
   if (!name) {
     alert('请输入价卡名称');
@@ -597,34 +512,44 @@ function savePackage() {
       feeName,
       unit,
       discountType: row.discountType,
-      discountValue: row.discountValue || 0
+      discountValue: row.discountValue || 0,
+      remark: row.remark || ''
     };
   });
+  
+  const currentTime = new Date().toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(/\//g, '-');
+  
+  const currentUser = '系统管理员'; // 实际应用中应从登录信息获取
   
   const packageData = {
     name,
     description,
-    feeItems,
-    effectiveDate,
-    expiryDate,
-    status
+    feeItems
   };
   
   if (editingPackageId) {
     const index = packages.findIndex(p => p.id === editingPackageId);
     if (index > -1) {
-      packages[index] = { ...packages[index], ...packageData };
+      packages[index] = { 
+        ...packages[index], 
+        ...packageData,
+        updatedBy: currentUser,
+        updatedAt: currentTime
+      };
     }
   } else {
     packageData.id = Date.now();
-    packageData.createdAt = new Date().toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).replace(/\//g, '-');
+    packageData.createdBy = currentUser;
+    packageData.createdAt = currentTime;
+    packageData.updatedBy = currentUser;
+    packageData.updatedAt = currentTime;
     packages.push(packageData);
   }
   
@@ -646,7 +571,8 @@ function editPackage(packageId) {
     feeType: item.feeType,
     feeId: item.feeId,
     discountType: item.discountType || 'none',
-    discountValue: item.discountValue || 0
+    discountValue: item.discountValue || 0,
+    remark: item.remark || ''
   }));
   
   currentFeeCategory = pkg.feeItems[0]?.feeCategory || 'inbound';
@@ -654,9 +580,6 @@ function editPackage(packageId) {
   document.getElementById('modalTitleText').textContent = '编辑价卡';
   document.getElementById('packageName').value = pkg.name;
   document.getElementById('packageDescription').value = pkg.description;
-  document.getElementById('effectiveDate').value = pkg.effectiveDate;
-  document.getElementById('expiryDate').value = pkg.expiryDate;
-  document.getElementById('packageStatus').checked = pkg.status === 'active';
   
   document.querySelectorAll('.fee-category-tab').forEach(tab => {
     tab.classList.remove('active');
@@ -670,31 +593,9 @@ function editPackage(packageId) {
   document.getElementById('packageModal').style.display = 'flex';
 }
 
-function cancelPackage(packageId) {
-  const pkg = packages.find(p => p.id === packageId);
-  if (!pkg) return;
-  
-  if (!confirm(`确定要作废价卡"${pkg.name}"吗？\n\n作废后该价卡将无法继续使用，此操作不可恢复。`)) {
-    return;
-  }
-  
-  pkg.status = 'cancelled';
-  savePackages();
-  renderPackageTable();
-  
-  alert('价卡已作废！');
-}
-
 function viewPackage(packageId) {
   const pkg = packages.find(p => p.id === packageId);
   if (!pkg) return;
-  
-  const levelLabels = {
-    1: 'VIP1',
-    2: 'VIP2',
-    3: 'VIP3',
-    4: 'VIP4'
-  };
   
   const feeItemsHtml = pkg.feeItems.map(item => {
     let discountText = '无折扣';
@@ -703,6 +604,8 @@ function viewPackage(packageId) {
       discountText = `${item.discountValue}%折扣`;
     } else if (item.discountType === 'fixed') {
       discountText = `减免${item.discountValue}元`;
+    } else if (item.discountType === 'fixed_price') {
+      discountText = `一口价${item.discountValue}元`;
     }
     
     return `
@@ -713,7 +616,7 @@ function viewPackage(packageId) {
         </div>
         <div class="detail-fee-price">
           单位：${item.unit}<br>
-          折扣方式：${discountText}
+          折扣方式：${discountText}${item.remark ? `<br>备注：${item.remark}` : ''}
         </div>
       </div>
     `;
@@ -729,24 +632,21 @@ function viewPackage(packageId) {
           <div class="detail-label">价卡名称</div>
           <div class="detail-value">${pkg.name}</div>
         </div>
-
         <div class="detail-item">
-          <div class="detail-label">状态</div>
-          <div class="detail-value">
-            <span class="status-badge ${
-              pkg.status === 'active' ? 'status-active' : 
-              pkg.status === 'draft' ? 'status-draft' : 
-              pkg.status === 'cancelled' ? 'status-cancelled' : 'status-inactive'
-            }">
-              ${pkg.status === 'active' ? '生效' : 
-                pkg.status === 'draft' ? '草稿' : 
-                pkg.status === 'cancelled' ? '已作废' : '停用'}
-            </span>
-          </div>
+          <div class="detail-label">创建人</div>
+          <div class="detail-value">${pkg.createdBy || '-'}</div>
         </div>
         <div class="detail-item">
           <div class="detail-label">创建时间</div>
           <div class="detail-value">${pkg.createdAt}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">更新人</div>
+          <div class="detail-value">${pkg.updatedBy || '-'}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">更新时间</div>
+          <div class="detail-value">${pkg.updatedAt || '-'}</div>
         </div>
         ${pkg.description ? `
         <div class="detail-item" style="grid-column: 1 / -1;">
@@ -765,60 +665,6 @@ function viewPackage(packageId) {
         ${feeItemsHtml}
       </div>
     </div>
-    
-    ${pkg.customers && pkg.customers.length > 0 ? `
-    <div class="detail-section">
-      <h4 class="detail-section-title">
-        <i class="fas fa-users mr-2 text-accent"></i>关联客户
-      </h4>
-      <div class="detail-grid">
-        <div class="detail-item" style="grid-column: 1 / -1;">
-          <div class="detail-label">客户列表</div>
-          <div class="detail-value">
-            ${pkg.customers.map(c => c.name).join('、')}
-          </div>
-        </div>
-      </div>
-    </div>
-    ` : ''}
-    
-    ${pkg.warehouses && pkg.warehouses.length > 0 ? `
-    <div class="detail-section">
-      <h4 class="detail-section-title">
-        <i class="fas fa-warehouse mr-2 text-accent"></i>关联仓库
-      </h4>
-      <div class="detail-grid">
-        <div class="detail-item" style="grid-column: 1 / -1;">
-          <div class="detail-label">仓库列表</div>
-          <div class="detail-value">
-            ${pkg.warehouses.map(w => w.name).join('、')}
-          </div>
-        </div>
-      </div>
-    </div>
-    ` : ''}
-    
-    ${pkg.effectiveDate || pkg.expiryDate ? `
-    <div class="detail-section">
-      <h4 class="detail-section-title">
-        <i class="fas fa-calendar mr-2 text-accent"></i>有效期
-      </h4>
-      <div class="detail-grid">
-        ${pkg.effectiveDate ? `
-        <div class="detail-item">
-          <div class="detail-label">生效时间</div>
-          <div class="detail-value">${formatDateTime(pkg.effectiveDate)}</div>
-        </div>
-        ` : ''}
-        ${pkg.expiryDate ? `
-        <div class="detail-item">
-          <div class="detail-label">失效时间</div>
-          <div class="detail-value">${formatDateTime(pkg.expiryDate)}</div>
-        </div>
-        ` : ''}
-      </div>
-    </div>
-    ` : ''}
   `;
   
   document.getElementById('detailContent').innerHTML = detailHtml;
@@ -831,31 +677,9 @@ function closeDetailModal() {
 
 function applyFilters() {
   const nameFilter = document.getElementById('filterName').value.toLowerCase();
-  const statusFilter = document.getElementById('filterStatus').value;
-  const customerCodeFilter = document.getElementById('filterCustomerCode').value.toLowerCase();
-  const warehouseCodeFilter = document.getElementById('filterWarehouseCode').value.toLowerCase();
-  const effectiveDateStart = document.getElementById('filterEffectiveDateStart').value;
-  const effectiveDateEnd = document.getElementById('filterEffectiveDateEnd').value;
-  const expiryDateStart = document.getElementById('filterExpiryDateStart').value;
-  const expiryDateEnd = document.getElementById('filterExpiryDateEnd').value;
   
   const filteredPackages = packages.filter(pkg => {
-    const nameMatch = !nameFilter || pkg.name.toLowerCase().includes(nameFilter);
-    const statusMatch = !statusFilter || pkg.status === statusFilter;
-    
-    const customerCodeMatch = !customerCodeFilter || 
-      (pkg.customers && pkg.customers.some(c => c.id.toLowerCase().includes(customerCodeFilter)));
-    
-    const warehouseCodeMatch = !warehouseCodeFilter || 
-      (pkg.warehouses && pkg.warehouses.some(w => w.id.toLowerCase().includes(warehouseCodeFilter)));
-    
-    const effectiveDateMatch = (!effectiveDateStart || !pkg.effectiveDate || pkg.effectiveDate >= effectiveDateStart) &&
-                               (!effectiveDateEnd || !pkg.effectiveDate || pkg.effectiveDate <= effectiveDateEnd);
-    
-    const expiryDateMatch = (!expiryDateStart || !pkg.expiryDate || pkg.expiryDate >= expiryDateStart) &&
-                            (!expiryDateEnd || !pkg.expiryDate || pkg.expiryDate <= expiryDateEnd);
-    
-    return nameMatch && statusMatch && customerCodeMatch && warehouseCodeMatch && effectiveDateMatch && expiryDateMatch;
+    return !nameFilter || pkg.name.toLowerCase().includes(nameFilter);
   });
   
   const tbody = document.getElementById('packageTableBody');
@@ -877,317 +701,8 @@ function applyFilters() {
 
 function resetFilters() {
   document.getElementById('filterName').value = '';
-  document.getElementById('filterStatus').value = '';
-  document.getElementById('filterCustomerCode').value = '';
-  document.getElementById('filterWarehouseCode').value = '';
-  document.getElementById('filterEffectiveDateStart').value = '';
-  document.getElementById('filterEffectiveDateEnd').value = '';
-  document.getElementById('filterExpiryDateStart').value = '';
-  document.getElementById('filterExpiryDateEnd').value = '';
   
   renderPackageTable();
-}
-
-function openCustomerModal(packageId) {
-  currentAssociationPackageId = packageId;
-  const pkg = packages.find(p => p.id === packageId);
-  if (!pkg) return;
-  
-  document.getElementById('customerModalPackageName').textContent = pkg.name;
-  
-  modalSelectedCustomers = pkg.customers || [];
-  modalAvailableCustomers = CUSTOMERS_DATA.filter(c => !modalSelectedCustomers.find(sc => sc.id === c.id));
-  modalSelectedCustomersInTransfer = [];
-  
-  renderModalCustomerTransfer();
-  document.getElementById('customerModal').style.display = 'flex';
-}
-
-function closeCustomerModal() {
-  document.getElementById('customerModal').style.display = 'none';
-  currentAssociationPackageId = null;
-  modalAvailableCustomers = [];
-  modalSelectedCustomers = [];
-  modalSelectedCustomersInTransfer = [];
-}
-
-function openWarehouseModal(packageId) {
-  currentAssociationPackageId = packageId;
-  const pkg = packages.find(p => p.id === packageId);
-  if (!pkg) return;
-  
-  document.getElementById('warehouseModalPackageName').textContent = pkg.name;
-  
-  modalSelectedWarehouses = pkg.warehouses || [];
-  modalAvailableWarehouses = WAREHOUSES_DATA.filter(w => !modalSelectedWarehouses.find(sw => sw.id === w.id));
-  modalSelectedWarehousesInTransfer = [];
-  
-  renderModalWarehouseTransfer();
-  document.getElementById('warehouseModal').style.display = 'flex';
-}
-
-function closeWarehouseModal() {
-  document.getElementById('warehouseModal').style.display = 'none';
-  currentAssociationPackageId = null;
-  modalAvailableWarehouses = [];
-  modalSelectedWarehouses = [];
-  modalSelectedWarehousesInTransfer = [];
-}
-
-function renderModalCustomerTransfer() {
-  const availableList = document.getElementById('modalAvailableCustomersList');
-  const selectedList = document.getElementById('modalSelectedCustomersList');
-  const searchAvailable = document.getElementById('modalSearchAvailableCustomers');
-  const searchSelected = document.getElementById('modalSearchSelectedCustomers');
-  
-  const filterAvailable = searchAvailable ? searchAvailable.value.toLowerCase() : '';
-  const filterSelected = searchSelected ? searchSelected.value.toLowerCase() : '';
-  
-  const filteredAvailable = modalAvailableCustomers.filter(c => 
-    c.name.toLowerCase().includes(filterAvailable)
-  );
-  
-  const filteredSelected = modalSelectedCustomers.filter(c => 
-    c.name.toLowerCase().includes(filterSelected)
-  );
-  
-  if (filteredAvailable.length === 0) {
-    availableList.innerHTML = filterAvailable ? 
-      '<div class="transfer-empty">未找到匹配的客户</div>' :
-      '<div class="transfer-empty">暂无可选客户</div>';
-  } else {
-    availableList.innerHTML = filteredAvailable.map(customer => `
-      <div class="transfer-item ${modalSelectedCustomersInTransfer.includes(customer.id) ? 'selected' : ''}"
-           onclick="toggleModalCustomerSelection('${customer.id}')">
-        <div class="transfer-item-checkbox"></div>
-        <span class="transfer-item-name">${customer.name}</span>
-      </div>
-    `).join('');
-  }
-  
-  if (filteredSelected.length === 0) {
-    selectedList.innerHTML = filterSelected ?
-      '<div class="transfer-empty">未找到匹配的客户</div>' :
-      '<div class="transfer-empty">暂无已选客户</div>';
-  } else {
-    selectedList.innerHTML = filteredSelected.map(customer => `
-      <div class="transfer-item"
-           onclick="removeModalCustomerFromSelected('${customer.id}')">
-        <div class="transfer-item-checkbox"></div>
-        <span class="transfer-item-name">${customer.name}</span>
-      </div>
-    `).join('');
-  }
-  
-  document.getElementById('modalAvailableCustomersCount').textContent = `(${modalAvailableCustomers.length}项)`;
-  document.getElementById('modalSelectedCustomersCount').textContent = `(${modalSelectedCustomers.length}项)`;
-}
-
-function renderModalWarehouseTransfer() {
-  const availableList = document.getElementById('modalAvailableWarehousesList');
-  const selectedList = document.getElementById('modalSelectedWarehousesList');
-  const searchAvailable = document.getElementById('modalSearchAvailableWarehouses');
-  const searchSelected = document.getElementById('modalSearchSelectedWarehouses');
-  
-  const filterAvailable = searchAvailable ? searchAvailable.value.toLowerCase() : '';
-  const filterSelected = searchSelected ? searchSelected.value.toLowerCase() : '';
-  
-  const filteredAvailable = modalAvailableWarehouses.filter(w => 
-    w.name.toLowerCase().includes(filterAvailable)
-  );
-  
-  const filteredSelected = modalSelectedWarehouses.filter(w => 
-    w.name.toLowerCase().includes(filterSelected)
-  );
-  
-  if (filteredAvailable.length === 0) {
-    availableList.innerHTML = filterAvailable ?
-      '<div class="transfer-empty">未找到匹配的仓库</div>' :
-      '<div class="transfer-empty">暂无可选仓库</div>';
-  } else {
-    availableList.innerHTML = filteredAvailable.map(warehouse => `
-      <div class="transfer-item ${modalSelectedWarehousesInTransfer.includes(warehouse.id) ? 'selected' : ''}"
-           onclick="toggleModalWarehouseSelection('${warehouse.id}')">
-        <div class="transfer-item-checkbox"></div>
-        <span class="transfer-item-name">${warehouse.name}</span>
-      </div>
-    `).join('');
-  }
-  
-  if (filteredSelected.length === 0) {
-    selectedList.innerHTML = filterSelected ?
-      '<div class="transfer-empty">未找到匹配的仓库</div>' :
-      '<div class="transfer-empty">暂无已选仓库</div>';
-  } else {
-    selectedList.innerHTML = filteredSelected.map(warehouse => `
-      <div class="transfer-item"
-           onclick="removeModalWarehouseFromSelected('${warehouse.id}')">
-        <div class="transfer-item-checkbox"></div>
-        <span class="transfer-item-name">${warehouse.name}</span>
-      </div>
-    `).join('');
-  }
-  
-  document.getElementById('modalAvailableWarehousesCount').textContent = `(${modalAvailableWarehouses.length}项)`;
-  document.getElementById('modalSelectedWarehousesCount').textContent = `(${modalSelectedWarehouses.length}项)`;
-}
-
-function toggleModalCustomerSelection(customerId) {
-  const index = modalSelectedCustomersInTransfer.indexOf(customerId);
-  if (index > -1) {
-    modalSelectedCustomersInTransfer.splice(index, 1);
-  } else {
-    modalSelectedCustomersInTransfer.push(customerId);
-  }
-  renderModalCustomerTransfer();
-}
-
-function toggleModalWarehouseSelection(warehouseId) {
-  const index = modalSelectedWarehousesInTransfer.indexOf(warehouseId);
-  if (index > -1) {
-    modalSelectedWarehousesInTransfer.splice(index, 1);
-  } else {
-    modalSelectedWarehousesInTransfer.push(warehouseId);
-  }
-  renderModalWarehouseTransfer();
-}
-
-function modalSelectAllCustomers() {
-  modalSelectedCustomersInTransfer = modalAvailableCustomers.map(c => c.id);
-  renderModalCustomerTransfer();
-}
-
-function modalClearAllCustomers() {
-  modalSelectedCustomersInTransfer = [];
-  renderModalCustomerTransfer();
-}
-
-function modalSelectAllWarehouses() {
-  modalSelectedWarehousesInTransfer = modalAvailableWarehouses.map(w => w.id);
-  renderModalWarehouseTransfer();
-}
-
-function modalClearAllWarehouses() {
-  modalSelectedWarehousesInTransfer = [];
-  renderModalWarehouseTransfer();
-}
-
-function modalMoveCustomersToSelected() {
-  if (modalSelectedCustomersInTransfer.length === 0) return;
-  
-  const movedCustomers = modalAvailableCustomers.filter(c => modalSelectedCustomersInTransfer.includes(c.id));
-  modalSelectedCustomers = [...modalSelectedCustomers, ...movedCustomers];
-  modalAvailableCustomers = modalAvailableCustomers.filter(c => !modalSelectedCustomersInTransfer.includes(c.id));
-  modalSelectedCustomersInTransfer = [];
-  
-  renderModalCustomerTransfer();
-}
-
-function modalMoveCustomersToAvailable() {
-  modalSelectedCustomersInTransfer = [];
-  renderModalCustomerTransfer();
-}
-
-function modalRemoveAllCustomers() {
-  modalAvailableCustomers = [...modalAvailableCustomers, ...modalSelectedCustomers];
-  modalSelectedCustomers = [];
-  renderModalCustomerTransfer();
-}
-
-function modalRestoreAllCustomers() {
-  const pkg = packages.find(p => p.id === currentAssociationPackageId);
-  modalSelectedCustomers = pkg.customers || [];
-  modalAvailableCustomers = CUSTOMERS_DATA.filter(c => !modalSelectedCustomers.find(sc => sc.id === c.id));
-  modalSelectedCustomersInTransfer = [];
-  renderModalCustomerTransfer();
-}
-
-function removeModalCustomerFromSelected(customerId) {
-  const customer = modalSelectedCustomers.find(c => c.id === customerId);
-  if (customer) {
-    modalSelectedCustomers = modalSelectedCustomers.filter(c => c.id !== customerId);
-    modalAvailableCustomers = [...modalAvailableCustomers, customer];
-    renderModalCustomerTransfer();
-  }
-}
-
-function modalMoveWarehousesToSelected() {
-  if (modalSelectedWarehousesInTransfer.length === 0) return;
-  
-  const movedWarehouses = modalAvailableWarehouses.filter(w => modalSelectedWarehousesInTransfer.includes(w.id));
-  modalSelectedWarehouses = [...modalSelectedWarehouses, ...movedWarehouses];
-  modalAvailableWarehouses = modalAvailableWarehouses.filter(w => !modalSelectedWarehousesInTransfer.includes(w.id));
-  modalSelectedWarehousesInTransfer = [];
-  
-  renderModalWarehouseTransfer();
-}
-
-function modalMoveWarehousesToAvailable() {
-  modalSelectedWarehousesInTransfer = [];
-  renderModalWarehouseTransfer();
-}
-
-function modalRemoveAllWarehouses() {
-  modalAvailableWarehouses = [...modalAvailableWarehouses, ...modalSelectedWarehouses];
-  modalSelectedWarehouses = [];
-  renderModalWarehouseTransfer();
-}
-
-function modalRestoreAllWarehouses() {
-  const pkg = packages.find(p => p.id === currentAssociationPackageId);
-  modalSelectedWarehouses = pkg.warehouses || [];
-  modalAvailableWarehouses = WAREHOUSES_DATA.filter(w => !modalSelectedWarehouses.find(sw => sw.id === w.id));
-  modalSelectedWarehousesInTransfer = [];
-  renderModalWarehouseTransfer();
-}
-
-function removeModalWarehouseFromSelected(warehouseId) {
-  const warehouse = modalSelectedWarehouses.find(w => w.id === warehouseId);
-  if (warehouse) {
-    modalSelectedWarehouses = modalSelectedWarehouses.filter(w => w.id !== warehouseId);
-    modalAvailableWarehouses = [...modalAvailableWarehouses, warehouse];
-    renderModalWarehouseTransfer();
-  }
-}
-
-function modalFilterAvailableCustomers() {
-  renderModalCustomerTransfer();
-}
-
-function modalFilterSelectedCustomers() {
-  renderModalCustomerTransfer();
-}
-
-function modalFilterAvailableWarehouses() {
-  renderModalWarehouseTransfer();
-}
-
-function modalFilterSelectedWarehouses() {
-  renderModalWarehouseTransfer();
-}
-
-function saveCustomerAssociation() {
-  const pkg = packages.find(p => p.id === currentAssociationPackageId);
-  if (!pkg) return;
-  
-  pkg.customers = modalSelectedCustomers;
-  savePackages();
-  renderPackageTable();
-  closeCustomerModal();
-  
-  showNotification('客户关联已保存');
-}
-
-function saveWarehouseAssociation() {
-  const pkg = packages.find(p => p.id === currentAssociationPackageId);
-  if (!pkg) return;
-  
-  pkg.warehouses = modalSelectedWarehouses;
-  savePackages();
-  renderPackageTable();
-  closeWarehouseModal();
-  
-  showNotification('仓库关联已保存');
 }
 
 document.addEventListener('DOMContentLoaded', init);

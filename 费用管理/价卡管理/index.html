@@ -120,43 +120,6 @@
           <input type="text" id="filterName" placeholder="请输入价卡名称" 
                  class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
         </div>
-        <div>
-          <label class="block text-sm font-medium text-text-secondary mb-2">状态</label>
-          <select id="filterStatus" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
-            <option value="">全部状态</option>
-            <option value="draft">草稿</option>
-            <option value="active">生效</option>
-            <option value="cancelled">已作废</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-text-secondary mb-2">客户代码</label>
-          <select id="filterCustomerCode" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
-            <option value="">全部</option>
-            <option value="DEMO">DEMO</option>
-            <option value="DEMO1">DEMO1</option>
-            <option value="DEMO2">DEMO2</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-text-secondary mb-2">仓库代码</label>
-          <select id="filterCustomerCode" class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
-            <option value="">全部</option>
-            <option value="DEMO">DEMO</option>
-            <option value="DEMO1">DEMO1</option>
-            <option value="DEMO2">DEMO2</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-text-secondary mb-2">生效时间（起）</label>
-          <input type="datetime-local" id="filterEffectiveDateStart" 
-                 class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-text-secondary mb-2">生效时间（止）</label>
-          <input type="datetime-local" id="filterEffectiveDateEnd" 
-                 class="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:border-accent transition-colors">
-        </div>
       </div>
       <div class="mt-4 flex justify-end">
         <button onclick="resetFilters()" class="btn btn-secondary">
@@ -186,22 +149,16 @@
                 包含费用项
               </th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                生效时间
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                失效时间
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                状态
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                关联客户
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
-                关联仓库
+                创建人
               </th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
                 创建时间
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                更新人
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                更新时间
               </th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">
                 操作
@@ -222,19 +179,17 @@
       </div>
     </div>
 
-  </main>
-
-  <!-- 逻辑说明 -->
-  <div class="bg-white rounded-lg shadow-card mt-4 overflow-hidden">
-    <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="toggleLogic()">
-      <div class="flex items-center">
-        <i class="fas fa-book text-primary mr-2"></i>
-        <span class="font-semibold text-primary">逻辑说明</span>
-        <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+    <!-- 逻辑说明 -->
+    <div class="bg-white rounded-lg shadow-card mt-4 overflow-hidden">
+      <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="toggleLogic()">
+        <div class="flex items-center">
+          <i class="fas fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+        </div>
+        <i class="fas fa-chevron-down text-primary transition-transform" id="logic-icon"></i>
       </div>
-      <i class="fas fa-chevron-down text-primary transition-transform" id="logic-icon"></i>
-    </div>
-    <div id="logic-content" style="display: none;">
+      <div id="logic-content" style="display: none;">
       
       <!-- 初始化页面（数据展示逻辑） -->
       <div class="p-4 border-b border-gray-100">
@@ -268,25 +223,18 @@
                 <td class="px-3 py-2 text-gray-600">多个类型用顿号分隔</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">状态显示</td>
-                <td class="px-3 py-2 text-gray-600">根据价卡状态显示不同标签</td>
-                <td class="px-3 py-2 text-gray-600">packages.status</td>
-                <td class="px-3 py-2 text-gray-600">草稿(灰色)、生效(绿色)、已作废(红色)</td>
-                <td class="px-3 py-2 text-gray-600">使用不同颜色区分状态</td>
+                <td class="px-3 py-2 text-gray-800">创建人/更新人</td>
+                <td class="px-3 py-2 text-gray-600">显示价卡的创建人和最后更新人</td>
+                <td class="px-3 py-2 text-gray-600">packages.createdBy / packages.updatedBy</td>
+                <td class="px-3 py-2 text-gray-600">创建时记录创建人，更新时记录更新人</td>
+                <td class="px-3 py-2 text-gray-600">未更新时创建人与更新人相同</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">关联客户</td>
-                <td class="px-3 py-2 text-gray-600">显示价卡关联的客户数量</td>
-                <td class="px-3 py-2 text-gray-600">packages.customers</td>
-                <td class="px-3 py-2 text-gray-600">已关联显示蓝色标签（客户图标+数量），未关联显示灰色提示</td>
-                <td class="px-3 py-2 text-gray-600">点击操作列"关联客户"按钮可修改</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">关联仓库</td>
-                <td class="px-3 py-2 text-gray-600">显示价卡关联的仓库数量</td>
-                <td class="px-3 py-2 text-gray-600">packages.warehouses</td>
-                <td class="px-3 py-2 text-gray-600">已关联显示绿色标签（仓库图标+数量），未关联显示灰色提示</td>
-                <td class="px-3 py-2 text-gray-600">点击操作列"关联仓库"按钮可修改</td>
+                <td class="px-3 py-2 text-gray-800">创建时间/更新时间</td>
+                <td class="px-3 py-2 text-gray-600">显示价卡的创建时间和最后更新时间</td>
+                <td class="px-3 py-2 text-gray-600">packages.createdAt / packages.updatedAt</td>
+                <td class="px-3 py-2 text-gray-600">格式：YYYY-MM-DD HH:mm:ss</td>
+                <td class="px-3 py-2 text-gray-600">未更新时创建时间与更新时间相同</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">空状态</td>
@@ -319,31 +267,6 @@
                 <td class="px-3 py-2 text-gray-800">价卡名称</td>
                 <td class="px-3 py-2 text-gray-600">文本输入框</td>
                 <td class="px-3 py-2 text-gray-600">模糊匹配价卡名称，不区分大小写</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">状态</td>
-                <td class="px-3 py-2 text-gray-600">下拉选择框</td>
-                <td class="px-3 py-2 text-gray-600">精确匹配价卡状态，可选：全部/草稿/生效/已作废</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">客户代码</td>
-                <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                <td class="px-3 py-2 text-gray-600">模糊匹配价卡关联的客户代码，筛选包含该客户代码的价卡</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">仓库代码</td>
-                <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                <td class="px-3 py-2 text-gray-600">模糊匹配价卡关联的仓库代码，筛选包含该仓库代码的价卡</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">生效时间（起）</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">筛选生效时间大于等于该时间的价卡</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">生效时间（止）</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">筛选生效时间小于等于该时间的价卡</td>
               </tr>
             </tbody>
           </table>
@@ -393,42 +316,21 @@
                 <td class="px-3 py-2 text-gray-600">操作列</td>
                 <td class="px-3 py-2 text-gray-600">打开价卡详情弹窗</td>
                 <td class="px-3 py-2 text-gray-600">价卡存在</td>
-                <td class="px-3 py-2 text-gray-600">展示价卡完整信息，包括基本信息、费用项明细、有效期</td>
+                <td class="px-3 py-2 text-gray-600">展示价卡完整信息，包括基本信息（创建人、创建时间、更新人、更新时间）、费用项明细（费用组、费用类型名称、单位、折扣方式、折扣金额、备注）</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">编辑</td>
                 <td class="px-3 py-2 text-gray-600">操作列</td>
                 <td class="px-3 py-2 text-gray-600">打开编辑价卡弹窗</td>
-                <td class="px-3 py-2 text-gray-600">价卡存在且状态不为"已作废"</td>
-                <td class="px-3 py-2 text-gray-600">填充现有数据到表单，允许修改并保存</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">作废</td>
-                <td class="px-3 py-2 text-gray-600">操作列</td>
-                <td class="px-3 py-2 text-gray-600">作废价卡</td>
-                <td class="px-3 py-2 text-gray-600">价卡存在且状态不为"已作废"</td>
-                <td class="px-3 py-2 text-gray-600">弹出确认对话框，确认后将状态改为"已作废"并刷新列表</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">关联客户</td>
-                <td class="px-3 py-2 text-gray-600">操作列</td>
-                <td class="px-3 py-2 text-gray-600">打开关联客户弹窗</td>
                 <td class="px-3 py-2 text-gray-600">价卡存在</td>
-                <td class="px-3 py-2 text-gray-600">使用穿梭框选择要关联的客户，保存后更新价卡的客户关联数据并刷新列表</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">关联仓库</td>
-                <td class="px-3 py-2 text-gray-600">操作列</td>
-                <td class="px-3 py-2 text-gray-600">打开关联仓库弹窗</td>
-                <td class="px-3 py-2 text-gray-600">价卡存在</td>
-                <td class="px-3 py-2 text-gray-600">使用穿梭框选择要关联的仓库，保存后更新价卡的仓库关联数据并刷新列表</td>
+                <td class="px-3 py-2 text-gray-600">填充现有数据到表单（包括费用项的折扣方式、折扣金额、备注），允许修改并保存</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">保存</td>
                 <td class="px-3 py-2 text-gray-600">创建/编辑弹窗</td>
                 <td class="px-3 py-2 text-gray-600">保存价卡数据</td>
                 <td class="px-3 py-2 text-gray-600">价卡名称必填，至少选择一个费用项</td>
-                <td class="px-3 py-2 text-gray-600">验证数据完整性，保存到localStorage，关闭弹窗，刷新列表，提示成功消息</td>
+                <td class="px-3 py-2 text-gray-600">验证数据完整性，创建时设置创建人/时间，更新时设置更新人/时间，保存到localStorage，关闭弹窗，刷新列表，提示成功消息</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">取消</td>
@@ -442,7 +344,7 @@
                 <td class="px-3 py-2 text-gray-600">费用项表格上方</td>
                 <td class="px-3 py-2 text-gray-600">添加费用项行</td>
                 <td class="px-3 py-2 text-gray-600">无</td>
-                <td class="px-3 py-2 text-gray-600">在费用项表格中新增一行空白记录</td>
+                <td class="px-3 py-2 text-gray-600">在费用项表格中新增一行空白记录，包含收费类型、收费项、单位、折扣方式、折扣金额、备注字段</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">删除</td>
@@ -450,54 +352,6 @@
                 <td class="px-3 py-2 text-gray-600">删除该费用项行</td>
                 <td class="px-3 py-2 text-gray-600">无</td>
                 <td class="px-3 py-2 text-gray-600">从费用项表格中移除该行</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 关联操作逻辑 -->
-      <div class="p-4 border-b border-gray-100">
-        <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-          <i class="fas fa-link text-primary mr-2"></i>关联操作逻辑
-        </h4>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm border border-gray-200 rounded">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">操作项</th>
-                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发方式</th>
-                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">弹窗内容</th>
-                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">操作流程</th>
-                <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">保存逻辑</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">关联客户</td>
-                <td class="px-3 py-2 text-gray-600">点击操作列"关联客户"按钮</td>
-                <td class="px-3 py-2 text-gray-600">显示价卡名称、穿梭框（可选客户/已选客户）、搜索框、操作按钮</td>
-                <td class="px-3 py-2 text-gray-600">
-                  1. 从可选客户列表中选择客户<br>
-                  2. 点击右箭头按钮添加到已选列表<br>
-                  3. 可使用搜索框筛选客户<br>
-                  4. 可使用全选/清空按钮批量操作<br>
-                  5. 点击已选客户可移除
-                </td>
-                <td class="px-3 py-2 text-gray-600">点击保存按钮，更新价卡的customers字段，刷新主表显示关联数量</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">关联仓库</td>
-                <td class="px-3 py-2 text-gray-600">点击操作列"关联仓库"按钮</td>
-                <td class="px-3 py-2 text-gray-600">显示价卡名称、穿梭框（可选仓库/已选仓库）、搜索框、操作按钮</td>
-                <td class="px-3 py-2 text-gray-600">
-                  1. 从可选仓库列表中选择仓库<br>
-                  2. 点击右箭头按钮添加到已选列表<br>
-                  3. 可使用搜索框筛选仓库<br>
-                  4. 可使用全选/清空按钮批量操作<br>
-                  5. 点击已选仓库可移除
-                </td>
-                <td class="px-3 py-2 text-gray-600">点击保存按钮，更新价卡的warehouses字段，刷新主表显示关联数量</td>
               </tr>
             </tbody>
           </table>
@@ -554,61 +408,43 @@
                 <td class="px-3 py-2 text-gray-800">feeItems</td>
                 <td class="px-3 py-2 text-gray-600">费用项列表</td>
                 <td class="px-3 py-2 text-gray-600">手工选择</td>
-                <td class="px-3 py-2 text-gray-600">至少包含一个费用项，每个费用项包含类型、名称、折扣方式等</td>
+                <td class="px-3 py-2 text-gray-600">至少包含一个费用项，每个费用项包含费用组、费用类型名称、单位、折扣方式、折扣金额、备注</td>
                 <td class="px-3 py-2 text-gray-600">JSON数组</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">JSON</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">effectiveDate</td>
-                <td class="px-3 py-2 text-gray-600">生效时间</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">选填，格式：YYYY-MM-DD HH:mm:ss</td>
-                <td class="px-3 py-2 text-gray-600">日期时间</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">DATETIME</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">expiryDate</td>
-                <td class="px-3 py-2 text-gray-600">失效时间</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">选填，格式：YYYY-MM-DD HH:mm:ss，应大于生效时间</td>
-                <td class="px-3 py-2 text-gray-600">日期时间</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">DATETIME</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">status</td>
-                <td class="px-3 py-2 text-gray-600">状态</td>
-                <td class="px-3 py-2 text-gray-600">系统生成/手工操作</td>
-                <td class="px-3 py-2 text-gray-600">draft(草稿)、active(生效)、cancelled(已作废)</td>
-                <td class="px-3 py-2 text-gray-600">枚举值</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">枚举型</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">customers</td>
-                <td class="px-3 py-2 text-gray-600">关联客户</td>
-                <td class="px-3 py-2 text-gray-600">穿梭框选择</td>
-                <td class="px-3 py-2 text-gray-600">选填，通过操作列"关联客户"按钮设置，可关联多个客户</td>
-                <td class="px-3 py-2 text-gray-600">JSON数组</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">JSON</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">warehouses</td>
-                <td class="px-3 py-2 text-gray-600">关联仓库</td>
-                <td class="px-3 py-2 text-gray-600">穿梭框选择</td>
-                <td class="px-3 py-2 text-gray-600">选填，通过操作列"关联仓库"按钮设置，可关联多个仓库</td>
-                <td class="px-3 py-2 text-gray-600">JSON数组</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">JSON</td>
+                <td class="px-3 py-2 text-gray-800">createdBy</td>
+                <td class="px-3 py-2 text-gray-600">创建人</td>
+                <td class="px-3 py-2 text-gray-600">系统获取</td>
+                <td class="px-3 py-2 text-gray-600">创建时自动获取当前登录用户</td>
+                <td class="px-3 py-2 text-gray-600">文本</td>
+                <td class="px-3 py-2 text-gray-600">64</td>
+                <td class="px-3 py-2 text-gray-600">字符型</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">createdAt</td>
                 <td class="px-3 py-2 text-gray-600">创建时间</td>
                 <td class="px-3 py-2 text-gray-600">系统生成</td>
                 <td class="px-3 py-2 text-gray-600">创建时自动生成，格式：YYYY-MM-DD HH:mm:ss</td>
+                <td class="px-3 py-2 text-gray-600">日期时间</td>
+                <td class="px-3 py-2 text-gray-600">-</td>
+                <td class="px-3 py-2 text-gray-600">DATETIME</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">updatedBy</td>
+                <td class="px-3 py-2 text-gray-600">更新人</td>
+                <td class="px-3 py-2 text-gray-600">系统获取</td>
+                <td class="px-3 py-2 text-gray-600">创建/更新时自动获取当前登录用户</td>
+                <td class="px-3 py-2 text-gray-600">文本</td>
+                <td class="px-3 py-2 text-gray-600">64</td>
+                <td class="px-3 py-2 text-gray-600">字符型</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="px-3 py-2 text-gray-800">updatedAt</td>
+                <td class="px-3 py-2 text-gray-600">更新时间</td>
+                <td class="px-3 py-2 text-gray-600">系统生成</td>
+                <td class="px-3 py-2 text-gray-600">创建/更新时自动生成，格式：YYYY-MM-DD HH:mm:ss</td>
                 <td class="px-3 py-2 text-gray-600">日期时间</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">DATETIME</td>
@@ -656,58 +492,49 @@
                 <td class="px-3 py-2 text-gray-600">字符型</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">收费类型</td>
+                <td class="px-3 py-2 text-gray-800">费用组</td>
                 <td class="px-3 py-2 text-gray-600">费用项分类</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                <td class="px-3 py-2 text-gray-600">从入库费规则数据中加载，选择后联动收费项下拉</td>
+                <td class="px-3 py-2 text-gray-600">从入库费规则数据中加载，选择后联动费用类型名称下拉</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">字符型</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">收费项</td>
+                <td class="px-3 py-2 text-gray-800">费用类型名称</td>
                 <td class="px-3 py-2 text-gray-600">具体费用项</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                <td class="px-3 py-2 text-gray-600">根据收费类型动态加载对应的费用项列表</td>
+                <td class="px-3 py-2 text-gray-600">根据费用组动态加载对应的费用项列表</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">字符型</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">折扣方式</td>
-                <td class="px-3 py-2 text-gray-600">费用项折扣设置</td>
-                <td class="px-3 py-2 text-gray-600">下拉选择+数值输入</td>
-                <td class="px-3 py-2 text-gray-600">无折扣/百分比折扣/指定扣减，选择后显示对应的数值输入框</td>
-                <td class="px-3 py-2 text-gray-600">下拉选择框+数值输入框</td>
+                <td class="px-3 py-2 text-gray-600">费用项折扣类型</td>
+                <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                <td class="px-3 py-2 text-gray-600">无折扣/百分比/指定扣减/一口价</td>
+                <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">枚举型/数值型</td>
+                <td class="px-3 py-2 text-gray-600">枚举型</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">生效时间</td>
-                <td class="px-3 py-2 text-gray-600">价卡生效时间</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">选填，默认当天00:00</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
+                <td class="px-3 py-2 text-gray-800">折扣金额</td>
+                <td class="px-3 py-2 text-gray-600">折扣具体数值</td>
+                <td class="px-3 py-2 text-gray-600">数值输入</td>
+                <td class="px-3 py-2 text-gray-600">根据折扣方式显示对应输入框，百分比：0-100，其他：大于0的数值</td>
+                <td class="px-3 py-2 text-gray-600">数值输入框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">DATETIME</td>
+                <td class="px-3 py-2 text-gray-600">数值型</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">失效时间</td>
-                <td class="px-3 py-2 text-gray-600">价卡失效时间</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">选填，默认当天23:00</td>
-                <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">DATETIME</td>
-              </tr>
-              <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">立即生效</td>
-                <td class="px-3 py-2 text-gray-600">是否立即生效价卡</td>
-                <td class="px-3 py-2 text-gray-600">复选框勾选</td>
-                <td class="px-3 py-2 text-gray-600">勾选后状态设为"active"，否则为"draft"</td>
-                <td class="px-3 py-2 text-gray-600">复选框</td>
-                <td class="px-3 py-2 text-gray-600">-</td>
-                <td class="px-3 py-2 text-gray-600">布尔型</td>
+                <td class="px-3 py-2 text-gray-800">备注</td>
+                <td class="px-3 py-2 text-gray-600">费用项备注说明</td>
+                <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                <td class="px-3 py-2 text-gray-600">选填，用于记录费用项的特殊说明</td>
+                <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                <td class="px-3 py-2 text-gray-600">256</td>
+                <td class="px-3 py-2 text-gray-600">字符型</td>
               </tr>
             </tbody>
           </table>
@@ -715,7 +542,7 @@
       </div>
 
     </div>
-  </div>
+  </main>
 
   <script>
     function toggleLogic() {
@@ -770,7 +597,7 @@
 
           <div class="form-section">
             <h4 class="form-section-title">
-              <i class="fas fa-list-check mr-2 text-accent"></i>收费项
+              <i class="fas fa-list-check mr-2 text-accent"></i>费用类型名称
             </h4>
             
             <div class="mb-4">
@@ -779,7 +606,7 @@
                   <button type="button" class="fee-category-tab active" data-category="inbound" onclick="switchFeeCategory('inbound')">
                     <i class="fas fa-download mr-1"></i>入库费
                   </button>
-                  <button type="button" class="fee-category-tab" data-category="outbound" onclick="switchFeeCategory('outbound')">
+                  <!-- <button type="button" class="fee-category-tab" data-category="outbound" onclick="switchFeeCategory('outbound')">
                     <i class="fas fa-upload mr-1"></i>出库费
                   </button>
                   <button type="button" class="fee-category-tab" data-category="express" onclick="switchFeeCategory('express')">
@@ -787,7 +614,7 @@
                   </button>
                   <button type="button" class="fee-category-tab" data-category="other" onclick="switchFeeCategory('other')">
                     <i class="fas fa-ellipsis-h mr-1"></i>其他收费
-                  </button>
+                  </button> -->
                 </div>
               </div>
               
@@ -802,10 +629,12 @@
                   <table class="w-full">
                     <thead class="bg-light-bg">
                       <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">收费类型</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">收费项</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用组</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用类型名称</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">单位</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣方式</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣金额</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">备注</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">操作</th>
                       </tr>
                     </thead>
@@ -814,31 +643,6 @@
                   </table>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h4 class="form-section-title">
-              <i class="fas fa-cog mr-2 text-accent"></i>其他设置
-            </h4>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="form-group">
-                <label class="form-label">生效时间</label>
-                <input type="datetime-local" id="effectiveDate" class="form-input">
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">失效时间</label>
-                <input type="datetime-local" id="expiryDate" class="form-input">
-              </div>
-            </div>
-            
-            <div class="form-group mt-4">
-              <label class="flex items-center">
-                <input type="checkbox" id="packageStatus" class="form-checkbox">
-                <span class="ml-2 text-sm text-text-secondary">立即生效</span>
-              </label>
             </div>
           </div>
         </form>
@@ -872,172 +676,6 @@
       <div class="modal-footer">
         <button onclick="closeDetailModal()" class="btn btn-secondary">
           <i class="fas fa-times mr-2"></i>关闭
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="customerModal" class="modal-overlay" style="display: none;">
-    <div class="modal-container modal-container-sm">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="fas fa-users mr-2 text-accent"></i>关联客户
-        </h3>
-        <button class="modal-close" onclick="closeCustomerModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="mb-4">
-          <div class="text-sm text-text-secondary mb-2">
-            价卡：<span id="customerModalPackageName" class="font-semibold text-dark"></span>
-          </div>
-        </div>
-        
-        <div class="flex gap-2 items-stretch">
-          <div class="transfer-box flex-1">
-            <div class="transfer-header">
-              <span class="text-sm font-medium">可选客户</span>
-              <span class="text-xs text-text-muted" id="modalAvailableCustomersCount">(0项)</span>
-            </div>
-            <div class="transfer-search">
-              <i class="fas fa-search text-xs text-text-muted"></i>
-              <input type="text" id="modalSearchAvailableCustomers" placeholder="搜索客户..." 
-                     onkeyup="modalFilterAvailableCustomers()" class="transfer-search-input">
-            </div>
-            <div class="transfer-list" id="modalAvailableCustomersList">
-            </div>
-            <div class="transfer-actions">
-              <button type="button" onclick="modalSelectAllCustomers()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-check-double mr-1"></i>全选
-              </button>
-              <button type="button" onclick="modalClearAllCustomers()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-times mr-1"></i>清空
-              </button>
-            </div>
-          </div>
-          <div class="transfer-controls">
-            <button type="button" onclick="modalMoveCustomersToSelected()" class="btn btn-primary btn-sm" title="添加选中项">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-            <button type="button" onclick="modalMoveCustomersToAvailable()" class="btn btn-secondary btn-sm" title="移除选中项">
-              <i class="fas fa-arrow-left"></i>
-            </button>
-          </div>
-          <div class="transfer-box flex-1">
-            <div class="transfer-header transfer-header-selected">
-              <span class="text-sm font-medium">已选客户</span>
-              <span class="text-xs font-semibold text-success" id="modalSelectedCustomersCount">(0项)</span>
-            </div>
-            <div class="transfer-search">
-              <i class="fas fa-search text-xs text-text-muted"></i>
-              <input type="text" id="modalSearchSelectedCustomers" placeholder="搜索已选..." 
-                     onkeyup="modalFilterSelectedCustomers()" class="transfer-search-input">
-            </div>
-            <div class="transfer-list" id="modalSelectedCustomersList">
-            </div>
-            <div class="transfer-actions">
-              <button type="button" onclick="modalRemoveAllCustomers()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-undo mr-1"></i>全部移回
-              </button>
-              <button type="button" onclick="modalRestoreAllCustomers()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-refresh mr-1"></i>重置
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button onclick="closeCustomerModal()" class="btn btn-secondary">
-          <i class="fas fa-times mr-2"></i>取消
-        </button>
-        <button onclick="saveCustomerAssociation()" class="btn btn-primary">
-          <i class="fas fa-save mr-2"></i>保存
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="warehouseModal" class="modal-overlay" style="display: none;">
-    <div class="modal-container modal-container-sm">
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="fas fa-warehouse mr-2 text-accent"></i>关联仓库
-        </h3>
-        <button class="modal-close" onclick="closeWarehouseModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="mb-4">
-          <div class="text-sm text-text-secondary mb-2">
-            价卡：<span id="warehouseModalPackageName" class="font-semibold text-dark"></span>
-          </div>
-        </div>
-        
-        <div class="flex gap-2 items-stretch">
-          <div class="transfer-box flex-1">
-            <div class="transfer-header">
-              <span class="text-sm font-medium">可选仓库</span>
-              <span class="text-xs text-text-muted" id="modalAvailableWarehousesCount">(0项)</span>
-            </div>
-            <div class="transfer-search">
-              <i class="fas fa-search text-xs text-text-muted"></i>
-              <input type="text" id="modalSearchAvailableWarehouses" placeholder="搜索仓库..." 
-                     onkeyup="modalFilterAvailableWarehouses()" class="transfer-search-input">
-            </div>
-            <div class="transfer-list" id="modalAvailableWarehousesList">
-            </div>
-            <div class="transfer-actions">
-              <button type="button" onclick="modalSelectAllWarehouses()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-check-double mr-1"></i>全选
-              </button>
-              <button type="button" onclick="modalClearAllWarehouses()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-times mr-1"></i>清空
-              </button>
-            </div>
-          </div>
-          <div class="transfer-controls">
-            <button type="button" onclick="modalMoveWarehousesToSelected()" class="btn btn-primary btn-sm" title="添加选中项">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-            <button type="button" onclick="modalMoveWarehousesToAvailable()" class="btn btn-secondary btn-sm" title="移除选中项">
-              <i class="fas fa-arrow-left"></i>
-            </button>
-          </div>
-          <div class="transfer-box flex-1">
-            <div class="transfer-header transfer-header-selected">
-              <span class="text-sm font-medium">已选仓库</span>
-              <span class="text-xs font-semibold text-success" id="modalSelectedWarehousesCount">(0项)</span>
-            </div>
-            <div class="transfer-search">
-              <i class="fas fa-search text-xs text-text-muted"></i>
-              <input type="text" id="modalSearchSelectedWarehouses" placeholder="搜索已选..." 
-                     onkeyup="modalFilterSelectedWarehouses()" class="transfer-search-input">
-            </div>
-            <div class="transfer-list" id="modalSelectedWarehousesList">
-            </div>
-            <div class="transfer-actions">
-              <button type="button" onclick="modalRemoveAllWarehouses()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-undo mr-1"></i>全部移回
-              </button>
-              <button type="button" onclick="modalRestoreAllWarehouses()" class="btn btn-secondary btn-xs">
-                <i class="fas fa-refresh mr-1"></i>重置
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button onclick="closeWarehouseModal()" class="btn btn-secondary">
-          <i class="fas fa-times mr-2"></i>取消
-        </button>
-        <button onclick="saveWarehouseAssociation()" class="btn btn-primary">
-          <i class="fas fa-save mr-2"></i>保存
         </button>
       </div>
     </div>

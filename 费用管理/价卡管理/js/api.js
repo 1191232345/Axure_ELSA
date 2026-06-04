@@ -47,7 +47,8 @@ function loadPackages() {
             feeName: '卸货费',
             unit: '柜',
             discountType: 'percentage',
-            discountValue: 10
+            discountValue: 10,
+            remark: '适用于标准集装箱'
           },
           { 
             feeCategory: 'outbound',
@@ -58,7 +59,8 @@ function loadPackages() {
             feeName: '拣货费',
             unit: '件',
             discountType: 'percentage',
-            discountValue: 5
+            discountValue: 5,
+            remark: ''
           },
           { 
             feeCategory: 'express',
@@ -69,7 +71,8 @@ function loadPackages() {
             feeName: '标准快递费',
             unit: '件',
             discountType: 'fixed',
-            discountValue: 2
+            discountValue: 2,
+            remark: '每件减免2元'
           },
           { 
             feeCategory: 'other',
@@ -80,21 +83,14 @@ function loadPackages() {
             feeName: '拍照费',
             unit: '张',
             discountType: 'none',
-            discountValue: 0
+            discountValue: 0,
+            remark: ''
           }
         ],
-        customers: [
-          { id: 'cust_1', name: '华为技术有限公司' },
-          { id: 'cust_2', name: '小米科技有限公司' }
-        ],
-        warehouses: [
-          { id: 'wh_1', name: '深圳仓库' },
-          { id: 'wh_2', name: '广州仓库' }
-        ],
-        effectiveDate: '2024-01-01T00:00',
-        expiryDate: '2024-12-31T23:00',
-        status: 'active',
-        createdAt: '2024-01-15 10:30:00'
+        createdBy: '张三',
+        createdAt: '2024-01-15 10:30:00',
+        updatedBy: '李四',
+        updatedAt: '2024-01-20 14:20:00'
       },
       {
         id: 2,
@@ -110,7 +106,8 @@ function loadPackages() {
             feeName: '收货费',
             unit: '件',
             discountType: 'percentage',
-            discountValue: 15
+            discountValue: 15,
+            remark: ''
           },
           { 
             feeCategory: 'inbound',
@@ -121,19 +118,14 @@ function loadPackages() {
             feeName: '收货费',
             unit: '托',
             discountType: 'fixed_price',
-            discountValue: 45
+            discountValue: 45,
+            remark: '每托固定价格'
           }
         ],
-        customers: [
-          { id: 'cust_3', name: '阿里巴巴集团' }
-        ],
-        warehouses: [
-          { id: 'wh_3', name: '上海仓库' }
-        ],
-        effectiveDate: '2024-02-01T00:00',
-        expiryDate: '2024-06-30T23:00',
-        status: 'active',
-        createdAt: '2024-02-01 09:00:00'
+        createdBy: '王五',
+        createdAt: '2024-02-01 09:00:00',
+        updatedBy: '王五',
+        updatedAt: '2024-02-01 09:00:00'
       },
       {
         id: 3,
@@ -149,7 +141,8 @@ function loadPackages() {
             feeName: '批量拣货费',
             unit: '件',
             discountType: 'percentage',
-            discountValue: 20
+            discountValue: 20,
+            remark: '批量出库优惠'
           },
           { 
             feeCategory: 'express',
@@ -160,21 +153,14 @@ function loadPackages() {
             feeName: '国际标准快递费',
             unit: '件',
             discountType: 'fixed',
-            discountValue: 10
+            discountValue: 10,
+            remark: '国际快递每件减免10元'
           }
         ],
-        customers: [
-          { id: 'cust_4', name: '腾讯科技' },
-          { id: 'cust_5', name: '京东集团' }
-        ],
-        warehouses: [
-          { id: 'wh_4', name: '北京仓库' },
-          { id: 'wh_5', name: '杭州仓库' }
-        ],
-        effectiveDate: '2024-03-01T00:00',
-        expiryDate: '2024-09-30T23:00',
-        status: 'draft',
-        createdAt: '2024-03-10 14:20:00'
+        createdBy: '赵六',
+        createdAt: '2024-03-10 14:20:00',
+        updatedBy: '张三',
+        updatedAt: '2024-03-15 16:45:00'
       }
     ];
     savePackages();
