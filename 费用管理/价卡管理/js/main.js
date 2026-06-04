@@ -629,11 +629,28 @@ function viewPackage(packageId) {
       discountText = `一口价${item.discountValue}元`;
     }
     
+    // 获取操作类型信息
+    let operationInfo = '';
+    if (item.feeCategory === 'inbound' && inboundFeeRuleData) {
+      const category = inboundFeeRuleData.categories.find(cat => cat.id === item.feeType);
+      if (category && category.children) {
+        category.children.forEach(operation => {
+          if (operation.children && operation.children.length > 0) {
+            const found = operation.children.find(rule => rule.id === item.feeId);
+            if (found) {
+              operationInfo = operation.name;
+            }
+          }
+        });
+      }
+    }
+    
     return `
       <div class="detail-fee-item">
         <div class="detail-fee-name">
           <span class="text-xs text-text-muted">${item.feeCategoryName} - ${item.feeTypeName}</span><br>
-          ${item.feeName}
+          ${operationInfo ? `<span class="text-xs text-accent">操作类型：${operationInfo}</span><br>` : ''}
+          <span class="font-semibold">${item.feeName}</span>
         </div>
         <div class="detail-fee-price">
           单位：${item.unit}<br>
@@ -681,6 +698,7 @@ function viewPackage(packageId) {
     <div class="detail-section">
       <h4 class="detail-section-title">
         <i class="fas fa-list-check mr-2 text-accent"></i>费用项明细
+        <span class="text-xs text-text-muted ml-2 font-normal">（引用入库费规则）</span>
       </h4>
       <div class="detail-fee-list">
         ${feeItemsHtml}
