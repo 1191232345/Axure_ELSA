@@ -183,7 +183,7 @@ function renderFeeTable() {
   var categoryItems = feeRows.filter(function(row) { return row.fee_category === currentFeeCategory; });
   
   if (categoryItems.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-text-muted">' +
+    tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-text-muted">' +
       '<i class="fas fa-inbox text-2xl mb-2 block"></i>' +
       '<p>当前分类暂无折扣配置，请点击"新增行"添加</p>' +
     '</td></tr>';
@@ -191,6 +191,13 @@ function renderFeeTable() {
   }
   
   var feeItems = getFeeItemsByCategory(currentFeeCategory);
+  var feeCategoryNames = {
+    'inbound': '入库费',
+    'outbound': '出库费',
+    'storage': '仓储费',
+    'express': '快递费',
+    'other': '其他收费'
+  };
   
   tbody.innerHTML = categoryItems.map(function(row) {
     // 收费项下拉框：按子类分组显示
@@ -219,6 +226,21 @@ function renderFeeTable() {
     
     var selectedItem = feeItems.find(function(item) { return item.id === row.fee_item_id; });
     var unitDisplay = selectedItem ? selectedItem.unit : (row.unit || '-');
+    
+    // 计算预计金额
+    var unitPrice = row.unitPrice || 0;
+    var expectedAmount = 0;
+    if (unitPrice > 0) {
+      if (row.discount_type === 'none') {
+        expectedAmount = unitPrice;
+      } else if (row.discount_type === 'percentage') {
+        expectedAmount = unitPrice * (1 - (row.discount_value || 0) / 100);
+      } else if (row.discount_type === 'fixed') {
+        expectedAmount = Math.max(0, unitPrice - (row.discount_value || 0));
+      } else if (row.discount_type === 'fixed_price') {
+        expectedAmount = row.discount_value || 0;
+      }
+    }
     
     var discountTypeOptions = 
       '<option value="none"' + (row.discount_type === 'none' ? ' selected' : '') + '>无折扣</option>' +
@@ -258,6 +280,9 @@ function renderFeeTable() {
     
     return '<tr class="hover:bg-hover transition-colors">' +
       '<td class="px-4 py-3">' +
+        '<div class="text-sm font-medium text-primary">' + (feeCategoryNames[row.fee_category] || '入库费') + '</div>' +
+      '</td>' +
+      '<td class="px-4 py-3">' +
         '<select onchange="updateFeeRow(\'' + row.id + '\', \'fee_item_id\', this.value)" class="form-input text-sm">' +
           '<option value="">请选择收费项</option>' +
           feeOptionsHtml +
@@ -267,12 +292,20 @@ function renderFeeTable() {
         '<div class="text-sm text-text-secondary">' + unitDisplay + '</div>' +
       '</td>' +
       '<td class="px-4 py-3">' +
+        '<input type="number" value="' + (row.unitPrice || '') + '" min="0" step="0.01" ' +
+          'onchange="updateFeeRow(\'' + row.id + '\', \'unitPrice\', parseFloat(this.value) || 0)" ' +
+          'class="form-input text-sm w-24" placeholder="单价">' +
+      '</td>' +
+      '<td class="px-4 py-3">' +
         '<select onchange="updateFeeRow(\'' + row.id + '\', \'discount_type\', this.value)" class="form-input text-sm">' +
           discountTypeOptions +
         '</select>' +
       '</td>' +
       '<td class="px-4 py-3">' +
         discountValueInput +
+      '</td>' +
+      '<td class="px-4 py-3">' +
+        '<div class="text-sm font-semibold text-accent">' + (expectedAmount > 0 ? expectedAmount.toFixed(2) : '-') + '</div>' +
       '</td>' +
       '<td class="px-4 py-3">' +
         remarkInput +

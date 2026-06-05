@@ -5,7 +5,7 @@ let feeRows = [];
 let editingPackageId = null;
 let currentFeeCategory = 'inbound';
 
-const DATA_VERSION = '7.0';
+const DATA_VERSION = '10.0';
 
 const FEE_TYPE_ENUMS = {
   'cat_1': '整柜入库',
@@ -117,10 +117,12 @@ function loadPackages() {
             feeType: 'cat_1',
             feeTypeName: '整柜入库',
             feeId: 'rule_1_1_1', 
-            feeName: '卸货费',
+            feeName: '卸货费 - 20GP',
             unit: '柜',
+            unitPrice: 500,
             discountType: 'percentage',
             discountValue: 10,
+            expectedAmount: 450,
             remark: ''
           }
         ],
@@ -259,7 +261,7 @@ function renderFeeTable() {
   if (feeRows.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="px-4 py-8 text-center text-text-muted">
+        <td colspan="9" class="px-4 py-8 text-center text-text-muted">
           <i class="fas fa-inbox text-2xl mb-2"></i>
           <p>暂无费用项，请点击"新增行"添加</p>
         </td>
@@ -271,22 +273,34 @@ function renderFeeTable() {
   const feeTypes = getFeeTypes(currentFeeCategory);
   
   tbody.innerHTML = feeRows.map(row => {
+    // 费用类型下拉选项
     const feeTypeOptions = feeTypes.map(type => 
       `<option value="${type.id}" ${row.feeType === type.id ? 'selected' : ''}>
         ${type.name}
       </option>`
     ).join('');
     
+    // 费用类型下拉选项（直接根据费用类型获取）
     const feeItems = row.feeType ? getFeeItemsByType(row.feeType, currentFeeCategory) : [];
-    const feeOptions = row.feeType ? 
-      feeItems.map(item =>
-        `<option value="${item.id}" ${row.feeId === item.id ? 'selected' : ''}>
-          ${item.name}
-        </option>`
-      ).join('') : '<option value="">请先选择收费类型</option>';
     
+    // 单位自动填充
     const selectedItem = feeItems.find(item => item.id === row.feeId);
     const unitDisplay = selectedItem ? selectedItem.unit : '-';
+    
+    // 计算预计金额
+    let expectedAmount = 0;
+    const unitPrice = row.unitPrice || 0;
+    if (unitPrice > 0) {
+      if (row.discountType === 'none') {
+        expectedAmount = unitPrice;
+      } else if (row.discountType === 'percentage') {
+        expectedAmount = unitPrice * (1 - (row.discountValue || 0) / 100);
+      } else if (row.discountType === 'fixed') {
+        expectedAmount = Math.max(0, unitPrice - (row.discountValue || 0));
+      } else if (row.discountType === 'fixed_price') {
+        expectedAmount = row.discountValue || 0;
+      }
+    }
     
     const discountTypeOptions = `
       <option value="none" ${row.discountType === 'none' ? 'selected' : ''}>无折扣</option>
@@ -328,21 +342,22 @@ function renderFeeTable() {
     return `
       <tr class="hover:bg-hover transition-colors">
         <td class="px-4 py-3">
+          <div class="text-sm font-medium text-primary">入库费</div>
+        </td>
+        <td class="px-4 py-3">
           <select onchange="updateFeeRow(${row.id}, 'feeType', this.value)" 
                   class="form-input text-sm">
-            <option value="">请选择收费类型</option>
+            <option value="">请选择费用类型</option>
             ${feeTypeOptions}
           </select>
         </td>
         <td class="px-4 py-3">
-          <select onchange="updateFeeRow(${row.id}, 'feeId', this.value)" 
-                  class="form-input text-sm">
-            <option value="">请选择收费项</option>
-            ${feeOptions}
-          </select>
+          <div class="text-sm text-text-secondary">${unitDisplay}</div>
         </td>
         <td class="px-4 py-3">
-          <div class="text-sm text-text-secondary">${unitDisplay}</div>
+          <input type="number" value="${row.unitPrice || ''}" min="0" step="0.01"
+                 onchange="updateFeeRow(${row.id}, 'unitPrice', parseFloat(this.value) || 0)"
+                 class="form-input text-sm w-24" placeholder="单价">
         </td>
         <td class="px-4 py-3">
           <select onchange="updateFeeRow(${row.id}, 'discountType', this.value)" 
@@ -352,6 +367,9 @@ function renderFeeTable() {
         </td>
         <td class="px-4 py-3">
           ${discountValueInput || '<span class="text-sm text-text-muted">-</span>'}
+        </td>
+        <td class="px-4 py-3">
+          <div class="text-sm font-semibold text-accent">${expectedAmount > 0 ? expectedAmount.toFixed(2) : '-'}</div>
         </td>
         <td class="px-4 py-3">
           <input type="text" value="${row.remark || ''}" 
@@ -447,11 +465,11 @@ function openCreateModal() {
   });
   
   renderFeeTable();
-  document.getElementById('packageModal').style.display = 'flex';
+  document.getElementById('packageModal').classList.add('active');
 }
 
 function closeModal() {
-  document.getElementById('packageModal').style.display = 'none';
+  document.getElementById('packageModal').classList.remove('active');
   feeRows = [];
   editingPackageId = null;
 }
@@ -487,7 +505,7 @@ function savePackage() {
     
     const feeCategoryName = feeCategoryNames[row.feeCategory] || '入库费';
     
-    // 获取收费类型名称
+    // 获取收费类型名称、费用类型、单位
     let feeTypeName = '';
     let feeName = '';
     let unit = '';
@@ -498,15 +516,19 @@ function savePackage() {
       if (category) {
         feeTypeName = category.name;
         
-        category.children.forEach(operation => {
-          if (operation.children && operation.children.length > 0) {
-            const found = operation.children.find(rule => rule.id === row.feeId);
-            if (found) {
-              feeName = found.subCategory ? `${found.feeItem} - ${found.subCategory}` : found.feeItem;
-              unit = found.unit;
+        // 遍历所有操作类型查找费用类型
+        if (category.children && category.children.length > 0) {
+          for (const operation of category.children) {
+            if (operation.children && operation.children.length > 0) {
+              const found = operation.children.find(rule => rule.id === row.feeId);
+              if (found) {
+                feeName = found.subCategory ? `${found.feeItem} - ${found.subCategory}` : found.feeItem;
+                unit = found.unit;
+                break;
+              }
             }
           }
-        });
+        }
       }
     } else {
       // 其他收费分类使用fee-categories.json数据
@@ -524,6 +546,23 @@ function savePackage() {
       }
     }
     
+    // 使用用户输入的单价
+    const unitPrice = row.unitPrice || 0;
+    
+    // 计算预计金额
+    let expectedAmount = 0;
+    if (unitPrice > 0) {
+      if (row.discountType === 'none') {
+        expectedAmount = unitPrice;
+      } else if (row.discountType === 'percentage') {
+        expectedAmount = unitPrice * (1 - (row.discountValue || 0) / 100);
+      } else if (row.discountType === 'fixed') {
+        expectedAmount = Math.max(0, unitPrice - (row.discountValue || 0));
+      } else if (row.discountType === 'fixed_price') {
+        expectedAmount = row.discountValue || 0;
+      }
+    }
+    
     return {
       feeCategory: row.feeCategory || currentFeeCategory,
       feeCategoryName,
@@ -532,8 +571,10 @@ function savePackage() {
       feeId: row.feeId,
       feeName,
       unit,
+      unitPrice,
       discountType: row.discountType,
       discountValue: row.discountValue || 0,
+      expectedAmount,
       remark: row.remark || ''
     };
   });
@@ -611,7 +652,7 @@ function editPackage(packageId) {
   
   renderFeeTable();
   
-  document.getElementById('packageModal').style.display = 'flex';
+  document.getElementById('packageModal').classList.add('active');
 }
 
 function viewPackage(packageId) {
@@ -629,32 +670,17 @@ function viewPackage(packageId) {
       discountText = `一口价${item.discountValue}元`;
     }
     
-    // 获取操作类型信息
-    let operationInfo = '';
-    if (item.feeCategory === 'inbound' && inboundFeeRuleData) {
-      const category = inboundFeeRuleData.categories.find(cat => cat.id === item.feeType);
-      if (category && category.children) {
-        category.children.forEach(operation => {
-          if (operation.children && operation.children.length > 0) {
-            const found = operation.children.find(rule => rule.id === item.feeId);
-            if (found) {
-              operationInfo = operation.name;
-            }
-          }
-        });
-      }
-    }
-    
     return `
       <div class="detail-fee-item">
         <div class="detail-fee-name">
           <span class="text-xs text-text-muted">${item.feeCategoryName} - ${item.feeTypeName}</span><br>
-          ${operationInfo ? `<span class="text-xs text-accent">操作类型：${operationInfo}</span><br>` : ''}
           <span class="font-semibold">${item.feeName}</span>
         </div>
         <div class="detail-fee-price">
           单位：${item.unit}<br>
-          折扣方式：${discountText}${item.remark ? `<br>备注：${item.remark}` : ''}
+          单价：${item.unitPrice ? item.unitPrice.toFixed(2) + '元' : '-'}<br>
+          折扣方式：${discountText}<br>
+          预计金额：<span class="font-semibold text-accent">${item.expectedAmount ? item.expectedAmount.toFixed(2) + '元' : '-'}</span>${item.remark ? `<br>备注：${item.remark}` : ''}
         </div>
       </div>
     `;
@@ -707,11 +733,11 @@ function viewPackage(packageId) {
   `;
   
   document.getElementById('detailContent').innerHTML = detailHtml;
-  document.getElementById('detailModal').style.display = 'flex';
+  document.getElementById('detailModal').classList.add('active');
 }
 
 function closeDetailModal() {
-  document.getElementById('detailModal').style.display = 'none';
+  document.getElementById('detailModal').classList.remove('active');
 }
 
 function applyFilters() {

@@ -258,8 +258,8 @@
                 <td class="px-3 py-2 text-gray-800">入库费规则引用</td>
                 <td class="px-3 py-2 text-gray-600">展示价卡引用的入库费规则信息</td>
                 <td class="px-3 py-2 text-gray-600">packages.feeItems（关联入库费规则数据）</td>
-                <td class="px-3 py-2 text-gray-600">在价卡详情中展示每个费用项引用的入库费规则完整信息，包括：费用组分类、费用类型、操作类型、具体收费项、单位等</td>
-                <td class="px-3 py-2 text-gray-600">通过费用类型名称字段关联入库费规则</td>
+                <td class="px-3 py-2 text-gray-600">在价卡详情中展示每个费用项引用的入库费规则完整信息，包括：费用组分类、费用类型、单位等</td>
+                <td class="px-3 py-2 text-gray-600">通过费用类型字段关联入库费规则</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">创建人/更新人</td>
@@ -375,7 +375,7 @@
                 <td class="px-3 py-2 text-gray-600">操作列</td>
                 <td class="px-3 py-2 text-gray-600">打开价卡详情弹窗</td>
                 <td class="px-3 py-2 text-gray-600">价卡存在</td>
-                <td class="px-3 py-2 text-gray-600">展示价卡完整信息，包括基本信息（创建人、创建时间、更新人、更新时间）、费用项明细（费用组、费用类型名称、单位、折扣方式、折扣金额、备注）。费用项明细中展示引用的入库费规则完整信息，包括：费用组分类、费用类型、操作类型、具体收费项、单位等</td>
+                <td class="px-3 py-2 text-gray-600">展示价卡完整信息，包括基本信息（创建人、创建时间、更新人、更新时间）、费用项明细（费用组、费用类型、单位、单价、折扣方式、折扣金额、预计金额、备注）。费用项明细中展示引用的入库费规则完整信息，包括：费用组分类、费用类型、单位等</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">编辑</td>
@@ -403,7 +403,7 @@
                 <td class="px-3 py-2 text-gray-600">费用项表格上方</td>
                 <td class="px-3 py-2 text-gray-600">添加费用项行</td>
                 <td class="px-3 py-2 text-gray-600">无</td>
-                <td class="px-3 py-2 text-gray-600">在费用项表格中新增一行空白记录，包含收费类型、收费项、单位、折扣方式、折扣金额、备注字段</td>
+                <td class="px-3 py-2 text-gray-600">在费用项表格中新增一行空白记录，包含收费类型、费用类型、单位、折扣方式、折扣金额、备注字段</td>
               </tr>
               <tr class="hover:bg-gray-50">
                 <td class="px-3 py-2 text-gray-800">删除</td>
@@ -467,7 +467,7 @@
                 <td class="px-3 py-2 text-gray-800">feeItems</td>
                 <td class="px-3 py-2 text-gray-600">费用项列表</td>
                 <td class="px-3 py-2 text-gray-600">手工选择</td>
-                <td class="px-3 py-2 text-gray-600">至少包含一个费用项，每个费用项包含费用组、费用类型名称、单位、折扣方式、折扣金额、备注</td>
+                <td class="px-3 py-2 text-gray-600">至少包含一个费用项，每个费用项包含费用组、费用类型、单位、折扣方式、折扣金额、备注</td>
                 <td class="px-3 py-2 text-gray-600">JSON数组</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">JSON</td>
@@ -554,16 +554,16 @@
                 <td class="px-3 py-2 text-gray-800">费用组</td>
                 <td class="px-3 py-2 text-gray-600">费用项分类</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                <td class="px-3 py-2 text-gray-600">从入库费规则数据中加载，选择后联动费用类型名称下拉。支持引用入库费规则中的费用组分类（如：整柜入库、快递散货入库、托盘入库）</td>
+                <td class="px-3 py-2 text-gray-600">从入库费规则数据中加载，选择后联动费用类型下拉。支持引用入库费规则中的费用组分类（如：整柜入库、快递散货入库、托盘入库）</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">字符型</td>
               </tr>
               <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-gray-800">费用类型名称</td>
+                <td class="px-3 py-2 text-gray-800">费用类型</td>
                 <td class="px-3 py-2 text-gray-600">具体费用项</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                <td class="px-3 py-2 text-gray-600">根据费用组动态加载对应的费用项列表。引用入库费规则中的具体收费项（如：卸货费、收货费、质检费等），选择后自动填充单位字段，并在价卡详情中展示引用的入库费规则完整信息</td>
+                <td class="px-3 py-2 text-gray-600">根据费用组动态加载对应的费用项列表。引用入库费规则中的具体费用类型（如：卸货费、收货费、质检费等），选择后自动填充单位字段，并在价卡详情中展示引用的入库费规则完整信息</td>
                 <td class="px-3 py-2 text-gray-600">下拉选择框</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">字符型</td>
@@ -572,7 +572,7 @@
                 <td class="px-3 py-2 text-gray-800">入库费规则引用</td>
                 <td class="px-3 py-2 text-gray-600">引用的入库费规则信息</td>
                 <td class="px-3 py-2 text-gray-600">系统自动关联</td>
-                <td class="px-3 py-2 text-gray-600">当选择费用类型名称后，系统自动关联对应的入库费规则，在价卡详情中展示：费用组、费用类型名称、操作类型、单位等完整规则信息</td>
+                <td class="px-3 py-2 text-gray-600">当选择费用类型后，系统自动关联对应的入库费规则，在价卡详情中展示：费用组、费用类型、单位等完整规则信息</td>
                 <td class="px-3 py-2 text-gray-600">价卡详情弹窗</td>
                 <td class="px-3 py-2 text-gray-600">-</td>
                 <td class="px-3 py-2 text-gray-600">关联型</td>
@@ -627,7 +627,7 @@
     }
   </script>
 
-  <div id="packageModal" class="modal-overlay" style="display: none;">
+  <div id="packageModal" class="modal-overlay">
     <div class="modal-container">
       <div class="modal-header">
         <h3 class="modal-title" id="modalTitle">
@@ -665,7 +665,7 @@
 
           <div class="form-section">
             <h4 class="form-section-title">
-              <i class="fas fa-list-check mr-2 text-accent"></i>费用类型名称
+              <i class="fas fa-list-check mr-2 text-accent"></i>折扣配置
             </h4>
             
             <div class="mb-4">
@@ -698,10 +698,12 @@
                     <thead class="bg-light-bg">
                       <tr>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用组</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用类型名称</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用类型</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">单位</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">单价(元)</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣方式</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣金额</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">预计金额(元)</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">备注</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">操作</th>
                       </tr>
@@ -727,7 +729,7 @@
     </div>
   </div>
 
-  <div id="detailModal" class="modal-overlay" style="display: none;">
+  <div id="detailModal" class="modal-overlay">
     <div class="modal-container">
       <div class="modal-header">
         <h3 class="modal-title">

@@ -1,6 +1,6 @@
 /**
  * 入库费规则管理系统 - 分类Tab展示模式 v6.0
- * 功能：通过Tab栏切换不同分类，展示对应收费项
+ * 功能：通过Tab栏切换不同分类，展示对应费用类型
  */
 
 class InboundFeeRuleEngine {
@@ -56,7 +56,7 @@ class InboundFeeRuleEngine {
       }
     });
 
-    console.log(`✅ 数据扁平化完成，共 ${this.flatItems.length} 个收费项`);
+    console.log(`✅ 数据扁平化完成，共 ${this.flatItems.length} 个费用类型`);
   }
 
   bindEvents() {
@@ -73,7 +73,7 @@ class InboundFeeRuleEngine {
         <tr>
           <td colspan="10" style="text-align:center; padding:60px; color:#8B93A5;">
             <i class="fa fa-inbox" style="font-size:48px; margin-bottom:16px; display:block; opacity:0.3;"></i>
-            <div style="font-size:15px;">暂无收费项数据</div>
+            <div style="font-size:15px;">暂无费用类型数据</div>
             <div style="font-size:13px; margin-top:8px;">点击"新增规则"开始配置入库费规则</div>
           </td>
         </tr>`;
@@ -136,7 +136,7 @@ class InboundFeeRuleEngine {
 
   updateStatistics() {
     const totalItems = this.flatItems.length;
-    document.getElementById('statisticsText').innerHTML = `共 <strong>${totalItems}</strong> 个收费项`;
+    document.getElementById('statisticsText').innerHTML = `共 <strong>${totalItems}</strong> 个费用类型`;
   }
 
   viewDetail(itemId) {
@@ -170,7 +170,7 @@ class InboundFeeRuleEngine {
         <div class="modal-header">
           <h3 class="modal-title">
             <i class="fa fa-file-text-o" style="color:#E8A838;"></i>
-            收费项详情
+            费用类型详情
           </h3>
           <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
         </div>
@@ -182,18 +182,16 @@ class InboundFeeRuleEngine {
               <input type="text" class="form-input" value="${item.categoryName}" disabled>
             </div>
             <div class="form-group">
-              <label class="form-label">收费项（含二级）</label>
+              <label class="form-label">费用类型</label>
               <div style="padding:8px 12px; background:#F9FAFB; border-radius:6px; border:1px solid #D8D5CE;">
                 ${feeItemDisplay}
               </div>
             </div>
           </div>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:20px;">
-            <div class="form-group">
-              <label class="form-label">计费单位</label>
-              <input type="text" class="form-input" value="${item.unit || '-'}" disabled>
-            </div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label class="form-label">计费单位</label>
+            <input type="text" class="form-input" value="${item.unit || '-'}" disabled>
           </div>
 
           ${item.pricingRules && item.pricingRules.length > 0 ? `
@@ -307,7 +305,7 @@ class InboundFeeRuleEngine {
         <div class="modal-body">
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
             <div class="form-group">
-              <label class="form-label">收费分类 <span style="color:#C44536;">*</span></label>
+              <label class="form-label">费用组 <span style="color:#C44536;">*</span></label>
               <select id="addCategory" class="form-input" onchange="engine.updateFeeItemTree()">
                 <option value="">请选择分类</option>
                 <option value="入库">入库</option>
@@ -317,7 +315,7 @@ class InboundFeeRuleEngine {
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">收费项（含二级） <span style="color:#C44536;">*</span></label>
+              <label class="form-label">费用类型 <span style="color:#C44536;">*</span></label>
               <div style="position:relative;" id="feeItemTreeContainer">
                 <select id="addFeeItemTree" class="form-input" onchange="engine.onFeeItemTreeChange()" style="appearance:none;">
                   <option value="">请先选择收费分类</option>
@@ -436,14 +434,14 @@ class InboundFeeRuleEngine {
     const category = document.getElementById('addCategory').value;
     const feeItemSelect = document.getElementById('addFeeItemTree');
     
-    feeItemSelect.innerHTML = '<option value="">请选择收费项</option>';
+    feeItemSelect.innerHTML = '<option value="">请选择费用类型</option>';
     
     if (!category) {
       feeItemSelect.innerHTML = '<option value="">请先选择收费分类</option>';
       return;
     }
 
-    // 收费项树形数据 - 融合收费分类枚举进行拼接（分类+一级+二级合并）
+    // 费用类型树形数据 - 融合收费分类枚举进行拼接（分类+一级+二级合并）
     const feeItemTreeData = {
       '入库': [
         {
@@ -682,18 +680,18 @@ class InboundFeeRuleEngine {
     const feeItemName = selectedOption.dataset.feeItemName;
     
     if (level === 2) {
-      // 二级收费项 - 显示阶梯价格表格
+      // 二级费用类型 - 显示阶梯价格表格
       this.showTierPricingForm();
     } else {
-      // 一级收费项 - 判断是否包含"卸货费"字样
+      // 一级费用类型 - 判断是否包含"卸货费"字样
       if (feeItemName.includes('卸货费')) {
-        // 包含"卸货费"字样的一级收费项 - 显示费率标准表格
+        // 包含"卸货费"字样的一级费用类型 - 显示费率标准表格
         this.showPricingTableForm();
       } else if (feeItemName.includes('附加费')) {
-        // 包含"附加费"字样的一级收费项 - 显示费率规则文本区
+        // 包含"附加费"字样的一级费用类型 - 显示费率规则文本区
         this.showPricingTextForm();
       } else {
-        // 其他一级收费项（如仓储费、服务费等）- 显示费率规则文本区
+        // 其他一级费用类型（如仓储费、服务费等）- 显示费率规则文本区
         this.showPricingTextForm();
       }
     }
@@ -834,16 +832,16 @@ class InboundFeeRuleEngine {
       return;
     }
 
-    // 解析收费项名称
+    // 解析费用类型名称
     let feeItem = '';
     let subCategory = null;
     const parts = selectedFeeItemValue.split('_');
     
     if (selectedFeeItemValue.startsWith('level1_')) {
-      // 一级收费项: level1_分类_收费项名（如：level1_入库_整柜入库卸货费）
+      // 一级费用类型: level1_分类_费用类型名（如：level1_入库_整柜入库卸货费）
       feeItem = parts[2]; // 如：整柜入库卸货费
     } else if (selectedFeeItemValue.startsWith('level2_')) {
-      // 二级收费项: level2_分类_一级收费项名_二级收费项名（如：level2_入库_整柜入库附加费_SKU超量费）
+      // 二级费用类型: level2_分类_一级费用类型名_二级费用类型名（如：level2_入库_整柜入库附加费_SKU超量费）
       feeItem = parts[2]; // 如：整柜入库附加费
       subCategory = parts[3]; // 如：SKU超量费
     }
@@ -854,7 +852,7 @@ class InboundFeeRuleEngine {
     let calculationExample = null;
     let tierPricing = [];
     
-    // 判断收费项类型，决定显示哪些表单区域
+    // 判断费用类型类型，决定显示哪些表单区域
     const pricingTableSection = document.getElementById('pricingTableSection');
     const tierPricingSection = document.getElementById('tierPricingSection');
     
@@ -990,10 +988,10 @@ class InboundFeeRuleEngine {
               <input type="text" class="form-input" value="${item.categoryName}" disabled>
             </div>
             <div class="form-group">
-              <label class="form-label">收费项（含二级） <span style="color:#C44536;">*</span></label>
+              <label class="form-label">费用类型 <span style="color:#C44536;">*</span></label>
               <div style="position:relative;" id="editFeeItemTreeContainer">
                 <select id="editFeeItemTree" class="form-input" onchange="engine.onEditFeeItemTreeChange()" style="appearance:none;">
-                  <option value="">请选择收费项</option>
+                  <option value="">请选择费用类型</option>
                 </select>
                 <i class="fa fa-angle-down" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; color:#8B93A5;"></i>
               </div>
@@ -1103,17 +1101,17 @@ class InboundFeeRuleEngine {
 
     document.body.appendChild(overlay);
 
-    // 初始化编辑弹窗的收费项树形选择
+    // 初始化编辑弹窗的费用类型树形选择
     this.updateEditFeeItemTree(item.categoryName);
     
-    // 设置当前选中的收费项值
+    // 设置当前选中的费用类型值
     const editFeeItemTree = document.getElementById('editFeeItemTree');
     if (item.subCategory) {
-      // 有二级收费项
+      // 有二级费用类型
       const level2Value = `level2_${item.categoryName}_${item.subCategory}`;
       editFeeItemTree.value = level2Value;
     } else {
-      // 只有一级收费项
+      // 只有一级费用类型
       const level1Value = `level1_${item.categoryName}_${item.feeItem}`;
       editFeeItemTree.value = level1Value;
     }
@@ -1136,14 +1134,14 @@ class InboundFeeRuleEngine {
   updateEditFeeItemTree(category) {
     const feeItemSelect = document.getElementById('editFeeItemTree');
     
-    feeItemSelect.innerHTML = '<option value="">请选择收费项</option>';
+    feeItemSelect.innerHTML = '<option value="">请选择费用类型</option>';
     
     if (!category) {
       feeItemSelect.innerHTML = '<option value="">请先选择收费分类</option>';
       return;
     }
 
-    // 收费项树形数据 - 融合收费分类枚举进行拼接（分类+一级+二级合并）
+    // 费用类型树形数据 - 融合收费分类枚举进行拼接（分类+一级+二级合并）
     const feeItemTreeData = {
       '入库': [
         {
@@ -1373,25 +1371,25 @@ class InboundFeeRuleEngine {
 
     if (!selectedValue) return;
 
-    // 判断是一级还是二级收费项
+    // 判断是一级还是二级费用类型
     if (selectedValue.startsWith('level1_')) {
-      // 一级收费项 - 判断是否包含"卸货费"字样
+      // 一级费用类型 - 判断是否包含"卸货费"字样
       const parts = selectedValue.split('_');
       const feeItemName = parts[2]; // 如：整柜入库卸货费
       
       if (feeItemName.includes('卸货费')) {
-        // 包含"卸货费"字样的一级收费项 - 显示费率标准表格
+        // 包含"卸货费"字样的一级费用类型 - 显示费率标准表格
         pricingTableSection.style.display = 'block';
         pricingTextSection.style.display = 'none';
       } else if (feeItemName.includes('附加费')) {
-        // 包含"附加费"字样的一级收费项 - 显示费率规则文本区
+        // 包含"附加费"字样的一级费用类型 - 显示费率规则文本区
         pricingTextSection.style.display = 'block';
       } else {
-        // 其他一级收费项（如仓储费、服务费等）- 显示费率规则文本区
+        // 其他一级费用类型（如仓储费、服务费等）- 显示费率规则文本区
         pricingTextSection.style.display = 'block';
       }
     } else if (selectedValue.startsWith('level2_')) {
-      // 二级收费项 - 显示阶梯价格表格
+      // 二级费用类型 - 显示阶梯价格表格
       tierPricingSection.style.display = 'block';
       pricingTextSection.style.display = 'none';
     }
@@ -1445,21 +1443,21 @@ class InboundFeeRuleEngine {
     const item = this.flatItems.find(i => i.id === ruleId);
     if (!item) return;
 
-    // 解析收费项树形选择值
+    // 解析费用类型树形选择值
     const selectedValue = document.getElementById('editFeeItemTree').value;
     if (!selectedValue) {
-      showToast('请选择收费项', 'error');
+      showToast('请选择费用类型', 'error');
       return;
     }
 
-    // 解析收费项名称
+    // 解析费用类型名称
     const parts = selectedValue.split('_');
     if (selectedValue.startsWith('level1_')) {
-      // 一级收费项: level1_分类_收费项名（如：level1_入库_整柜入库卸货费）
+      // 一级费用类型: level1_分类_费用类型名（如：level1_入库_整柜入库卸货费）
       item.feeItem = parts[2]; // 如：整柜入库卸货费
       item.subCategory = null;
     } else if (selectedValue.startsWith('level2_')) {
-      // 二级收费项: level2_分类_一级收费项名_二级收费项名（如：level2_入库_整柜入库附加费_SKU超量费）
+      // 二级费用类型: level2_分类_一级费用类型名_二级费用类型名（如：level2_入库_整柜入库附加费_SKU超量费）
       item.feeItem = parts[2]; // 如：整柜入库附加费
       item.subCategory = parts[3]; // 如：SKU超量费
     }
@@ -1539,7 +1537,7 @@ class InboundFeeRuleEngine {
       return;
     }
 
-    const headers = ['序号', '收费分类', '操作项目', '收费项', '仓库操作项目', '计费单位', '计费模式', '单价', '状态'];
+    const headers = ['序号', '收费分类', '操作项目', '费用类型', '仓库操作项目', '计费单位', '计费模式', '单价', '状态'];
     const rows = this.filteredItems.map((item, index) => [
       index + 1,
       item.categoryName,

@@ -1,57 +1,98 @@
 {
   "categories": [
     {
-      "id": "inbound_full_container",
+      "id": "cat_1",
       "name": "整柜入库",
       "children": [
         {
-          "id": "unload_operation",
+          "id": "op_1_1",
           "name": "卸柜操作",
           "children": [
             {
-              "id": "unload_fee",
+              "id": "rule_1_1_1",
               "feeItem": "卸货费",
+              "subCategory": "20GP",
               "unit": "柜"
             },
             {
-              "id": "sku_excess_fee",
+              "id": "rule_1_1_2",
+              "feeItem": "卸货费",
+              "subCategory": "40GP",
+              "unit": "柜"
+            },
+            {
+              "id": "rule_1_1_3",
+              "feeItem": "卸货费",
+              "subCategory": "40HQ",
+              "unit": "柜"
+            },
+            {
+              "id": "rule_1_1_4",
               "feeItem": "SKU超量费",
+              "subCategory": "超过50个SKU",
               "unit": "个"
             },
             {
-              "id": "overweight_fee",
+              "id": "rule_1_1_5",
               "feeItem": "超重费",
+              "subCategory": "单箱超过30kg",
               "unit": "箱"
+            }
+          ]
+        },
+        {
+          "id": "op_1_2",
+          "name": "收货操作",
+          "children": [
+            {
+              "id": "rule_1_2_1",
+              "feeItem": "收货费",
+              "subCategory": "普通货物",
+              "unit": "柜"
             },
             {
-              "id": "manifest_fee",
-              "feeItem": "清单费",
-              "unit": "票"
+              "id": "rule_1_2_2",
+              "feeItem": "收货费",
+              "subCategory": "危险品",
+              "unit": "柜"
             }
           ]
         }
       ]
     },
     {
-      "id": "inbound_express",
+      "id": "cat_2",
       "name": "快递散货入库",
       "children": [
         {
-          "id": "express_operation",
+          "id": "op_2_1",
           "name": "快递操作",
           "children": [
             {
-              "id": "express_receive_fee",
+              "id": "rule_2_1_1",
               "feeItem": "收货费",
+              "subCategory": "小件(≤5kg)",
               "unit": "件"
             },
             {
-              "id": "express_scan_fee",
+              "id": "rule_2_1_2",
+              "feeItem": "收货费",
+              "subCategory": "中件(5-20kg)",
+              "unit": "件"
+            },
+            {
+              "id": "rule_2_1_3",
+              "feeItem": "收货费",
+              "subCategory": "大件(>20kg)",
+              "unit": "件"
+            },
+            {
+              "id": "rule_2_1_4",
               "feeItem": "扫描费",
               "unit": "件"
             },
             {
-              "id": "express_sort_fee",
+              "id": "rule_2_1_5",
               "feeItem": "分拣费",
               "unit": "件"
             }
@@ -60,25 +101,39 @@
       ]
     },
     {
-      "id": "inbound_pallet",
+      "id": "cat_3",
       "name": "托盘入库",
       "children": [
         {
-          "id": "pallet_operation",
+          "id": "op_3_1",
           "name": "托盘操作",
           "children": [
             {
-              "id": "pallet_receive_fee",
+              "id": "rule_3_1_1",
               "feeItem": "收货费",
+              "subCategory": "标准托盘",
               "unit": "托"
             },
             {
-              "id": "pallet_inspect_fee",
+              "id": "rule_3_1_2",
+              "feeItem": "收货费",
+              "subCategory": "非标托盘",
+              "unit": "托"
+            },
+            {
+              "id": "rule_3_1_3",
               "feeItem": "质检费",
+              "subCategory": "抽检(5%)",
               "unit": "托"
             },
             {
-              "id": "pallet_label_fee",
+              "id": "rule_3_1_4",
+              "feeItem": "质检费",
+              "subCategory": "全检",
+              "unit": "托"
+            },
+            {
+              "id": "rule_3_1_5",
               "feeItem": "贴标费",
               "unit": "托"
             }

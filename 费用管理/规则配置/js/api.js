@@ -7,11 +7,7 @@ let ruleConfigs = [];
 let feeCategoriesData = null;
 
 const FEE_CATEGORIES = {
-  inbound: { name: '入库费', icon: 'fa-download' },
-  outbound: { name: '出库费', icon: 'fa-upload' },
-  storage: { name: '仓储费', icon: 'fa-warehouse' },
-  express: { name: '快递费', icon: 'fa-truck' },
-  other: { name: '其他费用', icon: 'fa-ellipsis-h' }
+  inbound: { name: '入库费', icon: 'fa-download' }
 };
 
 async function initApi() {
@@ -26,9 +22,9 @@ async function loadFeeCategories() {
   try {
     const response = await fetch('../价卡管理/data/fee-categories.json');
     feeCategoriesData = await response.json();
-    console.log('✅ 费用项分类数据加载成功');
+    console.log('✅ 费用类型分类数据加载成功');
   } catch (error) {
-    console.error('❌ 费用项分类数据加载失败:', error);
+    console.error('❌ 费用类型分类数据加载失败:', error);
     feeCategoriesData = {
       feeCategories: {
         inbound: { name: '入库费', icon: 'fa-download', categories: [] },
