@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[模块名称] - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.3/dist/mermaid.min.js"></script>
+
+  <link rel="stylesheet" href="../common/css/common.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#2a3b7d', light: '#3a4ca7', dark: '#1e2d5f' },
+            success: { DEFAULT: '#00B42A', bg: '#E8FFEC', text: '#006B19' },
+            warning: { DEFAULT: '#FF7D00', bg: '#FFF7E8', text: '#994D00' },
+            danger: { DEFAULT: '#F53F3F', bg: '#FFECE8', text: '#B3261E' },
+            info: { DEFAULT: '#1677FF', bg: '#E8F3FF', text: '#094D8C' }
+          },
+          boxShadow: {
+            card: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            header: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }
+        }
+      }
+    };
+
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+
+    const DATA_CONFIG = {
+      pageId: 'module-template',
+      dataFile: 'data/module-data.json',
+      version: '1.0.0'
+    };
+
+    const renderer = new marked.Renderer();
+    renderer.code = function(code, language) {
+      if (language === 'mermaid') {
+        return '<div class="mermaid-container" onclick="openMermaidModal(this)">' +
+               '<div class="mermaid">' + code + '</div>' +
+               '<span class="mermaid-hint"><i class="fas fa-magnifying-glass-plus mr-1"></i>点击放大</span></div>';
+      }
+      return '<pre><code class="language-' + (language || '') + '">' +
+             code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
+    };
+    marked.setOptions({ renderer, breaks: true, gfm: true });
+  </script>
+</head>
+<body class="font-sans bg-gray-50 text-neutral-800 min-h-screen">
+
+  <div class="tabs fixed bottom-8 right-8 z-40">
+    <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+    <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+    <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+  </div>
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center h-14">
+        <span class="text-lg font-semibold">ELSA · [模块名称]</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-prd" class="main-content" style="display: none;">
+    <div class="container mx-auto px-4 py-8">
+      <div class="flex gap-6">
+        <aside class="w-64 flex-shrink-0 hidden lg:block">
+          <div class="toc sticky top-4">
+            <div class="toc-title"><i class="fas fa-list-alt mr-2"></i>目录导航</div>
+            <div id="toc-nav"></div>
+          </div>
+        </aside>
+        <div class="flex-1 min-w-0">
+          <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div id="prd-content" class="prose max-w-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <main id="main-testcases" class="main-content" style="display: none;">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <div id="testcases-content" class="prose max-w-none"></div>
+      </div>
+    </div>
+  </main>
+
+  <main id="main-prototype" class="main-content active flex-1 overflow-y-auto bg-gray-50">
+    <div class="container mx-auto px-4 py-6">
+
+      <div class="bg-white rounded shadow-card p-4 mb-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-neutral-600 whitespace-nowrap">状态</label>
+            <select id="filterStatus" class="erp-input w-36">
+              <option value="">全部</option>
+              <option value="active">启用</option>
+              <option value="inactive">禁用</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-sm text-neutral-600 whitespace-nowrap">关键字</label>
+            <input type="text" id="filterKeyword" class="erp-input w-48" placeholder="搜索名称">
+          </div>
+          <div class="flex gap-2 ml-auto">
+            <button id="resetBtn" class="erp-btn erp-btn-secondary">
+              <i class="fas fa-rotate-right mr-1.5"></i> 重置
+            </button>
+            <button id="searchBtn" class="erp-btn erp-btn-primary">
+              <i class="fas fa-search mr-1.5"></i> 搜索
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded shadow-card p-4 mb-4">
+        <button id="addBtn" class="erp-btn erp-btn-primary">
+          <i class="fas fa-plus mr-1.5"></i> 新增
+        </button>
+      </div>
+
+      <div class="bg-white rounded shadow-card overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-neutral-200 text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">名称</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">状态</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">创建时间</th>
+                <th class="px-4 py-3 text-left font-medium text-gray-700">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-neutral-100"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="hidden text-center py-12">
+          <i class="fas fa-inbox text-6xl text-neutral-300 mb-4"></i>
+          <p class="text-neutral-500 mb-4">暂无数据</p>
+          <button class="erp-btn erp-btn-primary" onclick="MainPage.openCreate()">
+            <i class="fas fa-plus mr-1.5"></i> 新增第一条
+          </button>
+        </div>
+        <div class="px-4 py-3 border-t border-neutral-100 text-sm text-neutral-500">
+          共 <span id="totalCount">0</span> 条
+        </div>
+      </div>
+
+      <div id="logic-docs-container"></div>
+    </div>
+  </main>
+
+  <div id="formModal" class="erp-modal">
+    <div class="erp-modal-content">
+      <div class="erp-modal-header">
+        <h3 id="formModalTitle" class="erp-modal-title">新增记录</h3>
+        <button class="erp-modal-close" onclick="closeModal('formModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="erp-modal-body space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-neutral-600 mb-1"><span class="text-danger">*</span> 名称</label>
+          <input type="text" id="fieldName" class="erp-input w-full" placeholder="请输入名称">
+          <p id="fieldNameError" class="text-xs text-danger mt-1 hidden"></p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-neutral-600 mb-1"><span class="text-danger">*</span> 状态</label>
+          <select id="fieldStatus" class="erp-input w-full">
+            <option value="active">启用</option>
+            <option value="inactive">禁用</option>
+          </select>
+        </div>
+      </div>
+      <div class="erp-modal-footer">
+        <button class="erp-btn erp-btn-secondary" onclick="closeModal('formModal')">取消</button>
+        <button id="saveBtn" class="erp-btn erp-btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="erp-modal">
+    <div class="erp-modal-content erp-modal-sm">
+      <div class="erp-modal-header">
+        <h3 class="erp-modal-title">确认删除</h3>
+        <button class="erp-modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="erp-modal-body">
+        <p class="text-neutral-600">确定要删除这条记录吗？此操作不可恢复。</p>
+      </div>
+      <div class="erp-modal-footer">
+        <button class="erp-btn erp-btn-secondary" onclick="closeModal('deleteModal')">取消</button>
+        <button id="confirmDeleteBtn" class="erp-btn erp-btn-danger">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mermaidModal" class="mermaid-modal" onclick="closeMermaidModal(event)">
+    <div class="mermaid-modal-content" onclick="event.stopPropagation()">
+      <button class="mermaid-modal-close" onclick="closeMermaidModal()"><i class="fas fa-xmark"></i></button>
+      <div class="mermaid-modal-title"><i class="fas fa-diagram-project mr-2"></i>流程图预览</div>
+      <div id="mermaidModalContent" class="mermaid-modal-svg"></div>
+    </div>
+  </div>
+
+  <script src="../common/js/common.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

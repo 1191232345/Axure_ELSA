@@ -1,0 +1,179 @@
+<div class="mt-6 bg-white rounded-lg shadow-card overflow-hidden">
+  <div class="p-4 bg-primary text-white flex items-center justify-between cursor-pointer" onclick="toggleLogic()">
+    <h3 class="font-semibold flex items-center">
+      <i class="fas fa-book mr-2"></i>页面逻辑说明
+    </h3>
+    <i id="logic-icon" class="fas fa-chevron-down transition-transform duration-300"></i>
+  </div>
+
+  <div id="logic-content" class="border border-t-0 border-gray-200" style="display: none;">
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fas fa-play-circle text-primary mr-2"></i>初始化页面（数据展示逻辑）
+      </h4>
+      <table class="min-w-full text-sm border border-gray-200 rounded">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="px-3 py-2">列表数据</td>
+            <td class="px-3 py-2 text-gray-600">页面加载时展示全部记录</td>
+            <td class="px-3 py-2 text-gray-600">data/module-data.json / localStorage</td>
+            <td class="px-3 py-2 text-gray-600">按 createdAt 倒序，分页每页 10 条</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">空状态</td>
+            <td class="px-3 py-2 text-gray-600">无数据时显示空状态</td>
+            <td class="px-3 py-2 text-gray-600">records.length === 0</td>
+            <td class="px-3 py-2 text-gray-600">显示图标 +「暂无数据」+ 新增引导按钮</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fas fa-search text-primary mr-2"></i>检索条件
+      </h4>
+      <table class="min-w-full text-sm border border-gray-200 rounded">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="px-3 py-2">状态</td>
+            <td class="px-3 py-2 text-gray-600">下拉选择</td>
+            <td class="px-3 py-2 text-gray-600">精确匹配 status 字段，空值表示全部</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">关键字</td>
+            <td class="px-3 py-2 text-gray-600">文本输入</td>
+            <td class="px-3 py-2 text-gray-600">模糊匹配 name 字段，不区分大小写</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="p-4 border-b border-gray-100">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fas fa-mouse-pointer text-primary mr-2"></i>模块按钮逻辑
+      </h4>
+      <table class="min-w-full text-sm border border-gray-200 rounded">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="px-3 py-2">搜索</td>
+            <td class="px-3 py-2 text-gray-600">筛选区</td>
+            <td class="px-3 py-2 text-gray-600">无</td>
+            <td class="px-3 py-2 text-gray-600">按条件过滤列表，重置到第 1 页</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">重置</td>
+            <td class="px-3 py-2 text-gray-600">筛选区</td>
+            <td class="px-3 py-2 text-gray-600">无</td>
+            <td class="px-3 py-2 text-gray-600">清空筛选条件，恢复全量数据</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">新增</td>
+            <td class="px-3 py-2 text-gray-600">列表上方</td>
+            <td class="px-3 py-2 text-gray-600">无</td>
+            <td class="px-3 py-2 text-gray-600">打开表单弹窗，保存后刷新列表</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">编辑</td>
+            <td class="px-3 py-2 text-gray-600">行操作列</td>
+            <td class="px-3 py-2 text-gray-600">记录存在</td>
+            <td class="px-3 py-2 text-gray-600">预填表单，保存后更新记录</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">删除</td>
+            <td class="px-3 py-2 text-gray-600">行操作列</td>
+            <td class="px-3 py-2 text-gray-600">用户确认</td>
+            <td class="px-3 py-2 text-gray-600">移除记录，刷新列表，Toast 提示</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="p-4">
+      <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+        <i class="fas fa-list text-primary mr-2"></i>属性取值逻辑
+      </h4>
+      <table class="min-w-full text-sm border border-gray-200 rounded">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="px-3 py-2">名称</td>
+            <td class="px-3 py-2 text-gray-600">record.name</td>
+            <td class="px-3 py-2 text-gray-600">直接取值</td>
+            <td class="px-3 py-2 text-gray-600">文本，超长截断显示省略号</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">状态</td>
+            <td class="px-3 py-2 text-gray-600">record.status</td>
+            <td class="px-3 py-2 text-gray-600">active→启用，inactive→禁用</td>
+            <td class="px-3 py-2 text-gray-600">绿色/灰色标签</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">创建时间</td>
+            <td class="px-3 py-2 text-gray-600">record.createdAt</td>
+            <td class="px-3 py-2 text-gray-600">ISO 8601 转本地时间</td>
+            <td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5 class="font-medium text-gray-700 mt-4 mb-2">弹窗属性描述</h5>
+      <table class="min-w-full text-sm border border-gray-200 rounded">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
+            <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="px-3 py-2">名称</td>
+            <td class="px-3 py-2 text-gray-600">文本输入</td>
+            <td class="px-3 py-2 text-gray-600">是</td>
+            <td class="px-3 py-2 text-gray-600">1-50 字符，去除首尾空格</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2">状态</td>
+            <td class="px-3 py-2 text-gray-600">下拉选择</td>
+            <td class="px-3 py-2 text-gray-600">是</td>
+            <td class="px-3 py-2 text-gray-600">active（启用）/ inactive（禁用）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
