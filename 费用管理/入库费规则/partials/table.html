@@ -1,0 +1,42 @@
+      <!-- 内容展示区域 -->
+      <div class="content-section animate-fade-in-up">
+        <!-- 操作按钮栏 -->
+        <div class="table-toolbar" id="tableToolbar">
+          <button id="btnAddRule" class="erp-btn erp-btn-success">
+            <i class="fa fa-plus-circle mr-1"></i> 新增规则
+          </button>
+          <button id="btnExport" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-download mr-1"></i> 导出
+          </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <div class="table-container">
+          <table class="data-table" id="dataTable">
+            <thead id="tableHead">
+              <tr>
+                <th style="width:60px;">序号</th>
+                <th style="width:150px;">费用组</th>
+                <th style="width:250px;">费用类型</th>
+                <th style="width:100px;">计费单位</th>
+                <th style="width:100px;">创建人</th>
+                <th style="width:150px;">创建时间</th>
+                <th style="width:100px;">更新人</th>
+                <th style="width:150px;">更新时间</th>
+                <th style="width:150px;">失效时间</th>
+                <th style="width:100px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- 动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="table-footer">
+          <span id="statisticsText">
+            共 <strong>0</strong> 个费用类型
+          </span>
+        </div>
+      </div>

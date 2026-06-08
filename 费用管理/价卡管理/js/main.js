@@ -89,9 +89,9 @@ async function loadFeeCategoriesData() {
   try {
     const response = await fetch('data/fee-categories.json');
     feeCategoriesData = await response.json();
-    console.log('✅ 收费分类数据加载成功');
+    console.log('✅ 费用组数据加载成功');
   } catch (error) {
-    console.error('❌ 收费分类数据加载失败:', error);
+    console.error('❌ 费用组数据加载失败:', error);
   }
 }
 
@@ -163,7 +163,7 @@ function getFeeTypes(category = 'inbound') {
     }));
   }
   
-  // 其他收费分类，使用fee-categories.json数据
+  // 其他费用组，使用fee-categories.json数据
   if (feeCategoriesData && feeCategoriesData.feeCategories && feeCategoriesData.feeCategories[category]) {
     const categoryData = feeCategoriesData.feeCategories[category];
     return categoryData.categories.map(cat => ({
@@ -201,7 +201,7 @@ function getFeeItemsByType(feeTypeId, category = 'inbound') {
     return feeItems;
   }
   
-  // 其他收费分类，使用fee-categories.json数据
+  // 其他费用组，使用fee-categories.json数据
   if (feeCategoriesData && feeCategoriesData.feeCategories) {
     for (const catKey in feeCategoriesData.feeCategories) {
       const catData = feeCategoriesData.feeCategories[catKey];
@@ -495,7 +495,7 @@ function savePackage() {
   }
   
   const feeItems = validFeeRows.map(row => {
-    // 获取收费分类名称
+    // 获取费用组名称
     const feeCategoryNames = {
       'inbound': '入库费',
       'outbound': '出库费',
@@ -531,7 +531,7 @@ function savePackage() {
         }
       }
     } else {
-      // 其他收费分类使用fee-categories.json数据
+      // 其他费用组使用fee-categories.json数据
       if (feeCategoriesData && feeCategoriesData.feeCategories && feeCategoriesData.feeCategories[row.feeCategory]) {
         const categoryData = feeCategoriesData.feeCategories[row.feeCategory];
         const foundCategory = categoryData.categories.find(cat => cat.id === row.feeType);

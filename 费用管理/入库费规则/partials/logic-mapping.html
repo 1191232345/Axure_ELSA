@@ -1,0 +1,178 @@
+          <!-- 入库费用类型映射表 -->
+          <div class="p-4 border-t border-gray-100">
+            <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+              <i class="fa fa-sitemap text-primary mr-2"></i>费率映射表
+            </h4>
+            
+            <!-- 标签页切换 -->
+            <div class="flex border-b border-gray-200 mb-4">
+              <button class="mapping-tab px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary" data-tab="mapping">
+                <i class="fa fa-tree mr-1"></i>费用类型映射
+              </button>
+            </div>
+
+            <!-- 费用类型映射 - 表格展示 -->
+            <div id="mapping-content" class="mapping-panel">
+              <!-- 搜索筛选 -->
+              <div class="mb-3 flex items-center gap-2">
+                <input type="text" class="mapping-search px-3 py-1.5 text-sm border border-gray-200 rounded w-48 focus:outline-none focus:border-primary" placeholder="搜索费用类型...">
+                <select class="mapping-filter px-3 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-primary">
+                  <option value="">全部费率方式</option>
+                  <option value="rate-standard">费率标准表格</option>
+                  <option value="ladder-price">阶梯价格表格</option>
+                  <option value="fixed-price">固定价格</option>
+                </select>
+              </div>
+
+              <!-- 表格展示 -->
+              <div class="mapping-table bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <table class="w-full text-sm border-collapse">
+                  <thead>
+                    <tr class="bg-primary text-white">
+                      <th class="px-4 py-3 text-left font-semibold border-r border-white/20" style="width:12%;">费用组</th>
+                      <th class="px-4 py-3 text-left font-semibold border-r border-white/20" style="width:14%;">一级项目</th>
+                      <th class="px-4 py-3 text-left font-semibold border-r border-white/20" style="width:14%;">二级项目</th>
+                      <th class="px-4 py-3 text-left font-semibold border-r border-white/20" style="width:10%;">计费单位</th>
+                      <th class="px-4 py-3 text-left font-semibold border-r border-white/20" style="width:14%;">计费维度</th>
+                      <th class="px-4 py-3 text-left font-semibold" style="width:36%;">计费逻辑</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- ========== 整柜入库 ========== -->
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200 bg-gray-50/40" rowspan="8">整柜入库</td>
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200" rowspan="1">卸货费（入库）</td>
+                      <td class="px-4 py-3 text-gray-400 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">柜</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 柜型单价 × 1</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200 bg-blue-50/40" rowspan="7">附加费（入库）</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU超量费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">个</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出SKU种类数</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">超重费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">箱</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">/箱</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出重量</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">清点费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">件</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出件数</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">分货费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 分货SKU数</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">拆托费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">托</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 固定单价 × 拆托数</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">拍照费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">张</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 固定单价 × 拍照张数</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-200">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">换标费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">件</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 换标件数</td>
+                    </tr>
+
+                    <!-- ========== 快递散货入库 ========== -->
+                    <tr class="hover:bg-blue-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200 bg-blue-100/30" rowspan="6">快递散货入库</td>
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200" rowspan="1">卸货费（入库）</td>
+                      <td class="px-4 py-3 text-gray-400 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">件</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 规格单价 × 件数</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200 bg-blue-50/40" rowspan="5">附加费（入库）</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU超量费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">个</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出SKU种类数</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">超重费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">箱</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">/箱</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出重量</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">清点费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">件</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出件数</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">拍照费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">张</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 固定单价 × 拍照张数</td>
+                    </tr>
+                    <tr class="hover:bg-blue-50/40 transition-colors border-b border-gray-200">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">换标费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">件</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 换标件数</td>
+                    </tr>
+
+                    <!-- ========== 托盘入库 ========== -->
+                    <tr class="hover:bg-green-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200 bg-green-100/30" rowspan="6">托盘入库</td>
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200" rowspan="1">卸货费（入库）</td>
+                      <td class="px-4 py-3 text-gray-400 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">托</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 托盘规格单价 × 托数</td>
+                    </tr>
+                    <tr class="hover:bg-green-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-800 font-medium align-middle border-r border-gray-200 bg-green-50/40" rowspan="5">附加费（入库）</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU超量费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">个</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">SKU</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出SKU种类数</td>
+                    </tr>
+                    <tr class="hover:bg-green-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">超重费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">箱</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">/箱</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 超出重量</td>
+                    </tr>
+                    <tr class="hover:bg-green-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">拆托费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">托</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 固定单价 × 拆托数</td>
+                    </tr>
+                    <tr class="hover:bg-green-50/40 transition-colors border-b border-gray-100">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">拍照费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">张</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">-</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 固定单价 × 拍照张数</td>
+                    </tr>
+                    <tr class="hover:bg-green-50/40 transition-colors">
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">换标费</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">件</td>
+                      <td class="px-4 py-3 text-gray-700 border-r border-gray-200">入库单</td>
+                      <td class="px-4 py-3 text-gray-700">费用 = 阶梯单价 × 换标件数</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>

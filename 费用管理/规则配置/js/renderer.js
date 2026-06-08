@@ -200,7 +200,7 @@ function renderFeeTable() {
   };
   
   tbody.innerHTML = categoryItems.map(function(row) {
-    // 收费项下拉框：按子类分组显示
+    // 费用类型下拉框：按子类分组显示
     var feeOptionsHtml = '';
     var subCategories = {};
     
@@ -284,7 +284,7 @@ function renderFeeTable() {
       '</td>' +
       '<td class="px-4 py-3">' +
         '<select onchange="updateFeeRow(\'' + row.id + '\', \'fee_item_id\', this.value)" class="form-input text-sm">' +
-          '<option value="">请选择收费项</option>' +
+          '<option value="">请选择费用类型</option>' +
           feeOptionsHtml +
         '</select>' +
       '</td>' +

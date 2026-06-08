@@ -1,0 +1,117 @@
+            <!-- 字段取值逻辑面板 -->
+            <div id="fields-content" class="mapping-panel hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- 规格字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-list-alt text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">规格</span>
+                    <span class="ml-auto text-xs text-gray-500">下拉选择</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 基础数据管理</div>
+                    <div><span class="text-gray-500">约束条件:</span> 必填</div>
+                    <div><span class="text-gray-500">取值规则:</span> 根据费用组动态加载</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">示例:</span> 20GP、40GP、40HC...
+                    </div>
+                  </div>
+                </div>
+                <!-- 价格字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-dollar-sign text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">价格</span>
+                    <span class="ml-auto text-xs text-gray-500">数字输入</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 键盘输入</div>
+                    <div><span class="text-gray-500">约束条件:</span> ≥0，精度2位小数，必填</div>
+                    <div><span class="text-gray-500">取值规则:</span> 用户手动输入</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">示例:</span> 350.00
+                    </div>
+                  </div>
+                </div>
+                <!-- 开始量字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-arrow-right text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">开始量</span>
+                    <span class="ml-auto text-xs text-gray-500">数字输入</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 键盘输入</div>
+                    <div><span class="text-gray-500">约束条件:</span> ≥0，整数，必填</div>
+                    <div><span class="text-gray-500">取值规则:</span> 阶梯价格起始值</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">示例:</span> 0
+                    </div>
+                  </div>
+                </div>
+                <!-- 结束量字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-arrow-left text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">结束量</span>
+                    <span class="ml-auto text-xs text-gray-500">数字输入</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 键盘输入</div>
+                    <div><span class="text-gray-500">约束条件:</span> ≥开始量，整数，必填，可填∞</div>
+                    <div><span class="text-gray-500">取值规则:</span> 阶梯价格结束值</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">示例:</span> 100 或 ∞
+                    </div>
+                  </div>
+                </div>
+                <!-- 计费单位字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-balance-scale text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">计费单位</span>
+                    <span class="ml-auto text-xs text-gray-500">下拉选择</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 费用类型默认单位</div>
+                    <div><span class="text-gray-500">约束条件:</span> 必填</div>
+                    <div><span class="text-gray-500">取值规则:</span> 自动带出，可修改</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">可选:</span> 柜、件、托、KG、SKU、张
+                    </div>
+                  </div>
+                </div>
+                <!-- 备注字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-comment text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">备注</span>
+                    <span class="ml-auto text-xs text-gray-500">文本输入</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 键盘输入</div>
+                    <div><span class="text-gray-500">约束条件:</span> 可选，≤256字符</div>
+                    <div><span class="text-gray-500">取值规则:</span> 规格说明、适用条件</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">示例:</span> 标准柜型
+                    </div>
+                  </div>
+                </div>
+                <!-- 条件说明字段 -->
+                <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors">
+                  <div class="flex items-center mb-2">
+                    <i class="fa fa-info-circle text-primary mr-2"></i>
+                    <span class="font-medium text-gray-800">条件说明</span>
+                    <span class="ml-auto text-xs text-gray-500">多行文本</span>
+                  </div>
+                  <div class="text-xs text-gray-600 space-y-1">
+                    <div><span class="text-gray-500">数据来源:</span> 键盘输入</div>
+                    <div><span class="text-gray-500">约束条件:</span> 可选，≤256字符</div>
+                    <div><span class="text-gray-500">取值规则:</span> 触发条件、适用场景</div>
+                    <div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2">
+                      <span class="text-gray-500">示例:</span> 单箱重量超过35kg时收取
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>

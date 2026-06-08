@@ -1324,7 +1324,7 @@ function loadLogicDescription() {
           <tbody class="divide-y divide-gray-100">
             <tr class="hover:bg-gray-50">
               <td class="px-3 py-2 text-gray-800">费用项名称</td>
-              <td class="px-3 py-2 text-gray-600">具体的收费项目</td>
+              <td class="px-3 py-2 text-gray-600">具体的费用类型目</td>
               <td class="px-3 py-2 text-gray-600">手工录入</td>
               <td class="px-3 py-2 text-gray-600">最多100字符</td>
               <td class="px-3 py-2 text-gray-600">是</td>
@@ -1648,7 +1648,7 @@ function buildExpressSurchargeTableHtml(product) {
     <table class="express-subtable express-surcharge-table w-full text-sm">
       <thead class="bg-gray-50 border-b border-gray-200">
         <tr>
-          <th class="express-th-label">收费项</th>
+          <th class="express-th-label">费用类型</th>
           ${th}
         </tr>
       </thead>
@@ -1723,7 +1723,7 @@ function showExpressFeeDetail(id) {
         <div class="express-subsection">
           ${wrapFeeDetailCollapse(
             `<div class="fee-detail-summary-row">
-              <span class="express-subsection-title" style="margin:0;"><i class="fa fa-list-alt text-primary mr-2"></i>杂费（收费项 × 分区）</span>
+              <span class="express-subsection-title" style="margin:0;"><i class="fa fa-list-alt text-primary mr-2"></i>杂费（费用类型 × 分区）</span>
               <span class="fee-detail-summary-tip">默认折叠 · 展开后滚动</span>
             </div>`,
             surHtml
