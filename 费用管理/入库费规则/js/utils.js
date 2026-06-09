@@ -71,3 +71,44 @@ function switchLogicTab(btn) {
     targetPanel.classList.remove('hidden');
   }
 }
+
+// 逻辑说明弹窗打开/关闭函数
+function openLogicModal() {
+  const modal = document.getElementById('logic-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    // 阻止背景滚动
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeLogicModal() {
+  const modal = document.getElementById('logic-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    // 恢复背景滚动
+    document.body.style.overflow = '';
+  }
+}
+
+// 映射表Tab切换函数
+function switchMappingTab(btn) {
+  const tab = btn.dataset.tab;
+
+  // 切换tab样式
+  document.querySelectorAll('.mapping-tab').forEach(t => {
+    t.classList.remove('text-primary', 'border-b-2', 'border-primary');
+    t.classList.add('text-gray-500');
+  });
+  btn.classList.remove('text-gray-500');
+  btn.classList.add('text-primary', 'border-b-2', 'border-primary');
+
+  // 切换面板显示
+  document.querySelectorAll('.mapping-panel').forEach(p => {
+    p.classList.add('hidden');
+  });
+  const targetPanel = document.getElementById(`${tab}-content`);
+  if (targetPanel) {
+    targetPanel.classList.remove('hidden');
+  }
+}

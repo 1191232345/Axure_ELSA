@@ -191,6 +191,14 @@
               <input type="date" id="filterUpdateTimeEnd" class="flex-1">
             </div>
           </div>
+          <div class="filter-item">
+            <label>作废时间</label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="filterUpdateTimeStart" class="flex-1">
+              <span class="text-gray-500">至</span>
+              <input type="date" id="filterUpdateTimeEnd" class="flex-1">
+            </div>
+          </div>
         </div>
         <div class="filter-actions">
           <button id="btnReset" class="erp-btn erp-btn-secondary">
@@ -237,31 +245,328 @@
         </div>
       </div>
 
-      <!-- 逻辑说明（已拆分到独立页面） -->
+      <!-- 逻辑说明 -->
       <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
-        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="toggleLogicSection()">
+        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="openLogicModal()">
           <div class="flex items-center">
             <i class="fa fa-book text-primary mr-2"></i>
             <span class="font-semibold text-primary">逻辑说明</span>
-            <span class="ml-2 text-xs text-gray-500">(点击展开/收起)</span>
+            <span class="ml-2 text-xs text-gray-500">(点击查看详细逻辑)</span>
           </div>
-          <i class="fa fa-chevron-down text-primary transition-transform" id="logic-icon"></i>
+          <i class="fa fa-external-link text-primary"></i>
         </div>
-        <div id="logic-content" class="hidden">
-          <div class="p-4 bg-gray-50/30">
-            <div class="flex items-center justify-center py-8">
-              <div class="text-center">
-                <i class="fa fa-file-alt text-4xl text-primary mb-3"></i>
-                <p class="text-gray-600 mb-2">详细逻辑说明已拆分到独立页面</p>
-                <a href="logic.html" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded hover:bg-primary-light transition-colors">
-                  <i class="fa fa-external-link mr-2"></i>查看详细逻辑说明
-                </a>
+      </div>
+
+      <!-- 逻辑说明弹窗 -->
+      <div id="logic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <!-- 弹窗头部 -->
+          <div class="px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center">
+            <div class="flex items-center">
+              <i class="fa fa-book text-primary mr-2"></i>
+              <span class="font-semibold text-primary text-lg">逻辑说明</span>
+            </div>
+            <button onclick="closeLogicModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+              <i class="fa fa-times text-xl"></i>
+            </button>
+          </div>
+          
+          <!-- 弹窗内容区域 -->
+          <div class="flex-1 overflow-y-auto p-6" id="logic-modal-content">
+            <!-- 卡片1：初始化逻辑（单独） -->
+            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+              <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <h4 class="font-semibold text-gray-800 flex items-center">
+                  <i class="fa fa-database text-primary mr-2"></i>初始化逻辑
+                </h4>
+              </div>
+              <div class="p-4">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">主表初始化</td><td class="px-3 py-2 text-gray-600">展示所有分类的费用类型列表，包含费用组列</td><td class="px-3 py-2 text-gray-600">入库费规则配置表</td><td class="px-3 py-2 text-gray-600">按创建时间倒序排列，显示所有分类的数据</td><td class="px-3 py-2 text-gray-600">-</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">统计信息展示</td><td class="px-3 py-2 text-gray-600">显示所有费用类型的总数</td><td class="px-3 py-2 text-gray-600">前端计算</td><td class="px-3 py-2 text-gray-600">格式：共 X 个费用类型</td><td class="px-3 py-2 text-gray-600">-</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 卡片2：主表逻辑（属性取值 + 按钮逻辑） -->
+            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+              <div class="flex border-b border-gray-200 bg-gray-50">
+                <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="main-table-logic" data-tab="field-main" onclick="switchLogicTab(this)"><i class="fa fa-list-alt mr-1"></i>属性取值逻辑（主表）</button>
+                <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="main-table-logic" data-tab="button-logic" onclick="switchLogicTab(this)"><i class="fa fa-mouse-pointer mr-1"></i>功能逻辑（主要按钮）</button>
+              </div>
+              <!-- 主表属性取值 -->
+              <div class="logic-panel p-4" data-group="main-table-logic" data-panel="field-main">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">序号</td><td class="px-3 py-2 text-gray-600">行号</td><td class="px-3 py-2 text-gray-600">前端计算</td><td class="px-3 py-2 text-gray-600">从1开始递增</td><td class="px-3 py-2 text-gray-600">数字</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">数值型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">费用组</td><td class="px-3 py-2 text-gray-600">费用类型所属的分类</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增/编辑选择数据</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">费用类型</td><td class="px-3 py-2 text-gray-600">费用组下的合并费用类型</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增/编辑选择数据</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">计费单位</td><td class="px-3 py-2 text-gray-600">收费的计价单位</td><td class="px-3 py-2 text-gray-600">手工选择/系统带出</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">32</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建人</td><td class="px-3 py-2 text-gray-600">创建该规则的用户</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增时自动获取当前登录用户</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建时间</td><td class="px-3 py-2 text-gray-600">规则创建的时间</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增时自动生成当前时间</td><td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">DATETIME</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">更新人</td><td class="px-3 py-2 text-gray-600">最后更新该规则的用户</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">编辑保存时自动获取当前登录用户</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">更新时间</td><td class="px-3 py-2 text-gray-600">规则最后更新的时间</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">编辑保存时自动更新为当前时间</td><td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">DATETIME</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">失效时间</td><td class="px-3 py-2 text-gray-600">规则失效的时间</td><td class="px-3 py-2 text-gray-600">系统带出</td><td class="px-3 py-2 text-gray-600">同类型费用项，新增时自动生成失效时间（默认=新价卡创建时间-1s）</td><td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">DATETIME</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- 按钮逻辑 -->
+              <div class="logic-panel p-4 hidden" data-group="main-table-logic" data-panel="button-logic">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">新增</td><td class="px-3 py-2 text-gray-600">页面右上角</td><td class="px-3 py-2 text-gray-600">打开新增收费规则弹窗</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">填写表单后保存，刷新列表</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">导出</td><td class="px-3 py-2 text-gray-600">页面右上角</td><td class="px-3 py-2 text-gray-600">导出当前分类下的费用类型数据为CSV文件</td><td class="px-3 py-2 text-gray-600">当前分类下有数据</td><td class="px-3 py-2 text-gray-600">下载CSV文件</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">查看详情</td><td class="px-3 py-2 text-gray-600">每行操作列</td><td class="px-3 py-2 text-gray-600">打开费用类型详情弹窗</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">展示详细信息，只读模式</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">编辑</td><td class="px-3 py-2 text-gray-600">每行操作列</td><td class="px-3 py-2 text-gray-600">打开编辑收费规则弹窗，预填充当前数据</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">修改后保存，刷新列表</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">删除</td><td class="px-3 py-2 text-gray-600">每行操作列</td><td class="px-3 py-2 text-gray-600">弹出确认对话框</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">确认后删除，刷新列表</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 卡片3：新增弹窗逻辑（属性取值 + 交互逻辑） -->
+            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+              <div class="flex border-b border-gray-200 bg-gray-50">
+                <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="add-modal-logic" data-tab="field-add" onclick="switchLogicTab(this)"><i class="fa fa-list-alt mr-1"></i>属性取值逻辑（新增弹窗）</button>
+                <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="add-modal-logic" data-tab="add-interaction" onclick="switchLogicTab(this)"><i class="fa fa-exchange-alt mr-1"></i>交互逻辑</button>
+              </div>
+              <!-- 新增弹窗属性取值 -->
+              <div class="logic-panel p-4" data-group="add-modal-logic" data-panel="field-add">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 text-gray-800">费用组 </td>
+                        <td class="px-3 py-2 text-gray-600">费用类型所属的分类</td><td class="px-3 py-2 text-gray-600">手工选择</td>
+                        <td class="px-3 py-2 text-gray-600">数据源：基础数据-物流产品管理-收费类型管理，取值 = 费用组</td>
+                        <td class="px-3 py-2 text-gray-600">下拉选择</td><td class="px-3 py-2 text-gray-600">64</td>
+                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 text-gray-800">费用类型 </td>
+                        <td class="px-3 py-2 text-gray-600">费用类型名称</td><td class="px-3 py-2 text-gray-600">手工选择（树形下拉）</td>
+                        <td class="px-3 py-2 text-gray-600">数据源：基础数据-物流产品管理-收费类型管理，取值 = 费用类型</td>
+                        <td class="px-3 py-2 text-gray-600">树形下拉选择</td><td class="px-3 py-2 text-gray-600">64</td>
+                        <td class="px-3 py-2 text-gray-600">字符型</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 text-gray-800">计费单位 </td>
+                        <td class="px-3 py-2 text-gray-600">收费的计价单位</td><td class="px-3 py-2 text-gray-600">手工选择/系统带出</td>
+                        <td class="px-3 py-2 text-gray-600">下拉选择：柜、票、件、箱、托、KG、个</td>
+                        <td class="px-3 py-2 text-gray-600">下拉选择</td><td class="px-3 py-2 text-gray-600">32</td><td class="px-3 py-2 text-gray-600">字符型</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">计费维度</td>
+                        <td class="px-3 py-2 text-gray-600">计费方式的类型</td><td class="px-3 py-2 text-gray-600">系统自动判断</td>
+                        <td class="px-3 py-2 text-gray-600">详见【费用类型映射】</td><td class="px-3 py-2 text-gray-600">文本显示（禁用）</td>
+                        <td class="px-3 py-2 text-gray-600">32</td><td class="px-3 py-2 text-gray-600">字符型</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">费率标准表格</td>
+                        <td class="px-3 py-2 text-gray-600">不同规格的价格标准</td>
+                        <td class="px-3 py-2 text-gray-600">键盘输入</td>
+                        <td class="px-3 py-2 text-gray-600">当费用类型 = 卸货费时展示，字段：规格、价格、备注</td>
+                        <td class="px-3 py-2 text-gray-600">表格录入</td><td class="px-3 py-2 text-gray-600">-</td>
+                        <td class="px-3 py-2 text-gray-600">JSON</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">阶梯价格表格</td>
+                        <td class="px-3 py-2 text-gray-600">按数量范围的价格阶梯</td><td class="px-3 py-2 text-gray-600">键盘输入</td>
+                        <td class="px-3 py-2 text-gray-600">当费用类型 = 附加费时展示，字段：开始量、结束量、价格、备注</td>
+                        <td class="px-3 py-2 text-gray-600">表格录入</td><td class="px-3 py-2 text-gray-600">-</td>
+                        <td class="px-3 py-2 text-gray-600">JSON</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">备注 </td><td class="px-3 py-2 text-gray-600">附加说明</td><td class="px-3 py-2 text-gray-600">键盘输入</td><td class="px-3 py-2 text-gray-600">/</td><td class="px-3 py-2 text-gray-600">文本框</td><td class="px-3 py-2 text-gray-600">512</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- 新增弹窗交互逻辑 -->
+              <div class="logic-panel p-4 hidden" data-group="add-modal-logic" data-panel="add-interaction">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互逻辑</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示内容</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">打开新增弹窗</td><td class="px-3 py-2 text-gray-600">
+                        1. 显示新增弹窗 <br>
+                        2. 费用组默认选中"入库" <br>
+                        3. 自动加载费用类型树并选中第一个选项 <br>
+                        4. 根据费用类型自动判断计费维度并显示对应表单
+                      </td>
+                      <td class="px-3 py-2 text-gray-600">显示新增弹窗，费用组和费用类型有默认值，计费维度自动判断</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">选择费用组</td><td class="px-3 py-2 text-gray-600">
+                        1. 根据选择的费用组,动态加载对应的费用类型数据 <br>
+                        2. 默认选中第一个费用类型 <br>
+                        3. 根据费用类型，自动判断计费维度，并显示对应表单
+                      </td><td class="px-3 py-2 text-gray-600">费用类型下拉框动态更新，计费维度自动判断</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">选择费用类型</td><td class="px-3 py-2 text-gray-600">
+                        1. 判断费用类型级别和名称 <br>
+                        2. 卸货费→计费维度="费率标准"，显示费率标准表格 <br>
+                        3. 附加费→计费维度="阶梯价格"，显示阶梯价格表格 <br>
+                      </td><td class="px-3 py-2 text-gray-600">计费维度自动判断，显示对应的费率录入表单</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"添加费率"按钮</td><td class="px-3 py-2 text-gray-600">在费率标准表格，添加一行新记录</td><td class="px-3 py-2 text-gray-600">费率标准表格新增一行</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"添加阶梯"按钮</td><td class="px-3 py-2 text-gray-600">在阶梯价格表格，添加一行新记录</td><td class="px-3 py-2 text-gray-600">阶梯价格表格新增一行</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"保存"按钮</td><td class="px-3 py-2 text-gray-600">
+                        1. 校验必填字段（费用组、费用类型、计费单位） <br>
+                        2. 校验对应表单数据 <br>
+                        3. 收集表单数据 <br>
+                        4. 保存到数据源 <br>
+                        5. 刷新列表</td><td class="px-3 py-2 text-gray-600">保存成功提示，关闭弹窗，刷新主表</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 卡片4：费率映射表 -->
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+              <div class="flex border-b border-gray-200 bg-gray-50">
+                <button class="mapping-tab px-4 py-2 text-sm font-medium text-primary border-b-2 border-primary" data-tab="mapping" onclick="switchMappingTab(this)"><i class="fa fa-tree mr-1"></i>费用类型映射</button>
+              </div>
+              <!-- 费用类型映射 -->
+              <div id="mapping-content" class="mapping-panel p-4">
+                <div class="mapping-table bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <table class="w-full text-sm border-collapse">
+                    <thead>
+                      <tr class="bg-primary text-white">
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">费用组</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">收费项目</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">收费项目（二级）</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">计费维度</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">取值逻辑</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">计费单位</th>
+                        <th class="px-3 py-2.5 text-left font-semibold border-r border-white/20 whitespace-nowrap">计费逻辑</th>
+                        <th class="px-3 py-2.5 text-left font-semibold whitespace-nowrap">备注</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- 整柜入库 -->
+                      <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-gray-50/40" rowspan="4">整柜入库</td>
+                        <td class="px-3 py-2 text-gray-800 font-medium border-r border-gray-200">卸货费（入库）</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">柜型</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单的 '柜型'</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/柜</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 柜型单价 × 1</td>
+                        <td class="px-3 py-2"></td>
+                      </tr>
+                      <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-blue-50/40" rowspan="3">附加费（入库）</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">SKU超量费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">SKU</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单，sku种类数</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/个</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 超出SKU种类数</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200"></td>
+                      </tr>
+                      <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">超重费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">重量（总重量）</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单，各SKU总重量的和</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/KG</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 超出重量</td>
+                        <td class="px-3 py-2 text-red-500 text-xs">ELSA暂无指令下发功能</td>
+                      </tr>
+                      <tr class="hover:bg-gray-50 border-b border-gray-200">
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">清点费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">SKU</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单，相同箱号内，各sku的件数和</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/件</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 件数</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200"></td>
+                      </tr>
+                      <!-- 散货入库 -->
+                      <tr class="hover:bg-green-50/40 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-green-100/30" rowspan="6">散货入库</td>
+                        <td class="px-3 py-2 text-gray-800 font-medium border-r border-gray-200">卸货费（散货）</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">托盘（总托数）</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单各SKU '打托件数' 的和</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/托</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 托数</td>
+                        <td class="px-3 py-2"></td>
+                      </tr>
+                      <tr class="hover:bg-green-50/40 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-green-50/40" rowspan="5">入库附加费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">拆托费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">托盘（混托数）</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单【拆托信息】标记为"混托"的托盘数量</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/托</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 混托托数</td>
+                        <td class="px-3 py-2 text-red-500 text-xs">ELSA暂时无箱概念</td>
+                      </tr>
+                      <tr class="hover:bg-green-50/40 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">分货费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">箱数（混托箱数）</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单【拆托信息】标记为"混托"托盘具体箱数</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/箱</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 混托箱数</td>
+                        <td class="px-3 py-2 text-red-500 text-xs">ELSA暂时无箱概念</td>
+                      </tr>
+                      <tr class="hover:bg-green-50/40 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">超重费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">重量（总重量）</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单，各SKU总重量的和</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/KG</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 超出重量</td>
+                        <td class="px-3 py-2"></td>
+                      </tr>
+                      <tr class="hover:bg-green-50/40 border-b border-gray-100">
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">清点费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">件（一箱多件）</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单，相同箱内号，各sku的件数和</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/件</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 件数</td>
+                        <td class="px-3 py-2 text-red-500 text-xs">ELSA暂不支持1箱多件</td>
+                      </tr>
+                      <tr class="hover:bg-green-50/40">
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">其他附加费</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">-</td>
+                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">-</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">-</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">-</td>
+                        <td class="px-3 py-2"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- 字段取值逻辑面板 -->
+              <div id="fields-content" class="mapping-panel hidden p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-list-alt text-primary mr-2"></i><span class="font-medium text-gray-800">规格</span><span class="ml-auto text-xs text-gray-500">下拉选择</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 基础数据管理</div><div><span class="text-gray-500">约束条件:</span> 必填</div><div><span class="text-gray-500">取值规则:</span> 根据费用组动态加载</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">示例:</span> 20GP、40GP、40HC...</div></div></div>
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-dollar-sign text-primary mr-2"></i><span class="font-medium text-gray-800">价格</span><span class="ml-auto text-xs text-gray-500">数字输入</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 键盘输入</div><div><span class="text-gray-500">约束条件:</span> ≥0，精度2位小数，必填</div><div><span class="text-gray-500">取值规则:</span> 用户手动输入</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">示例:</span> 350.00</div></div></div>
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-arrow-right text-primary mr-2"></i><span class="font-medium text-gray-800">开始量</span><span class="ml-auto text-xs text-gray-500">数字输入</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 键盘输入</div><div><span class="text-gray-500">约束条件:</span> ≥0，整数，必填</div><div><span class="text-gray-500">取值规则:</span> 阶梯价格起始值</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">示例:</span> 0</div></div></div>
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-arrow-left text-primary mr-2"></i><span class="font-medium text-gray-800">结束量</span><span class="ml-auto text-xs text-gray-500">数字输入</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 键盘输入</div><div><span class="text-gray-500">约束条件:</span> ≥开始量，整数，必填，可填∞</div><div><span class="text-gray-500">取值规则:</span> 阶梯价格结束值</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">示例:</span> 100 或 ∞</div></div></div>
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-balance-scale text-primary mr-2"></i><span class="font-medium text-gray-800">计费单位</span><span class="ml-auto text-xs text-gray-500">下拉选择</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 费用类型默认单位</div><div><span class="text-gray-500">约束条件:</span> 必填</div><div><span class="text-gray-500">取值规则:</span> 自动带出，可修改</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">可选:</span> 柜、件、托、KG、SKU、张</div></div></div>
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-comment text-primary mr-2"></i><span class="font-medium text-gray-800">备注</span><span class="ml-auto text-xs text-gray-500">文本输入</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 键盘输入</div><div><span class="text-gray-500">约束条件:</span> 可选，≤256字符</div><div><span class="text-gray-500">取值规则:</span> 规格说明、适用条件</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">示例:</span> 标准柜型</div></div></div>
+                  <div class="field-card bg-white border border-gray-200 rounded-lg p-3 hover:border-primary transition-colors"><div class="flex items-center mb-2"><i class="fa fa-info-circle text-primary mr-2"></i><span class="font-medium text-gray-800">条件说明</span><span class="ml-auto text-xs text-gray-500">多行文本</span></div><div class="text-xs text-gray-600 space-y-1"><div><span class="text-gray-500">数据来源:</span> 键盘输入</div><div><span class="text-gray-500">约束条件:</span> 可选，≤256字符</div><div><span class="text-gray-500">取值规则:</span> 触发条件、适用场景</div><div class="mt-2 pt-2 border-t border-gray-100 bg-gray-50 rounded p-2"><span class="text-gray-500">示例:</span> 单箱重量超过35kg时收取</div></div></div>
+                </div>
+              </div>
+              <!-- 计费逻辑面板 -->
+              <div id="units-content" class="mapping-panel hidden p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div class="unit-card bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-lg p-3"><div class="flex items-center mb-2"><span class="font-medium text-gray-800">卸货费（整柜）</span></div><div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">柜型</span><span class="text-xs text-gray-500">按柜型计费</span></div><div class="text-xs text-gray-600 bg-white rounded p-2 border border-gray-100"><i class="fa fa-calculator text-gray-400 mr-1"></i>费用 = 柜型单价 × 1</div></div>
+                  <div class="unit-card bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-lg p-3"><div class="flex items-center mb-2"><span class="font-medium text-gray-800">SKU超量费</span></div><div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">SKU</span><span class="text-xs text-gray-500">按SKU数量计费</span></div><div class="text-xs text-gray-600 bg-white rounded p-2 border border-gray-100"><i class="fa fa-calculator text-gray-400 mr-1"></i>费用 = 阶梯单价 × 超出SKU数</div></div>
+                  <div class="unit-card bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-lg p-3"><div class="flex items-center mb-2"><span class="font-medium text-gray-800">超重费</span></div><div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">重量（总重量）</span><span class="text-xs text-gray-500">按超出重量计费</span></div><div class="text-xs text-gray-600 bg-white rounded p-2 border border-gray-100"><i class="fa fa-calculator text-gray-400 mr-1"></i>费用 = 阶梯单价 × 超出重量</div></div>
+                  <div class="unit-card bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-lg p-3"><div class="flex items-center mb-2"><span class="font-medium text-gray-800">清点费</span></div><div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">SKU</span><span class="text-xs text-gray-500">按清点件数计费</span></div><div class="text-xs text-gray-600 bg-white rounded p-2 border border-gray-100"><i class="fa fa-calculator text-gray-400 mr-1"></i>费用 = 阶梯单价 × 件数</div></div>
+                  <div class="unit-card bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-lg p-3"><div class="flex items-center mb-2"><span class="font-medium text-gray-800">卸货费（散货）</span></div><div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">托盘（总托数）</span><span class="text-xs text-gray-500">按托盘数量计费</span></div><div class="text-xs text-gray-600 bg-white rounded p-2 border border-gray-100"><i class="fa fa-calculator text-gray-400 mr-1"></i>费用 = 阶梯单价 × 托数</div></div>
+                  <div class="unit-card bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-lg p-3"><div class="flex items-center mb-2"><span class="font-medium text-gray-800">分货费</span></div><div class="flex items-center gap-2 mb-2"><span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">箱数（混托箱数）</span><span class="text-xs text-gray-500">按分货箱数计费</span></div><div class="text-xs text-gray-600 bg-white rounded p-2 border border-gray-100"><i class="fa fa-calculator text-gray-400 mr-1"></i>费用 = 阶梯单价 × 混托箱数</div></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-  </main>
+    </main>
 
   <!-- 工具函数 -->
   <script src="js/utils.js"></script>
