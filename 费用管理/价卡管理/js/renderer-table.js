@@ -44,6 +44,9 @@ function renderPackageTable() {
             <button class="action-btn action-btn-edit" onclick="editPackage(${pkg.id})">
               <i class="fas fa-edit mr-1"></i>编辑
             </button>
+            <button class="action-btn action-btn-delete" onclick="deletePackage(${pkg.id})">
+              <i class="fas fa-trash mr-1"></i>删除
+            </button>
           </div>
         </td>
       </tr>

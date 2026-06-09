@@ -1,16 +1,15 @@
-let inboundFeeRuleData = null;
+// inboundFeeRuleData 变量由 ../入库费规则/js/inbound-fee-rule-data.js 提供
 let feeCategoriesData = null;
 let packages = [];
 let feeRows = [];
 let editingPackageId = null;
-let currentFeeCategory = 'inbound';
 
-const DATA_VERSION = '10.0';
+const DATA_VERSION = '11.0';
 
 const FEE_TYPE_ENUMS = {
-  'cat_1': '整柜入库',
-  'cat_2': '快递散货入库',
-  'cat_3': '托盘入库'
+  'cat_1': '卸货费（整柜）',
+  'cat_2': '卸货费（散货）',
+  'cat_3': 'SKU 超重费（整柜）'
 };
 
 function formatDateTime(dateTimeStr) {
@@ -46,10 +45,8 @@ function processDateTimeDefault(dateTimeStr, isEffective = true) {
 }
 
 async function init() {
-  await Promise.all([
-    loadInboundFeeRuleData(),
-    loadFeeCategoriesData()
-  ]);
+  loadInboundFeeRuleData(); // 数据已经通过HTML引用加载
+  await loadFeeCategoriesData();
   loadPackages();
   renderFilterOptions();
   renderPackageTable();
@@ -75,13 +72,14 @@ function renderFilterOptions() {
   });
 }
 
-async function loadInboundFeeRuleData() {
-  try {
-    const response = await fetch('data/inbound-fee-rule-data.json');
-    inboundFeeRuleData = await response.json();
-    console.log('✅ 入库费规则数据加载成功');
-  } catch (error) {
-    console.error('❌ 入库费规则数据加载失败:', error);
+// 入库费规则数据已经通过HTML引用加载，这里只需要确认
+function loadInboundFeeRuleData() {
+  // 数据已经通过<script src="../入库费规则/js/inbound-fee-rule-data.js"></script>加载
+  // inboundFeeRuleData变量已经存在
+  if (typeof inboundFeeRuleData !== 'undefined') {
+    console.log('✅ 入库费规则数据已加载');
+  } else {
+    console.error('❌ 入库费规则数据未加载');
   }
 }
 
@@ -112,24 +110,92 @@ function loadPackages() {
         description: '包含基础入库和卸货服务',
         feeItems: [
           { 
-            feeCategory: 'inbound',
-            feeCategoryName: '入库费',
+            feeGroup: '入库',
+            feeGroupName: '入库',
             feeType: 'cat_1',
             feeTypeName: '整柜入库',
-            feeId: 'rule_1_1_1', 
-            feeName: '卸货费 - 20GP',
             unit: '柜',
-            unitPrice: 500,
+            unitPrice: 300,
             discountType: 'percentage',
             discountValue: 10,
-            expectedAmount: 450,
-            remark: ''
+            expectedAmount: 270,
+            remark: '适用于标准集装箱入库'
+          },
+          { 
+            feeGroup: '入库',
+            feeGroupName: '入库',
+            feeType: 'cat_3',
+            feeTypeName: '托盘入库',
+            unit: '托',
+            unitPrice: 25,
+            discountType: 'none',
+            discountValue: 0,
+            expectedAmount: 25,
+            remark: '适用于托盘货物入库'
           }
         ],
         createdBy: '系统管理员',
         createdAt: '2024-01-15 10:30:00',
         updatedBy: '系统管理员',
         updatedAt: '2024-01-15 10:30:00'
+      },
+      {
+        id: 2,
+        name: 'VIP客户价卡',
+        description: 'VIP客户专属价卡，享受更多折扣',
+        feeItems: [
+          { 
+            feeGroup: '入库',
+            feeGroupName: '入库',
+            feeType: 'cat_1',
+            feeTypeName: '整柜入库',
+            unit: '柜',
+            unitPrice: 300,
+            discountType: 'percentage',
+            discountValue: 20,
+            expectedAmount: 240,
+            remark: 'VIP客户享受20%折扣'
+          },
+          { 
+            feeGroup: '入库',
+            feeGroupName: '入库',
+            feeType: 'cat_3',
+            feeTypeName: '托盘入库',
+            unit: '托',
+            unitPrice: 25,
+            discountType: 'fixed',
+            discountValue: -10,
+            expectedAmount: 15,
+            remark: 'VIP客户每托减少10美元'
+          }
+        ],
+        createdBy: '系统管理员',
+        createdAt: '2024-01-16 14:20:00',
+        updatedBy: '系统管理员',
+        updatedAt: '2024-01-16 14:20:00'
+      },
+      {
+        id: 3,
+        name: '一口价价卡',
+        description: '固定价格价卡，不随市场波动',
+        feeItems: [
+          { 
+            feeGroup: '入库',
+            feeGroupName: '入库',
+            feeType: 'cat_1',
+            feeTypeName: '整柜入库',
+            unit: '柜',
+            unitPrice: 300,
+            discountType: 'fixed_price',
+            discountValue: 250,
+            expectedAmount: 250,
+            remark: '一口价，不受市场波动影响'
+          }
+        ],
+        createdBy: '系统管理员',
+        createdAt: '2024-01-17 09:15:00',
+        updatedBy: '系统管理员',
+        updatedAt: '2024-01-17 09:15:00'
       }
     ];
     savePackages();
@@ -139,19 +205,6 @@ function loadPackages() {
 function savePackages() {
   localStorage.setItem('packages', JSON.stringify(packages));
   localStorage.setItem('packagesVersion', DATA_VERSION);
-}
-
-function switchFeeCategory(category) {
-  currentFeeCategory = category;
-  
-  document.querySelectorAll('.fee-category-tab').forEach(tab => {
-    tab.classList.remove('active');
-    if (tab.dataset.category === category) {
-      tab.classList.add('active');
-    }
-  });
-  
-  renderFeeTable();
 }
 
 function getFeeTypes(category = 'inbound') {
@@ -172,6 +225,41 @@ function getFeeTypes(category = 'inbound') {
     }));
   }
   
+  return [];
+}
+
+// 根据费用组获取费用类型
+function getFeeTypesByGroup(feeGroup) {
+  // 如果是入库，使用入库费规则数据
+  if (feeGroup === '入库' && inboundFeeRuleData && inboundFeeRuleData.categories) {
+    return inboundFeeRuleData.categories.map(cat => {
+      // 获取单位：从第一个子项中获取
+      let unit = '-';
+      let price = 0;
+      
+      if (cat.children && cat.children.length > 0) {
+        const firstOperation = cat.children[0];
+        if (firstOperation.children && firstOperation.children.length > 0) {
+          const firstRule = firstOperation.children[0];
+          unit = firstRule.unit || '-';
+          
+          // 获取单价：从 pricingRules 中获取第一个规格的价格
+          if (firstRule.pricingRules && firstRule.pricingRules.length > 0) {
+            price = firstRule.pricingRules[0].price || 0;
+          }
+        }
+      }
+      
+      return {
+        id: cat.id,
+        name: cat.name,
+        unit,
+        price
+      };
+    });
+  }
+  
+  // 其他费用组，暂时返回空数组（后续可以扩展）
   return [];
 }
 
@@ -226,9 +314,9 @@ function addFeeRow() {
   const rowId = Date.now();
   feeRows.push({
     id: rowId,
-    feeCategory: currentFeeCategory,
+    feeGroup: '',
     feeType: '',
-    feeId: '',
+    unitPrice: 0,
     discountType: 'none',
     discountValue: 0,
     remark: ''
@@ -245,12 +333,29 @@ function updateFeeRow(rowId, field, value) {
   const row = feeRows.find(r => r.id === rowId);
   if (row) {
     row[field] = value;
-    if (field === 'feeType') {
-      row.feeId = '';
+    
+    // 当费用组改变时，清空费用类型和单价
+    if (field === 'feeGroup') {
+      row.feeType = '';
+      row.unitPrice = 0;
     }
+    
+    // 当费用类型改变时，自动设置单价
+    if (field === 'feeType') {
+      const feeTypes = getFeeTypesByGroup(row.feeGroup);
+      const selectedType = feeTypes.find(type => type.id === value);
+      if (selectedType && selectedType.price) {
+        row.unitPrice = selectedType.price;
+      } else {
+        row.unitPrice = 0;
+      }
+    }
+    
+    // 当折扣方式改变时，重置折扣金额
     if (field === 'discountType') {
       row.discountValue = 0;
     }
+    
     renderFeeTable();
   }
 }
@@ -270,42 +375,61 @@ function renderFeeTable() {
     return;
   }
   
-  const feeTypes = getFeeTypes(currentFeeCategory);
+  // 获取费用组选项（与入库费规则一致）
+  const feeGroups = [
+    { id: '入库', name: '入库' },
+    { id: '出库', name: '出库' },
+    { id: '仓储', name: '仓储' },
+    { id: '其他', name: '其他' }
+  ];
   
   tbody.innerHTML = feeRows.map(row => {
-    // 费用类型下拉选项
+    // 费用组下拉选项
+    const feeGroupOptions = feeGroups.map(group => 
+      `<option value="${group.id}" ${row.feeGroup === group.id ? 'selected' : ''}>
+        ${group.name}
+      </option>`
+    ).join('');
+    
+    // 费用类型下拉选项（根据费用组获取）
+    const feeTypes = row.feeGroup ? getFeeTypesByGroup(row.feeGroup) : [];
     const feeTypeOptions = feeTypes.map(type => 
       `<option value="${type.id}" ${row.feeType === type.id ? 'selected' : ''}>
         ${type.name}
       </option>`
     ).join('');
     
-    // 费用类型下拉选项（直接根据费用类型获取）
-    const feeItems = row.feeType ? getFeeItemsByType(row.feeType, currentFeeCategory) : [];
+    // 计费单位自动填充（从费用类型数据中获取）
+    const selectedType = feeTypes.find(type => type.id === row.feeType);
+    const unitDisplay = selectedType ? (selectedType.unit || '-') : '-';
     
-    // 单位自动填充
-    const selectedItem = feeItems.find(item => item.id === row.feeId);
-    const unitDisplay = selectedItem ? selectedItem.unit : '-';
+    // 单价自动填充（从费用类型数据中获取）
+    const unitPriceValue = selectedType ? (selectedType.price || 0) : 0;
+    const unitPriceDisplay = unitPriceValue > 0 ? `${unitPriceValue.toFixed(2)}$` : '-';
     
-    // 计算预计金额
+    // 计算预计金额（使用row.unitPrice，如果没有则使用从费用类型获取的单价）
     let expectedAmount = 0;
-    const unitPrice = row.unitPrice || 0;
-    if (unitPrice > 0) {
-      if (row.discountType === 'none') {
-        expectedAmount = unitPrice;
-      } else if (row.discountType === 'percentage') {
-        expectedAmount = unitPrice * (1 - (row.discountValue || 0) / 100);
-      } else if (row.discountType === 'fixed') {
-        expectedAmount = Math.max(0, unitPrice - (row.discountValue || 0));
-      } else if (row.discountType === 'fixed_price') {
-        expectedAmount = row.discountValue || 0;
-      }
+    const unitPrice = row.unitPrice || unitPriceValue || 0;
+    
+    if (row.discountType === 'none') {
+      expectedAmount = unitPrice;
+    } else if (row.discountType === 'percentage') {
+      expectedAmount = unitPrice * (1 - (row.discountValue || 0) / 100);
+    } else if (row.discountType === 'fixed') {
+      // 指定增减：使用加法运算
+      // 输入负数：原金额 + 负数 = 减少
+      // 输入正数：原金额 + 正数 = 增加
+      expectedAmount = unitPrice + (row.discountValue || 0);
+    } else if (row.discountType === 'fixed_price') {
+      expectedAmount = row.discountValue || 0;
     }
+    
+    const expectedAmountDisplay = expectedAmount !== 0 ? `${expectedAmount.toFixed(2)}$` : '-';
     
     const discountTypeOptions = `
       <option value="none" ${row.discountType === 'none' ? 'selected' : ''}>无折扣</option>
       <option value="percentage" ${row.discountType === 'percentage' ? 'selected' : ''}>百分比</option>
-      <option value="fixed" ${row.discountType === 'fixed' ? 'selected' : ''}>指定扣减</option>
+      <option value="fixed" ${row.discountType === 'fixed' ? 'selected' : ''}>指定增减</option>
       <option value="fixed_price" ${row.discountType === 'fixed_price' ? 'selected' : ''}>一口价</option>
     `;
     
@@ -322,10 +446,10 @@ function renderFeeTable() {
     } else if (row.discountType === 'fixed') {
       discountValueInput = `
         <div class="flex items-center gap-1">
-          <input type="number" value="${row.discountValue || ''}" min="0" step="0.01"
+          <input type="number" value="${row.discountValue || ''}" step="0.01"
                  onchange="updateFeeRow(${row.id}, 'discountValue', parseFloat(this.value) || 0)"
-                 class="form-input text-sm w-24" placeholder="金额">
-          <span class="text-sm text-text-secondary">元</span>
+                 class="form-input text-sm w-24" placeholder="增减金额">
+          <span class="text-sm text-text-secondary">$</span>
         </div>
       `;
     } else if (row.discountType === 'fixed_price') {
@@ -334,7 +458,7 @@ function renderFeeTable() {
           <input type="number" value="${row.discountValue || ''}" min="0" step="0.01"
                  onchange="updateFeeRow(${row.id}, 'discountValue', parseFloat(this.value) || 0)"
                  class="form-input text-sm w-24" placeholder="一口价">
-          <span class="text-sm text-text-secondary">元</span>
+          <span class="text-sm text-text-secondary">$</span>
         </div>
       `;
     }
@@ -342,11 +466,15 @@ function renderFeeTable() {
     return `
       <tr class="hover:bg-hover transition-colors">
         <td class="px-4 py-3">
-          <div class="text-sm font-medium text-primary">入库费</div>
+          <select onchange="updateFeeRow(${row.id}, 'feeGroup', this.value)" 
+                  class="form-input text-sm">
+            <option value="">请选择费用组</option>
+            ${feeGroupOptions}
+          </select>
         </td>
         <td class="px-4 py-3">
           <select onchange="updateFeeRow(${row.id}, 'feeType', this.value)" 
-                  class="form-input text-sm">
+                  class="form-input text-sm" ${!row.feeGroup ? 'disabled' : ''}>
             <option value="">请选择费用类型</option>
             ${feeTypeOptions}
           </select>
@@ -355,9 +483,7 @@ function renderFeeTable() {
           <div class="text-sm text-text-secondary">${unitDisplay}</div>
         </td>
         <td class="px-4 py-3">
-          <input type="number" value="${row.unitPrice || ''}" min="0" step="0.01"
-                 onchange="updateFeeRow(${row.id}, 'unitPrice', parseFloat(this.value) || 0)"
-                 class="form-input text-sm w-24" placeholder="单价">
+          <div class="text-sm text-text-secondary">${unitPriceDisplay}</div>
         </td>
         <td class="px-4 py-3">
           <select onchange="updateFeeRow(${row.id}, 'discountType', this.value)" 
@@ -369,7 +495,7 @@ function renderFeeTable() {
           ${discountValueInput || '<span class="text-sm text-text-muted">-</span>'}
         </td>
         <td class="px-4 py-3">
-          <div class="text-sm font-semibold text-accent">${expectedAmount > 0 ? expectedAmount.toFixed(2) : '-'}</div>
+          <div class="text-sm font-semibold text-accent">${expectedAmountDisplay}</div>
         </td>
         <td class="px-4 py-3">
           <input type="text" value="${row.remark || ''}" 
@@ -402,7 +528,7 @@ function renderPackageTable() {
   tbody.innerHTML = packages.map(pkg => {
     const feeSummary = {};
     pkg.feeItems.forEach(item => {
-      const key = item.feeCategoryName;
+      const key = item.feeGroupName || '入库';
       if (!feeSummary[key]) {
         feeSummary[key] = 0;
       }
@@ -442,6 +568,9 @@ function renderPackageTable() {
             <button class="action-btn action-btn-edit" onclick="editPackage(${pkg.id})">
               <i class="fas fa-edit mr-1"></i>编辑
             </button>
+            <button class="action-btn action-btn-delete" onclick="deletePackage(${pkg.id})">
+              <i class="fas fa-trash mr-1"></i>删除
+            </button>
           </div>
         </td>
       </tr>
@@ -452,17 +581,9 @@ function renderPackageTable() {
 function openCreateModal() {
   editingPackageId = null;
   feeRows = [];
-  currentFeeCategory = 'inbound';
   
   document.getElementById('modalTitleText').textContent = '创建价卡';
   document.getElementById('packageForm').reset();
-  
-  document.querySelectorAll('.fee-category-tab').forEach(tab => {
-    tab.classList.remove('active');
-    if (tab.dataset.category === 'inbound') {
-      tab.classList.add('active');
-    }
-  });
   
   renderFeeTable();
   document.getElementById('packageModal').classList.add('active');
@@ -488,60 +609,28 @@ function savePackage() {
     return;
   }
   
-  const validFeeRows = feeRows.filter(row => row.feeId && row.feeType);
+  const validFeeRows = feeRows.filter(row => row.feeType);
   if (validFeeRows.length === 0) {
-    alert('请至少选择一个费用项');
+    alert('请至少选择一个费用类型');
     return;
   }
   
   const feeItems = validFeeRows.map(row => {
     // 获取费用组名称
-    const feeCategoryNames = {
-      'inbound': '入库费',
-      'outbound': '出库费',
-      'express': '快递费',
-      'other': '其他收费'
-    };
+    const feeGroupName = row.feeGroup || '入库';
     
-    const feeCategoryName = feeCategoryNames[row.feeCategory] || '入库费';
-    
-    // 获取收费类型名称、费用类型、单位
+    // 获取费用类型名称和单位
     let feeTypeName = '';
-    let feeName = '';
     let unit = '';
     
-    if (row.feeCategory === 'inbound') {
-      // 入库费使用入库费规则数据
+    if (row.feeGroup === '入库' && inboundFeeRuleData && inboundFeeRuleData.categories) {
+      // 入库使用入库费规则数据
       const category = inboundFeeRuleData.categories.find(cat => cat.id === row.feeType);
       if (category) {
         feeTypeName = category.name;
-        
-        // 遍历所有操作类型查找费用类型
-        if (category.children && category.children.length > 0) {
-          for (const operation of category.children) {
-            if (operation.children && operation.children.length > 0) {
-              const found = operation.children.find(rule => rule.id === row.feeId);
-              if (found) {
-                feeName = found.subCategory ? `${found.feeItem} - ${found.subCategory}` : found.feeItem;
-                unit = found.unit;
-                break;
-              }
-            }
-          }
-        }
-      }
-    } else {
-      // 其他费用组使用fee-categories.json数据
-      if (feeCategoriesData && feeCategoriesData.feeCategories && feeCategoriesData.feeCategories[row.feeCategory]) {
-        const categoryData = feeCategoriesData.feeCategories[row.feeCategory];
-        const foundCategory = categoryData.categories.find(cat => cat.id === row.feeType);
-        if (foundCategory) {
-          feeTypeName = foundCategory.name;
-          const foundItem = foundCategory.feeItems.find(item => item.id === row.feeId);
-          if (foundItem) {
-            feeName = foundItem.name;
-            unit = foundItem.unit;
-          }
+        // 从第一个子项中获取单位作为默认单位
+        if (category.children && category.children.length > 0 && category.children[0].children) {
+          unit = category.children[0].children[0].unit || '-';
         }
       }
     }
@@ -564,12 +653,10 @@ function savePackage() {
     }
     
     return {
-      feeCategory: row.feeCategory || currentFeeCategory,
-      feeCategoryName,
+      feeGroup: row.feeGroup || '入库',
+      feeGroupName,
       feeType: row.feeType,
       feeTypeName,
-      feeId: row.feeId,
-      feeName,
       unit,
       unitPrice,
       discountType: row.discountType,
@@ -629,26 +716,17 @@ function editPackage(packageId) {
   editingPackageId = packageId;
   feeRows = pkg.feeItems.map((item, index) => ({
     id: Date.now() + index,
-    feeCategory: item.feeCategory,
+    feeGroup: item.feeGroup || '入库',
     feeType: item.feeType,
-    feeId: item.feeId,
+    unitPrice: item.unitPrice || 0,
     discountType: item.discountType || 'none',
     discountValue: item.discountValue || 0,
     remark: item.remark || ''
   }));
   
-  currentFeeCategory = pkg.feeItems[0]?.feeCategory || 'inbound';
-  
   document.getElementById('modalTitleText').textContent = '编辑价卡';
   document.getElementById('packageName').value = pkg.name;
   document.getElementById('packageDescription').value = pkg.description;
-  
-  document.querySelectorAll('.fee-category-tab').forEach(tab => {
-    tab.classList.remove('active');
-    if (tab.dataset.category === currentFeeCategory) {
-      tab.classList.add('active');
-    }
-  });
   
   renderFeeTable();
   
@@ -665,22 +743,26 @@ function viewPackage(packageId) {
     if (item.discountType === 'percentage') {
       discountText = `${item.discountValue}%折扣`;
     } else if (item.discountType === 'fixed') {
-      discountText = `减免${item.discountValue}元`;
+      if (item.discountValue < 0) {
+        discountText = `减少${Math.abs(item.discountValue)}$`;
+      } else {
+        discountText = `增加${item.discountValue}$`;
+      }
     } else if (item.discountType === 'fixed_price') {
-      discountText = `一口价${item.discountValue}元`;
+      discountText = `一口价${item.discountValue}$`;
     }
     
     return `
       <div class="detail-fee-item">
         <div class="detail-fee-name">
-          <span class="text-xs text-text-muted">${item.feeCategoryName} - ${item.feeTypeName}</span><br>
-          <span class="font-semibold">${item.feeName}</span>
+          <span class="text-xs text-text-muted">${item.feeGroupName || '入库'}</span><br>
+          <span class="font-semibold">${item.feeTypeName}</span>
         </div>
         <div class="detail-fee-price">
-          单位：${item.unit}<br>
-          单价：${item.unitPrice ? item.unitPrice.toFixed(2) + '元' : '-'}<br>
+          计费单位：${item.unit}<br>
+          单价：${item.unitPrice ? item.unitPrice.toFixed(2) + '$' : '-'}<br>
           折扣方式：${discountText}<br>
-          预计金额：<span class="font-semibold text-accent">${item.expectedAmount ? item.expectedAmount.toFixed(2) + '元' : '-'}</span>${item.remark ? `<br>备注：${item.remark}` : ''}
+          预计金额：<span class="font-semibold text-accent">${item.expectedAmount ? item.expectedAmount.toFixed(2) + '$' : '-'}</span>${item.remark ? `<br>备注：${item.remark}` : ''}
         </div>
       </div>
     `;
@@ -738,6 +820,23 @@ function viewPackage(packageId) {
 
 function closeDetailModal() {
   document.getElementById('detailModal').classList.remove('active');
+}
+
+function deletePackage(packageId) {
+  const pkg = packages.find(p => p.id === packageId);
+  if (!pkg) return;
+  
+  // 弹出确认对话框
+  const confirmed = confirm(`确定要删除价卡"${pkg.name}"吗？\n删除后无法恢复。`);
+  
+  if (confirmed) {
+    // 删除价卡
+    packages = packages.filter(p => p.id !== packageId);
+    savePackages();
+    renderPackageTable();
+    
+    alert('价卡删除成功！');
+  }
 }
 
 function applyFilters() {
