@@ -84,8 +84,20 @@ const StandardDiscountModal = {
     row.tierDiscountConfig = { discountType, discountValue: discountType === 'none' ? 0 : discountValue };
     row.discountType = discountType;
     row.discountValue = discountType === 'none' ? 0 : discountValue;
-    this.close();
-    FeeTable.render();
+
+    // 规则配置模式：同步数据到规则配置的feeRows
+    if (window._isRuleConfigMode && window._ruleConfigRowId) {
+      const ruleRow = window.feeRows ? window.feeRows.find(r => r.id === window._ruleConfigRowId) : null;
+      if (ruleRow) {
+        ruleRow.discount_type = discountType;
+        ruleRow.discount_value = discountType === 'none' ? 0 : discountValue;
+      }
+      this.close();
+      if (typeof renderFeeTable === 'function') renderFeeTable();
+    } else {
+      this.close();
+      FeeTable.render();
+    }
     alert('折扣配置已保存');
   },
 

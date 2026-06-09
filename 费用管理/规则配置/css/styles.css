@@ -8,7 +8,18 @@
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s;
-  border: none;
+}
+
+/* ========== 胶囊徽章（与价卡管理一致） ========== */
+.badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-accent { background: #E8A838; color: white; }
+.badge-primary { background: #1B3A4B; color: white; }
+.badge-success { background: #2D936C; color: white; }
+.badge-warning { background: #D4853A; color: white; }
+.badge-danger { background: #C44536; color: white; }
+.badge-secondary { background: #E8E5DF; color: #5A6275; }
+
+.form-input { border: none;
   font-family: inherit;
 }
 
@@ -158,6 +169,24 @@
   justify-content: flex-end;
   gap: 12px;
 }
+
+/* ========== 折扣弹窗（与价卡管理一致） ========== */
+.tier-discount-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 10000; }
+.tier-discount-modal-overlay.active { display: flex !important; }
+.modal-dialog { background: white; border-radius: 8px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+
+/* 标准折扣弹窗 - 阶梯价格预览 */
+.std-tier-preview-area { background: #F5F3EF; border: 1px solid #D8D5CE; border-radius: 6px; padding: 20px; }
+.std-tier-count-badge { display: inline-block; background: #1B3A4B; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+.std-tier-preview-table { width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; border: 1px solid #E8E5DF; }
+.std-tier-preview-table th { background: #EDE9E3; color: #5A6275; font-size: 12px; font-weight: 600; padding: 12px 15px; text-align: left; border-bottom: 2px solid #D8D5CE; white-space: nowrap; }
+.std-tier-preview-table td { padding: 12px 15px; font-size: 14px; border-bottom: 1px solid #E8E5DF; }
+.std-tier-range { color: #5A6275; font-weight: 500; }
+.std-tier-original { color: #5A6275; font-weight: 500; }
+.std-tier-discount { color: #8B93A5; font-weight: 500; }
+.std-tier-final { color: #E8A838; font-weight: 700; font-size: 15px; }
+.std-tier-preview-row:hover { background: #F5F3EF; }
+.std-tier-preview-row:last-child td { border-bottom: none; }
 
 .form-input {
   width: 100%;
@@ -439,9 +468,12 @@
   box-shadow: 0 2px 8px rgba(27, 58, 75, 0.2);
 }
 
-.category-tabs {
-  margin-bottom: 16px;
-}
+/* ========== 费用组/分类 Tab 栏（与价卡管理一致） ========== */
+.fee-group-tabs { margin-bottom: 20px; }
+.tabs-container { display: flex; gap: 10px; border-bottom: 2px solid #E8E5DF; padding-bottom: 0; }
+.tab-btn { padding: 12px 24px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #5A6275; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; margin-bottom: -2px; }
+.tab-btn:hover { color: #1B3A4B; background: #F5F3EF; }
+.tab-btn.active { color: #E8A838; border-bottom-color: #E8A838; background: transparent; font-weight: 600; }
 
 @keyframes fadeIn {
   from { opacity: 0; }

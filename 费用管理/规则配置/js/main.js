@@ -17,30 +17,11 @@ async function init() {
 }
 
 function openCreateModal() {
-  currentEditId = null;
-  currentItemDiscounts = [];
-  feeRows = [];
-  currentFeeCategory = 'inbound';
-  
-  document.getElementById('modalTitle').textContent = '创建规则配置';
-  document.getElementById('ruleConfigForm').reset();
-  
-  renderCreateModalOptions();
-  document.getElementById('discountPreviewSection').classList.add('hidden');
-  
-  var now = new Date();
-  var startTime = now.toISOString().slice(0, 16);
-  document.getElementById('effectiveStartTime').value = startTime;
-  
-  document.getElementById('createModal').style.display = 'flex';
+  window.location.href = 'rule-config-form.html';
 }
 
 function closeModal() {
-  document.getElementById('createModal').style.display = 'none';
-  currentEditId = null;
-  currentItemDiscounts = [];
-  feeRows = [];
-  currentFeeCategory = 'inbound';
+  // 已改为页面模式，不再需要
 }
 
 function closeDetailModal() {
@@ -121,12 +102,9 @@ function loadPriceCardDiscount() {
 
 function switchFeeCategory(category) {
   currentFeeCategory = category;
-  
-  document.querySelectorAll('.fee-category-tab').forEach(function(tab) {
-    tab.classList.remove('active');
-    if (tab.dataset.category === category) {
-      tab.classList.add('active');
-    }
+
+  document.querySelectorAll('.tab-btn').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.group === category);
   });
   
   renderFeeTable();
@@ -152,6 +130,25 @@ function removeFeeRow(rowId) {
   feeRows = feeRows.filter(function(row) { return row.id !== rowId; });
   renderFeeTable();
 }
+
+// 打开折扣配置（跳转到新页面，与价卡管理 FeeTable.showDiscountConfig 逻辑一致）
+function openDiscountConfigForRow(rowId) {
+  var row = feeRows.find(function(r) { return r.id === rowId; });
+  if (!row) return;
+  localStorage.setItem('_rc_pending_row_' + rowId, JSON.stringify(row));
+
+  // 判断是否有阶梯定价数据，决定跳转到哪个折扣页
+  var hasTier = row.original_tier_pricing && row.original_tier_pricing.length > 0;
+  var fromPage = 'rule-config/rule-config-form.html' + (currentEditId ? '&editId=' + currentEditId : '');
+
+  if (hasTier) {
+    window.location.href = '../价卡管理/discount-tier.html?rowId=' + rowId + '&from=' + fromPage;
+  } else {
+    window.location.href = '../价卡管理/discount-standard.html?rowId=' + rowId + '&from=' + fromPage;
+  }
+}
+
+// 折扣配置已改为独立页面，通过 localStorage 传递数据
 
 function updateFeeRow(rowId, field, value) {
   var row = feeRows.find(function(r) { return r.id === rowId; });
@@ -305,53 +302,7 @@ function viewRuleConfig(ruleConfigId) {
 }
 
 function editRuleConfig(ruleConfigId) {
-  var ruleConfig = getRuleConfigById(ruleConfigId);
-  
-  if (ruleConfig) {
-    currentEditId = ruleConfigId;
-    currentItemDiscounts = deepCopy(ruleConfig.fee_discounts || {});
-    feeRows = [];
-    
-    var feeDiscounts = ruleConfig.fee_discounts || {};
-    Object.keys(feeDiscounts).forEach(function(categoryKey) {
-      var items = feeDiscounts[categoryKey] || [];
-      items.forEach(function(item) {
-        feeRows.push({
-          id: generateId('row'),
-          fee_category: categoryKey,
-          fee_item_id: item.fee_item_id || '',
-          fee_item_name: item.fee_item_name || '',
-          unit: item.unit || '',
-          discount_type: item.discount_type || 'none',
-          discount_value: item.discount_value || 0,
-          discount_description: item.discount_description || ''
-        });
-      });
-    });
-    
-    currentFeeCategory = 'inbound';
-    
-    document.getElementById('modalTitle').textContent = '编辑规则配置';
-    renderCreateModalOptions();
-    
-    document.getElementById('configName').value = ruleConfig.name;
-    document.getElementById('businessType').value = ruleConfig.business_type;
-    document.getElementById('selectCustomer').value = ruleConfig.customer_id;
-    document.getElementById('selectWarehouse').value = ruleConfig.warehouse_id;
-    document.getElementById('selectPriceCard').value = ruleConfig.price_card_id;
-    document.getElementById('createdBy').value = ruleConfig.created_by || '';
-    
-    document.getElementById('discountPreviewSection').classList.remove('hidden');
-    
-    renderFeeCategoryTabs();
-    
-    document.getElementById('effectiveStartTime').value = ruleConfig.effective_start_time;
-    document.getElementById('effectiveEndTime').value = ruleConfig.effective_end_time || '';
-    
-    document.getElementById('duplicateHint').classList.add('hidden');
-    
-    document.getElementById('createModal').style.display = 'flex';
-  }
+  window.location.href = 'rule-config-form.html?editId=' + ruleConfigId;
 }
 
 function deleteRuleConfigConfirm(ruleConfigId) {
@@ -424,6 +375,7 @@ window.switchFeeCategory = switchFeeCategory;
 window.addFeeRow = addFeeRow;
 window.removeFeeRow = removeFeeRow;
 window.updateFeeRow = updateFeeRow;
+window.openDiscountConfigForRow = openDiscountConfigForRow;
 window.saveRuleConfig = saveRuleConfig;
 window.viewRuleConfig = viewRuleConfig;
 window.editRuleConfig = editRuleConfig;

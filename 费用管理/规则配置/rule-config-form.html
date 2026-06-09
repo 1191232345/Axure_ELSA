@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创建规则配置 - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:'#1B3A4B','primary-light':'#2A5568','primary-dark':'#0F2430',
+            accent:'#E8A838','accent-light':'#F0C060',
+            success:'#2D936C',warning:'#D4853A',danger:'#C44536',
+            dark:'#1A1A2E','light-bg':'#F5F3EF','card-bg':'#FFFFFF',
+            border:'#D8D5CE','border-light':'#E8E5DF',surface:'#F5F3EF',
+            hover:'#EDE9E3','text-secondary':'#5A6275','text-muted':'#8B93A5'
+          },
+          boxShadow:{card:'0 4px 16px rgba(27,58,75,0.08)',header:'0 1px 3px rgba(27,58,75,0.06)'},
+          fontFamily:{display:['DM Sans','sans-serif'],body:['Source Sans 3','sans-serif']}
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom:2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center"><span class="text-lg font-display font-semibold tracking-wide">ELSA</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-2 sm:px-3 lg:px-4 py-6 max-w-4xl">
+
+    <!-- 返回 -->
+    <div class="mb-6"><a id="backLink" href="index.html" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>返回列表</a></div>
+
+    <form id="ruleConfigForm" class="space-y-6">
+
+      <!-- 基础配置 -->
+      <div class="bg-white border border-border rounded-lg p-4 sm:p-6 shadow-card">
+        <h4 class="font-semibold text-primary mb-4 flex items-center">
+          <i class="fas fa-link mr-2 text-accent"></i>基础配置
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">*客户代码</label>
+            <select id="selectCustomer" class="form-input" onchange="updateConfigName();checkDuplicateConfig();"></select>
+          </div>
+          <div>
+            <label class="form-label">仓库代码</label>
+            <select id="selectWarehouse" class="form-input" onchange="updateConfigName();checkDuplicateConfig();"></select>
+          </div>
+        </div>
+        <div id="duplicateHint" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
+      </div>
+
+      <!-- 引用价卡 -->
+      <div class="bg-white border border-border rounded-lg p-4 sm:p-6 shadow-card">
+        <h4 class="font-semibold text-primary mb-4 flex items-center">
+          <i class="fas fa-file-alt mr-2 text-accent"></i>引用价卡
+        </h4>
+        <div>
+          <label class="form-label">*价卡模板</label>
+          <select id="selectPriceCard" class="form-input" onchange="loadPriceCardDiscount()"></select>
+          <p class="text-xs text-text-muted mt-2">
+            <i class="fas fa-info-circle mr-1"></i>选择价卡后，将自动加载价卡的折扣配置，您可以在此基础上进行微调
+          </p>
+        </div>
+      </div>
+
+      <!-- 折扣配置 -->
+      <div id="discountPreviewSection" class="hidden bg-white border border-border rounded-lg p-4 sm:p-6 shadow-card">
+        <h4 class="font-semibold text-primary mb-4 flex items-center">
+          <i class="fas fa-percent mr-2 text-accent"></i>折扣配置
+        </h4>
+        <div class="category-tabs mb-4"><div id="feeCategoryTabs" class="tabs-container"></div></div>
+
+        <div id="feeCategoryContent">
+          <div class="overflow-x-auto border border-border rounded-lg">
+            <table class="w-full">
+              <thead class="bg-light-bg">
+                <tr><th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用类型</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣方式</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">备注</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">操作</th></tr>
+              </thead>
+              <tbody id="feeItemsTableBody" class="divide-y divide-border-light"></tbody>
+            </table>
+
+            <!-- 新增行按钮（表格下方，与价卡管理一致） -->
+            <div class="px-4 py-3 bg-light-bg border-t border-border-light">
+              <button type="button" onclick="addFeeRow()" class="btn btn-secondary btn-sm w-full"><i class="fas fa-plus mr-2"></i>新增行</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 生效周期 -->
+      <div class="bg-white border border-border rounded-lg p-4 sm:p-6 shadow-card">
+        <h4 class="font-semibold text-primary mb-4 flex items-center">
+          <i class="fas fa-calendar mr-2 text-accent"></i>其他信息
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">*名称</label>
+            <input type="text" id="configName" class="form-input" placeholder="输入名称">
+          </div>
+          <div></div>
+          <div>
+            <label class="form-label">*生效时间</label>
+            <input type="datetime-local" id="effectiveStartTime" class="form-input">
+          </div>
+          <div>
+            <label class="form-label">*失效时间</label>
+            <input type="datetime-local" id="effectiveEndTime" class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="flex justify-end gap-3 pt-4">
+        <a href="index.html" class="btn btn-secondary"><i class="fas fa-times mr-2"></i>取消</a>
+        <button type="button" onclick="saveRuleConfig()" class="btn btn-primary"><i class="fas fa-save mr-2"></i>保存配置</button>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/utils.js?v=13"></script>
+  <script src="js/api.js?v=13"></script>
+  <script src="../价卡管理/js/discount-calculator.js"></script>
+  <script src="../价卡管理/js/state.js"></script>
+  <script src="../价卡管理/js/data-service.js"></script>
+  <script src="../价卡管理/js/fee-data.js"></script>
+  <script src="../价卡管理/js/tier-discount-logic.js"></script>
+  <script src="../价卡管理/js/tier-discount-ui.js"></script>
+  <script src="../价卡管理/js/modal-standard-discount.js"></script>
+  <script src="../价卡管理/js/modal-tier-discount.js"></script>
+
+  <script>
+    let currentEditId = null;
+    let currentItemDiscounts = [];
+    let feeRows = [];
+    let currentFeeCategory = 'inbound';
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await initApi();
+      loadFromUrl();
+      renderCreateModalOptions();
+      document.getElementById('backLink').href = 'index.html' + (window.location.search ? window.location.search : '');
+    });
+
+    // 从URL参数加载编辑数据
+    async function loadFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      currentEditId = params.get('editId') || null;
+
+      if (currentEditId) {
+        document.getElementById('pageTitle').textContent = '编辑规则配置';
+        editModeLoad(currentEditId);
+      } else {
+        document.getElementById('pageTitle').textContent = '创建规则配置';
+        newItemDefaults();
+      }
+    }
+
+    function newItemDefaults() {
+      document.getElementById('ruleConfigForm').reset();
+      document.getElementById('discountPreviewSection').classList.add('hidden');
+      var now = new Date();
+      document.getElementById('effectiveStartTime').value = now.toISOString().slice(0, 16);
+    }
+
+    function editModeLoad(ruleConfigId) {
+      var ruleConfig = getRuleConfigById(ruleConfigId);
+      if (!ruleConfig) { alert('\u89c4\u5219\u914d\u7f6e\u4e0d\u5b58\u5728'); return; }
+
+      currentItemDiscounts = deepCopy(ruleConfig.fee_discounts || {});
+      feeRows = [];
+
+      Object.keys(currentItemDiscounts).forEach(function(categoryKey) {
+        var items = currentItemDiscounts[categoryKey] || [];
+        items.forEach(function(item) {
+          feeRows.push({
+            id: generateId('row'), fee_category: categoryKey,
+            fee_item_id: item.fee_item_id || '', fee_item_name: item.fee_item_name || '',
+            unit: item.unit || '', discount_type: item.discount_type || 'none',
+            discount_value: item.discount_value || 0, discount_description: item.discount_description || ''
+          });
+        });
+      });
+
+      currentFeeCategory = 'inbound';
+      renderCreateModalOptions();
+
+      document.getElementById('configName').value = ruleConfig.name;
+      document.getElementById('selectCustomer').value = ruleConfig.customer_id;
+      document.getElementById('selectWarehouse').value = ruleConfig.warehouse_id;
+      document.getElementById('selectPriceCard').value = ruleConfig.price_card_id;
+
+      document.getElementById('discountPreviewSection').classList.remove('hidden');
+      renderFeeCategoryTabs();
+
+      document.getElementById('effectiveStartTime').value = ruleConfig.effective_start_time;
+      document.getElementById('effectiveEndTime').value = ruleConfig.effective_end_time || '';
+      document.getElementById('duplicateHint').classList.add('hidden');
+    }
+
+    // ---- 基础操作函数（从 main.js 移植） ----
+
+    function updateConfigName() {
+      var cs = document.getElementById('selectCustomer');
+      var ws = document.getElementById('selectWarehouse');
+      var ni = document.getElementById('configName');
+      var c = cs.options[cs.selectedIndex], w = ws.options[ws.selectedIndex];
+      if (c.value && w.value) {
+        var sn = c.text + '-' + w.text + '\u89c4\u5219\u914d\u7f6e';
+        if (!ni.value || ni.value.includes('\u89c4\u5219\u914d\u7f6e')) ni.value = sn;
+      }
+    }
+
+    function checkDuplicateConfig() {
+      var cid = document.getElementById('selectCustomer').value;
+      var wid = document.getElementById('selectWarehouse').value;
+      var dh = document.getElementById('duplicateHint');
+      if (cid && wid) {
+        var ex = getExistingConfig(cid, wid);
+        if (ex && ex.id !== currentEditId) {
+          dh.classList.remove('hidden');
+          dh.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>\u8be5\u5ba2\u6237\u548c\u4ed3\u5e93\u5df2\u5b58\u5728\u914d\u7f6e\uff1a' + ex.name;
+        } else { dh.classList.add('hidden'); }
+      } else { dh.classList.add('hidden'); }
+    }
+
+    function loadPriceCardDiscount() {
+      var pcid = document.getElementById('selectPriceCard').value;
+      if (!pcid) {
+        document.getElementById('discountPreviewSection').classList.add('hidden');
+        currentItemDiscounts = []; feeRows = []; return;
+      }
+      var pc = getPriceCardById(pcid);
+      if (pc) {
+        currentItemDiscounts = deepCopy(pc.fee_discounts || {}); feeRows = [];
+        Object.keys(currentItemDiscounts).forEach(function(k) {
+          (currentItemDiscounts[k] || []).forEach(function(item) {
+            feeRows.push({ id:generateId('row'), fee_category:k,
+              fee_item_id:item.fee_item_id||'', fee_item_name:item.fee_item_name||'',
+              unit:item.unit||'', discount_type:item.discount_type||'none',
+              discount_value:item.discount_value||0, discount_description:item.discount_description||'' });
+          });
+        });
+        currentFeeCategory='inbound'; renderFeeCategoryTabs();
+        document.getElementById('discountPreviewSection').classList.remove('hidden');
+      }
+    }
+
+    function switchFeeCategory(cat) {
+      currentFeeCategory=cat;
+      document.querySelectorAll('.tab-btn').forEach(function(t){ t.classList.toggle('active',t.dataset.group===cat); });
+      renderFeeTable();
+    }
+
+    function addFeeRow() {
+      feeRows.push({ id:generateId('row'), fee_category:currentFeeCategory,
+        fee_item_id:'', fee_item_name:'', unit:'', discount_type:'none', discount_value:0, discount_description:'' });
+      renderFeeTable();
+    }
+
+    function removeFeeRow(rowId) { feeRows=feeRows.filter(r=>r.id!==rowId); renderFeeTable(); }
+
+    // 折扣徽章渲染（与价卡管理 fee-table.js._renderDiscountBadge 完全一致）
+    function _renderDiscountBadge(row) {
+      if (row.tierDiscountConfig && row.tierDiscountConfig.discountType) {
+        var cfg = row.tierDiscountConfig;
+        var text = DiscountCalculator.DISCOUNT_TYPE_TEXT[cfg.discountType];
+        var val = cfg.discountValue || 0;
+        var unit = cfg.discountType === 'percentage' ? '%' : '$';
+        if (cfg.discountType === 'none') {
+          return '<span class="badge badge-secondary"><i class="fas fa-check mr-1"></i>' + text + '</span>';
+        }
+        return '<span class="badge badge-accent"><i class="fas fa-layer-group mr-1"></i>' + text + ': ' + val + unit + '</span>';
+      }
+      if (row.discount_type && row.discount_type !== 'none') {
+        var dt = DiscountCalculator.DISCOUNT_TYPE_TEXT[row.discount_type] || row.discount_type;
+        var v = row.discount_value || 0, u = row.discount_type === 'percentage' ? '%' : '$';
+        return '<span class="badge badge-accent"><i class="fas fa-layer-group mr-1"></i>' + dt + ': ' + v + u + '</span>';
+      }
+      return '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle mr-1"></i>未配置</span>';
+    }
+
+    // 折扣配置弹窗（与价卡管理一致，使用 StandardDiscountModal / TierDiscountModal）
+    function openDiscountConfigForRow(rowId) {
+      var row = feeRows.find(function(r) { return r.id === rowId; });
+      if (!row) return;
+
+      // 标记规则配置模式，让 modal save 时回写到 rule-config 的 feeRows
+      window._isRuleConfigMode = true;
+      window._ruleConfigRowId = rowId;
+
+      // 将当前行数据临时注册到 AppState，供 modal 读取
+      var existingIdx = AppState.feeRows.findIndex(function(r) { return r.id === rowId; });
+      var appStateRow = {
+        id: row.id,
+        feeType: row.fee_item_id,
+        feeGroup: currentFeeCategory,
+        unitPrice: row.unit_price || 0,
+        originalTierPricing: row.original_tier_pricing || null,
+        pricingType: (row.original_tier_pricing && row.original_tier_pricing.length > 0) ? 'tier' : 'standard',
+        remark: row.discount_description || '',
+        tierDiscountConfig: row.tierDiscountConfig || {
+          discountType: row.discount_type || 'none',
+          discountValue: row.discount_value || 0
+        },
+        discountType: row.discount_type || 'none',
+        discountValue: row.discount_value || 0
+      };
+
+      if (existingIdx >= 0) {
+        AppState.feeRows[existingIdx] = appStateRow;
+      } else {
+        AppState.feeRows.push(appStateRow);
+      }
+
+      // 根据是否有阶梯定价决定打开哪个弹窗（与价卡管理 FeeTable.showDiscountConfig 一致）
+      if (appStateRow.pricingType === 'tier') {
+        TierDiscountModal.show(rowId);
+      } else {
+        StandardDiscountModal.show(rowId);
+      }
+    }
+
+    function updateFeeRow(rowId, field, value) {
+      var row = feeRows.find(r => r.id === rowId);
+      if (!row) return;
+      row[field] = value;
+      if (field === 'fee_item_id') {
+        var items = getFeeItemsByCategory(row.fee_category);
+        var sel = items.find(i => i.id === value);
+        if (sel) { row.fee_item_name = sel.name; row.unit = sel.unit; }
+      }
+      if (field === 'discount_type') row.discount_value = 0;
+      renderFeeTable();
+    }
+
+    function collectFormData() {
+      var cid = document.getElementById('selectCustomer').value;
+      var wid = document.getElementById('selectWarehouse').value;
+      var pcid = document.getElementById('selectPriceCard').value;
+      var c = getCustomerById(cid), w = getWarehouseById(wid), pc = getPriceCardById(pcid);
+
+      var fd = { inbound:[], outbound:[], storage:[], express:[], other:[] };
+      feeRows.forEach(function(r) {
+        if (r.fee_item_id && r.fee_item_name) {
+          fd[r.fee_category] = fd[r.fee_category] || [];
+          fd[r.fee_category].push({ fee_item_id:r.fee_item_id, fee_item_name:r.fee_item_name,
+            unit:r.unit||'', discount_type:r.discount_type||'none', discount_value:r.discount_value||0,
+            discount_description:r.discount_description||'' });
+        }
+      });
+
+      return {
+        name:document.getElementById('configName').value, customer_id:cid, customer_name:c?c.name:'',
+        warehouse_id:wid, warehouse_name:w?w.name:'', price_card_id:pcid, price_card_name:pc?pc.name:'',
+        business_type:'all', fee_discounts:fd, adjustments:pc?deepCopy(pc.adjustments||[]):[],
+        is_adjusted:checkIfAdjusted(pc,fd),
+        effective_start_time:document.getElementById('effectiveStartTime').value,
+        effective_end_time:document.getElementById('effectiveEndTime').value,
+        created_by:'DEMO\u7ba1\u7406\u5458'
+      };
+    }
+
+    function checkIfAdjusted(pc, cfd) {
+      if (!pc) return false;
+      var ofd = pc.fee_discounts || {};
+      var cats = Object.keys(FEE_CATEGORIES);
+      for (var i=0;i<cats.length;i++) {
+        var k=cats[i]; var oi=ofd[k]||[]; var ci=cfd[k]||[];
+        if (oi.length!==ci.length) return true;
+        for (var j=0;j<oi.length;j++) {
+          var o=oi[j]; var cc=ci[j];
+          if (!cc || o.fee_item_id!==cc.fee_item_id || o.discount_type!==cc.discount_type ||
+              o.discount_value!==cc.discount_value || o.discount_description!==cc.discount_description) return true;
+        }
+      }
+      return false;
+    }
+
+    function saveRuleConfig() {
+      var name=document.getElementById('configName').value;
+      var cid=document.getElementById('selectCustomer').value; var wid=document.getElementById('selectWarehouse').value;
+      var pcid=document.getElementById('selectPriceCard').value;
+      var est=document.getElementById('effectiveStartTime').value; var eet=document.getElementById('effectiveEndTime').value;
+
+      if (!name||!cid||!wid||!pcid||!est||!eet) { showToast('\u8bf7\u586b\u5199\u6240\u6709\u5fc5\u586b\u9879','error'); return; }
+      if (!checkUniqueConfig(cid,wid,currentEditId)) {
+        var ex=getExistingConfig(cid,wid); showToast('\u8be5\u5ba2\u6237\u548c\u4ed3\u5e93\u5df2\u5b58\u5728\u914d\u7f6e\uff1a'+ex.name,'error'); return;
+      }
+
+      var data=collectFormData();
+      if (currentEditId) { updateRuleConfig(currentEditId,data); showToast('\u89c4\u5219\u914d\u7f6e\u66f4\u65b0\u6210\u529f','success'); }
+      else { createRuleConfig(data); showToast('\u89c4\u5219\u914d\u7f6e\u521b\u5efa\u6210\u529f','success'); }
+
+      setTimeout(function(){ window.location.href='index.html'; },800);
+    }
+
+    // ---- 渲染函数（从 renderer.js 移植） ----
+
+    function renderCreateModalOptions() {
+      var cs=document.getElementById('selectCustomer'); var ws=document.getElementById('selectWarehouse');
+      var ps=document.getElementById('selectPriceCard');
+      cs.innerHTML='<option value="">\u8bf7\u9009\u62e9\u5ba2\u6237</option>'+getActiveCustomers().map(c=>'<option value="'+c.id+'">'+c.name+'</option>').join('');
+      ws.innerHTML='<option value="">\u8bf7\u9009\u62e9\u4ed3\u5e93</option>'+getActiveWarehouses().map(w=>'<option value="'+w.id+'">'+w.name+'</option>').join('');
+      ps.innerHTML='<option value="">\u8bf7\u9009\u62e7\u4ef7\u5361\u6a21\u677f</option>'+getActivePriceCards().map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join('');
+    }
+
+    function renderFeeCategoryTabs() {
+      var tc=document.getElementById('feeCategoryTabs');
+      tc.innerHTML='';
+      Object.keys(FEE_CATEGORIES).forEach(function(k){
+        var cat=FEE_CATEGORIES[k];
+        tc.innerHTML+='<button type="button" class="tab-btn'+(k===currentFeeCategory?' active':'')+'" data-group="'+k+'" onclick="switchFeeCategory(\''+k+'\')">'
+          +'<i class="fas '+cat.icon+' mr-2"></i>'+cat.name+'</button>';
+      });
+      renderFeeTable();
+    }
+
+    function renderFeeTable() {
+      var tb=document.getElementById('feeItemsTableBody');
+      var ci=feeRows.filter(r=>r.fee_category===currentFeeCategory);
+
+      if (!ci.length) {
+        tb.innerHTML='<tr><td colspan="4" class="px-4 py-8 text-center text-text-muted">'
+          +'<i class="fas fa-inbox text-2xl mb-2 block"></i>'
+          +'<p>\u5f53\u5248\u5206\u7c7b\u6682\u65e0\u6298\u6263\u914d\u7f6e\uff0c\u8bf7\u70b9\u51fb"\u65b0\u589e\u884c"\u6dfb\u52a0</p></td></tr>';
+        return;
+      }
+
+      var fi=getFeeItemsByCategory(currentFeeCategory);
+      tb.innerHTML=ci.map(function(row){
+        var opts='';
+        var subs={};
+        fi.forEach(function(item){ if(!subs[item.sub_category])subs[item.sub_category]=[]; subs[item.sub_category].push(item); });
+        Object.keys(subs).forEach(function(sc){
+          opts+='<optgroup label="'+sc+'">';
+          subs[sc].forEach(function(item){ opts+='<option value="'+item.id+'"'+(row.fee_item_id===item.id?' selected':'')+'>'+item.name+'</option>'; });
+          opts+='</optgroup>';
+        });
+        if(row.fee_item_id&&!fi.find(i=>i.id===row.fee_item_id))
+          opts+='<option value="'+row.fee_item_id+'" selected>'+(row.fee_item_name||row.fee_item_id)+'</option>';
+
+        // 折扣徽章（与价卡管理 fee-table.js 完全一致）
+        var db = _renderDiscountBadge(row);
+
+        return '<tr class="hover:bg-hover transition-colors">'
+          +'<td class="px-4 py-3"><select onchange="updateFeeRow(\''+row.id+'\',\'fee_item_id\',this.value)" class="form-input text-sm"><option value="">\u8bf7\u9009\u62e9\u8d39\u7528\u7c7b\u578b</option>'+opts+'</select></td>'
+          +'<td class="px-4 py-3">'+db+'</td>'
+          +'<td class="px-4 py-3"><input type="text" value="'+(row.discount_description||'')+'" onchange="updateFeeRow(\''+row.id+'\',\'discount_description\',this.value)" class="form-input text-sm" placeholder="\u5907\u6ce8"></td>'
+          +'<td class="px-4 py-3"><div class="flex items-center gap-2">'
+            +'<button type="button" onclick="openDiscountConfigForRow(\''+row.id+'\')" class="btn btn-secondary btn-sm"><i class="fas fa-cog mr-1"></i>\u914d\u7f6e</button>'
+            +'<button type="button" onclick="removeFeeRow(\''+row.id+'\')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>'
+          +'</div></td>'
+        +'</tr>';
+      }).join('');
+    }
+
+    function showToast(msg,type){
+      if(!type)type='success';
+      var t=document.createElement('div'); t.className='toast toast-'+type; t.textContent=msg;
+      document.body.appendChild(t);
+      setTimeout(()=>t.classList.add('show'),10);
+      setTimeout(()=>{t.classList.remove('show');setTimeout(()=>document.body.removeChild(t),300);},3000);
+    }
+
+    // 从折扣页返回时读取暂存数据
+    (function checkPending(){
+      var params=new URLSearchParams(window.location.search);
+      if(params.get('_refresh')!=='1')return;
+      feeRows.forEach(function(r){
+        var key='_rc_pending_row_'+r.id;
+        var pending=localStorage.getItem(key);
+        if(!pending)return;
+        try{ var d=JSON.parse(pending); Object.assign(r,d); localStorage.removeItem(key); }catch(e){}
+      });
+      renderFeeTable();
+    })();
+  </script>
+</body>
+</html>

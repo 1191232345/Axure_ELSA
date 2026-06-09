@@ -169,8 +169,8 @@ function renderFeeCategoryTabs() {
   Object.keys(categories).forEach(function(key) {
     var cat = categories[key];
     var isActive = key === currentFeeCategory ? ' active' : '';
-    tabsHtml += '<button type="button" class="fee-category-tab' + isActive + '" data-category="' + key + '" onclick="switchFeeCategory(\'' + key + '\')">' +
-      '<i class="fas ' + cat.icon + ' mr-1"></i>' + cat.name +
+    tabsHtml += '<button type="button" class="tab-btn' + isActive + '" data-group="' + key + '" onclick="switchFeeCategory(\'' + key + '\')">' +
+      '<i class="fas ' + cat.icon + ' mr-2"></i>' + cat.name +
     '</button>';
   });
   
@@ -181,36 +181,29 @@ function renderFeeCategoryTabs() {
 function renderFeeTable() {
   var tbody = document.getElementById('feeItemsTableBody');
   var categoryItems = feeRows.filter(function(row) { return row.fee_category === currentFeeCategory; });
-  
+
   if (categoryItems.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-text-muted">' +
+    tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-text-muted">' +
       '<i class="fas fa-inbox text-2xl mb-2 block"></i>' +
       '<p>当前分类暂无折扣配置，请点击"新增行"添加</p>' +
     '</td></tr>';
     return;
   }
-  
+
   var feeItems = getFeeItemsByCategory(currentFeeCategory);
-  var feeCategoryNames = {
-    'inbound': '入库费',
-    'outbound': '出库费',
-    'storage': '仓储费',
-    'express': '快递费',
-    'other': '其他收费'
-  };
-  
+
   tbody.innerHTML = categoryItems.map(function(row) {
     // 费用类型下拉框：按子类分组显示
     var feeOptionsHtml = '';
     var subCategories = {};
-    
+
     feeItems.forEach(function(item) {
       if (!subCategories[item.sub_category]) {
         subCategories[item.sub_category] = [];
       }
       subCategories[item.sub_category].push(item);
     });
-    
+
     Object.keys(subCategories).forEach(function(subCat) {
       feeOptionsHtml += '<optgroup label="' + subCat + '">';
       subCategories[subCat].forEach(function(item) {
@@ -218,70 +211,20 @@ function renderFeeTable() {
       });
       feeOptionsHtml += '</optgroup>';
     });
-    
+
     // 如果当前选中的费用项不在列表中，添加为选中项
     if (row.fee_item_id && !feeItems.find(function(item) { return item.id === row.fee_item_id; })) {
       feeOptionsHtml += '<option value="' + row.fee_item_id + '" selected>' + (row.fee_item_name || row.fee_item_id) + '</option>';
     }
-    
-    var selectedItem = feeItems.find(function(item) { return item.id === row.fee_item_id; });
-    var unitDisplay = selectedItem ? selectedItem.unit : (row.unit || '-');
-    
-    // 计算预计金额
-    var unitPrice = row.unitPrice || 0;
-    var expectedAmount = 0;
-    if (unitPrice > 0) {
-      if (row.discount_type === 'none') {
-        expectedAmount = unitPrice;
-      } else if (row.discount_type === 'percentage') {
-        expectedAmount = unitPrice * (1 - (row.discount_value || 0) / 100);
-      } else if (row.discount_type === 'fixed') {
-        expectedAmount = Math.max(0, unitPrice - (row.discount_value || 0));
-      } else if (row.discount_type === 'fixed_price') {
-        expectedAmount = row.discount_value || 0;
-      }
-    }
-    
-    var discountTypeOptions = 
-      '<option value="none"' + (row.discount_type === 'none' ? ' selected' : '') + '>无折扣</option>' +
-      '<option value="percentage"' + (row.discount_type === 'percentage' ? ' selected' : '') + '>百分比</option>' +
-      '<option value="fixed"' + (row.discount_type === 'fixed' ? ' selected' : '') + '>指定扣减</option>' +
-      '<option value="fixed_price"' + (row.discount_type === 'fixed_price' ? ' selected' : '') + '>一口价</option>';
-    
-    var discountValueInput = '';
-    if (row.discount_type === 'none') {
-      discountValueInput = '<span class="text-sm text-text-muted">-</span>';
-    } else if (row.discount_type === 'percentage') {
-      discountValueInput = '<div class="flex items-center gap-2">' +
-        '<input type="number" value="' + (row.discount_value || '') + '" min="0" max="100" step="1" ' +
-          'onchange="updateFeeRow(\'' + row.id + '\', \'discount_value\', parseFloat(this.value) || 0)" ' +
-          'class="form-input text-sm w-20" placeholder="数值">' +
-        '<span class="text-sm text-text-secondary">%</span>' +
-      '</div>';
-    } else if (row.discount_type === 'fixed') {
-      discountValueInput = '<div class="flex items-center gap-2">' +
-        '<input type="number" value="' + (row.discount_value || '') + '" min="0" step="0.01" ' +
-          'onchange="updateFeeRow(\'' + row.id + '\', \'discount_value\', parseFloat(this.value) || 0)" ' +
-          'class="form-input text-sm w-24" placeholder="金额">' +
-        '<span class="text-sm text-text-secondary">元</span>' +
-      '</div>';
-    } else if (row.discount_type === 'fixed_price') {
-      discountValueInput = '<div class="flex items-center gap-2">' +
-        '<input type="number" value="' + (row.discount_value || '') + '" min="0" step="0.01" ' +
-          'onchange="updateFeeRow(\'' + row.id + '\', \'discount_value\', parseFloat(this.value) || 0)" ' +
-          'class="form-input text-sm w-24" placeholder="一口价">' +
-        '<span class="text-sm text-text-secondary">元</span>' +
-      '</div>';
-    }
-    
+
+    // 折扣徽章（与价卡管理 fee-table.js._renderDiscountBadge 完全一致）
+    var discountBadgeHtml = _renderDiscountBadge(row);
+
     var remarkInput = '<input type="text" value="' + (row.discount_description || '') + '" ' +
       'onchange="updateFeeRow(\'' + row.id + '\', \'discount_description\', this.value)" ' +
       'class="form-input text-sm" placeholder="备注">';
-    
+
     return '<tr class="hover:bg-hover transition-colors">' +
-      '<td class="px-4 py-3">' +
-        '<div class="text-sm font-medium text-primary">' + (feeCategoryNames[row.fee_category] || '入库费') + '</div>' +
-      '</td>' +
       '<td class="px-4 py-3">' +
         '<select onchange="updateFeeRow(\'' + row.id + '\', \'fee_item_id\', this.value)" class="form-input text-sm">' +
           '<option value="">请选择费用类型</option>' +
@@ -289,31 +232,16 @@ function renderFeeTable() {
         '</select>' +
       '</td>' +
       '<td class="px-4 py-3">' +
-        '<div class="text-sm text-text-secondary">' + unitDisplay + '</div>' +
-      '</td>' +
-      '<td class="px-4 py-3">' +
-        '<input type="number" value="' + (row.unitPrice || '') + '" min="0" step="0.01" ' +
-          'onchange="updateFeeRow(\'' + row.id + '\', \'unitPrice\', parseFloat(this.value) || 0)" ' +
-          'class="form-input text-sm w-24" placeholder="单价">' +
-      '</td>' +
-      '<td class="px-4 py-3">' +
-        '<select onchange="updateFeeRow(\'' + row.id + '\', \'discount_type\', this.value)" class="form-input text-sm">' +
-          discountTypeOptions +
-        '</select>' +
-      '</td>' +
-      '<td class="px-4 py-3">' +
-        discountValueInput +
-      '</td>' +
-      '<td class="px-4 py-3">' +
-        '<div class="text-sm font-semibold text-accent">' + (expectedAmount > 0 ? expectedAmount.toFixed(2) : '-') + '</div>' +
+        discountBadgeHtml +
       '</td>' +
       '<td class="px-4 py-3">' +
         remarkInput +
       '</td>' +
       '<td class="px-4 py-3">' +
-        '<button type="button" onclick="removeFeeRow(\'' + row.id + '\')" class="btn btn-danger btn-sm">' +
-          '<i class="fas fa-trash"></i>' +
-        '</button>' +
+        '<div class="flex items-center gap-2">' +
+          '<button type="button" onclick="openDiscountConfigForRow(\'' + row.id + '\')" class="btn btn-secondary btn-sm"><i class="fas fa-cog mr-1"></i>配置</button>' +
+          '<button type="button" onclick="removeFeeRow(\'' + row.id + '\')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>' +
+        '</div>' +
       '</td>' +
     '</tr>';
   }).join('');
@@ -464,6 +392,27 @@ function renderRuleConfigDetail(ruleConfig) {
     '</div>';
 }
 
+// 折扣徽章渲染（与价卡管理 fee-table.js._renderDiscountBadge 完全一致）
+function _renderDiscountBadge(row) {
+  if (row.tierDiscountConfig && row.tierDiscountConfig.discountType) {
+    var cfg = row.tierDiscountConfig;
+    var text = DiscountCalculator.DISCOUNT_TYPE_TEXT[cfg.discountType];
+    var val = cfg.discountValue || 0;
+    var unit = cfg.discountType === 'percentage' ? '%' : '$';
+    if (cfg.discountType === 'none') {
+      return '<span class="badge badge-secondary"><i class="fas fa-check mr-1"></i>' + text + '</span>';
+    }
+    return '<span class="badge badge-accent"><i class="fas fa-layer-group mr-1"></i>' + text + ': ' + val + unit + '</span>';
+  }
+  if (row.discount_type && row.discount_type !== 'none') {
+    var dt = DiscountCalculator.DISCOUNT_TYPE_TEXT[row.discount_type] || row.discount_type;
+    var v = row.discount_value || 0, u = row.discount_type === 'percentage' ? '%' : '$';
+    return '<span class="badge badge-accent"><i class="fas fa-layer-group mr-1"></i>' + dt + ': ' + v + u + '</span>';
+  }
+  return '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle mr-1"></i>未配置</span>';
+}
+
+window._renderDiscountBadge = _renderDiscountBadge;
 window.renderRuleConfigTable = renderRuleConfigTable;
 window.getDiscountInfo = getDiscountInfo;
 window.renderFilterOptions = renderFilterOptions;
