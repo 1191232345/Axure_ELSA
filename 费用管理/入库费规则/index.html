@@ -192,7 +192,7 @@
             </div>
           </div>
           <div class="filter-item">
-            <label>作废时间</label>
+            <label>时效时间</label>
             <div class="flex items-center gap-2">
               <input type="date" id="filterUpdateTimeStart" class="flex-1">
               <span class="text-gray-500">至</span>
@@ -449,10 +449,11 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <!-- 整柜入库 -->
+                      <!-- 入库 -->
                       <tr class="hover:bg-gray-50 border-b border-gray-100">
-                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-gray-50/40" rowspan="4">整柜入库</td>
+                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-gray-50/40" rowspan="4">入库</td>
                         <td class="px-3 py-2 text-gray-800 font-medium border-r border-gray-200">卸货费（入库）</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/</td>
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">柜型</td>
                         <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单的 '柜型'</td>
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/柜</td>
@@ -484,10 +485,11 @@
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 件数</td>
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200"></td>
                       </tr>
-                      <!-- 散货入库 -->
+                      <!-- 入库 -->
                       <tr class="hover:bg-green-50/40 border-b border-gray-100">
-                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-green-100/30" rowspan="6">散货入库</td>
+                        <td class="px-3 py-2 text-gray-800 font-medium align-middle border-r border-gray-200 bg-green-100/30" rowspan="6">入库</td>
                         <td class="px-3 py-2 text-gray-800 font-medium border-r border-gray-200">卸货费（散货）</td>
+                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/</td>
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">托盘（总托数）</td>
                         <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">取值 = 单票入库单各SKU '打托件数' 的和</td>
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/托</td>
@@ -526,14 +528,6 @@
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">/件</td>
                         <td class="px-3 py-2 text-gray-700 border-r border-gray-200">费用 = 阶梯单价 × 件数</td>
                         <td class="px-3 py-2 text-red-500 text-xs">ELSA暂不支持1箱多件</td>
-                      </tr>
-                      <tr class="hover:bg-green-50/40">
-                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">其他附加费</td>
-                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">-</td>
-                        <td class="px-3 py-2 text-gray-600 border-r border-gray-200 text-xs">-</td>
-                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">-</td>
-                        <td class="px-3 py-2 text-gray-700 border-r border-gray-200">-</td>
-                        <td class="px-3 py-2"></td>
                       </tr>
                     </tbody>
                   </table>
