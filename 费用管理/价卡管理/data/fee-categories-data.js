@@ -1,0 +1,139 @@
+/**
+ * 费用组数据（JavaScript格式）
+ * 解决CORS跨域问题，直接加载而不需要fetch
+ */
+
+const feeCategoriesData = {
+  "version": "2.0",
+  "lastUpdated": "2025-01-20",
+  "feeCategories": {
+    "inbound": {
+      "name": "入库费",
+      "icon": "fa-download",
+      "categories": [
+        {
+          "id": "inbound_full_container",
+          "name": "整柜入库",
+          "feeItems": [
+            { "id": "unload_fee", "name": "卸货费", "price": 300, "unit": "柜", "description": "整柜卸货费用" },
+            { "id": "sku_excess_fee", "name": "SKU超量费", "price": 10, "unit": "个", "description": "超过免费SKU数量后的费用" },
+            { "id": "overweight_fee", "name": "超重费", "price": 1, "unit": "箱", "description": "单箱超过35kg的超重费用" },
+            { "id": "manifest_fee", "name": "清单费", "price": 50, "unit": "票", "description": "详细清单服务费用" }
+          ]
+        },
+        {
+          "id": "inbound_express",
+          "name": "快递散货入库",
+          "feeItems": [
+            { "id": "express_receive_fee", "name": "收货费", "price": 5, "unit": "件", "description": "快递散货收货费用" },
+            { "id": "express_scan_fee", "name": "扫描费", "price": 3, "unit": "件", "description": "快递扫描费用" },
+            { "id": "express_sort_fee", "name": "分拣费", "price": 2, "unit": "件", "description": "快递分拣费用" }
+          ]
+        },
+        {
+          "id": "inbound_pallet",
+          "name": "托盘入库",
+          "feeItems": [
+            { "id": "pallet_receive_fee", "name": "收货费", "price": 50, "unit": "托", "description": "托盘收货费用" },
+            { "id": "pallet_inspect_fee", "name": "质检费", "price": 20, "unit": "托", "description": "托盘质检费用" },
+            { "id": "pallet_label_fee", "name": "贴标费", "price": 10, "unit": "托", "description": "托盘贴标费用" }
+          ]
+        }
+      ]
+    },
+    "outbound": {
+      "name": "出库费",
+      "icon": "fa-upload",
+      "categories": [
+        {
+          "id": "outbound_standard",
+          "name": "标准出库",
+          "feeItems": [
+            { "id": "pick_fee", "name": "拣货费", "price": 5, "unit": "件", "description": "拣货操作费用" },
+            { "id": "pack_fee", "name": "打包费", "price": 10, "unit": "件", "description": "打包操作费用" },
+            { "id": "label_print_fee", "name": "标签打印费", "price": 2, "unit": "张", "description": "标签打印费用" }
+          ]
+        },
+        {
+          "id": "outbound_bulk",
+          "name": "批量出库",
+          "feeItems": [
+            { "id": "bulk_pick_fee", "name": "批量拣货费", "price": 3, "unit": "件", "description": "批量拣货优惠价格" },
+            { "id": "bulk_pack_fee", "name": "批量打包费", "price": 8, "unit": "件", "description": "批量打包优惠价格" },
+            { "id": "palletize_fee", "name": "打托费", "price": 50, "unit": "托", "description": "打托操作费用" }
+          ]
+        }
+      ]
+    },
+    "storage": {
+      "name": "仓储费",
+      "icon": "fa-warehouse",
+      "categories": [
+        {
+          "id": "storage_standard",
+          "name": "标准仓储",
+          "feeItems": [
+            { "id": "storage_fee", "name": "仓储费", "price": 0.5, "unit": "立方米/天", "description": "按体积计费的仓储费用" },
+            { "id": "pallet_storage_fee", "name": "托盘仓储费", "price": 40, "unit": "托/天", "description": "按托盘计费的仓储费用" },
+            { "id": "shelf_storage_fee", "name": "货架仓储费", "price": 60, "unit": "托/天", "description": "货架位置仓储费用" }
+          ]
+        },
+        {
+          "id": "storage_special",
+          "name": "特殊仓储",
+          "feeItems": [
+            { "id": "temp_control_fee", "name": "温控费", "price": 100, "unit": "托/天", "description": "温控仓储费用" },
+            { "id": "hazardous_fee", "name": "危险品仓储费", "price": 150, "unit": "托/天", "description": "危险品仓储费用" }
+          ]
+        }
+      ]
+    },
+    "express": {
+      "name": "快递费",
+      "icon": "fa-truck",
+      "categories": [
+        {
+          "id": "express_domestic",
+          "name": "国内快递",
+          "feeItems": [
+            { "id": "domestic_standard", "name": "标准快递费", "price": 10, "unit": "件", "description": "国内标准快递费用" },
+            { "id": "domestic_express", "name": "加急快递费", "price": 20, "unit": "件", "description": "国内加急快递费用" }
+          ]
+        },
+        {
+          "id": "express_international",
+          "name": "国际快递",
+          "feeItems": [
+            { "id": "international_standard", "name": "国际标准快递费", "price": 100, "unit": "件", "description": "国际标准快递费用" },
+            { "id": "international_express", "name": "国际加急快递费", "price": 200, "unit": "件", "description": "国际加急快递费用" }
+          ]
+        }
+      ]
+    },
+    "other": {
+      "name": "其他费用",
+      "icon": "fa-ellipsis-h",
+      "categories": [
+        {
+          "id": "other_service",
+          "name": "增值服务",
+          "feeItems": [
+            { "id": "photo_fee", "name": "拍照费", "price": 5, "unit": "张", "description": "货物拍照费用" },
+            { "id": "measure_fee", "name": "测量费", "price": 10, "unit": "件", "description": "货物测量费用" },
+            { "id": "return_fee", "name": "退货处理费", "price": 15, "unit": "件", "description": "退货处理费用" }
+          ]
+        },
+        {
+          "id": "other_penalty",
+          "name": "违约金",
+          "feeItems": [
+            { "id": "late_payment_fee", "name": "逾期付款违约金", "price": 0, "unit": "次", "description": "逾期付款产生的违约金" },
+            { "id": "damage_fee", "name": "货物损坏赔偿", "price": 0, "unit": "件", "description": "货物损坏赔偿费用" }
+          ]
+        }
+      ]
+    }
+  }
+};
+
+console.log('✅ 费用组数据已加载（JavaScript格式）');

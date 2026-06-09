@@ -164,9 +164,9 @@
     </div>
 
     <div class="mb-6 flex justify-start">
-      <button onclick="openCreateModal()" class="btn btn-primary">
+      <a href="package-create.html" class="btn btn-primary">
         <i class="fas fa-plus mr-2"></i>创建价卡
-      </button>
+      </a>
     </div>
 
     <div class="bg-white rounded-lg shadow-card overflow-hidden">
@@ -267,10 +267,10 @@
                     <td class="px-3 py-2 text-gray-600">首次加载时显示示例数据</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">包哈费用组</td>
+                    <td class="px-3 py-2 text-gray-800">包含费用组</td>
                     <td class="px-3 py-2 text-gray-600">统计价卡中各类型费用项的数量</td>
                     <td class="px-3 py-2 text-gray-600">packages.feeItems</td>
-                    <td class="px-3 py-2 text-gray-600">按费用类型分组统计，格式：类型名(数量项)。展示引用的入库费规则分类信息</td>
+                    <td class="px-3 py-2 text-gray-600">按费用类型分组统计，格式：数量项。展示引用的入库费规则分类信息</td>
                     <td class="px-3 py-2 text-gray-600">多个类型用顿号分隔</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
@@ -329,7 +329,7 @@
                     <td class="px-3 py-2 text-gray-600">字符型</td>
                   </tr>
                   <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">包哈费用组</td>
+                    <td class="px-3 py-2 text-gray-800">包含费用组</td>
                     <td class="px-3 py-2 text-gray-600">统计价卡中各类型费用项的数量</td>
                     <td class="px-3 py-2 text-gray-600">前端计算</td>
                     <td class="px-3 py-2 text-gray-600">按费用类型分组统计，格式：类型名(数量项)</td>
@@ -449,228 +449,6 @@
               <i class="fas fa-exchange-alt mr-1"></i>交互逻辑
             </button>
           </div>
-          <!-- 新增/编辑弹窗属性取值 -->
-          <div class="logic-panel p-4" data-group="add-modal-logic" data-panel="field-add">
-            <div class="overflow-x-auto">
-              <table class="min-w-full text-sm border border-gray-200 rounded">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">价卡名称</td>
-                    <td class="px-3 py-2 text-gray-600">价卡的名称标识</td>
-                    <td class="px-3 py-2 text-gray-600">手工输入</td>
-                    <td class="px-3 py-2 text-gray-600">必填，唯一性校验</td>
-                    <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                    <td class="px-3 py-2 text-gray-600">128</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">价卡描述</td>
-                    <td class="px-3 py-2 text-gray-600">价卡的描述信息</td>
-                    <td class="px-3 py-2 text-gray-600">手工输入</td>
-                    <td class="px-3 py-2 text-gray-600">可选，用于补充说明</td>
-                    <td class="px-3 py-2 text-gray-600">多行文本框</td>
-                    <td class="px-3 py-2 text-gray-600">512</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">费用组</td>
-                    <td class="px-3 py-2 text-gray-600">费用类型所属的分类</td>
-                    <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">数据源：入库费规则配置表，取值 = 费用组</td>
-                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                    <td class="px-3 py-2 text-gray-600">64</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">费用类型</td>
-                    <td class="px-3 py-2 text-gray-600">费用组下的合并费用类型</td>
-                    <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">数据源：入库费规则配置表，取值 = 费用类型</td>
-                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                    <td class="px-3 py-2 text-gray-600">64</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">计费单位</td>
-                    <td class="px-3 py-2 text-gray-600">收费的计价单位</td>
-                    <td class="px-3 py-2 text-gray-600">系统带出</td>
-                    <td class="px-3 py-2 text-gray-600">根据费用类型自动带出对应单位</td>
-                    <td class="px-3 py-2 text-gray-600">文本显示（禁用）</td>
-                    <td class="px-3 py-2 text-gray-600">32</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">单价($)</td>
-                    <td class="px-3 py-2 text-gray-600">费用类型的基础单价</td>
-                    <td class="px-3 py-2 text-gray-600">系统带出</td>
-                    <td class="px-3 py-2 text-gray-600">根据费用类型自动带出对应单价（取第一个规格的价格）</td>
-                    <td class="px-3 py-2 text-gray-600">数字显示（禁用）</td>
-                    <td class="px-3 py-2 text-gray-600">-</td>
-                    <td class="px-3 py-2 text-gray-600">数值型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">折扣方式</td>
-                    <td class="px-3 py-2 text-gray-600">折扣的计算方式</td>
-                    <td class="px-3 py-2 text-gray-600">手工选择</td>
-                    <td class="px-3 py-2 text-gray-600">下拉选择：无折扣、百分比、指定增减、一口价</td>
-                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
-                    <td class="px-3 py-2 text-gray-600">32</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">折扣金额</td>
-                    <td class="px-3 py-2 text-gray-600">折扣的具体数值</td>
-                    <td class="px-3 py-2 text-gray-600">手工输入</td>
-                    <td class="px-3 py-2 text-gray-600">根据折扣方式输入：<br>
-                      1、百分比：输入百分比数值；<br>
-                      2、指定增减：输入增减金额（支持负数，负数表示减少，正数表示增加）；<br>
-                      3、一口价：输入固定价格
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">数字输入框</td>
-                    <td class="px-3 py-2 text-gray-600">-</td>
-                    <td class="px-3 py-2 text-gray-600">数值型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">预计金额($)</td>
-                    <td class="px-3 py-2 text-gray-600">折扣后的预计金额</td>
-                    <td class="px-3 py-2 text-gray-600">系统计算</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1、无折扣 = 单价；<br>
-                      2、百分比 = 单价 × (1 - 折扣百分比)；<br>
-                      3、指定增减 = 原金额 + 增减金额（负数表示减少，正数表示增加）；<br>
-                      4、一口价 = 折扣金额
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">数字显示（自动计算）</td>
-                    <td class="px-3 py-2 text-gray-600">-</td>
-                    <td class="px-3 py-2 text-gray-600">数值型</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">备注</td>
-                    <td class="px-3 py-2 text-gray-600">费用项的附加说明</td>
-                    <td class="px-3 py-2 text-gray-600">手工输入</td>
-                    <td class="px-3 py-2 text-gray-600">可选，用于补充说明</td>
-                    <td class="px-3 py-2 text-gray-600">文本输入框</td>
-                    <td class="px-3 py-2 text-gray-600">256</td>
-                    <td class="px-3 py-2 text-gray-600">字符型</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <!-- 新增/编辑弹窗交互逻辑 -->
-          <div class="logic-panel p-4 hidden" data-group="add-modal-logic" data-panel="add-interaction">
-            <div class="overflow-x-auto">
-              <table class="min-w-full text-sm border border-gray-200 rounded">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互逻辑</th>
-                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示内容</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">打开新增弹窗</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 显示新增弹窗 <br>
-                      2. 清空表单数据 <br>
-                      3. 初始化费用项表格，默认显示一行空数据 <br>
-                      4. 默认选中"入库费"分类
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">显示新增弹窗，表单为空，费用项表格有默认行</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">打开编辑弹窗</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 显示编辑弹窗 <br>
-                      2. 预填充价卡基本信息（名称、描述） <br>
-                      3. 预填充费用项明细数据（费用组、费用类型、单位、单价、折扣方式、折扣金额、预计金额、备注） <br>
-                      4. 保持费用项分类选中状态
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">显示编辑弹窗，表单预填充现有数据</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择费用组</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 根据选择的费用组，动态加载对应的费用类型数据 <br>
-                      2. 费用类型下拉框更新为该费用组下的选项 <br>
-                      3. 清空已选择的费用类型
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">费用类型下拉框动态更新，已选择的费用类型清空</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择费用类型</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 自动带出计费单位（从入库费规则数据） <br>
-                      2. 自动带出单价（从入库费规则数据，取第一个规格的价格） <br>
-                      3. 用户选择折扣方式并输入折扣金额 <br>
-                      4. 自动计算预计金额
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">计费单位、单价自动带出，预计金额自动计算</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">选择折扣方式</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 无折扣 → 折扣金额输入框隐藏 <br>
-                      2. 百分比 → 折扣金额输入框显示，提示"请输入折扣百分比(0-100)" <br>
-                      3. 指定增减 → 折扣金额输入框显示，提示"请输入增减金额"，支持负数 <br>
-                      4. 一口价 → 折扣金额输入框显示，提示"请输入一口价"
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">折扣金额输入框根据折扣方式动态显示/隐藏</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">输入折扣金额</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 实时计算预计金额 <br>
-                      2. 无折扣：预计金额 = 单价 <br>
-                      3. 百分比：预计金额 = 单价 × (1 - 折扣百分比/100) <br>
-                      4. 指定增减：预计金额 = 原金额 + 增减金额（负数表示减少，正数表示增加） <br>
-                      5. 一口价：预计金额 = 折扣金额
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">预计金额实时更新</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">点击"新增行"按钮</td>
-                    <td class="px-3 py-2 text-gray-600">在费用项表格中添加一行新记录</td>
-                    <td class="px-3 py-2 text-gray-600">费用项表格新增一行空数据</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">点击"删除行"按钮</td>
-                    <td class="px-3 py-2 text-gray-600">删除当前行的费用项记录</td>
-                    <td class="px-3 py-2 text-gray-600">费用项表格删除当前行</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">点击"保存"按钮</td>
-                    <td class="px-3 py-2 text-gray-600">
-                      1. 校验必填字段（价卡名称） <br>
-                      2. 校验价卡名称唯一性 <br>
-                      3. 校验费用项数据完整性（费用组、费用类型必填） <br>
-                      4. 收集表单数据 <br>
-                      5. 保存到数据源 <br>
-                      6. 刷新列表
-                    </td>
-                    <td class="px-3 py-2 text-gray-600">保存成功提示，关闭弹窗，刷新主表</td>
-                  </tr>
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2 text-gray-800">点击"取消"按钮</td>
-                    <td class="px-3 py-2 text-gray-600">关闭弹窗，清空表单数据</td>
-                    <td class="px-3 py-2 text-gray-600">关闭弹窗，不保存数据</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
 
         <!-- 卡片4：检索条件逻辑 -->
@@ -742,90 +520,7 @@
 
 
 
-  <div id="packageModal" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 class="modal-title" id="modalTitle">
-          <i class="fas fa-plus-circle mr-2 text-accent"></i>
-          <span id="modalTitleText">创建价卡</span>
-        </h3>
-        <button class="modal-close" onclick="closeModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="modal-body">
-        <form id="packageForm">
-          <input type="hidden" id="packageId">
-          
-          <div class="form-section">
-            <h4 class="form-section-title">
-              <i class="fas fa-info-circle mr-2 text-accent"></i>基本信息
-            </h4>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="form-group">
-                <label class="form-label">价卡名称 <span class="text-danger">*</span></label>
-                <input type="text" id="packageName" required
-                       class="form-input" placeholder="请输入价卡名称">
-              </div>
-            </div>
-            
-            <div class="form-group mt-4">
-              <label class="form-label">价卡描述</label>
-              <textarea id="packageDescription" rows="3"
-                        class="form-input" placeholder="请输入价卡描述"></textarea>
-            </div>
-          </div>
-
-          <div class="form-section">
-            <h4 class="form-section-title">
-              <i class="fas fa-list-check mr-2 text-accent"></i>折扣配置
-            </h4>
-            
-            <div class="mb-4">
-              <div id="feeCategoryContent">
-                <div class="flex items-center justify-end mb-3">
-                  <button type="button" onclick="addFeeRow()" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-plus mr-1"></i>新增行
-                  </button>
-                </div>
-                
-                <div class="overflow-x-auto border border-border rounded-lg">
-                  <table class="w-full">
-                    <thead class="bg-light-bg">
-                      <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用组</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用类型</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">计费单位</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">单价($)</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣方式</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣金额</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">预计金额($)</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">备注</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody id="feeItemsTableBody" class="divide-y divide-border-light">
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
-      
-      <div class="modal-footer">
-        <button onclick="closeModal()" class="btn btn-secondary">
-          <i class="fas fa-times mr-2"></i>取消
-        </button>
-        <button onclick="savePackage()" class="btn btn-primary">
-          <i class="fas fa-save mr-2"></i>保存
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- 创建价卡弹窗已改为独立页面 package-create.html -->
 
   <div id="detailModal" class="modal-overlay">
     <div class="modal-container">
@@ -897,6 +592,24 @@
 
   <!-- 引用入库费规则数据 -->
   <script src="../入库费规则/js/inbound-fee-rule-data.js"></script>
-  <script src="js/main.js"></script>
+  <script src="data/fee-categories-data.js"></script>
+  <script src="js/utils.js"></script>
+  <!-- 核心模块 -->
+  <script src="js/state.js"></script>
+  <script src="js/data-service.js"></script>
+  <script src="js/fee-data.js"></script>
+  <script src="js/discount-calculator.js"></script>
+  <!-- 阶梯折扣模块 -->
+  <script src="js/tier-discount-logic.js"></script>
+  <script src="js/tier-discount-ui.js"></script>
+  <!-- 弹窗模块 -->
+  <script src="js/modal-standard-discount.js"></script>
+  <script src="js/modal-tier-discount.js"></script>
+  <!-- 页面模块 -->
+  <script src="js/fee-table.js"></script>
+  <script src="js/package-list.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() { PackageList.init(); });
+  </script>
 </body>
 </html>

@@ -20,12 +20,12 @@ const WAREHOUSES_DATA = [
   { id: 'wh_8', name: '南京仓库' }
 ];
 
-const DATA_VERSION = '7.0';
+// DATA_VERSION 已移至 main.js 统一管理
 
 const FEE_TYPE_ENUMS = {
-  'cat_1': '整柜入库',
-  'cat_2': '快递散货入库',
-  'cat_3': '托盘入库'
+  'cat_1': '卸货费（整柜）',
+  'cat_2': '卸货费（散货）',
+  'cat_3': 'SKU 超重费（整柜）'
 };
 
 function formatDateTime(dateTimeStr) {
