@@ -57,7 +57,7 @@
 | 文档 | 用途 |
 |------|------|
 | [JavaScript 指南](javascript-guide.md) | CRUD、搜索、分页、状态管理 |
-| [逻辑说明指南](logic-guide.md) | logic-docs.html 编写模板 |
+| [逻辑说明指南](logic-guide.md) | 弹窗式逻辑说明编写模板（入口卡片+弹窗+Tab切换） |
 | [PRD 规范](docs/prd-spec.md) | PRD 编写 |
 | [测试用例规范](docs/testcase-spec.md) | 测试用例编写 |
 | [检查清单](docs/checklists.md) | 评审 + 安全检查 |
@@ -74,6 +74,6 @@
 
 1. **设计令牌优先**：新模块用 `#2a3b7d`，禁止随意自定义主题色
 2. **图标**：Font Awesome 6（`fas`/`far`），图标与文字间距 `mr-1.5`
-3. **文件拆分**：`main.js` ≤ 300 行；逻辑说明独立 `logic-docs.html`
+3. **文件拆分**：`main.js` ≤ 300 行；逻辑说明内嵌弹窗模式（见 logic-guide.md）
 4. **按需读取**：先读索引，再读详细文档
 5. **交付前**：运行 `bash .trae/skills/Design-core/infra/compliance-check.sh [模块目录]`
