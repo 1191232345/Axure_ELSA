@@ -42,7 +42,7 @@
     </div>
   </header>
 
-  <main class="container mx-auto px-2 sm:px-3 lg:px-4 py-6 max-w-4xl">
+  <main class="container mx-auto px-2 sm:px-3 lg:px-4 py-6">
 
     <!-- 返回 -->
     <div class="mb-6"><a id="backLink" href="index.html" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>返回列表</a></div>
@@ -137,7 +137,387 @@
       </div>
 
     </form>
+
+    <!-- 逻辑说明 -->
+    <div class="bg-white rounded-lg shadow-card mt-4 overflow-hidden">
+      <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="openLogicModal()">
+        <div class="flex items-center">
+          <i class="fas fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击查看详细逻辑)</span>
+        </div>
+        <i class="fas fa-external-link text-primary"></i>
+      </div>
+    </div>
+
   </main>
+
+  <!-- 逻辑说明弹窗 -->
+  <div id="logic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center">
+        <div class="flex items-center">
+          <i class="fas fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary text-lg">创建规则配置 - 逻辑说明</span>
+        </div>
+        <button onclick="closeLogicModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6" id="logic-modal-content">
+        <!-- 卡片1：初始化逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-database text-primary mr-2"></i>初始化逻辑
+            </h4>
+          </div>
+          <div class="p-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">页面加载</td>
+                    <td class="px-3 py-2 text-gray-600">页面加载时初始化API和表单选项</td>
+                    <td class="px-3 py-2 text-gray-600">前端逻辑 + API</td>
+                    <td class="px-3 py-2 text-gray-600">初始化客户/仓库/价卡下拉框，清空表单字段</td>
+                    <td class="px-3 py-2 text-gray-600">准备创建新规则配置</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">URL参数检测</td>
+                    <td class="px-3 py-2 text-gray-600">检测URL中是否有editId参数</td>
+                    <td class="px-3 py-2 text-gray-600">URLSearchParams</td>
+                    <td class="px-3 py-2 text-gray-600">有editId→编辑模式，无→新建模式</td>
+                    <td class="px-3 py-2 text-gray-600">编辑模式自动填充已有数据</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">默认生效时间</td>
+                    <td class="px-3 py-2 text-gray-600">新建模式下自动设置生效时间为当前时间</td>
+                    <td class="px-3 py-2 text-gray-600">new Date()</td>
+                    <td class="px-3 py-2 text-gray-600">datetime-local格式，精确到分钟</td>
+                    <td class="px-3 py-2 text-gray-600">提升用户体验</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片2：表单字段逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="flex border-b border-gray-200 bg-gray-50">
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="form-field-logic" data-tab="field-main" onclick="switchLogicTab(this)">
+              <i class="fas fa-list-alt mr-1"></i>属性取值逻辑（表单字段）
+            </button>
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="form-field-logic" data-tab="validation-logic" onclick="switchLogicTab(this)">
+              <i class="fas fa-check-circle mr-1"></i>验证逻辑
+            </button>
+          </div>
+          <div class="logic-panel p-4" data-group="form-field-logic" data-panel="field-main">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">客户代码</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置关联的客户</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择（客户列表）</td>
+                    <td class="px-3 py-2 text-gray-600">必填，从活跃客户中选择</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">仓库代码</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置关联的仓库</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择（仓库列表）</td>
+                    <td class="px-3 py-2 text-gray-600">必填，从活跃仓库中选择</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">价卡模板</td>
+                    <td class="px-3 py-2 text-gray-600">引用的基础价卡，作为折扣配置模板</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择（价卡列表）</td>
+                    <td class="px-3 py-2 text-gray-600">必填，选择后自动加载折扣配置</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">名称</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置的名称标识</td>
+                    <td class="px-3 py-2 text-gray-600">自动生成/手工修改</td>
+                    <td class="px-3 py-2 text-gray-600">必填，默认=客户名-仓库名-规则配置</td>
+                    <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                    <td class="px-3 py-2 text-gray-600">128</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">生效时间</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置开始生效的时间</td>
+                    <td class="px-3 py-2 text-gray-600">手工输入</td>
+                    <td class="px-3 py-2 text-gray-600">必填，不能晚于失效时间</td>
+                    <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
+                    <td class="px-3 py-2 text-gray-600">32</td>
+                    <td class="px-3 py-2 text-gray-600">时间戳</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">失效时间</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置失效的时间</td>
+                    <td class="px-3 py-2 text-gray-600">手工输入</td>
+                    <td class="px-3 py-2 text-gray-600">可选，不能早于生效时间</td>
+                    <td class="px-3 py-2 text-gray-600">日期时间选择器</td>
+                    <td class="px-3 py-2 text-gray-600">32</td>
+                    <td class="px-3 py-2 text-gray-600">时间戳</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">费用类型</td>
+                    <td class="px-3 py-2 text-gray-600">折扣配置中的费用类型项</td>
+                    <td class="px-3 py-2 text-gray-600">价卡模板数据 + 手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">按费用分类Tab分组显示，可选</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择（按子类分组）</td>
+                    <td class="px-3 py-2 text-gray-600">64</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">折扣方式</td>
+                    <td class="px-3 py-2 text-gray-600">该费用类型的折扣计算方式</td>
+                    <td class="px-3 py-2 text-gray-600">弹窗配置 / 系统带出</td>
+                    <td class="px-3 py-2 text-gray-600">默认=未配置，通过配置弹窗设置</td>
+                    <td class="px-3 py-2 text-gray-600">胶囊徽章展示</td>
+                    <td class="px-3 py-2 text-gray-600">32</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">备注</td>
+                    <td class="px-3 py-2 text-gray-600">费用项的附加说明</td>
+                    <td class="px-3 py-2 text-gray-600">手工输入</td>
+                    <td class="px-3 py-2 text-gray-600">可选，用于补充说明</td>
+                    <td class="px-3 py-2 text-gray-600">文本输入框</td>
+                    <td class="px-3 py-2 text-gray-600">256</td>
+                    <td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="logic-panel p-4 hidden" data-group="form-field-logic" data-panel="validation-logic">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">验证项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">验证规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发时机</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">错误提示</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">名称</td>
+                    <td class="px-3 py-2 text-gray-600">必填，不能为空</td>
+                    <td class="px-3 py-2 text-gray-600">点击保存时</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">客户代码</td>
+                    <td class="px-3 py-2 text-gray-600">必填，必须选择一个客户</td>
+                    <td class="px-3 py-2 text-gray-600">点击保存时</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">仓库代码</td>
+                    <td class="px-3 py-2 text-gray-600">必填，必须选择一个仓库</td>
+                    <td class="px-3 py-2 text-gray-600">点击保存时</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">价卡模板</td>
+                    <td class="px-3 py-2 text-gray-600">必填，必须选择一个价卡模板</td>
+                    <td class="px-3 py-2 text-gray-600">点击保存时</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">生效时间</td>
+                    <td class="px-3 py-2 text-gray-600">必填，不能为空</td>
+                    <td class="px-3 py-2 text-gray-600">点击保存时</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">失效时间</td>
+                    <td class="px-3 py-2 text-gray-600">必填，不能为空</td>
+                    <td class="px-3 py-2 text-gray-600">点击保存时</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">唯一性校验</td>
+                    <td class="px-3 py-2 text-gray-600">同一客户+仓库组合只能有一个有效配置</td>
+                    <td class="px-3 py-2 text-gray-600">选择客户或仓库时实时检测 + 保存时再次校验</td>
+                    <td class="px-3 py-2 text-gray-600">"该客户和仓库已存在配置：xxx"</td>
+                    <td class="px-3 py-2 text-gray-600">编辑自身除外</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片3：交互逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-exchange-alt text-primary mr-2"></i>交互逻辑
+            </h4>
+          </div>
+          <div class="p-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互逻辑</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示内容</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">选择客户/仓库</td>
+                    <td class="px-3 py-2 text-gray-600">1. 自动生成默认名称：客户名-仓库名-规则配置<br>2. 实时检测是否已存在相同客户+仓库的组合<br>3. 如重复则显示警告提示</td>
+                    <td class="px-3 py-2 text-gray-600">名称输入框自动更新，重复提示区域显示/隐藏</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">选择价卡模板</td>
+                    <td class="px-3 py-2 text-gray-600">1. 加载价卡的折扣配置数据<br>2. 将折扣配置按分类转换为feeRows<br>3. 显示折扣配置区域<br>4. 渲染费用分类Tab和表格</td>
+                    <td class="px-3 py-2 text-gray-600">折扣配置区域展开，显示费用分类Tab和已加载的费用行</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">切换费用分类Tab</td>
+                    <td class="px-3 py-2 text-gray-600">1. 切换Tab激活状态<br>2. 过滤显示当前分类下的费用行<br>3. 更新费用类型下拉框选项</td>
+                    <td class="px-3 py-2 text-gray-600">Tab样式切换，表格内容过滤更新</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"新增行"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">1. 在当前费用分类下添加一行空记录<br>2. 新行默认discount_type=none<br>3. 重新渲染表格</td>
+                    <td class="px-3 py-2 text-gray-600">费用表格底部新增一行空白行</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"配置"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">1. 将当前行数据注册到AppState（桥接价卡modal）<br>2. 标记规则配置模式(_isRuleConfigMode)<br>3. 根据是否有阶梯定价决定打开标准/阶梯折扣弹窗</td>
+                    <td class="px-3 py-2 text-gray-600">弹出折扣配置弹窗（与价卡管理一致），支持阶梯价格预览</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">保存折扣配置</td>
+                    <td class="px-3 py-2 text-gray-600">1. 验证折扣值有效性<br>2. 回写折扣数据到规则配置的feeRows<br>3. 关闭弹窗<br>4. 重新渲染表格，更新胶囊徽章</td>
+                    <td class="px-3 py-2 text-gray-600">弹窗关闭，折扣方式列显示更新后的胶囊徽章</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"保存配置"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">1. 校验所有必填字段<br>2. 校验客户+仓库唯一性<br>3. 收集表单数据和折扣配置<br>4. 计算是否与原价卡有调整(is_adjusted)<br>5. 创建/更新规则配置记录<br>6. 跳转回列表页</td>
+                    <td class="px-3 py-2 text-gray-600">Toast提示成功，0.8秒后跳转列表页</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"取消"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">跳转回列表页，不保存任何数据</td>
+                    <td class="px-3 py-2 text-gray-600">直接返回列表页</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片4：折扣配置弹窗逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="flex border-b border-gray-200 bg-gray-50">
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="discount-modal-logic" data-tab="modal-init" onclick="switchLogicTab(this)">
+              <i class="fas fa-layer-group mr-1"></i>弹窗初始化逻辑
+            </button>
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="discount-modal-logic" data-tab="modal-field" onclick="switchLogicTab(this)">
+              <i class="fas fa-list-alt mr-1"></i>字段取值逻辑
+            </button>
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="discount-modal-logic" data-tab="modal-interaction" onclick="switchLogicTab(this)">
+              <i class="fas fa-exchange-alt mr-1"></i>交互逻辑
+            </button>
+          </div>
+          <div class="logic-panel p-4" data-group="discount-modal-logic" data-panel="modal-init">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">弹窗打开</td>
+                    <td class="px-3 py-2 text-gray-600">点击"配置"按钮打开折扣配置弹窗</td>
+                    <td class="px-3 py-2 text-gray-600">前端逻辑</td>
+                    <td class="px-3 py-2 text-gray-600">弹窗居中显示，背景遮罩</td>
+                    <td class="px-3 py-2 text-gray-600">复用价卡管理的StandardDiscountModal/TierDiscountModal</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">数据桥接</td>
+                    <td class="px-3 py-2 text-gray-600">将规则配置行的数据临时注册到AppState.feeRows</td>
+                    <td class="px-3 py-2 text-gray-600">当前feeRows + AppState</td>
+                    <td class="px-3 py-2 text-gray-600">通过row.id匹配，设置_isRuleConfigMode标记</td>
+                    <td class="px-3 py-2 text-gray-600">保存时通过标记回写到规则配置feeRows</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">弹窗类型判断</td>
+                    <td class="px-3 py-2 text-gray-600">根据费用项是否有original_tier_pricing数据判断</td>
+                    <td class="px-3 py-2 text-gray-600">当前行的original_tier_pricing字段</td>
+                    <td class="px-3 py-2 text-gray-600">有阶梯数据→TierDiscountModal，无→StandardDiscountModal</td>
+                    <td class="px-3 py-2 text-gray-600">与价卡管理FeeTable.showDiscountConfig逻辑完全一致</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">价格预览</td>
+                    <td class="px-3 py-2 text-gray-600">始终使用阶梯式价格预览展示</td>
+                    <td class="px-3 py-2 text-gray-600">DiscountCalculator.calculateFinalPrice</td>
+                    <td class="px-3 py-2 text-gray-600">显示阶梯段、原价格、折扣、折后价格</td>
+                    <td class="px-3 py-2 text-gray-600">无阶梯数据时将单一价格作为默认阶梯</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="logic-panel p-4 hidden" data-group="discount-modal-logic" data-panel="modal-field">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">折扣方式</td>
+                    <td class="px-3 py-2 text-gray-600">选择折扣的计算模式</td>
+                    <td class="px-3 py-2 text-gray-600">手工选择</td>
+                    <td class="px-3 py-2 text-gray-600">单选：无折扣、折扣率、增减、一口价</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择框</td>
+                    <td class="px-3 py-2 text-gray-600">必选，默认"无折扣"</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">折扣值</td>
+                    <td class="px-3 py-2 text-gray-600">输入具体的折扣数值</td>
+                    <td class="px-3 py-2 text-gray-600">手工输入</td>
+                    <td class="px-3 py-2 text-gray-600">数字输入框，支持小数点后两位</td>
+                    <td class="px-3 py-2 text-gray-600">输入框 + 单位（% 或 $）</td>
+                    <td class="px-3 py-2 text-gray-600">选择"无折扣"时隐藏</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">阶梯段</td>
+                    <td class="px-3 py-2 text-gray-600">显示费用的阶梯范围</td>
+                    <td class="px-3 py-2 text-gray-600">原始阶梯定价数据</td>
+                    <td class="px-3 py-2 text-gray-600">只读展示</td>
+                    <td class="px-3 py-2 text-gray-600">如 "1-100件"、"101-∞"</td>
+                    <td class="px-3 py-2 text-gray-600">只读</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">原价格</td>
+                    <td class="px-3 py-2 text-gray-600">每个阶梯的原始单价</td>
+                    <td class="px-3 py-2 text-gray-600">原始阶梯定价数据</td>
+                    <td class="px-3 py-2 text-gray-600">只读展示</td>
+                    <td class="px-3 py-2 text-gray-600">如 "$10.00"</td>
+                    <td class="px-3 py-2 text-gray-600">只读</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">折后价格</td>
+                    <td class="px-3 py-2 text-gray-600">应用折扣后的最终价格</td>
+                    <td class="px-3 py-2 text-gray-600">DiscountCalculator实时计算</td>
+                    <td class="px-3 py-2 text-gray-600">根据折扣方式和折扣值动态计算</td>
+                    <td class="px-3 py-2 text-gray-600">金色高亮 "$9.00"</td>
+                    <td class="px-3 py-2 text-gray-600">不允许为负数</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="logic-panel p-4 hidden" data-group="discount-modal-logic" data-panel="modal-interaction">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发条件</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">交互逻辑</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示内容</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">切换折扣方式</td>
+                    <td class="px-3 py-2 text-gray-600">1. 显示/隐藏折扣值输入框<br>2. 切换单位标签（%/$）<br>3. 实时重新计算预览价格</td>
+                    <td class="px-3 py-2 text-gray-600">折扣值区域显隐切换，单位变化，价格预览刷新</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">修改折扣值</td>
+                    <td class="px-3 py-2 text-gray-600">每次输入变化触发实时计算，更新所有阶梯的折后价格</td>
+                    <td class="px-3 py-2 text-gray-600">价格预览表格中的折后价格列实时更新</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"保存"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">1. DiscountCalculator.validateConfig验证<br>2. 写入tierDiscountConfig到AppState行<br>3. 因_isRuleConfigMode标记，同步回写规则配置feeRows<br>4. 关闭弹窗并重新渲染表格</td>
+                    <td class="px-3 py-2 text-gray-600">弹窗关闭，表格中对应行的胶囊徽章更新</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击"取消"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">关闭弹窗，不保存任何更改</td>
+                    <td class="px-3 py-2 text-gray-600">弹窗关闭，表格数据不变</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">点击遮罩层</td>
+                    <td class="px-3 py-2 text-gray-600">关闭弹窗（等同于取消）</td>
+                    <td class="px-3 py-2 text-gray-600">弹窗关闭</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scripts -->
   <script src="js/utils.js?v=13"></script>
@@ -162,6 +542,30 @@
       loadFromUrl();
       renderCreateModalOptions();
       document.getElementById('backLink').href = 'index.html' + (window.location.search ? window.location.search : '');
+    });
+
+    // ========== 逻辑说明弹窗（与价卡管理一致） ==========
+    function openLogicModal() { document.getElementById('logic-modal').classList.remove('hidden'); }
+    function closeLogicModal() { document.getElementById('logic-modal').classList.add('hidden'); }
+
+    function switchLogicTab(button) {
+      const group = button.getAttribute('data-group');
+      const tab = button.getAttribute('data-tab');
+      const tabs = document.querySelectorAll('.logic-tab[data-group="' + group + '"]');
+      tabs.forEach(function(t) {
+        t.classList.remove('text-primary','border-b-2','border-primary');
+        t.classList.add('text-gray-500','hover:text-gray-700');
+      });
+      button.classList.remove('text-gray-500','hover:text-gray-700');
+      button.classList.add('text-primary','border-b-2','border-primary');
+      const panels = document.querySelectorAll('.logic-panel[data-group="' + group + '"]');
+      panels.forEach(function(p) { p.classList.add('hidden'); });
+      var targetPanel = document.querySelector('.logic-panel[data-group="' + group + '"][data-panel="' + tab + '"]');
+      if (targetPanel) targetPanel.classList.remove('hidden');
+    }
+
+    document.getElementById('logic-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeLogicModal();
     });
 
     // 从URL参数加载编辑数据

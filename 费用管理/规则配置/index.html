@@ -148,11 +148,8 @@
     <div class="mb-6 flex justify-between items-center">
       <div class="flex gap-3">
         <button onclick="openCreateModal()" class="btn btn-primary">
-          <i class="fas fa-plus mr-2"></i>创建规则配置
+          <i class="fas fa-plus mr-2"></i>新增
         </button>
-      </div>
-      <div class="text-sm text-text-muted">
-        <i class="fas fa-info-circle mr-1"></i>单客户单仓库仅可创建1条规则配置
       </div>
     </div>
 
@@ -187,12 +184,354 @@
       </div>
     </div>
 
-    <!-- 逻辑说明容器 -->
-    <div id="logic-docs-container"></div>
+    <!-- 逻辑说明 -->
+    <div class="bg-white rounded-lg shadow-card mt-4 overflow-hidden">
+      <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="openLogicModal()">
+        <div class="flex items-center">
+          <i class="fas fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary">逻辑说明</span>
+          <span class="ml-2 text-xs text-gray-500">(点击查看详细逻辑)</span>
+        </div>
+        <i class="fas fa-external-link text-primary"></i>
+      </div>
+    </div>
 
   </main>
 
+  <!-- 逻辑说明弹窗 -->
+  <div id="logic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center">
+        <div class="flex items-center">
+          <i class="fas fa-book text-primary mr-2"></i>
+          <span class="font-semibold text-primary text-lg">规则配置列表页 - 逻辑说明</span>
+        </div>
+        <button onclick="closeLogicModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6" id="logic-modal-content">
+        <!-- 卡片1：初始化与数据展示逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-play-circle text-primary mr-2"></i>初始化与数据展示逻辑
+            </h4>
+          </div>
+          <div class="p-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">页面加载</td>
+                    <td class="px-3 py-2 text-gray-600">页面加载时初始化API、筛选选项、渲染表格</td>
+                    <td class="px-3 py-2 text-gray-600">initApi() + localStorage</td>
+                    <td class="px-3 py-2 text-gray-600">加载客户/仓库/价卡/规则配置数据，初始化筛选下拉框，渲染列表表格</td>
+                    <td class="px-3 py-2 text-gray-600">首次加载自动生成测试数据（4条规则配置）</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">测试数据生成</td>
+                    <td class="px-3 py-2 text-gray-600">localStorage无数据或版本不匹配时自动生成</td>
+                    <td class="px-3 py-2 text-gray-600">api.js loadRuleConfigs()</td>
+                    <td class="px-3 py-2 text-gray-600">生成4条不同业务类型的规则配置（全部/出库/转仓），含微调/未微调状态</td>
+                    <td class="px-3 py-2 text-gray-600">DATA_VERSION=3.1.0控制版本</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">列表排序</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置按创建时间倒序排列</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfigs数组</td>
+                    <td class="px-3 py-2 text-gray-600">最新创建的显示在最上方</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">空状态处理</td>
+                    <td class="px-3 py-2 text-gray-600">无数据时显示空状态提示</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfigs.length === 0</td>
+                    <td class="px-3 py-2 text-gray-600">显示空图标+提示文案+"创建第一个规则配置"按钮</td>
+                    <td class="px-3 py-2 text-gray-600">引导用户创建首条数据</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
+        <!-- 卡片2：检索与筛选逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-search text-primary mr-2"></i>检索与筛选逻辑
+            </h4>
+          </div>
+          <div class="p-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">检索项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">输入方式</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">匹配逻辑</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发时机</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">客户</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-600">精确匹配customer_id</td>
+                    <td class="px-3 py-2 text-gray-600">选择变化时实时筛选 + 点击查询按钮</td>
+                    <td class="px-3 py-2 text-gray-600">选项来自getActiveCustomers()</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">仓库</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-600">精确匹配warehouse_id</td>
+                    <td class="px-3 py-2 text-gray-600">选择变化时实时筛选 + 点击查询按钮</td>
+                    <td class="px-3 py-2 text-gray-600">选项来自getActiveWarehouses()</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">业务类型</td>
+                    <td class="px-3 py-2 text-gray-600">下拉选择</td>
+                    <td class="px-3 py-2 text-gray-600">精确匹配business_type（all/inbound/outbound/transfer/return）</td>
+                    <td class="px-3 py-2 text-gray-600">选择变化时实时筛选 + 点击查询按钮</td>
+                    <td class="px-3 py-2 text-gray-600">"all"表示全部业务</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建人</td>
+                    <td class="px-3 py-2 text-gray-600">文本输入</td>
+                    <td class="px-3 py-2 text-gray-600">模糊匹配created_by字段（不区分大小写）</td>
+                    <td class="px-3 py-2 text-gray-600">输入时实时筛选 + 点击查询按钮</td>
+                    <td class="px-3 py-2 text-gray-600">支持部分匹配</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">重置按钮</td>
+                    <td class="px-3 py-2 text-gray-600">点击重置</td>
+                    <td class="px-3 py-2 text-gray-600">清空所有4个筛选条件</td>
+                    <td class="px-3 py-2 text-gray-600">点击时触发</td>
+                    <td class="px-3 py-2 text-gray-600">清空后重新渲染全量数据</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片3：表格列展示逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="flex border-b border-gray-200 bg-gray-50">
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="table-column-logic" data-tab="column-main" onclick="switchLogicTab(this)">
+              <i class="fas fa-table mr-1"></i>列字段取值逻辑
+            </button>
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="table-column-logic" data-tab="column-display" onclick="switchLogicTab(this)">
+              <i class="fas fa-palette mr-1"></i>展示样式逻辑
+            </button>
+          </div>
+          <div class="logic-panel p-4" data-group="table-column-logic" data-panel="column-main">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">列名</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">配置名称</td>
+                    <td class="px-3 py-2 text-gray-600">name</td>
+                    <td class="px-3 py-2 text-gray-600">直接显示，支持点击查看详情</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.name</td>
+                    <td class="px-3 py-2 text-gray-600">超长名称截断显示</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">客户</td>
+                    <td class="px-3 py-2 text-gray-600">customer_name</td>
+                    <td class="px-3 py-2 text-gray-600">直接显示客户名称</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.customer_name</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">仓库</td>
+                    <td class="px-3 py-2 text-gray-600">warehouse_name</td>
+                    <td class="px-3 py-2 text-gray-600">直接显示仓库名称</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.warehouse_name</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">引用价卡</td>
+                    <td class="px-3 py-2 text-gray-600">price_card_name</td>
+                    <td class="px-3 py-2 text-gray-600">显示价卡模板名称</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.price_card_name</td>
+                    <td class="px-3 py-2 text-gray-600">-</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">业务类型</td>
+                    <td class="px-3 py-2 text-gray-600">business_type</td>
+                    <td class="px-3 py-2 text-gray-600">枚举值转中文显示</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.business_type</td>
+                    <td class="px-3 py-2 text-gray-600">all→全部业务 inbound→入库 outbound→出库 transfer→转仓 return→退货</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">折扣配置</td>
+                    <td class="px-3 py-2 text-gray-600">fee_discounts</td>
+                    <td class="px-3 py-2 text-gray-600">按分类统计费用项数量，格式：分类名(数量)</td>
+                    <td class="px-3 py-2 text-gray-600">Object.keys(fee_discounts)遍历</td>
+                    <td class="px-3 py-2 text-gray-600">多个分类用顿号分隔，空分类不显示</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">微调状态</td>
+                    <td class="px-3 py-2 text-gray-600">is_adjusted</td>
+                    <td class="px-3 py-2 text-gray-600">布尔值转标签显示</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.is_adjusted</td>
+                    <td class="px-3 py-2 text-gray-600">true→橙色"已微调"标签 false→灰色"未微调"标签</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">生效周期</td>
+                    <td class="px-3 py-2 text-gray-600">effective_start_time / effective_end_time</td>
+                    <td class="px-3 py-2 text-gray-600">格式化日期范围显示</td>
+                    <td class="px-3 py-2 text-gray-600">两个时间字段</td>
+                    <td class="px-3 py-2 text-gray-600">格式：YYYY-MM-DD HH:mm ~ YYYY-MM-DD HH:mm</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建人/时间</td>
+                    <td class="px-3 py-2 text-gray-600">created_by / created_at</td>
+                    <td class="px-3 py-2 text-gray-600">组合显示创建人和创建时间</td>
+                    <td class="px-3 py-2 text-gray-600">两个字段</td>
+                    <td class="px-3 py-2 text-gray-600">格式：创建人名 / YYYY-MM-DD HH:mm</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="logic-panel p-4 hidden" data-group="table-column-logic" data-panel="column-display">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">列名</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">样式规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">特殊效果</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">配置名称</td>
+                    <td class="px-3 py-2 text-gray-600">左对齐，字体加粗</td>
+                    <td class="px-3 py-2 text-gray-600">鼠标悬停高亮，可点击查看详情</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">微调状态</td>
+                    <td class="px-3 py-2 text-gray-600">标签居中</td>
+                    <td class="px-3 py-2 text-gray-600">已微调=橙色badge-warning 未微调=灰色badge-secondary</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">生效周期</td>
+                    <td class="px-3 py-2 text-gray-600">左对齐，小字号</td>
+                    <td class="px-3 py-2 text-gray-600">已过期行整体半透明+删除线效果</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">右对齐</td>
+                    <td class="px-3 py-2 text-gray-600">查看(蓝色) 编辑(橙色) 删除(红色) 三个按钮</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片4：按钮交互逻辑 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-mouse-pointer text-primary mr-2"></i>按钮交互逻辑
+            </h4>
+          </div>
+          <div class="p-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">新增</td>
+                    <td class="px-3 py-2 text-gray-600">筛选区域下方左侧</td>
+                    <td class="px-3 py-2 text-gray-600">跳转到 rule-config-form.html 新建页面</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">打开新页面，表单为空，准备创建</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">查询</td>
+                    <td class="px-3 py-2 text-gray-600">筛选区域右侧</td>
+                    <td class="px-3 py-2 text-gray-600">执行筛选，重新渲染表格</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">根据4个筛选条件过滤ruleConfigs并刷新</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">重置</td>
+                    <td class="px-3 py-2 text-gray-600">筛选区域查询按钮左侧</td>
+                    <td class="px-3 py-2 text-gray-600">清空所有筛选条件，恢复全量显示</td>
+                    <td class="px-3 py-2 text-gray-600">无</td>
+                    <td class="px-3 py-2 text-gray-600">4个筛选项清空，renderRuleConfigTable()无参数调用</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">查看</td>
+                    <td class="px-3 py-2 text-gray-600">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">打开详情模态框</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在</td>
+                    <td class="px-3 py-2 text-gray-600">显示完整信息：基础信息、折扣配置明细、生效周期、调整记录</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">编辑</td>
+                    <td class="px-3 py-2 text-gray-600">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">跳转到 rule-config-form.html?editId=xxx</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在</td>
+                    <td class="px-3 py-2 text-gray-600">打开新页面，自动填充已有数据到表单和折扣配置</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">删除</td>
+                    <td class="px-3 py-2 text-gray-600">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">弹出确认对话框，确认后删除</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在</td>
+                    <td class="px-3 py-2 text-gray-600">confirm确认→deleteRuleConfig()→saveRuleConfigs()→刷新表格→Toast成功提示</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片5：属性取值逻辑（主表完整） -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="flex border-b border-gray-200 bg-gray-50">
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="field-attr-logic" data-tab="attr-main" onclick="switchLogicTab(this)">
+              <i class="fas fa-list-alt mr-1"></i>主表字段定义
+            </button>
+            <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="field-attr-logic" data-tab="attr-validation" onclick="switchLogicTab(this)">
+              <i class="fas fa-check-circle mr-1"></i>约束与校验
+            </button>
+          </div>
+          <div class="logic-panel p-4" data-group="field-attr-logic" data-panel="attr-main">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">中文名</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">类型</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">长度</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">必填</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">id</td><td class="px-3 py-2 text-gray-600">规则配置ID</td><td class="px-3 py-2 text-gray-600">String(UUID)</td><td class="px-3 py-2 text-gray-600">36</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">系统生成，唯一标识</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">name</td><td class="px-3 py-2 text-gray-600">配置名称</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">128</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">默认=客户名-仓库名-规则配置</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">customer_id</td><td class="px-3 py-2 text-gray-600">客户ID</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">36</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">关联客户表，+warehouse_id唯一</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">customer_name</td><td class="px-3 py-2 text-gray-600">客户名称</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">冗余</td><td class="px-3 py-2 text-gray-600">根据customer_id关联查询</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">warehouse_id</td><td class="px-3 py-2 text-gray-600">仓库ID</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">36</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">关联仓库表，+customer_id唯一</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">warehouse_name</td><td class="px-3 py-2 text-gray-600">仓库名称</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">冗余</td><td class="px-3 py-2 text-gray-600">根据warehouse_id关联查询</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">price_card_id</td><td class="px-3 py-2 text-gray-600">价卡ID</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">36</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">关联价卡表</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">price_card_name</td><td class="px-3 py-2 text-gray-600">价卡名称</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">128</td><td class="px-3 py-2 text-gray-600">冗余</td><td class="px-3 py-2 text-gray-600">根据price_card_id关联查询</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">business_type</td><td class="px-3 py-2 text-gray-600">业务类型</td><td class="px-3 py-2 text-gray-600">Enum</td><td class="px-3 py-2 text-gray-600">16</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">all/inbound/outbound/transfer/return</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">fee_discounts</td><td class="px-3 py-2 text-gray-600">折扣配置</td><td class="px-3 py-2 text-gray-600">JSON Object</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">按分类存储：{inbound:[], outbound:[], storage:[], express:[], other:[]}</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">adjustments</td><td class="px-3 py-2 text-gray-600">调整记录</td><td class="px-3 py-2 text-gray-600">JSON Array</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">否</td><td class="px-3 py-2 text-gray-600">从价卡继承的调整项 [{type, name, amount, description}]</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">is_adjusted</td><td class="px-3 py-2 text-gray-600">微调状态</td><td class="px-3 py-2 text-gray-600">Boolean</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">计算</td><td class="px-3 py-2 text-gray-600">对比价卡原始折扣与当前折扣是否一致</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">effective_start_time</td><td class="px-3 py-2 text-gray-600">生效开始时间</td><td class="px-3 py-2 text-gray-600">DateTime</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">格式 YYYY-MM-DD HH:mm</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">effective_end_time</td><td class="px-3 py-2 text-gray-600">生效结束时间</td><td class="px-3 py-2 text-gray-600">DateTime</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">需大于生效开始时间</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">created_by</td><td class="px-3 py-2 text-gray-600">创建人</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">手工输入</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">created_at</td><td class="px-3 py-2 text-gray-600">创建时间</td><td class="px-3 py-2 text-gray-600">DateTime</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">系统</td><td class="px-3 py-2 text-gray-600">创建时自动生成 getCurrentDateTime()</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">updated_at</td><td class="px-3 py-2 text-gray-600">更新时间</td><td class="px-3 py-2 text-gray-600">DateTime</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">系统</td><td class="px-3 py-2 text-gray-600">每次保存时自动更新</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="logic-panel p-4 hidden" data-group="field-attr-logic" data-panel="attr-validation">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">校验项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">校验规则</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发时机</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">错误提示</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">必填校验</td>
+                    <td class="px-3 py-2 text-gray-600">name/customer_id/warehouse_id/price_card_id/effective_start_time/effective_end_time/created_by 均不能为空</td>
+                    <td class="px-3 py-2 text-gray-600">保存时（createRuleConfig / updateRuleConfig）</td>
+                    <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">唯一性校验</td>
+                    <td class="px-3 py-2 text-gray-600">同一 customer_id + warehouse_id 组合只能有一个有效配置（未过期）</td>
+                    <td class="px-3 py-2 text-gray-600">选择客户/仓库时实时检测 + 保存时再次校验</td>
+                    <td class="px-3 py-2 text-gray-600">"该客户和仓库已存在配置：xxx"</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">时间范围校验</td>
+                    <td class="px-3 py-2 text-gray-600">effective_end_time 必须 > effective_start_time</td>
+                    <td class="px-3 py-2 text-gray-600">保存时</td>
+                    <td class="px-3 py-2 text-gray-600">前端未强制校验，建议补充</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">微调状态计算</td>
+                    <td class="px-3 py-2 text-gray-600">逐字段对比 fee_discounts 与 price_card.fee_discounts</td>
+                    <td class="px-3 py-2 text-gray-600">保存时 checkIfAdjusted()</td>
+                    <td class="px-3 py-2 text-gray-600">任一字段差异则 is_adjusted=true</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="detailModal" class="modal" style="display: none;">
     <div class="modal-content">
@@ -211,28 +550,36 @@
     </div>
   </div>
 
-  <script>
-    // 加载逻辑说明文档
-    function loadLogicDocs() {
-      fetch('logic-docs.html')
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('logic-docs-container').innerHTML = html;
-        })
-        .catch(error => {
-          console.error('加载逻辑说明文档失败:', error);
-          document.getElementById('logic-docs-container').innerHTML = '<p class="text-center text-gray-500 py-4">逻辑说明文档加载失败</p>';
-        });
-    }
-
-    // 页面加载完成后执行
-    document.addEventListener('DOMContentLoaded', loadLogicDocs);
-  </script>
-
   <script src="js/utils.js?v=13"></script>
   <script src="js/api.js?v=13"></script>
   <script src="../价卡管理/js/discount-calculator.js"></script>
   <script src="js/renderer.js?v=13"></script>
   <script src="js/main.js?v=13"></script>
+
+  <!-- 逻辑说明弹窗JS（与价卡管理/rule-config-form一致） -->
+  <script>
+    function openLogicModal() { document.getElementById('logic-modal').classList.remove('hidden'); }
+    function closeLogicModal() { document.getElementById('logic-modal').classList.add('hidden'); }
+
+    function switchLogicTab(button) {
+      var group = button.getAttribute('data-group');
+      var tab = button.getAttribute('data-tab');
+      var tabs = document.querySelectorAll('.logic-tab[data-group="' + group + '"]');
+      tabs.forEach(function(t) {
+        t.classList.remove('text-primary','border-b-2','border-primary');
+        t.classList.add('text-gray-500','hover:text-gray-700');
+      });
+      button.classList.remove('text-gray-500','hover:text-gray-700');
+      button.classList.add('text-primary','border-b-2','border-primary');
+      var panels = document.querySelectorAll('.logic-panel[data-group="' + group + '"]');
+      panels.forEach(function(p) { p.classList.add('hidden'); });
+      var targetPanel = document.querySelector('.logic-panel[data-group="' + group + '"][data-panel="' + tab + '"]');
+      if (targetPanel) targetPanel.classList.remove('hidden');
+    }
+
+    document.getElementById('logic-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeLogicModal();
+    });
+  </script>
 </body>
 </html>
