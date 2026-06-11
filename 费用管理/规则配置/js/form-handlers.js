@@ -180,7 +180,7 @@ function renderFeeTable() {
 function collectFormData() {
   var cid = document.getElementById('selectCustomer').value, wid = document.getElementById('selectWarehouse').value, pcid = document.getElementById('selectPriceCard').value;
   var c = getCustomerById(cid), w = getWarehouseById(wid), pc = getPriceCardById(pcid);
-  var fd = { inbound:[], outbound:[], storage:[], express:[], other:[] };
+  var fd = { inbound:[], outbound:[], storage:[], express:[], value_service:[], other:[] };
   feeRows.forEach(function(r) {
     if (r.fee_item_id && r.fee_item_name) { (fd[r.fee_category] = fd[r.fee_category] || []).push({ fee_item_id:r.fee_item_id, fee_item_name:r.fee_item_name, unit:r.unit||'', discount_type:r.discount_type||'none', discount_value:r.discount_value||0, discount_description:r.discount_description||'' }); }
   });

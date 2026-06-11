@@ -153,21 +153,15 @@
 
           <div class="mb-4">
             <div id="feeCategoryContent">
-              <!-- 费用组 Tab 栏目 -->
+              <!-- 费用组 Tab 栏目 - 支持多费用组 -->
               <div class="fee-group-tabs mb-4">
                 <div class="tabs-container">
                   <button class="tab-btn active" data-group="入库" onclick="switchFeeGroupTab('入库', event)">
                     <i class="fas fa-arrow-down mr-2"></i>入库
                   </button>
-                  <!-- <button class="tab-btn" data-group="出库" onclick="switchFeeGroupTab('出库', event)">
-                    <i class="fas fa-arrow-up mr-2"></i>出库
+                  <button class="tab-btn" data-group="增值服务" onclick="switchFeeGroupTab('增值服务', event)">
+                    <i class="fas fa-star mr-2"></i>增值服务
                   </button>
-                  <button class="tab-btn" data-group="仓储" onclick="switchFeeGroupTab('仓储', event)">
-                    <i class="fas fa-box mr-2"></i>仓储
-                  </button>
-                  <button class="tab-btn" data-group="其他" onclick="switchFeeGroupTab('其他', event)">
-                    <i class="fas fa-ellipsis-h mr-2"></i>其他
-                  </button> -->
                 </div>
               </div>
 
@@ -801,6 +795,7 @@
 
   <!-- JavaScript 引用 -->
   <script src="../入库费规则/js/inbound-fee-rule-data.js"></script>
+  <script src="../增值服务规则/js/value-added-service-data.js"></script>
   <script src="data/fee-categories-data.js"></script>
   <script src="js/utils.js"></script>
   <!-- 核心模块 -->
@@ -863,90 +858,14 @@
       }
     });
 
-    // 页面初始化
+    // 页面初始化 - 使用模块化API
     document.addEventListener('DOMContentLoaded', function() {
       console.log('🚀 页面初始化开始');
-      init();
-      // 清空表单，准备创建新价卡
-      clearForm();
-      // 默认新增一行数据
-      console.log('📝 准备新增一行数据');
-      addFeeRow();
-      console.log('✅ 新增一行数据完成，当前行数:', feeRows.length);
+      PackageForm.init();
+      console.log('✅ 初始化完成');
     });
 
-    // 清空表单
-    function clearForm() {
-      console.log('🧹 清空表单');
-      document.getElementById('packageId').value = '';
-      document.getElementById('packageName').value = '';
-      document.getElementById('packageDescription').value = '';
-      feeRows = [];
-      editingPackageId = null;
-      renderFeeTable();
-    }
-
-    // 保存价卡（修改为保存后返回列表页）
-    function savePackage() {
-      const packageName = document.getElementById('packageName').value.trim();
-      const packageDescription = document.getElementById('packageDescription').value.trim();
-
-      if (!packageName) {
-        alert('请输入价卡名称');
-        return;
-      }
-
-      if (feeRows.length === 0) {
-        alert('请至少添加一个费用项');
-        return;
-      }
-
-      // 创建新价卡对象
-      const newPackage = {
-        id: Date.now(),
-        name: packageName,
-        description: packageDescription,
-        feeItems: feeRows.map(row => ({
-          feeGroup: row.feeGroup,
-          feeType: row.feeType,
-          feeTypeName: row.feeTypeName,
-          unit: row.unit,
-          unitPrice: row.unitPrice,
-          discountType: row.discountType,
-          discountValue: row.discountValue,
-          expectedAmount: row.expectedAmount,
-          remark: row.remark,
-          pricingType: row.pricingType,
-          originalTierPricing: row.originalTierPricing,
-          tierDiscountConfig: row.tierDiscountConfig,
-          finalTierPricing: row.finalTierPricing
-        })),
-        createdBy: '管理员',
-        createdAt: new Date().toISOString(),
-        updatedBy: '管理员',
-        updatedAt: new Date().toISOString()
-      };
-
-      // 加载现有价卡列表
-      let packages = [];
-      const storedPackages = localStorage.getItem('packages');
-      if (storedPackages) {
-        packages = JSON.parse(storedPackages);
-      }
-
-      // 添加新价卡
-      packages.unshift(newPackage);
-
-      // 保存到 localStorage
-      localStorage.setItem('packages', JSON.stringify(packages));
-      localStorage.setItem('packagesVersion', '11.0');
-
-      // 提示用户
-      alert('价卡创建成功！');
-
-      // 返回列表页
-      window.location.href = 'index.html';
-    }
+    // 注意：savePackage 函数已在 js/package-form.js 中定义
   </script>
 
 </body>

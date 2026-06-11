@@ -67,15 +67,20 @@ const FeeTable = {
     this.render();
   },
 
-  // 显示折扣配置弹窗（统一入口）
+  // 显示折扣配置弹窗（统一使用阶梯折扣弹窗）
   showDiscountConfig(rowId) {
     const row = AppState.feeRows.find(r => r.id === rowId);
     if (!row) return;
-    if (row.pricingType === 'tier' && row.originalTierPricing) {
-      TierDiscountModal.show(rowId);
-    } else {
-      StandardDiscountModal.show(rowId);
+
+    // 统一使用 TierDiscountModal（与入库费保持一致）
+    // 如果没有阶梯数据，自动创建默认阶梯
+    if (!row.originalTierPricing || row.originalTierPricing.length === 0) {
+      const unitPrice = row.unitPrice || 0;
+      row.originalTierPricing = [{ start: 1, end: null, price: unitPrice }];
+      row.pricingType = 'tier';
     }
+
+    TierDiscountModal.show(rowId);
   },
 
   // 渲染费用表格

@@ -113,7 +113,6 @@
 
 /* 阶梯段标签 */
 .preview-tier-segment { display: flex; flex-direction: column; gap: 4px; }
-.tier-segment-badge { display: inline-block; background: #1B3A4B; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; width: fit-content; }
 .tier-segment-range { font-size: 12px; color: #5A6275; font-weight: 500; }
 
 /* 价格表格 */

@@ -39,6 +39,7 @@ function generatePriceCards() {
         ],
         storage: [{ fee_item_id: 'storage_fee', fee_item_name: '仓储费', unit: '立方米/天', discount_type: 'percentage', discount_value: 10, discount_description: '仓储费9折' }],
         express: [{ fee_item_id: 'domestic_standard', fee_item_name: '标准快递费', unit: '件', discount_type: 'percentage', discount_value: 8, discount_description: '快递费92折' }],
+        value_service: [{ fee_item_id: 'photo_fee', fee_item_name: '拍照费', unit: '张', discount_type: 'percentage', discount_value: 10, discount_description: '拍照费9折' }],
         other: []
       },
       adjustments: [{ type: 'add', name: '紧急处理费', amount: 100, description: '紧急订单处理附加费' }],
@@ -53,7 +54,7 @@ function generatePriceCards() {
         ],
         outbound: [{ fee_item_id: 'pick_fee', fee_item_name: '拣货费', unit: '件', discount_type: 'percentage', discount_value: 5, discount_description: '拣货费标准折扣' }],
         storage: [{ fee_item_id: 'storage_fee', fee_item_name: '仓储费', unit: '立方米/天', discount_type: 'percentage', discount_value: 5, discount_description: '仓储费标准折扣' }],
-        express: [], other: []
+        express: [], value_service: [], other: []
       },
       adjustments: [], status: 1, created_at: '2024-01-02 10:00:00', updated_at: '2024-01-02 10:00:00'
     },
@@ -65,7 +66,7 @@ function generatePriceCards() {
           { fee_item_id: 'pick_fee', fee_item_name: '拣货费', unit: '件', discount_type: 'fixed', discount_value: 2, discount_description: '拣货费减免2元' },
           { fee_item_id: 'pack_fee', fee_item_name: '打包费', unit: '件', discount_type: 'percentage', discount_value: 10, discount_description: '打包费9折' }
         ],
-        storage: [], express: [], other: []
+        storage: [], express: [], value_service: [], other: []
       },
       adjustments: [], status: 1, created_at: '2024-01-03 10:00:00', updated_at: '2024-01-03 10:00:00'
     },
@@ -74,7 +75,7 @@ function generatePriceCards() {
       fee_discounts: {
         inbound: [], outbound: [],
         storage: [{ fee_item_id: 'storage_fee', fee_item_name: '仓储费', unit: '立方米/天', discount_type: 'percentage', discount_value: 15, discount_description: '仓储费85折' }],
-        express: [], other: []
+        express: [], value_service: [], other: []
       },
       adjustments: [{ type: 'subtract', name: '批量转仓优惠', amount: 200, description: '批量转仓减收200元' }],
       status: 1, created_at: '2024-01-04 10:00:00', updated_at: '2024-01-04 10:00:00'
@@ -102,6 +103,7 @@ function generateRuleConfigs() {
         ],
         storage: [{ fee_item_id: 'storage_fee', fee_item_name: '仓储费', unit: '立方米/天', discount_type: 'percentage', discount_value: 12, discount_description: '仓储费88折（微调）' }],
         express: [{ fee_item_id: 'domestic_standard', fee_item_name: '标准快递费', unit: '件', discount_type: 'percentage', discount_value: 8, discount_description: '快递费92折' }],
+        value_service: [{ fee_item_id: 'photo_fee', fee_item_name: '拍照费', unit: '张', discount_type: 'percentage', discount_value: 10, discount_description: '拍照费9折' }],
         other: []
       },
       adjustments: [{ type: 'add', name: '紧急处理费', amount: 100, description: '紧急订单处理附加费' }],
@@ -122,7 +124,7 @@ function generateRuleConfigs() {
         ],
         outbound: [{ fee_item_id: 'pick_fee', fee_item_name: '拣货费', unit: '件', discount_type: 'percentage', discount_value: 5, discount_description: '拣货费标准折扣' }],
         storage: [{ fee_item_id: 'storage_fee', fee_item_name: '仓储费', unit: '立方米/天', discount_type: 'percentage', discount_value: 5, discount_description: '仓储费标准折扣' }],
-        express: [], other: []
+        express: [], value_service: [], other: []
       },
       adjustments: [],
       is_adjusted: true,
@@ -141,7 +143,7 @@ function generateRuleConfigs() {
           { fee_item_id: 'pick_fee', fee_item_name: '拣货费', unit: '件', discount_type: 'fixed', discount_value: 2, discount_description: '拣货费减免2元' },
           { fee_item_id: 'pack_fee', fee_item_name: '打包费', unit: '件', discount_type: 'percentage', discount_value: 10, discount_description: '打包费9折' }
         ],
-        storage: [], express: [], other: []
+        storage: [], express: [], value_service: [], other: []
       },
       adjustments: [],
       is_adjusted: false,
@@ -157,7 +159,7 @@ function generateRuleConfigs() {
       fee_discounts: {
         inbound: [], outbound: [],
         storage: [{ fee_item_id: 'storage_fee', fee_item_name: '仓储费', unit: '立方米/天', discount_type: 'percentage', discount_value: 15, discount_description: '仓储费85折' }],
-        express: [], other: []
+        express: [], value_service: [], other: []
       },
       adjustments: [{ type: 'subtract', name: '批量转仓优惠', amount: 200, description: '批量转仓减收200元' }],
       is_adjusted: false,

@@ -1,0 +1,186 @@
+/* ========================================
+   表格数据展示样式 - 价格、状态、动画
+   ======================================== */
+
+/* 价格显示 */
+.price-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-danger);
+  background: #FFF0F0;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #FFCCC7;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.price-tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.price-tier-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 2px 6px;
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+.tier-spec {
+  font-weight: 500;
+  color: var(--color-primary);
+  min-width: 65px;
+}
+
+.tier-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* 备注列 */
+.calc-example-cell {
+  max-width: 320px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  background: #FFFBEB;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid #FDE68A;
+  position: relative;
+}
+
+.calc-example-formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  color: var(--color-primary);
+  background: white;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  display: inline-block;
+  margin: 1px 0;
+}
+
+/* 备注列 */
+.remark-text {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+.remark-condition {
+  color: #D97706;
+  font-style: italic;
+  font-size: 11px;
+  margin-top: 3px;
+  padding-left: 6px;
+  border-left: 2px solid #FDE68A;
+}
+
+/* 状态标签 */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-published {
+  background: #e6f7ff;
+  color: #096dd9;
+  border: 1px solid #91d5ff;
+}
+
+.status-draft {
+  background: #fff7e6;
+  color: #d46b08;
+  border: 1px solid #ffd591;
+}
+
+.status-cancelled {
+  background: #fff1f0;
+  color: #cf1322;
+  border: 1px solid #ffa39e;
+}
+
+/* 操作按钮组 */
+.action-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-btn {
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  font-size: 14px;
+}
+
+.action-btn:hover {
+  color: var(--color-primary);
+}
+
+.action-btn.danger:hover {
+  color: var(--color-danger);
+}
+
+/* 子节点容器 */
+.tree-children {
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tree-children.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* 表格统计信息 */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.table-footer strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 动画 */
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }

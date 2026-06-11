@@ -12,6 +12,7 @@ const FEE_CATEGORIES = {
   outbound: { name: '出库费', icon: 'fa-upload' },
   storage: { name: '仓储费', icon: 'fa-warehouse' },
   express: { name: '快递费', icon: 'fa-truck' },
+  value_service: { name: '增值服务', icon: 'fa-star' },
   other: { name: '其他费用', icon: 'fa-ellipsis-h' }
 };
 

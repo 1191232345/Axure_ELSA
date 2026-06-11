@@ -167,21 +167,15 @@
 
           <div class="mb-4">
             <div id="feeCategoryContent">
-              <!-- 费用组 Tab 栏目 -->
+              <!-- 费用组 Tab 栏目 - 支持多费用组 -->
               <div class="fee-group-tabs mb-4">
                 <div class="tabs-container">
                   <button class="tab-btn active" data-group="入库" onclick="switchFeeGroupTab('入库', event)">
                     <i class="fas fa-arrow-down mr-2"></i>入库
                   </button>
-                  <!-- <button class="tab-btn" data-group="出库" onclick="switchFeeGroupTab('出库', event)">
-                    <i class="fas fa-arrow-up mr-2"></i>出库
+                  <button class="tab-btn" data-group="增值服务" onclick="switchFeeGroupTab('增值服务', event)">
+                    <i class="fas fa-star mr-2"></i>增值服务
                   </button>
-                  <button class="tab-btn" data-group="仓储" onclick="switchFeeGroupTab('仓储', event)">
-                    <i class="fas fa-box mr-2"></i>仓储
-                  </button>
-                  <button class="tab-btn" data-group="其他" onclick="switchFeeGroupTab('其他', event)">
-                    <i class="fas fa-ellipsis-h mr-2"></i>其他
-                  </button> -->
                 </div>
               </div>
 
@@ -233,6 +227,7 @@
 
   <!-- JavaScript 引用 -->
   <script src="../入库费规则/js/inbound-fee-rule-data.js"></script>
+  <script src="../增值服务规则/js/value-added-service-data.js"></script>
   <script src="data/fee-categories-data.js"></script>
   <script src="js/utils.js"></script>
   <!-- 核心模块 -->

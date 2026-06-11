@@ -105,19 +105,34 @@
         }
       ]
     },
-    "other": {
-      "name": "其他费用",
-      "icon": "fa-ellipsis-h",
+    "value_service": {
+      "name": "增值服务",
+      "icon": "fa-star",
       "categories": [
         {
-          "id": "other_service",
-          "name": "增值服务",
+          "id": "value_service_basic",
+          "name": "基础增值服务",
           "feeItems": [
             { "id": "photo_fee", "name": "拍照费", "price": 5, "unit": "张", "description": "货物拍照费用" },
             { "id": "measure_fee", "name": "测量费", "price": 10, "unit": "件", "description": "货物测量费用" },
             { "id": "return_fee", "name": "退货处理费", "price": 15, "unit": "件", "description": "退货处理费用" }
           ]
         },
+        {
+          "id": "value_service_custom",
+          "name": "定制增值服务",
+          "feeItems": [
+            { "id": "custom_pack_fee", "name": "定制包装费", "price": 30, "unit": "件", "description": "定制包装服务费用" },
+            { "id": "label_service_fee", "name": "贴标服务费", "price": 8, "unit": "件", "description": "专业贴标服务费用" },
+            { "id": "quality_check_fee", "name": "质检服务费", "price": 20, "unit": "件", "description": "质量检查服务费用" }
+          ]
+        }
+      ]
+    },
+    "other": {
+      "name": "其他费用",
+      "icon": "fa-ellipsis-h",
+      "categories": [
         {
           "id": "other_penalty",
           "name": "违约金",
