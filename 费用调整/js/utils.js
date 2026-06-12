@@ -44,6 +44,20 @@ const MainConstants = {
       { key: 'amount', label: '重计金额' },
       { key: 'status', label: '状态' },
       { key: 'failReason', label: '失败原因' }
+    ],
+    
+    VALUE_ADDED: [
+      { key: 'operateTime', label: '操作时间' },
+      { key: 'operator', label: '操作人' },
+      { key: 'warehouse', label: '仓库代码' },
+      { key: 'customerCode', label: '客户代码' },
+      { key: 'orderNo', label: '订单号' },
+      { key: 'serviceType', label: '服务类型' },
+      { key: 'chargeType', label: '计费类型' },
+      { key: 'originalAmount', label: '原金额' },
+      { key: 'amount', label: '重计金额' },
+      { key: 'status', label: '状态' },
+      { key: 'failReason', label: '失败原因' }
     ]
   },
   
@@ -59,6 +73,10 @@ const MainConstants = {
     inbound: {
       label: '入库费',
       description: '入库费未出账订单管理'
+    },
+    valueAdded: {
+      label: '增值服务',
+      description: '增值服务未出账订单管理'
     }
   },
   
@@ -78,6 +96,8 @@ const MainUtils = {
         return MainConstants.TABLE_HEADERS.STORAGE;
       case CommonConstants.TAB_TYPES.INBOUND:
         return MainConstants.TABLE_HEADERS.INBOUND;
+      case CommonConstants.TAB_TYPES.VALUE_ADDED:
+        return MainConstants.TABLE_HEADERS.VALUE_ADDED;
       default:
         return MainConstants.TABLE_HEADERS.OUTBOUND;
     }
@@ -88,25 +108,30 @@ const MainUtils = {
     const warehouses = ['DE001', 'DE002', 'DE003'];
     const customers = ['DEMO - demo', 'TEST - test', 'PROD - prod'];
     const channels = ['FEDEX_MPS', 'FEDEX_HOME_GROUND', 'ZYBQ'];
+    const serviceTypes = ['退货入库', '商品上架', '拍照服务', '丈量过磅', '检验/修理费', '其他增值服务'];
     
     const billTypeLabel = this.getBillTypeLabel(tabType);
     
     for (let i = 1; i <= count; i++) {
-      const logisticsProduct = tabType === CommonConstants.TAB_TYPES.OUTBOUND 
-        ? channels[Math.floor(Math.random() * channels.length)] 
-        : '';
-      
-      data.push({
+      const item = {
         id: CommonUtils.generateId(),
         orderTime: this.generateRandomDate(),
         billType: billTypeLabel,
         warehouse: warehouses[Math.floor(Math.random() * warehouses.length)],
         customerCode: customers[Math.floor(Math.random() * customers.length)],
         orderNo: 'ORD' + String(Date.now()).slice(-8) + String(i).padStart(4, '0'),
-        logisticsProduct: logisticsProduct,
         amount: (Math.random() * 10000 + 500).toFixed(2),
         currency: 'USD'
-      });
+      };
+      
+      // 根据Tab类型添加特定字段
+      if (tabType === CommonConstants.TAB_TYPES.OUTBOUND) {
+        item.logisticsProduct = channels[Math.floor(Math.random() * channels.length)];
+      } else if (tabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+        item.serviceType = serviceTypes[Math.floor(Math.random() * serviceTypes.length)];
+      }
+      
+      data.push(item);
     }
     
     return data;
@@ -118,6 +143,7 @@ const MainUtils = {
     const warehouses = ['DE001', 'DE002', 'DE003'];
     const customers = ['DEMO', 'TEST', 'PROD'];
     const products = ['FEDEX_MPS', 'FEDEX_HOME_GROUND', 'ZYBQ', 'UPS_EXPRESS'];
+    const serviceTypes = ['退货入库', '商品上架', '拍照服务', '丈量过磅', '检验/修理费', '其他增值服务'];
     const types = [this.getBillTypeLabel(tabType)];
     
     for (let i = 1; i <= count; i++) {
@@ -127,22 +153,28 @@ const MainUtils = {
         ? '-' 
         : (parseFloat(originalAmount) * (0.85 + Math.random() * 0.3)).toFixed(2);
       
-      data.push({
+      const item = {
         id: CommonUtils.generateId(),
         operateTime: this.generateRandomDate(),
         operator: '管理员',
         warehouse: warehouses[Math.floor(Math.random() * warehouses.length)],
         customerCode: customers[Math.floor(Math.random() * customers.length)],
         orderNo: this.generateOrderNo(tabType, i),
-        logisticsProduct: tabType === CommonConstants.TAB_TYPES.OUTBOUND 
-          ? products[Math.floor(Math.random() * products.length)] 
-          : '',
         chargeType: types[Math.floor(Math.random() * types.length)],
         originalAmount: originalAmount,
         amount: recalculatedAmount,
         status: status,
         failReason: status === 'failed' ? this.getFailReason(tabType) : '-'
-      });
+      };
+      
+      // 根据Tab类型添加特定字段
+      if (tabType === CommonConstants.TAB_TYPES.OUTBOUND) {
+        item.logisticsProduct = products[Math.floor(Math.random() * products.length)];
+      } else if (tabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+        item.serviceType = serviceTypes[Math.floor(Math.random() * serviceTypes.length)];
+      }
+      
+      data.push(item);
     }
     
     return data;
@@ -154,6 +186,8 @@ const MainUtils = {
         return '仓储费';
       case CommonConstants.TAB_TYPES.INBOUND:
         return '入库费';
+      case CommonConstants.TAB_TYPES.VALUE_ADDED:
+        return '增值服务';
       default:
         return '出库费';
     }
@@ -162,6 +196,7 @@ const MainUtils = {
   generateOrderNo(tabType, index) {
     const prefix = tabType === CommonConstants.TAB_TYPES.OUTBOUND ? 'OUT' 
       : tabType === CommonConstants.TAB_TYPES.STORAGE ? 'STR' 
+      : tabType === CommonConstants.TAB_TYPES.VALUE_ADDED ? 'VAS' 
       : 'INB';
     return prefix + '-' + String(Date.now()).slice(-6) + String(index).padStart(3, '0');
   },
@@ -172,6 +207,8 @@ const MainUtils = {
         return '库存数据不一致或计费规则未配置';
       case CommonConstants.TAB_TYPES.INBOUND:
         return '入库数据异常或计费规则未配置';
+      case CommonConstants.TAB_TYPES.VALUE_ADDED:
+        return '增值服务数据异常或计费规则未配置';
       default:
         return '出库单状态异常或物流产品配置缺失';
     }

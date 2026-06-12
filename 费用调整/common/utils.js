@@ -10,7 +10,8 @@ const CommonConstants = {
   TAB_TYPES: {
     OUTBOUND: 'outbound',
     STORAGE: 'storage',
-    INBOUND: 'inbound'
+    INBOUND: 'inbound',
+    VALUE_ADDED: 'valueAdded'
   },
   
   STATUS_TYPES: {

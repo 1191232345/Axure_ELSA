@@ -20,10 +20,28 @@ const ManualAdjustAPI = {
     });
   },
   
-  async saveFeeData(data) {
+  async loadValueAddedFeeData() {
     return new Promise((resolve, reject) => {
       try {
-        CommonAPI.LocalStorageAPI.set(ManualAdjustConstants.STORAGE_KEY, data);
+        const storageKey = ManualAdjustConstants.STORAGE_KEY + '_valueAdded';
+        const savedData = CommonAPI.LocalStorageAPI.get(storageKey);
+        if (savedData) {
+          resolve({ success: true, data: savedData });
+        } else {
+          const defaultData = ManualAdjustUtils.getDefaultValueAddedFeeData();
+          this.saveFeeData(defaultData, storageKey);
+          resolve({ success: true, data: defaultData });
+        }
+      } catch (error) {
+        reject({ success: false, error: error.message });
+      }
+    });
+  },
+  
+  async saveFeeData(data, storageKey = ManualAdjustConstants.STORAGE_KEY) {
+    return new Promise((resolve, reject) => {
+      try {
+        CommonAPI.LocalStorageAPI.set(storageKey, data);
         resolve({ success: true });
       } catch (error) {
         reject({ success: false, error: error.message });
@@ -31,16 +49,12 @@ const ManualAdjustAPI = {
     });
   },
   
-  async addFeeItem(feeItem) {
+  async addFeeItem(feeItem, storageKey = ManualAdjustConstants.STORAGE_KEY) {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.loadFeeData();
-        if (!result.success) {
-          reject(result);
-          return;
-        }
+        const savedData = CommonAPI.LocalStorageAPI.get(storageKey);
+        const data = savedData || [];
         
-        const data = result.data;
         const newItem = {
           ...feeItem,
           id: CommonUtils.generateId(),
@@ -49,7 +63,7 @@ const ManualAdjustAPI = {
         };
         
         data.push(newItem);
-        await this.saveFeeData(data);
+        await this.saveFeeData(data, storageKey);
         
         resolve({ success: true, data: newItem });
       } catch (error) {
@@ -58,16 +72,12 @@ const ManualAdjustAPI = {
     });
   },
   
-  async updateFeeItem(id, updates) {
+  async updateFeeItem(id, updates, storageKey = ManualAdjustConstants.STORAGE_KEY) {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.loadFeeData();
-        if (!result.success) {
-          reject(result);
-          return;
-        }
+        const savedData = CommonAPI.LocalStorageAPI.get(storageKey);
+        const data = savedData || [];
         
-        const data = result.data;
         const index = data.findIndex(item => item.id === id);
         
         if (index === -1) {
@@ -81,7 +91,7 @@ const ManualAdjustAPI = {
           updatedAt: new Date().toISOString()
         };
         
-        await this.saveFeeData(data);
+        await this.saveFeeData(data, storageKey);
         resolve({ success: true, data: data[index] });
       } catch (error) {
         reject({ success: false, error: error.message });
@@ -89,16 +99,12 @@ const ManualAdjustAPI = {
     });
   },
   
-  async deleteFeeItem(id) {
+  async deleteFeeItem(id, storageKey = ManualAdjustConstants.STORAGE_KEY) {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await this.loadFeeData();
-        if (!result.success) {
-          reject(result);
-          return;
-        }
+        const savedData = CommonAPI.LocalStorageAPI.get(storageKey);
+        const data = savedData || [];
         
-        const data = result.data;
         const index = data.findIndex(item => item.id === id);
         
         if (index === -1) {
@@ -107,7 +113,7 @@ const ManualAdjustAPI = {
         }
         
         data.splice(index, 1);
-        await this.saveFeeData(data);
+        await this.saveFeeData(data, storageKey);
         
         resolve({ success: true });
       } catch (error) {

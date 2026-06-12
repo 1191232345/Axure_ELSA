@@ -60,7 +60,7 @@ const ManualAdjustRenderer = {
     `;
   },
   
-  renderNewRow() {
+  renderNewRow(tabType) {
     const tbody = document.getElementById('feeTableBody');
     if (!tbody) return;
     
@@ -68,12 +68,14 @@ const ManualAdjustRenderer = {
     newRowTr.id = 'newRow';
     newRowTr.className = 'bg-blue-50 border-2 border-blue-200';
     
-    newRowTr.innerHTML = this.createNewRowHTML();
+    newRowTr.innerHTML = this.createNewRowHTML(tabType);
     tbody.insertBefore(newRowTr, tbody.firstChild);
   },
   
-  createNewRowHTML() {
-    const feeOptions = CommonRenderer.createSelectOptions(ManualAdjustConstants.FEE_NAME_OPTIONS);
+  createNewRowHTML(tabType) {
+    const feeOptions = tabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+      ? CommonRenderer.createSelectOptions(ManualAdjustConstants.VALUE_ADDED_FEE_OPTIONS)
+      : CommonRenderer.createSelectOptions(ManualAdjustConstants.FEE_NAME_OPTIONS);
     const unitOptions = CommonRenderer.createSelectOptions(CommonConstants.UNIT_OPTIONS);
     const currencyOptions = CommonRenderer.createSelectOptions(CommonConstants.CURRENCY_OPTIONS, 'USD');
     
@@ -115,16 +117,18 @@ const ManualAdjustRenderer = {
     `;
   },
   
-  renderEditRow(fee) {
+  renderEditRow(fee, tabType) {
     const row = document.querySelector(`tr[data-id="${fee.id}"]`);
     if (!row) return;
     
     row.className = 'bg-yellow-50 border-2 border-yellow-200';
-    row.innerHTML = this.createEditRowHTML(fee);
+    row.innerHTML = this.createEditRowHTML(fee, tabType);
   },
   
-  createEditRowHTML(fee) {
-    const feeOptions = CommonRenderer.createSelectOptions(ManualAdjustConstants.FEE_NAME_OPTIONS, fee.name);
+  createEditRowHTML(fee, tabType) {
+    const feeOptions = tabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+      ? CommonRenderer.createSelectOptions(ManualAdjustConstants.VALUE_ADDED_FEE_OPTIONS, fee.name)
+      : CommonRenderer.createSelectOptions(ManualAdjustConstants.FEE_NAME_OPTIONS, fee.name);
     const unitOptions = CommonRenderer.createSelectOptions(CommonConstants.UNIT_OPTIONS, fee.unit);
     const currencyOptions = CommonRenderer.createSelectOptions(CommonConstants.CURRENCY_OPTIONS, fee.currency);
     
@@ -178,6 +182,44 @@ const ManualAdjustRenderer = {
     chargeableWeightDisplay.textContent = dimensionsInfo.chargeableWeight;
   },
   
+  updateValueAddedDisplay(feeData) {
+    const customerNameDisplay = document.getElementById('customerNameDisplay');
+    const instructionTimeDisplay = document.getElementById('instructionTimeDisplay');
+    const completionTimeDisplay = document.getElementById('completionTimeDisplay');
+    
+    if (!customerNameDisplay || !instructionTimeDisplay || !completionTimeDisplay) return;
+    
+    // 从费用数据中获取增值服务信息
+    const valueAddedInfo = feeData.length > 0 ? {
+      customerName: feeData[0].customerName || '-',
+      instructionTime: feeData[0].instructionTime || '-',
+      completionTime: feeData[0].completionTime || '-'
+    } : {
+      customerName: '-',
+      instructionTime: '-',
+      completionTime: '-'
+    };
+    
+    customerNameDisplay.textContent = valueAddedInfo.customerName;
+    instructionTimeDisplay.textContent = valueAddedInfo.instructionTime;
+    completionTimeDisplay.textContent = valueAddedInfo.completionTime;
+  },
+  
+  toggleInfoDisplay(tabType) {
+    const dimensionsInfo = document.getElementById('dimensionsInfo');
+    const valueAddedInfo = document.getElementById('valueAddedInfo');
+    
+    if (!dimensionsInfo || !valueAddedInfo) return;
+    
+    if (tabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+      dimensionsInfo.classList.add('hidden');
+      valueAddedInfo.classList.remove('hidden');
+    } else {
+      dimensionsInfo.classList.remove('hidden');
+      valueAddedInfo.classList.add('hidden');
+    }
+  },
+  
   updatePageContent(tabType) {
     const orderNumberLabel = document.getElementById('orderNumberLabel');
     const feeNumberInput = document.getElementById('feeNumber');
@@ -192,6 +234,9 @@ const ManualAdjustRenderer = {
       feeNumberInput.placeholder = config.placeholder;
       feeNumberInput.value = config.exampleValue;
     }
+    
+    // 切换信息显示区域
+    this.toggleInfoDisplay(tabType);
   }
 };
 

@@ -8,9 +8,10 @@ const MainRenderer = {
     if (!tbody) return;
     
     const showLogisticsProduct = tabType === CommonConstants.TAB_TYPES.OUTBOUND;
-    const colCount = showLogisticsProduct ? 10 : 9;
+    const showServiceType = tabType === CommonConstants.TAB_TYPES.VALUE_ADDED;
+    const colCount = (showLogisticsProduct || showServiceType) ? 10 : 9;
     
-    this.renderMainTableHead(showLogisticsProduct);
+    this.renderMainTableHead(showLogisticsProduct, showServiceType);
     
     if (data.length === 0) {
       tbody.innerHTML = `<tr class="border-t border-gray-100">
@@ -22,17 +23,20 @@ const MainRenderer = {
       return;
     }
     
-    const html = data.map(row => this.createOrderRowHTML(row, showLogisticsProduct)).join('');
+    const html = data.map(row => this.createOrderRowHTML(row, showLogisticsProduct, showServiceType)).join('');
     tbody.innerHTML = html;
   },
   
-  renderMainTableHead(showLogisticsProduct) {
+  renderMainTableHead(showLogisticsProduct, showServiceType) {
     const thead = document.getElementById('mainTableHead');
     if (!thead) return;
     
-    const logisticsProductTh = showLogisticsProduct 
-      ? '<th class="px-4 py-3 font-medium text-gray-500">物流产品</th>' 
-      : '';
+    let extraTh = '';
+    if (showLogisticsProduct) {
+      extraTh = '<th class="px-4 py-3 font-medium text-gray-500">物流产品</th>';
+    } else if (showServiceType) {
+      extraTh = '<th class="px-4 py-3 font-medium text-gray-500">服务类型</th>';
+    }
     
     thead.innerHTML = `<tr class="bg-gray-50 text-left">
       <th class="px-4 py-3 w-10"><input type="checkbox" id="selectAllCheckbox" class="rounded text-primary focus:ring-primary"></th>
@@ -41,17 +45,20 @@ const MainRenderer = {
       <th class="px-4 py-3 font-medium text-gray-500">仓库</th>
       <th class="px-4 py-3 font-medium text-gray-500">客户代码</th>
       <th class="px-4 py-3 font-medium text-gray-500">订单号</th>
-      ${logisticsProductTh}
+      ${extraTh}
       <th class="px-4 py-3 font-medium text-gray-500">计费总金额</th>
       <th class="px-4 py-3 font-medium text-gray-500">币种</th>
       <th class="px-4 py-3 font-medium text-gray-500">操作</th>
     </tr>`;
   },
   
-  createOrderRowHTML(row, showLogisticsProduct) {
-    const logisticsProductCell = showLogisticsProduct 
-      ? `<td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(row.logisticsProduct || '-')}</td>` 
-      : '';
+  createOrderRowHTML(row, showLogisticsProduct, showServiceType) {
+    let extraCell = '';
+    if (showLogisticsProduct) {
+      extraCell = `<td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(row.logisticsProduct || '-')}</td>`;
+    } else if (showServiceType) {
+      extraCell = `<td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(row.serviceType || '-')}</td>`;
+    }
     
     return `
       <tr class="border-t border-gray-100 table-hover-row">
@@ -63,7 +70,7 @@ const MainRenderer = {
         <td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(row.warehouse)}</td>
         <td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(row.customerCode)}</td>
         <td class="px-4 py-3 text-sm font-medium text-primary">${CommonUtils.escapeHtml(row.orderNo)}</td>
-        ${logisticsProductCell}
+        ${extraCell}
         <td class="px-4 py-3 text-sm font-semibold">${CommonUtils.formatNumber(row.amount)}</td>
         <td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(row.currency)}</td>
         <td class="px-4 py-3 text-sm">

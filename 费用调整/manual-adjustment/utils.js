@@ -16,6 +16,24 @@ const ManualAdjustConstants = {
     '其他费用'
   ],
   
+  VALUE_ADDED_FEE_OPTIONS: [
+    '退货入库',
+    '商品上架',
+    '仓储费',
+    '产品销毁费',
+    '拆托',
+    '开箱费',
+    '封箱费',
+    '拍照服务',
+    '丈量过磅',
+    '打绷带',
+    '纸箱费',
+    '退货标签制作费',
+    '检验/修理费',
+    '其他增值服务',
+    '异常订单处理'
+  ],
+  
   TAB_CONFIGS: {
     outbound: {
       label: '出库单号',
@@ -28,6 +46,12 @@ const ManualAdjustConstants = {
       placeholder: '输入入库单号查询（例如：INB-240126-0059）',
       exampleValue: 'INB-240126-0059',
       description: '入库费费用明细调整'
+    },
+    valueAdded: {
+      label: '服务单号',
+      placeholder: '输入服务单号查询（例如：VAS-240126-0059）',
+      exampleValue: 'VAS-240126-0059',
+      description: '增值服务费用明细调整'
     }
   }
 };
@@ -115,6 +139,39 @@ const ManualAdjustUtils = {
         dimensions: '100x100x100',
         volumeWeight: 100.0,
         remark: '超出重量限制附加费',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+  },
+  
+  getDefaultValueAddedFeeData() {
+    return [
+      {
+        id: CommonUtils.generateId(),
+        name: '退货入库',
+        unit: '票',
+        amount: 50,
+        newAmount: null,
+        currency: 'USD',
+        customerName: 'ABC公司',
+        instructionTime: '2024-01-26 10:30:00',
+        completionTime: '2024-01-26 15:45:00',
+        remark: '客户退货入库服务',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: CommonUtils.generateId(),
+        name: '拍照服务',
+        unit: '张',
+        amount: 30,
+        newAmount: null,
+        currency: 'USD',
+        customerName: 'ABC公司',
+        instructionTime: '2024-01-26 11:00:00',
+        completionTime: '2024-01-26 14:30:00',
+        remark: '产品拍照服务',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>操作费规则 - ELSA</title>
+  <title>新建增值服务订单 - ELSA</title>
 
   <!-- CDN 资源 -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -78,9 +78,9 @@
                 <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
                 <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
                 <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
-                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">操作费规则</a>
+                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
                 <a href="/费用管理/增值服务规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务规则</a>
-                <a href="/费用管理/增值服务指令下单/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务指令下单</a>
+                <a href="/费用管理/指令下发管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">指令下发管理</a>
                 <a href="/费用管理/客户中心/价卡查询/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡查询</a>
               </div>
             </div>
@@ -145,164 +145,112 @@
   <!-- 原型内容区域 -->
   <main id="main-prototype" class="main-content active">
     <div class="container mx-auto px-4 py-6 max-w-[1920px]">
-
-      <!-- 筛选区域 -->
-      <div class="filter-section animate-fade-in-up">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-display font-semibold text-dark">检索条件</h3>
+      <!-- 页面标题 -->
+      <div class="mb-6">
+        <div class="flex items-center">
+          <a href="index.html" class="text-text-secondary hover:text-primary transition-colors mr-4">
+            <i class="fa fa-arrow-left"></i>
+          </a>
+          <div>
+            <h1 id="formTitle" class="text-2xl font-display font-semibold text-primary">新建增值服务订单</h1>
+            <p class="text-sm text-text-secondary mt-1">填写订单信息，提交增值服务指令</p>
+          </div>
         </div>
+      </div>
 
-        <div class="filter-grid" id="filterContainer">
-          <div class="filter-item">
-            <label>仓库</label>
-            <select id="filterWarehouseCode">
-              <option value="">请选择</option>
-              <option value="CB001">CB001</option>
-              <option value="WH002">WH002</option>
-              <option value="CB002">CB002</option>
-              <option value="CL001">CL001</option>
-              <option value="EC001">EC001</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>客户代码</label>
-            <select id="filterCustomerCode">
-              <option value="">请选择</option>
-              <option value="DEMO - demo">DEMO - demo</option>
-              <option value="VIP001">VIP001</option>
-              <option value="COLD001">COLD001</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>规则名称</label>
-            <input type="text" id="filterRuleName" placeholder="请输入">
-          </div>
-          <div class="filter-item">
-            <label>配送渠道</label>
-            <select id="filterDeliveryChannel">
-              <option value="">请选择</option>
-              <option value="SPOIRET">SPOIRET</option>
-              <option value="FEDEX">FEDEX</option>
-              <option value="USPS">USPS</option>
-              <option value="UPS">UPS</option>
-              <option value="DHL">DHL</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>操作费等级</label>
-            <select id="filterOperatingFeeLevel">
-              <option value="">请选择</option>
-              <option value="自定义">自定义</option>
-              <option value="标准">标准</option>
-              <option value="VIP">VIP</option>
-            </select>
-          </div>
-          <div class="filter-item">
-            <label>发布状态</label>
-            <select id="filterPublishStatus">
-              <option value="">请选择</option>
-              <option value="published">已发布</option>
-              <option value="draft">草稿</option>
-              <option value="cancelled">已作废</option>
-            </select>
-          </div>
-          <div class="filter-item" style="grid-column: span 2;">
-            <label>创建时间</label>
-            <div style="display:flex;gap:8px;">
-              <input type="date" id="filterCreateTimeStart" placeholder="开始日期" style="flex:1;">
-              <span style="color:var(--color-text-muted);display:flex;align-items:center;">-</span>
-              <input type="date" id="filterCreateTimeEnd" placeholder="结束日期" style="flex:1;">
+      <!-- 表单区域 -->
+      <form id="orderForm" class="content-section animate-fade-in-up">
+        <input type="hidden" id="orderId" value="">
+        
+        <!-- 客户信息 -->
+        <div class="mb-6">
+          <h3 class="text-sm font-display font-semibold text-dark mb-4 flex items-center">
+            <i class="fa fa-user text-accent mr-2"></i>客户信息
+          </h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">客户ID<em>*</em></div>
+              <input type="text" id="customerId" class="modal-input" placeholder="请输入客户ID" required>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">客户名称<em>*</em></div>
+              <input type="text" id="customerName" class="modal-input" placeholder="请输入客户名称" required>
             </div>
           </div>
         </div>
 
-        <div class="filter-actions">
-          <button id="btnReset" class="erp-btn erp-btn-secondary">
-            <i class="fa fa-refresh mr-1"></i> 重置
-          </button>
-          <button id="btnSearch" class="erp-btn erp-btn-primary">
-            <i class="fa fa-search mr-1"></i> 搜索
-          </button>
+        <!-- 仓库信息 -->
+        <div class="mb-6">
+          <h3 class="text-sm font-display font-semibold text-dark mb-4 flex items-center">
+            <i class="fa fa-cube text-accent mr-2"></i>仓库信息
+          </h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">仓库ID<em>*</em></div>
+              <input type="text" id="warehouseId" class="modal-input" placeholder="请输入仓库ID" required>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">仓库名称<em>*</em></div>
+              <input type="text" id="warehouseName" class="modal-input" placeholder="请输入仓库名称" required>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- 表格区域 -->
-      <div class="table-section animate-fade-in-up stagger-1">
+        <!-- 服务信息 -->
+        <div class="mb-6">
+          <h3 class="text-sm font-display font-semibold text-dark mb-4 flex items-center">
+            <i class="fa fa-star text-accent mr-2"></i>服务信息
+          </h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">服务类型<em>*</em></div>
+              <select id="serviceType" class="modal-input" required>
+                <option value="">请选择服务类型</option>
+              </select>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">数量<em>*</em></div>
+              <input type="number" id="quantity" class="modal-input" placeholder="请输入数量" min="1" value="1" required>
+            </div>
+          </div>
+          
+          <!-- 价格预览 -->
+          <div class="mt-6">
+            <div class="detail-label">价格预览</div>
+            <div id="pricePreview" class="mt-2 p-4 bg-surface rounded-lg border border-border-light">
+              <span class="text-text-muted">请选择服务类型并输入数量</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 备注信息 -->
+        <div class="mb-6">
+          <h3 class="text-sm font-display font-semibold text-dark mb-4 flex items-center">
+            <i class="fa fa-comment-o text-accent mr-2"></i>备注信息
+          </h3>
+          <div class="detail-item">
+            <div class="detail-label">备注</div>
+            <textarea id="remark" class="modal-input" placeholder="请输入备注信息（可选）" rows="3"></textarea>
+          </div>
+        </div>
+
         <!-- 操作按钮 -->
-        <div class="table-toolbar" id="buttonContainer">
-          <button id="btnBatchSetExpiry" class="erp-btn erp-btn-primary">
-            <i class="fa fa-calendar mr-1"></i> 批量设置有效期
+        <div class="filter-actions">
+          <button type="button" id="cancelBtn" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-times mr-1"></i> 取消
           </button>
-          <button id="btnBatchPublish" class="erp-btn erp-btn-primary">
-            <i class="fa fa-check-circle mr-1"></i> 批量发布
-          </button>
-          <button id="btnBatchCancel" class="erp-btn erp-btn-danger">
-            <i class="fa fa-ban mr-1"></i> 批量失效
-          </button>
-          <button id="btnCreate" class="erp-btn erp-btn-success">
-            <i class="fa fa-plus mr-1"></i> 创建
-          </button>
-          <button id="btnExport" class="erp-btn erp-btn-secondary">
-            <i class="fa fa-download mr-1"></i> 导出
+          <button type="submit" class="erp-btn erp-btn-success">
+            <i class="fa fa-save mr-1"></i> 提交订单
           </button>
         </div>
-
-        <!-- 数据表格 -->
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr id="tableHeaderRow">
-                <th style="width:40px;"><input type="checkbox" class="row-checkbox" id="selectAll"></th>
-                <th>规则名称</th>
-                <th>仓库</th>
-                <th>客户代码</th>
-                <th>物流产品</th>
-                <th>操作费等级</th>
-                <th>有效期</th>
-                <th>发布状态</th>
-                <th>备注</th>
-                <th>时间</th>
-                <th style="width:60px;">操作</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 分页 -->
-        <div class="pagination-bar">
-          <div class="pagination-info">
-            共 <span id="totalCount">0</span> 条
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;">
-            <select id="pageSize" class="pagination-size">
-              <option value="10">10条/页</option>
-              <option value="20">20条/页</option>
-              <option value="50">50条/页</option>
-            </select>
-            <div class="pagination-pages" id="pageButtons">
-            </div>
-            <div class="page-jump">
-              <span>前往</span>
-              <input type="number" id="pageInput" min="1">
-              <span>页</span>
-              <button class="page-btn" onclick="goToPageInput()" style="margin-left:4px;">确定</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      </form>
     </div>
   </main>
 
-  <!-- 配置模式按钮 -->
-  <a href="config.html" class="config-toggle-btn" id="configToggleBtn">
-    <i class="fa fa-cog"></i>
-    <span>配置模式</span>
-  </a>
-
-  <!-- 模块 JS -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/form-handlers.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

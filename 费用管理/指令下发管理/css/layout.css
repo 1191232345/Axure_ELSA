@@ -1,0 +1,175 @@
+/* ========================================
+   布局样式 - Tab栏、内容区域、筛选区域
+   ======================================== */
+
+/* ========== 分类Tab栏 ========== */
+.category-tabs {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+}
+
+.category-tabs-header {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid var(--color-border-light);
+  padding-bottom: 16px;
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: inherit;
+}
+
+.category-tab:hover {
+  background: var(--color-hover);
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.category-tab.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(232, 168, 56, 0.3);
+}
+
+.category-tab i {
+  font-size: 16px;
+}
+
+/* ========== 内容展示区域 ========== */
+.content-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.content-section.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* ========== 筛选区域 ========== */
+.filter-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px 24px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-item label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.filter-item input,
+.filter-item select {
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-text);
+  background: white;
+  transition: all var(--transition-fast);
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+}
+
+.filter-item input:focus,
+.filter-item select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(232, 168, 56, 0.15);
+}
+
+.filter-item input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Tab 切换 */
+.tabs {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+.tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: var(--color-hover);
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* 面包屑导航 */
+nav {
+  font-size: 13px;
+}
+
+nav a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+nav a:hover {
+  color: var(--color-primary);
+}

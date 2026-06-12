@@ -28,6 +28,44 @@ const MainPage = {
       const adjustDropdown = document.getElementById('adjustDropdown');
       if (adjustDropdown) adjustDropdown.classList.add('hidden');
     });
+    
+    // 直接绑定弹窗关闭按钮事件
+    const closeModalBtn = document.getElementById('closeModal');
+    const closeModalBtnBottom = document.getElementById('closeModalBtn');
+    const recalculateModal = document.getElementById('recalculateModal');
+    
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', () => this.closeModal());
+    }
+    if (closeModalBtnBottom) {
+      closeModalBtnBottom.addEventListener('click', () => this.closeModal());
+    }
+    if (recalculateModal) {
+      recalculateModal.addEventListener('click', (e) => {
+        if (e.target.id === 'recalculateModal') {
+          this.closeModal();
+        }
+      });
+    }
+    
+    // 绑定费用明细弹窗关闭按钮
+    const closeFeeDetailModalBtn = document.getElementById('closeFeeDetailModal');
+    const closeFeeDetailBtn = document.getElementById('closeFeeDetailBtn');
+    const feeDetailModal = document.getElementById('feeDetailModal');
+    
+    if (closeFeeDetailModalBtn) {
+      closeFeeDetailModalBtn.addEventListener('click', () => this.closeFeeDetailModal());
+    }
+    if (closeFeeDetailBtn) {
+      closeFeeDetailBtn.addEventListener('click', () => this.closeFeeDetailModal());
+    }
+    if (feeDetailModal) {
+      feeDetailModal.addEventListener('click', (e) => {
+        if (e.target.id === 'feeDetailModal') {
+          this.closeFeeDetailModal();
+        }
+      });
+    }
   },
   
   handleClickEvent(e) {
@@ -58,23 +96,30 @@ const MainPage = {
     const outboundTabBtn = document.getElementById('outboundTabBtn');
     const storageTabBtn = document.getElementById('storageTabBtn');
     const inboundTabBtn = document.getElementById('inboundTabBtn');
+    const valueAddedTabBtn = document.getElementById('valueAddedTabBtn');
     
-    if (outboundTabBtn && storageTabBtn && inboundTabBtn) {
+    if (outboundTabBtn && storageTabBtn && inboundTabBtn && valueAddedTabBtn) {
       outboundTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(outboundTabBtn, [storageTabBtn, inboundTabBtn]);
+        CommonRenderer.setActiveTab(outboundTabBtn, [storageTabBtn, inboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.OUTBOUND;
         this.loadInitialData();
       });
       
       storageTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(storageTabBtn, [outboundTabBtn, inboundTabBtn]);
+        CommonRenderer.setActiveTab(storageTabBtn, [outboundTabBtn, inboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.STORAGE;
         this.loadInitialData();
       });
       
       inboundTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn, storageTabBtn]);
+        CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn, storageTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.INBOUND;
+        this.loadInitialData();
+      });
+      
+      valueAddedTabBtn.addEventListener('click', () => {
+        CommonRenderer.setActiveTab(valueAddedTabBtn, [outboundTabBtn, storageTabBtn, inboundTabBtn]);
+        this.currentTabType = CommonConstants.TAB_TYPES.VALUE_ADDED;
         this.loadInitialData();
       });
     }

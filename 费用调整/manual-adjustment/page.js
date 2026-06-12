@@ -15,11 +15,21 @@ const ManualAdjustPage = {
   
   async loadInitialData() {
     try {
-      const result = await ManualAdjustAPI.loadFeeData();
+      // 根据标签类型调用不同的API
+      const result = this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+        ? await ManualAdjustAPI.loadValueAddedFeeData()
+        : await ManualAdjustAPI.loadFeeData();
+      
       if (result.success) {
         this.feeData = result.data;
         ManualAdjustRenderer.renderFeeTable(this.feeData);
-        ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        
+        // 根据标签类型显示不同的信息
+        if (this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+          ManualAdjustRenderer.updateValueAddedDisplay(this.feeData);
+        } else {
+          ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        }
       }
     } catch (error) {
       ToastManager.show('数据加载失败：' + error.error, 'error');
@@ -84,18 +94,26 @@ const ManualAdjustPage = {
   bindTabButtons() {
     const outboundTabBtn = document.getElementById('outboundTabBtn');
     const inboundTabBtn = document.getElementById('inboundTabBtn');
+    const valueAddedTabBtn = document.getElementById('valueAddedTabBtn');
     
-    if (outboundTabBtn && inboundTabBtn) {
+    if (outboundTabBtn && inboundTabBtn && valueAddedTabBtn) {
       outboundTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(outboundTabBtn, [inboundTabBtn]);
+        CommonRenderer.setActiveTab(outboundTabBtn, [inboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.OUTBOUND;
         ManualAdjustRenderer.updatePageContent(this.currentTabType);
         this.loadInitialData();
       });
       
       inboundTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn]);
+        CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.INBOUND;
+        ManualAdjustRenderer.updatePageContent(this.currentTabType);
+        this.loadInitialData();
+      });
+      
+      valueAddedTabBtn.addEventListener('click', () => {
+        CommonRenderer.setActiveTab(valueAddedTabBtn, [outboundTabBtn, inboundTabBtn]);
+        this.currentTabType = CommonConstants.TAB_TYPES.VALUE_ADDED;
         ManualAdjustRenderer.updatePageContent(this.currentTabType);
         this.loadInitialData();
       });
@@ -103,7 +121,7 @@ const ManualAdjustPage = {
   },
   
   showNewRow() {
-    ManualAdjustRenderer.renderNewRow();
+    ManualAdjustRenderer.renderNewRow(this.currentTabType);
   },
   
   async saveNewRow() {
@@ -130,11 +148,22 @@ const ManualAdjustPage = {
     }
     
     try {
-      const result = await ManualAdjustAPI.addFeeItem(feeItem);
+      const storageKey = this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+        ? ManualAdjustConstants.STORAGE_KEY + '_valueAdded'
+        : ManualAdjustConstants.STORAGE_KEY;
+      
+      const result = await ManualAdjustAPI.addFeeItem(feeItem, storageKey);
       if (result.success) {
         this.feeData.push(result.data);
         ManualAdjustRenderer.renderFeeTable(this.feeData);
-        ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        
+        // 根据标签类型显示不同的信息
+        if (this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+          ManualAdjustRenderer.updateValueAddedDisplay(this.feeData);
+        } else {
+          ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        }
+        
         ToastManager.show('费用项添加成功', 'success');
       }
     } catch (error) {
@@ -151,7 +180,7 @@ const ManualAdjustPage = {
     this.currentEditId = id;
     const fee = this.feeData.find(item => item.id === id);
     if (fee) {
-      ManualAdjustRenderer.renderEditRow(fee);
+      ManualAdjustRenderer.renderEditRow(fee, this.currentTabType);
     }
   },
   
@@ -179,14 +208,25 @@ const ManualAdjustPage = {
     }
     
     try {
-      const result = await ManualAdjustAPI.updateFeeItem(id, updates);
+      const storageKey = this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+        ? ManualAdjustConstants.STORAGE_KEY + '_valueAdded'
+        : ManualAdjustConstants.STORAGE_KEY;
+      
+      const result = await ManualAdjustAPI.updateFeeItem(id, updates, storageKey);
       if (result.success) {
         const index = this.feeData.findIndex(item => item.id === id);
         if (index !== -1) {
           this.feeData[index] = result.data;
         }
         ManualAdjustRenderer.renderFeeTable(this.feeData);
-        ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        
+        // 根据标签类型显示不同的信息
+        if (this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+          ManualAdjustRenderer.updateValueAddedDisplay(this.feeData);
+        } else {
+          ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        }
+        
         ToastManager.show('费用项更新成功', 'success');
         this.currentEditId = null;
       }
@@ -207,11 +247,22 @@ const ManualAdjustPage = {
     if (!confirm('确定要删除这个费用项吗？')) return;
     
     try {
-      const result = await ManualAdjustAPI.deleteFeeItem(id);
+      const storageKey = this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+        ? ManualAdjustConstants.STORAGE_KEY + '_valueAdded'
+        : ManualAdjustConstants.STORAGE_KEY;
+      
+      const result = await ManualAdjustAPI.deleteFeeItem(id, storageKey);
       if (result.success) {
         this.feeData = this.feeData.filter(item => item.id !== id);
         ManualAdjustRenderer.renderFeeTable(this.feeData);
-        ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        
+        // 根据标签类型显示不同的信息
+        if (this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
+          ManualAdjustRenderer.updateValueAddedDisplay(this.feeData);
+        } else {
+          ManualAdjustRenderer.updateDimensionsDisplay(this.feeData);
+        }
+        
         ToastManager.show('费用项删除成功', 'success');
       }
     } catch (error) {
@@ -232,7 +283,11 @@ const ManualAdjustPage = {
   
   async saveAllFeeData() {
     try {
-      const result = await ManualAdjustAPI.saveFeeData(this.feeData);
+      const storageKey = this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED 
+        ? ManualAdjustConstants.STORAGE_KEY + '_valueAdded'
+        : ManualAdjustConstants.STORAGE_KEY;
+      
+      const result = await ManualAdjustAPI.saveFeeData(this.feeData, storageKey);
       if (result.success) {
         ToastManager.show('数据保存成功', 'success');
       }
