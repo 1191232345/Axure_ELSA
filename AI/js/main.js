@@ -1,6 +1,8 @@
 let customerGroups = [];
 let accountRelations = [];
 let qaRecords = [];
+let customerList = []; // 客户列表数据源
+let elsaUserList = []; // ELSA用户列表数据源
 let currentContentTab = 'tab1';
 let editingId = null;
 let editingType = null;
@@ -22,11 +24,15 @@ async function loadAllData() {
             customerGroups = result.data.customerGroups || [];
             accountRelations = result.data.accountRelations || [];
             qaRecords = result.data.qaRecords || [];
+            customerList = result.data.customerList || [];
+            elsaUserList = result.data.elsaUserList || [];
         } else {
             const defaultData = getDefaultData();
             customerGroups = defaultData.customerGroups;
             accountRelations = defaultData.accountRelations;
             qaRecords = defaultData.qaRecords;
+            customerList = defaultData.customerList;
+            elsaUserList = defaultData.elsaUserList;
             await saveAllData();
         }
     } catch (e) {
@@ -35,6 +41,8 @@ async function loadAllData() {
         customerGroups = defaultData.customerGroups;
         accountRelations = defaultData.accountRelations;
         qaRecords = defaultData.qaRecords;
+        customerList = defaultData.customerList;
+        elsaUserList = defaultData.elsaUserList;
     }
     
     renderCustomerGroupTable();
@@ -43,6 +51,23 @@ async function loadAllData() {
 
 function getDefaultData() {
     return {
+        customerList: [
+            { id: 1, customerCode: 'CUST001', customerName: '阿里巴巴集团' },
+            { id: 2, customerCode: 'CUST002', customerName: '腾讯科技' },
+            { id: 3, customerCode: 'CUST003', customerName: '京东商城' },
+            { id: 4, customerCode: 'CUST004', customerName: '美团点评' },
+            { id: 5, customerCode: 'CUST005', customerName: '字节跳动' }
+        ],
+        elsaUserList: [
+            { id: 1, nickname: '张三', username: 'zhangsan', accountId: 'user_001' },
+            { id: 2, nickname: '李四', username: 'lisi', accountId: 'user_002' },
+            { id: 3, nickname: '王五', username: 'wangwu', accountId: 'user_003' },
+            { id: 4, nickname: '赵六', username: 'zhaoliu', accountId: 'user_004' },
+            { id: 5, nickname: '钱七', username: 'qianqi', accountId: 'user_005' },
+            { id: 6, nickname: '孙八', username: 'sunba', accountId: 'user_006' },
+            { id: 7, nickname: '周九', username: 'zhoujiu', accountId: 'user_007' },
+            { id: 8, nickname: '吴十', username: 'wushi', accountId: 'user_008' }
+        ],
         customerGroups: [
             { id: 1, customerCode: 'CUST001', groupName: '大客户VIP群', groupId: 'wxg_123456789', createTime: '2024-01-15 10:30' },
             { id: 2, customerCode: 'CUST002', groupName: '合作伙伴交流群', groupId: 'wxg_987654321', createTime: '2024-01-20 14:45' },
@@ -67,6 +92,8 @@ function getDefaultData() {
 async function saveAllData() {
     try {
         await APIDataManager.saveData({
+            customerList: customerList,
+            elsaUserList: elsaUserList,
             customerGroups: customerGroups,
             accountRelations: accountRelations,
             qaRecords: qaRecords
@@ -329,19 +356,27 @@ function openAddUserModal() {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
     
+    // 生成ELSA昵称下拉选项
+    const elsaOptions = elsaUserList.map(u => 
+        `<option value="${u.nickname}" data-username="${u.username}" data-accountid="${u.accountId}">${u.nickname}</option>`
+    ).join('');
+    
     title.textContent = '添加用户';
     body.innerHTML = `
         <div class="form-group mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">客户账号ID <span class="text-danger">*</span></label>
-            <input type="text" id="formAccountId" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入客户账号ID">
-        </div>
-        <div class="form-group mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">ELSA昵称</label>
-            <input type="text" id="formElsaNickname" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入ELSA昵称">
+            <label class="block text-sm font-medium text-gray-700 mb-1">ELSA昵称 <span class="text-danger">*</span></label>
+            <select id="formElsaNickname" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" onchange="handleNicknameChange()">
+                <option value="">请选择ELSA昵称</option>
+                ${elsaOptions}
+            </select>
         </div>
         <div class="form-group mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">ELSA用户名</label>
-            <input type="text" id="formElsaUsername" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入ELSA用户名">
+            <input type="text" id="formElsaUsername" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="选择昵称后自动带出" readonly>
+        </div>
+        <div class="form-group mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">客户账号ID <span class="text-danger">*</span></label>
+            <input type="text" id="formAccountId" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="选择昵称后自动带出" readonly>
         </div>
         <div class="form-group mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">角色 <span class="text-danger">*</span></label>
@@ -355,6 +390,28 @@ function openAddUserModal() {
     modal.classList.add('show');
 }
 
+// 处理昵称选择变化，自动带出用户名和账号ID
+function handleNicknameChange() {
+    const nicknameSelect = document.getElementById('formElsaNickname');
+    const usernameInput = document.getElementById('formElsaUsername');
+    const accountIdInput = document.getElementById('formAccountId');
+    
+    if (!nicknameSelect) return;
+    
+    const selectedOption = nicknameSelect.options[nicknameSelect.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        const username = selectedOption.getAttribute('data-username');
+        const accountId = selectedOption.getAttribute('data-accountid');
+        
+        if (usernameInput) usernameInput.value = username || '';
+        if (accountIdInput) accountIdInput.value = accountId || '';
+    } else {
+        if (usernameInput) usernameInput.value = '';
+        if (accountIdInput) accountIdInput.value = '';
+    }
+}
+
 function editUser(id) {
     const item = accountRelations.find(a => a.id === id);
     if (!item) return;
@@ -366,19 +423,27 @@ function editUser(id) {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
     
+    // 生成ELSA昵称下拉选项
+    const elsaOptions = elsaUserList.map(u => 
+        `<option value="${u.nickname}" data-username="${u.username}" data-accountid="${u.accountId}" ${u.nickname === item.elsaNickname ? 'selected' : ''}>${u.nickname}</option>`
+    ).join('');
+    
     title.textContent = '编辑用户';
     body.innerHTML = `
         <div class="form-group mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">客户账号ID <span class="text-danger">*</span></label>
-            <input type="text" id="formAccountId" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" value="${item.accountId}">
-        </div>
-        <div class="form-group mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">ELSA昵称</label>
-            <input type="text" id="formElsaNickname" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" value="${item.elsaNickname || ''}">
+            <label class="block text-sm font-medium text-gray-700 mb-1">ELSA昵称 <span class="text-danger">*</span></label>
+            <select id="formElsaNickname" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" onchange="handleNicknameChange()">
+                <option value="">请选择ELSA昵称</option>
+                ${elsaOptions}
+            </select>
         </div>
         <div class="form-group mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">ELSA用户名</label>
-            <input type="text" id="formElsaUsername" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" value="${item.elsaUsername || ''}">
+            <input type="text" id="formElsaUsername" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" value="${item.elsaUsername || ''}" readonly>
+        </div>
+        <div class="form-group mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">客户账号ID <span class="text-danger">*</span></label>
+            <input type="text" id="formAccountId" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" value="${item.accountId}" readonly>
         </div>
         <div class="form-group mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">角色 <span class="text-danger">*</span></label>
@@ -540,11 +605,19 @@ function openAddModal(type) {
     const body = document.getElementById('modalBody');
     
     if (type === 'customerGroup') {
+        // 生成客户代码下拉选项
+        const customerOptions = customerList.map(c => 
+            `<option value="${c.customerCode}">${c.customerCode} - ${c.customerName}</option>`
+        ).join('');
+        
         title.textContent = '添加客户群';
         body.innerHTML = `
             <div class="form-group mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">客户代码 <span class="text-danger">*</span></label>
-                <input type="text" id="formCustomerCode" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="请输入客户代码">
+                <select id="formCustomerCode" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                    <option value="">请选择客户代码</option>
+                    ${customerOptions}
+                </select>
             </div>
             <div class="form-group mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">客户群名称 <span class="text-danger">*</span></label>
@@ -570,11 +643,19 @@ function editCustomerGroup(id) {
     const title = document.getElementById('modalTitle');
     const body = document.getElementById('modalBody');
     
+    // 生成客户代码下拉选项
+    const customerOptions = customerList.map(c => 
+        `<option value="${c.customerCode}" ${c.customerCode === item.customerCode ? 'selected' : ''}>${c.customerCode} - ${c.customerName}</option>`
+    ).join('');
+    
     title.textContent = '编辑客户群';
     body.innerHTML = `
         <div class="form-group mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">客户代码 <span class="text-danger">*</span></label>
-            <input type="text" id="formCustomerCode" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none" value="${item.customerCode}">
+            <select id="formCustomerCode" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                <option value="">请选择客户代码</option>
+                ${customerOptions}
+            </select>
         </div>
         <div class="form-group mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">客户群名称 <span class="text-danger">*</span></label>
@@ -643,13 +724,13 @@ async function submitModal() {
         renderCustomerGroupTable();
         showToast(editingId ? '编辑成功' : '添加成功', 'success');
     } else if (editingType === 'user') {
-        const accountId = document.getElementById('formAccountId')?.value.trim();
         const elsaNickname = document.getElementById('formElsaNickname')?.value.trim();
         const elsaUsername = document.getElementById('formElsaUsername')?.value.trim();
+        const accountId = document.getElementById('formAccountId')?.value.trim();
         const role = document.getElementById('formRole')?.value || '客户';
         
-        if (!accountId) {
-            showToast('请填写必填项', 'error');
+        if (!elsaNickname) {
+            showToast('请选择ELSA昵称', 'error');
             return;
         }
         

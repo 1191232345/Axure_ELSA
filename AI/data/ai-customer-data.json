@@ -1,6 +1,83 @@
 {
     "version": "1.0.0",
     "updateTime": "2024-01-15 10:00:00",
+    "customerList": [
+        {
+            "id": 1,
+            "customerCode": "CUST001",
+            "customerName": "阿里巴巴集团"
+        },
+        {
+            "id": 2,
+            "customerCode": "CUST002",
+            "customerName": "腾讯科技"
+        },
+        {
+            "id": 3,
+            "customerCode": "CUST003",
+            "customerName": "京东商城"
+        },
+        {
+            "id": 4,
+            "customerCode": "CUST004",
+            "customerName": "美团点评"
+        },
+        {
+            "id": 5,
+            "customerCode": "CUST005",
+            "customerName": "字节跳动"
+        }
+    ],
+    "elsaUserList": [
+        {
+            "id": 1,
+            "nickname": "张三",
+            "username": "zhangsan",
+            "accountId": "user_001"
+        },
+        {
+            "id": 2,
+            "nickname": "李四",
+            "username": "lisi",
+            "accountId": "user_002"
+        },
+        {
+            "id": 3,
+            "nickname": "王五",
+            "username": "wangwu",
+            "accountId": "user_003"
+        },
+        {
+            "id": 4,
+            "nickname": "赵六",
+            "username": "zhaoliu",
+            "accountId": "user_004"
+        },
+        {
+            "id": 5,
+            "nickname": "钱七",
+            "username": "qianqi",
+            "accountId": "user_005"
+        },
+        {
+            "id": 6,
+            "nickname": "孙八",
+            "username": "sunba",
+            "accountId": "user_006"
+        },
+        {
+            "id": 7,
+            "nickname": "周九",
+            "username": "zhoujiu",
+            "accountId": "user_007"
+        },
+        {
+            "id": 8,
+            "nickname": "吴十",
+            "username": "wushi",
+            "accountId": "user_008"
+        }
+    ],
     "customerGroups": [
         {
             "id": 1,

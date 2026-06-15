@@ -18,7 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.3/dist/mermaid.min.js"></script>
 
-    <link rel="stylesheet" href="/common/css/common.css">
+    <link rel="stylesheet" href="../common/css/common.css">
     <link rel="stylesheet" href="css/styles.css">
 
     <script>
@@ -85,14 +85,6 @@
         };
 
         tailwind.config = DESIGN_TOKENS;
-
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'default',
-            securityLevel: 'loose',
-            logLevel: 3,
-            fontFamily: 'Inter, system-ui, sans-serif'
-        });
 
         const DATA_CONFIG = {
             pageId: 'ai-customer',
@@ -424,50 +416,6 @@
                         共 <span id="totalCountQA" class="font-medium text-gray-700">0</span> 条记录
                     </div>
                     <div id="paginationQA" class="flex gap-1"></div>
-                </div>
-            </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded shadow-card p-4 mb-4">
-                    <div class="flex justify-start gap-3 flex-wrap">
-                        <button class="erp-btn erp-btn-secondary" onclick="exportData('qaRecord')">
-                            <i class="fas fa-download mr-1.5"></i> 导出记录
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded shadow-card overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-neutral-200 text-sm">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">行号</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">客户群</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">提问人</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">问题内容</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">AI回复</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">问答时间</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">评分</th>
-                                    <th class="px-4 py-3 text-left font-medium text-gray-700">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="qaRecordTableBody" class="divide-y divide-neutral-100">
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="emptyState3" class="hidden text-center py-12">
-                        <i class="fas fa-inbox text-6xl text-neutral-300 mb-4"></i>
-                        <h3 class="text-lg font-medium text-neutral-500 mb-2">暂无数据</h3>
-                        <p class="text-sm text-neutral-400 mb-4">当前没有问答记录</p>
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-center mt-4">
-                    <div class="text-sm text-gray-500">
-                        共 <span id="totalCount3" class="font-medium text-gray-700">0</span> 条记录
-                    </div>
-                    <div id="pagination3" class="flex gap-1"></div>
                 </div>
             </div>
 
@@ -863,7 +811,19 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="/common/js/common.js"></script>
+    <script src="../common/js/common.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        // 确保 mermaid 加载完成后再初始化
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'default',
+                securityLevel: 'loose',
+                logLevel: 3,
+                fontFamily: 'Inter, system-ui, sans-serif'
+            });
+        }
+    </script>
 </body>
 </html>
