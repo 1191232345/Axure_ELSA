@@ -7,22 +7,20 @@ const MainPage = {
   pageSize: CommonConstants.PAGE_SIZE,
   totalCount: 0,
   selectedRows: [],
-  currentTabType: CommonConstants.TAB_TYPES.OUTBOUND,
+  currentTabType: CommonConstants.TAB_TYPES.INBOUND,
   recalculateTableData: [],
   
   init() {
     this.bindEvents();
     this.bindTabButtons();
+    this.toggleInfoSection(this.currentTabType);
     this.loadInitialData();
   },
   
   bindEvents() {
-    const mainPrototype = document.getElementById('main-prototype');
-    if (!mainPrototype) return;
-    
-    mainPrototype.addEventListener('click', CommonUtils.throttle((e) => {
+    document.addEventListener('click', (e) => {
       this.handleClickEvent(e);
-    }, 100));
+    });
     
     document.addEventListener('click', () => {
       const adjustDropdown = document.getElementById('adjustDropdown');
@@ -94,56 +92,138 @@ const MainPage = {
   
   bindTabButtons() {
     const outboundTabBtn = document.getElementById('outboundTabBtn');
-    const storageTabBtn = document.getElementById('storageTabBtn');
     const inboundTabBtn = document.getElementById('inboundTabBtn');
     const valueAddedTabBtn = document.getElementById('valueAddedTabBtn');
     
-    if (outboundTabBtn && storageTabBtn && inboundTabBtn && valueAddedTabBtn) {
+    if (outboundTabBtn && inboundTabBtn && valueAddedTabBtn) {
       outboundTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(outboundTabBtn, [storageTabBtn, inboundTabBtn, valueAddedTabBtn]);
+        CommonRenderer.setActiveTab(outboundTabBtn, [inboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.OUTBOUND;
-        this.loadInitialData();
-      });
-      
-      storageTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(storageTabBtn, [outboundTabBtn, inboundTabBtn, valueAddedTabBtn]);
-        this.currentTabType = CommonConstants.TAB_TYPES.STORAGE;
+        this.toggleInfoSection(CommonConstants.TAB_TYPES.OUTBOUND);
         this.loadInitialData();
       });
       
       inboundTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn, storageTabBtn, valueAddedTabBtn]);
+        CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.INBOUND;
+        this.toggleInfoSection(CommonConstants.TAB_TYPES.INBOUND);
         this.loadInitialData();
       });
       
       valueAddedTabBtn.addEventListener('click', () => {
-        CommonRenderer.setActiveTab(valueAddedTabBtn, [outboundTabBtn, storageTabBtn, inboundTabBtn]);
+        CommonRenderer.setActiveTab(valueAddedTabBtn, [outboundTabBtn, inboundTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.VALUE_ADDED;
+        this.toggleInfoSection(CommonConstants.TAB_TYPES.VALUE_ADDED);
         this.loadInitialData();
       });
     }
   },
   
-  async loadInitialData() {
-    LoadingManager.show('加载数据中...');
+  toggleInfoSection(tabType) {
+    const outboundInfoSection = document.getElementById('outboundInfoSection');
+    const inboundInfoSection = document.getElementById('inboundInfoSection');
+    const valueAddedInfoSection = document.getElementById('valueAddedInfoSection');
     
-    try {
-      const result = await MainAPI.loadOrderData(this.currentTabType);
-      if (result.success && result.data.length > 0) {
-        MainRenderer.renderOrderTable(result.data, this.currentTabType);
-        this.totalCount = result.data.length;
-        document.getElementById('totalCount').textContent = this.totalCount;
-      } else {
-        MainRenderer.renderOrderTable([], this.currentTabType);
-        document.getElementById('totalCount').textContent = '0';
-      }
-      LoadingManager.hide();
-    } catch (error) {
-      console.error('数据加载失败:', error);
-      ToastManager.show('数据加载失败，请刷新页面重试', 'error');
-      LoadingManager.hide();
+    if (outboundInfoSection) {
+      outboundInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.OUTBOUND);
     }
+    if (inboundInfoSection) {
+      inboundInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.INBOUND);
+    }
+    if (valueAddedInfoSection) {
+      valueAddedInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.VALUE_ADDED);
+    }
+    
+    // 更新搜索框标签和占位符
+    const orderNumberLabel = document.getElementById('orderNumberLabel');
+    const feeNumberInput = document.getElementById('feeNumber');
+    
+    if (orderNumberLabel && feeNumberInput) {
+      switch (tabType) {
+        case CommonConstants.TAB_TYPES.OUTBOUND:
+          orderNumberLabel.textContent = '出库单号';
+          feeNumberInput.placeholder = '输入出库单号查询（例如：OUT-240126-0059）';
+          break;
+        case CommonConstants.TAB_TYPES.INBOUND:
+          orderNumberLabel.textContent = '入库单号';
+          feeNumberInput.placeholder = '输入入库单号查询（例如：INB-240126-0059）';
+          break;
+        case CommonConstants.TAB_TYPES.VALUE_ADDED:
+          orderNumberLabel.textContent = '服务单号';
+          feeNumberInput.placeholder = '输入服务单号查询（例如：VAS-240126-0059）';
+          break;
+      }
+    }
+  },
+  
+  async loadInitialData() {
+    const feeTableBody = document.getElementById('feeTableBody');
+    if (!feeTableBody) return;
+    
+    // 模拟加载费用明细数据
+    const mockFeeData = this.generateMockFeeData(this.currentTabType);
+    this.renderFeeTable(mockFeeData);
+  },
+  
+  generateMockFeeData(tabType) {
+    const feeItems = {
+      inbound: [
+        { name: '入库费', unit: '票', originalAmount: 150.00, newAmount: 150.00, currency: 'USD', remark: '' },
+        { name: '卸货费', unit: 'KG', originalAmount: 85.50, newAmount: 85.50, currency: 'USD', remark: '' },
+        { name: '清点费', unit: '件', originalAmount: 30.00, newAmount: 30.00, currency: 'USD', remark: '' },
+        { name: '上架费', unit: '件', originalAmount: 45.00, newAmount: 45.00, currency: 'USD', remark: '' }
+      ],
+      outbound: [
+        { name: '出库费', unit: '票', originalAmount: 120.00, newAmount: 120.00, currency: 'USD', remark: '' },
+        { name: '打包费', unit: '件', originalAmount: 25.00, newAmount: 25.00, currency: 'USD', remark: '' },
+        { name: '标签费', unit: '件', originalAmount: 15.00, newAmount: 15.00, currency: 'USD', remark: '' }
+      ],
+      valueAdded: [
+        { name: '拍照服务', unit: '次', originalAmount: 50.00, newAmount: 50.00, currency: 'USD', remark: '商品拍照' },
+        { name: '丈量过磅', unit: '次', originalAmount: 35.00, newAmount: 35.00, currency: 'USD', remark: '尺寸测量' },
+        { name: '检验服务', unit: '次', originalAmount: 80.00, newAmount: 80.00, currency: 'USD', remark: '质量检验' },
+        { name: '退货入库', unit: '票', originalAmount: 100.00, newAmount: 100.00, currency: 'USD', remark: '' }
+      ]
+    };
+    
+    return feeItems[tabType] || feeItems.inbound;
+  },
+  
+  renderFeeTable(data) {
+    const feeTableBody = document.getElementById('feeTableBody');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!feeTableBody) return;
+    
+    if (!data || data.length === 0) {
+      feeTableBody.innerHTML = '';
+      if (emptyState) emptyState.classList.remove('hidden');
+      return;
+    }
+    
+    if (emptyState) emptyState.classList.add('hidden');
+    
+    const html = data.map((item, index) => `
+      <tr class="border-t border-gray-100 table-hover-row">
+        <td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(item.name)}</td>
+        <td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(item.unit)}</td>
+        <td class="px-4 py-3 text-sm">${CommonUtils.formatNumber(item.originalAmount)}</td>
+        <td class="px-4 py-3 text-sm">
+          <input type="number" class="form-input w-24 text-right" value="${item.newAmount}" 
+                 data-index="${index}" data-field="newAmount" step="0.01">
+        </td>
+        <td class="px-4 py-3 text-sm">${CommonUtils.escapeHtml(item.currency)}</td>
+        <td class="px-4 py-3 text-sm">
+          <input type="text" class="form-input w-full" value="${CommonUtils.escapeHtml(item.remark)}" 
+                 data-index="${index}" data-field="remark" placeholder="添加备注">
+        </td>
+        <td class="px-4 py-3 text-sm">
+          <button class="table-action-btn text-danger" onclick="removeFeeRow(${index})">删除</button>
+        </td>
+      </tr>
+    `).join('');
+    
+    feeTableBody.innerHTML = html;
   },
   
   async handleSearch() {
@@ -156,7 +236,8 @@ const MainPage = {
       const result = await MainAPI.searchOrders(searchParams, this.currentTabType);
       MainRenderer.renderOrderTable(result.data, this.currentTabType);
       this.totalCount = result.data.length;
-      document.getElementById('totalCount').textContent = this.totalCount;
+      const totalCountEl = document.getElementById('totalCount');
+      if (totalCountEl) totalCountEl.textContent = this.totalCount;
       
       if (result.data.length === 0) {
         ToastManager.show('未找到符合条件的数据', 'info');
