@@ -48,6 +48,53 @@ function deleteRuleConfigConfirm(ruleConfigId) {
   }
 }
 
+function publishRuleConfigConfirm(ruleConfigId) {
+  var config = getRuleConfigById(ruleConfigId);
+  if (!config) return;
+  // 发布前检查生效期重叠冲突
+  var conflicts = checkPublishConflict(config, ruleConfigId);
+  if (conflicts.length > 0) {
+    var conflictNames = conflicts.map(function(c) { return c.name; }).join('、');
+    showToast('发布失败：与已发布规则[' + conflictNames + ']在相同客户+仓库+费用类型上存在生效期重叠', 'error');
+    return;
+  }
+  if (confirm('确定要发布这条规则配置吗？发布后将立即生效。')) {
+    var result = publishRuleConfig(ruleConfigId);
+    if (result) { showToast('规则配置发布成功', 'success'); renderRuleConfigTable(); }
+    else { showToast('发布失败，只有草稿状态的配置才能发布', 'error'); }
+  }
+}
+
+function voidRuleConfigConfirm(ruleConfigId) {
+  if (confirm('确定要作废这条规则配置吗？作废后将不再生效，且不可恢复。')) {
+    var result = voidRuleConfig(ruleConfigId);
+    if (result) { showToast('规则配置已作废', 'success'); renderRuleConfigTable(); }
+    else { showToast('作废失败，只有已发布的配置才能作废', 'error'); }
+  }
+}
+
+function copyAndCreateRuleConfig(ruleConfigId) {
+  var config = getRuleConfigById(ruleConfigId);
+  if (!config) { showToast('未找到配置数据', 'error'); return; }
+  var newData = {
+    name: config.name + '（副本）',
+    customer_id: config.customer_id, customer_name: config.customer_name,
+    warehouse_id: config.warehouse_id, warehouse_name: config.warehouse_name,
+    price_card_id: config.price_card_id, price_card_name: config.price_card_name,
+    business_type: config.business_type,
+    fee_discounts: JSON.parse(JSON.stringify(config.fee_discounts || {})),
+    adjustments: JSON.parse(JSON.stringify(config.adjustments || [])),
+    is_adjusted: config.is_adjusted,
+    effective_start_time: config.effective_start_time,
+    effective_end_time: config.effective_end_time,
+    created_by: 'DEMO管理员',
+    status: 'draft'
+  };
+  var newConfig = createRuleConfig(newData);
+  showToast('已复制创建草稿，即将跳转编辑', 'success');
+  setTimeout(function() { window.location.href = 'rule-config-form.html?editId=' + newConfig.id; }, 800);
+}
+
 // ---- 筛选 ----
 
 function applyFilters() {
@@ -113,6 +160,9 @@ window.closeDetailModal = closeDetailModal;
 window.viewRuleConfig = viewRuleConfig;
 window.editRuleConfig = editRuleConfig;
 window.deleteRuleConfigConfirm = deleteRuleConfigConfirm;
+window.publishRuleConfigConfirm = publishRuleConfigConfirm;
+window.voidRuleConfigConfirm = voidRuleConfigConfirm;
+window.copyAndCreateRuleConfig = copyAndCreateRuleConfig;
 window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
 window.resetData = resetData;

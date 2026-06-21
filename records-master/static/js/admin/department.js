@@ -5,10 +5,16 @@ window.DepartmentPage = (function () {
     search: '',
     enabled: '',
     editingId: null,
+    initialized: false,  // 添加初始化标志
   };
 
   function init() {
-    bindEvents();
+    // 只在第一次调用时绑定事件
+    if (!state.initialized) {
+      bindEvents();
+      state.initialized = true;
+    }
+    // 每次都加载数据
     loadDepartments();
   }
 
@@ -16,6 +22,8 @@ window.DepartmentPage = (function () {
     var searchInput = document.getElementById('departmentSearch');
     var statusFilter = document.getElementById('departmentStatusFilter');
     var addBtn = document.getElementById('addDepartmentBtn');
+    var batchImportBtn = document.getElementById('batchImportDepartmentsBtn');
+    var batchDeleteBtn = document.getElementById('batchDeleteDepartmentsBtn');
 
     if (searchInput) {
       searchInput.addEventListener('input', debounce(function (e) {
@@ -36,6 +44,30 @@ window.DepartmentPage = (function () {
     if (addBtn) {
       addBtn.addEventListener('click', function () {
         openModal();
+      });
+    }
+
+    if (batchImportBtn) {
+      batchImportBtn.addEventListener('click', function () {
+        openBatchImportModal();
+      });
+    }
+
+    if (batchDeleteBtn) {
+      batchDeleteBtn.addEventListener('click', function () {
+        if (window.DeleteHandler) {
+          window.DeleteHandler.handleBatchDeleteDepartments();
+        }
+      });
+    }
+
+    // 全选 checkbox
+    var selectAll = document.getElementById('selectAllDepartments');
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        var isChecked = this.checked;
+        var checkboxes = document.querySelectorAll('.department-checkbox');
+        checkboxes.forEach(function (cb) { cb.checked = isChecked; });
       });
     }
   }
@@ -65,7 +97,7 @@ window.DepartmentPage = (function () {
     var depts = Object.values(state.departments);
     
     if (depts.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-neutral-400">暂无数据</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-neutral-400">暂无数据</td></tr>';
       return;
     }
 
@@ -75,6 +107,9 @@ window.DepartmentPage = (function () {
         : '<span class="status-badge status-disabled">禁用</span>';
 
       return '<tr class="border-b border-neutral-200 hover:bg-neutral-50">' +
+        '<td class="table-cell">' +
+          '<input type="checkbox" class="department-checkbox w-4 h-4 text-primary border-neutral-300 rounded" data-id="' + dept.id + '">' +
+        '</td>' +
         '<td class="table-cell">' + dept.id + '</td>' +
         '<td class="table-cell font-medium">' + escapeHtml(dept.name) + '</td>' +
         '<td class="table-cell">' + escapeHtml(dept.description || '-') + '</td>' +
@@ -127,6 +162,9 @@ window.DepartmentPage = (function () {
   }
 
   function openModal(dept) {
+    // 先关闭已存在的模态框
+    closeModal();
+    
     state.editingId = dept ? dept.id : null;
 
     var title = dept ? '编辑部门' : '添加部门';
@@ -224,7 +262,7 @@ window.DepartmentPage = (function () {
     var dept = state.departments[id];
     if (!dept) return;
 
-    if (!confirm('确定要删除部门"' + dept.name + '"吗？\n注意：部门下有员工时无法删除。')) {
+    if (!confirm('确定要删除部门“' + dept.name + '”吗？\n部门下的员工将自动解除关联。')) {
       return;
     }
 
@@ -233,6 +271,291 @@ window.DepartmentPage = (function () {
       alert('部门删除成功');
     }).catch(function (err) {
       alert('删除失败: ' + err.message);
+    });
+  }
+
+  function openBatchImportModal() {
+    // 先关闭已存在的模态框
+    closeBatchImportModal();
+
+    var modalHtml = '<div id="batchImportModal" class="modal-overlay">' +
+      '<div class="modal-content" style="max-width: 900px;">' +
+        '<div class="modal-header">' +
+          '<h3 class="modal-title">批量导入部门</h3>' +
+          '<button onclick="DepartmentPage.closeBatchImportModal()" class="modal-close">&times;</button>' +
+        '</div>' +
+        '<div class="modal-body">' +
+          '<div class="mb-4">' +
+            '<div class="flex justify-between items-center mb-3">' +
+              '<div class="text-sm text-neutral-500">' +
+                '<i class="fa fa-info-circle text-primary mr-1"></i>' +
+                '提示：可直接在表格中输入，或从Excel粘贴数据到表格' +
+              '</div>' +
+              '<div class="flex gap-2">' +
+                '<button onclick="DepartmentPage.addBatchImportRow()" class="btn-text text-sm">' +
+                  '<i class="fa fa-plus mr-1"></i>添加行' +
+                '</button>' +
+                '<button onclick="DepartmentPage.removeSelectedRows()" class="btn-text text-sm text-danger">' +
+                  '<i class="fa fa-trash mr-1"></i>删除选中' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="table-container border border-neutral-200 rounded" style="max-height: 400px; overflow-y: auto;">' +
+            '<table class="w-full" id="batchImportTable">' +
+              '<thead class="bg-neutral-50 sticky top-0">' +
+                '<tr>' +
+                  '<th class="table-cell" style="width: 40px;">' +
+                    '<input type="checkbox" id="selectAllRows" onchange="DepartmentPage.toggleSelectAllRows()" class="w-4 h-4">' +
+                  '</th>' +
+                  '<th class="table-cell" style="width: 60px;">序号</th>' +
+                  '<th class="table-cell">部门名称 <span class="text-danger">*</span></th>' +
+                  '<th class="table-cell">描述</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody id="batchImportTableBody">' +
+                '<tr class="border-b border-neutral-200">' +
+                  '<td class="table-cell text-center">' +
+                    '<input type="checkbox" class="row-checkbox w-4 h-4">' +
+                  '</td>' +
+                  '<td class="table-cell text-center text-neutral-500">1</td>' +
+                  '<td class="table-cell">' +
+                    '<input type="text" class="form-input w-full border-0 focus:ring-2 focus:ring-primary/50" placeholder="请输入部门名称" maxlength="50">' +
+                  '</td>' +
+                  '<td class="table-cell">' +
+                    '<input type="text" class="form-input w-full border-0 focus:ring-2 focus:ring-primary/50" placeholder="请输入描述（可选）" maxlength="200">' +
+                  '</td>' +
+                '</tr>' +
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+          '<div class="mt-3 text-xs text-neutral-400">' +
+            '<i class="fa fa-lightbulb-o mr-1"></i>' +
+            '快捷操作：选中表格后可直接从Excel粘贴数据，系统会自动识别并填充' +
+          '</div>' +
+        '</div>' +
+        '<div class="modal-footer">' +
+          '<button onclick="DepartmentPage.closeBatchImportModal()" class="btn-secondary">取消</button>' +
+          '<button onclick="DepartmentPage.executeBatchImport()" class="btn-primary">导入</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // 绑定粘贴事件
+    var table = document.getElementById('batchImportTable');
+    table.addEventListener('paste', handleTablePaste);
+
+    // 添加初始行
+    for (var i = 0; i < 4; i++) {
+      addBatchImportRow();
+    }
+  }
+
+  function closeBatchImportModal() {
+    var modal = document.getElementById('batchImportModal');
+    if (modal) modal.remove();
+  }
+
+  function addBatchImportRow(data) {
+    var tbody = document.getElementById('batchImportTableBody');
+    if (!tbody) return;
+
+    var rowCount = tbody.children.length + 1;
+    var name = data && data.name ? data.name : '';
+    var description = data && data.description ? data.description : '';
+
+    var rowHtml = '<tr class="border-b border-neutral-200 hover:bg-neutral-50">' +
+      '<td class="table-cell text-center">' +
+        '<input type="checkbox" class="row-checkbox w-4 h-4">' +
+      '</td>' +
+      '<td class="table-cell text-center text-neutral-500">' + rowCount + '</td>' +
+      '<td class="table-cell">' +
+        '<input type="text" class="form-input w-full border-0 focus:ring-2 focus:ring-primary/50" placeholder="请输入部门名称" maxlength="50" value="' + escapeHtml(name) + '">' +
+      '</td>' +
+      '<td class="table-cell">' +
+        '<input type="text" class="form-input w-full border-0 focus:ring-2 focus:ring-primary/50" placeholder="请输入描述（可选）" maxlength="200" value="' + escapeHtml(description) + '">' +
+      '</td>' +
+    '</tr>';
+
+    tbody.insertAdjacentHTML('beforeend', rowHtml);
+  }
+
+  function removeSelectedRows() {
+    var checkboxes = document.querySelectorAll('#batchImportTableBody .row-checkbox:checked');
+    if (checkboxes.length === 0) {
+      alert('请先选择要删除的行');
+      return;
+    }
+
+    checkboxes.forEach(function(checkbox) {
+      checkbox.closest('tr').remove();
+    });
+
+    // 重新编号
+    updateRowNumbers();
+  }
+
+  function toggleSelectAllRows() {
+    var selectAll = document.getElementById('selectAllRows');
+    var checkboxes = document.querySelectorAll('#batchImportTableBody .row-checkbox');
+    checkboxes.forEach(function(checkbox) {
+      checkbox.checked = selectAll.checked;
+    });
+  }
+
+  function updateRowNumbers() {
+    var rows = document.querySelectorAll('#batchImportTableBody tr');
+    rows.forEach(function(row, index) {
+      var numberCell = row.querySelector('td:nth-child(2)');
+      if (numberCell) {
+        numberCell.textContent = index + 1;
+      }
+    });
+  }
+
+  function handleTablePaste(e) {
+    e.preventDefault();
+
+    try {
+      var pastedText = (e.clipboardData || window.clipboardData).getData('text');
+      console.log('粘贴的数据:', pastedText); // 调试日志
+
+      if (!pastedText) {
+        console.log('没有粘贴数据');
+        return;
+      }
+
+      var lines = pastedText.split('\n');
+      console.log('分割后的行数:', lines.length); // 调试日志
+
+      var startRow = 0;
+
+      // 获取当前焦点的行
+      var focusedInput = document.activeElement;
+      if (focusedInput && focusedInput.tagName === 'INPUT') {
+        var currentRow = focusedInput.closest('tr');
+        if (currentRow) {
+          var tbody = document.getElementById('batchImportTableBody');
+          startRow = Array.from(tbody.children).indexOf(currentRow);
+        }
+      }
+
+      // 清空现有行（如果从第一行开始粘贴）
+      if (startRow === 0) {
+        var tbody = document.getElementById('batchImportTableBody');
+        tbody.innerHTML = '';
+      }
+
+      // 解析并填充数据
+      lines.forEach(function(line, index) {
+        line = line.trim();
+        if (!line) return;
+
+        // 跳过表头
+        if (index === 0 && (line.indexOf('部门') >= 0 || line.indexOf('名称') >= 0 || line.toLowerCase().indexOf('name') >= 0)) {
+          console.log('跳过表头:', line);
+          return;
+        }
+
+        var parts;
+        if (line.indexOf('\t') >= 0) {
+          parts = line.split('\t');
+        } else if (line.indexOf(',') >= 0) {
+          parts = line.split(',');
+        } else {
+          parts = [line];
+        }
+
+        parts = parts.map(function(p) { return p.trim(); }).filter(function(p) { return p; });
+
+        console.log('第' + (index + 1) + '行数据:', parts); // 调试日志
+
+        if (parts.length > 0) {
+          addBatchImportRow({
+            name: parts[0],
+            description: parts[1] || ''
+          });
+        }
+      });
+
+      // 如果没有添加任何行，至少保留一行
+      var tbody = document.getElementById('batchImportTableBody');
+      if (tbody.children.length === 0) {
+        addBatchImportRow();
+      }
+
+      console.log('粘贴完成，共添加 ' + (tbody.children.length) + ' 行'); // 调试日志
+
+    } catch (error) {
+      console.error('粘贴处理出错:', error);
+      alert('粘贴数据时出错: ' + error.message);
+    }
+  }
+
+  function executeBatchImport() {
+    var tbody = document.getElementById('batchImportTableBody');
+    if (!tbody) return;
+
+    var rows = tbody.querySelectorAll('tr');
+    var departments = [];
+    var hasData = false;
+
+    rows.forEach(function(row, index) {
+      var inputs = row.querySelectorAll('input[type="text"]');
+      if (inputs.length >= 2) {
+        var name = inputs[0].value.trim();
+        var description = inputs[1].value.trim();
+
+        if (name) {
+          departments.push({
+            name: name,
+            description: description
+          });
+          hasData = true;
+        }
+      }
+    });
+
+    if (!hasData) {
+      alert('请至少输入一个部门名称');
+      return;
+    }
+
+    if (!confirm('确定要导入 ' + departments.length + ' 个部门吗？')) {
+      return;
+    }
+
+    // 将数据转换为文本格式发送给后端
+    var textData = departments.map(function(dept) {
+      return dept.name + '\t' + dept.description;
+    }).join('\n');
+
+    DepartmentApi.batchImportDepartments(textData).then(function (res) {
+      if (res.success) {
+        var msg = res.message;
+        if (res.data && res.data.failed_count > 0) {
+          msg += '\n\n失败详情：\n';
+          res.data.failed_list.forEach(function(item) {
+            msg += '第' + item.row + '行: ' + item.name + ' - ' + item.error + '\n';
+          });
+        }
+        alert(msg);
+        closeBatchImportModal();
+        loadDepartments();
+      } else {
+        var errorMsg = res.error || '导入失败';
+        if (res.data && res.data.failed_list) {
+          errorMsg += '\n\n失败详情：\n';
+          res.data.failed_list.forEach(function(item) {
+            errorMsg += '第' + item.row + '行: ' + item.name + ' - ' + item.error + '\n';
+          });
+        }
+        alert(errorMsg);
+      }
+    }).catch(function (err) {
+      alert('导入失败: ' + err.message);
     });
   }
 
@@ -262,5 +585,11 @@ window.DepartmentPage = (function () {
     saveDepartment: saveDepartment,
     editDepartment: editDepartment,
     deleteDepartment: deleteDepartment,
+    openBatchImportModal: openBatchImportModal,
+    closeBatchImportModal: closeBatchImportModal,
+    addBatchImportRow: addBatchImportRow,
+    removeSelectedRows: removeSelectedRows,
+    toggleSelectAllRows: toggleSelectAllRows,
+    executeBatchImport: executeBatchImport,
   };
 })();

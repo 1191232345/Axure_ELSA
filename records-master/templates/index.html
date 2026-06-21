@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <link href="/static/css/admin.css" rel="stylesheet">
+  <link href="/static/css/responsive.css" rel="stylesheet">
   
   <script>
     tailwind.config = {
@@ -35,63 +36,58 @@
     }
   </script>
 </head>
-<body class="font-inter bg-neutral-100 text-neutral-700 min-h-screen flex overflow-hidden">
-  <!-- 侧边栏 -->
-  <aside class="w-64 bg-white shadow-md h-screen flex-shrink-0 hidden md:block transition-all duration-300" id="sidebar">
-    <div class="p-4 border-b border-neutral-200">
-      <h1 class="text-lg font-bold text-primary flex items-center">
-        <i class="fa fa-tachometer mr-2"></i>绩效评价系统
-      </h1>
-    </div>
-    <nav class="mt-2">
-      <div class="sidebar-item active" data-target="employees">
-        <i class="fa fa-users w-5 text-center mr-3"></i>
-        <span>员工管理</span>
-      </div>
-      <div class="sidebar-item" data-target="departments">
-        <i class="fa fa-building w-5 text-center mr-3"></i>
-        <span>部门管理</span>
-      </div>
-      <div class="sidebar-item" data-target="sources">
-        <i class="fa fa-tags w-5 text-center mr-3"></i>
-        <span>来源管理</span>
-      </div>
-      <div class="sidebar-item" data-target="rating-items">
-        <i class="fa fa-list-ul w-5 text-center mr-3"></i>
-        <span>评分项管理</span>
-      </div>
-      <div class="sidebar-item" data-target="evaluation-results">
-        <i class="fa fa-bar-chart w-5 text-center mr-3"></i>
-        <span>评价结果</span>
-      </div>
-    </nav>
-  </aside>
-  
-  <!-- 主内容区 -->
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <!-- 顶部导航 -->
-    <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6">
-      <div class="flex items-center">
-        <button class="md:hidden mr-4 text-neutral-600" id="toggleSidebar">
-          <i class="fa fa-bars"></i>
-        </button>
-      </div>
+<body class="font-inter bg-neutral-100 text-neutral-700 h-screen flex flex-col overflow-hidden">
+  <!-- 顶部导航 -->
+  <header class="bg-white shadow-md flex-shrink-0 z-50">
+    <div class="h-12 flex items-center justify-between px-4">
+      <!-- 左侧：系统标题 + 导航菜单 -->
       <div class="flex items-center space-x-4">
-        <a href="/" class="text-primary hover:text-primary/80">
+        <h1 class="text-base font-bold text-primary flex items-center flex-shrink-0">
+          <i class="fa fa-tachometer mr-1.5"></i>绩效评价系统
+        </h1>
+
+        <!-- 导航菜单 -->
+        <nav class="flex items-center space-x-1">
+          <div class="nav-item active" data-target="employees">
+            <i class="fa fa-users mr-2"></i>
+            <span>员工管理</span>
+          </div>
+          <div class="nav-item" data-target="departments">
+            <i class="fa fa-building mr-2"></i>
+            <span>部门管理</span>
+          </div>
+          <div class="nav-item" data-target="rating-items">
+            <i class="fa fa-list-ul mr-2"></i>
+            <span>评分项管理</span>
+          </div>
+          <div class="nav-item" data-target="evaluation-results">
+            <i class="fa fa-bar-chart mr-2"></i>
+            <span>评价结果</span>
+          </div>
+        </nav>
+      </div>
+
+      <!-- 右侧：评价页面链接 -->
+      <div class="flex items-center">
+        <a href="/" class="text-primary hover:text-primary/80 transition-colors">
           <i class="fa fa-external-link mr-1"></i>评价页面
         </a>
       </div>
-    </header>
-    
-    <!-- 主内容 -->
-    <main class="flex-1 overflow-y-auto p-6">
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 overflow-y-auto p-4">
       <!-- 员工管理页面 -->
       <div class="page-content" id="employees-page">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div class="flex flex-wrap gap-2">
-              <button id="batchDeleteEmployeesBtn" class="btn-danger" style="display: none;">
-                <i class="fa fa-trash mr-1"></i> 批量删除选中
+              <button id="batchDeleteEmployeesBtn" class="btn-danger">
+                <i class="fa fa-trash mr-1"></i> 批量删除
+              </button>
+              <button id="batchImportEmployeesBtn" class="btn-secondary">
+                <i class="fa fa-upload mr-1"></i> 批量导入
               </button>
               <button id="addEmployeeBtn" class="btn-primary">
                 <i class="fa fa-plus mr-1"></i> 添加员工
@@ -113,7 +109,7 @@
             </div>
           </div>
           <!-- 员工表格 -->
-          <div class="overflow-x-auto">
+          <div class="table-container">
             <table class="w-full">
               <thead>
                 <tr class="bg-neutral-50">
@@ -139,9 +135,15 @@
       
       <!-- 部门管理页面 -->
       <div class="page-content hidden" id="departments-page">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div class="flex flex-wrap gap-2">
+              <button id="batchDeleteDepartmentsBtn" class="btn-danger">
+                <i class="fa fa-trash mr-1"></i> 批量删除
+              </button>
+              <button id="batchImportDepartmentsBtn" class="btn-secondary">
+                <i class="fa fa-upload mr-1"></i> 批量导入
+              </button>
               <button id="addDepartmentBtn" class="btn-primary">
                 <i class="fa fa-plus mr-1"></i> 添加部门
               </button>
@@ -164,10 +166,13 @@
             </div>
           </div>
           <!-- 部门表格 -->
-          <div class="overflow-x-auto">
+          <div class="table-container">
             <table class="w-full">
               <thead>
                 <tr class="bg-neutral-50">
+                  <th class="table-cell text-left font-medium" style="width: 50px;">
+                    <input type="checkbox" id="selectAllDepartments" class="w-4 h-4 text-primary border-neutral-300 rounded focus:ring-primary/50">
+                  </th>
                   <th class="table-cell text-left font-medium">ID</th>
                   <th class="table-cell text-left font-medium">部门名称</th>
                   <th class="table-cell text-left font-medium">描述</th>
@@ -188,7 +193,7 @@
       
       <!-- 来源管理页面 -->
       <div class="page-content hidden" id="sources-page">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div class="flex flex-wrap gap-2">
               <button id="addSourceBtn" class="btn-primary">
@@ -213,7 +218,7 @@
             </div>
           </div>
           <!-- 来源表格 -->
-          <div class="overflow-x-auto">
+          <div class="table-container">
             <table class="w-full">
               <thead>
                 <tr class="bg-neutral-50">
@@ -237,11 +242,14 @@
       
       <!-- 评分项管理页面 -->
       <div class="page-content hidden" id="rating-items-page">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div class="flex flex-wrap gap-2">
-              <button id="batchDeleteRatingItemsBtn" class="btn-danger" style="display: none;">
-                <i class="fa fa-trash mr-1"></i> 批量删除选中
+              <button id="batchDeleteRatingItemsBtn" class="btn-danger">
+                <i class="fa fa-trash mr-1"></i> 批量删除
+              </button>
+              <button id="batchImportRatingItemsBtn" class="btn-secondary">
+                <i class="fa fa-upload mr-1"></i> 批量导入
               </button>
               <button id="addRatingItemBtn" class="btn-primary">
                 <i class="fa fa-plus mr-1"></i> 添加评分项
@@ -249,7 +257,7 @@
             </div>
           </div>
           <!-- 评分项表格 -->
-          <div class="overflow-x-auto">
+          <div class="table-container">
             <table class="w-full">
               <thead>
                 <tr class="bg-neutral-50">
@@ -275,7 +283,7 @@
       
       <!-- 评价结果页面 -->
       <div class="page-content hidden" id="evaluation-results-page">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div class="flex flex-wrap gap-2">
               <button id="exportEvaluationBtn" class="btn-secondary">
@@ -287,7 +295,7 @@
             </div>
           </div>
           <!-- 评价结果表格 -->
-          <div class="overflow-x-auto">
+          <div class="table-container">
             <table class="w-full">
               <thead>
                 <tr class="bg-neutral-50">
@@ -314,8 +322,7 @@
         </div>
       </div>
     </main>
-  </div>
-  
+
   <!-- 模态框组件 -->
   <!-- 员工模态框 -->
   <div id="employeeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
@@ -450,13 +457,17 @@
   <script src="/static/js/admin/state.js"></script>
   <script src="/static/js/admin/ui.js"></script>
   <script src="/static/js/admin/renderer.js"></script>
-  <script src="/static/js/admin/config.js"></script>
   <script src="/static/js/admin/department_api.js"></script>
   <script src="/static/js/admin/department.js"></script>
   <script src="/static/js/admin/source_api.js"></script>
   <script src="/static/js/admin/source.js"></script>
+  <script src="/static/js/admin/batch-import.js"></script>
+  <script src="/static/js/admin/delete-handler.js"></script>
+  <script src="/static/js/admin/search-handler.js"></script>
+  <script src="/static/js/admin/form-handler.js"></script>
+  <script src="/static/js/admin/evaluation.js"></script>
   <script src="/static/js/admin/events.js"></script>
-  
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       AdminEvents.init();

@@ -7,7 +7,7 @@ function renderRuleConfigTable(filters) {
   var tbody = document.getElementById('ruleConfigTableBody');
   var emptyState = document.getElementById('emptyState');
 
-  var filteredConfigs = getActiveRuleConfigs();
+  var filteredConfigs = getAllRuleConfigs();
 
   if (filters.customer_id) filteredConfigs = filteredConfigs.filter(function(c) { return c.customer_id === filters.customer_id; });
   if (filters.warehouse_id) filteredConfigs = filteredConfigs.filter(function(c) { return c.warehouse_id === filters.warehouse_id; });
@@ -26,28 +26,36 @@ function renderRuleConfigTable(filters) {
   emptyState.classList.add('hidden');
 
   tbody.innerHTML = filteredConfigs.map(function(config) {
-    var discountInfo = getDiscountInfo(config);
-    var adjustedBadge = config.is_adjusted
-      ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800"><i class="fas fa-edit mr-1"></i>已微调</span>'
-      : '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"><i class="fas fa-check mr-1"></i>未微调</span>';
-    var businessTypeText = config.business_type === 'all' ? '全部业务' : getBusinessTypeText(config.business_type);
-
     return '<tr class="hover:bg-hover transition-colors">' +
       '<td class="px-6 py-4"><div class="text-sm font-medium text-primary">' + config.name + '</div><div class="text-xs text-text-muted mt-1">ID: ' + config.id + '</div></td>' +
+      '<td class="px-6 py-4">' + getStatusBadge(config.status) + '</td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + config.customer_name + '</div><div class="text-xs text-text-muted mt-1">' + (getCustomerById(config.customer_id) ? getCustomerById(config.customer_id).code : '-') + '</div></td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + config.warehouse_name + '</div><div class="text-xs text-text-muted mt-1">' + (getWarehouseById(config.warehouse_id) ? getWarehouseById(config.warehouse_id).location : '-') + '</div></td>' +
-      '<td class="px-6 py-4"><div class="text-sm text-dark">' + config.price_card_name + '</div><div class="text-xs text-text-muted mt-1">引用模板</div></td>' +
-      '<td class="px-6 py-4"><span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">' + businessTypeText + '</span></td>' +
-      '<td class="px-6 py-4"><div class="text-sm text-dark">' + discountInfo + '</div></td>' +
-      '<td class="px-6 py-4">' + adjustedBadge + '</td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + formatDateTime(config.effective_start_time) + '</div><div class="text-xs text-text-muted mt-1">至 ' + formatDateTime(config.effective_end_time) + '</div></td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + (config.created_by || '-') + '</div><div class="text-xs text-text-muted mt-1">' + formatDateTime(config.created_at) + '</div></td>' +
-      '<td class="px-6 py-4"><div class="action-buttons">' +
-        '<button onclick="viewRuleConfig(\'' + config.id + '\')" class="action-btn action-btn-view"><i class="fas fa-eye"></i></button>' +
-        '<button onclick="editRuleConfig(\'' + config.id + '\')" class="action-btn action-btn-edit"><i class="fas fa-edit"></i></button>' +
-        '<button onclick="deleteRuleConfigConfirm(\'' + config.id + '\')" class="action-btn action-btn-delete"><i class="fas fa-trash"></i></button>' +
-      '</div></td></tr>';
+      '<td class="px-6 py-4"><div class="action-buttons">' + getActionButtons(config) + '</div></td></tr>';
   }).join('');
+}
+
+function getStatusBadge(status) {
+  if (status === 'published') return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>已发布</span>';
+  if (status === 'voided') return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800"><i class="fas fa-ban mr-1"></i>已作废</span>';
+  return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800"><i class="fas fa-pencil-alt mr-1"></i>草稿</span>';
+}
+
+function getActionButtons(config) {
+  var status = config.status || 'draft';
+  var btns = '<button onclick="viewRuleConfig(\'' + config.id + '\')" class="action-btn action-btn-view" title="查看"><i class="fas fa-eye"></i></button>';
+  if (status === 'draft') {
+    btns += '<button onclick="editRuleConfig(\'' + config.id + '\')" class="action-btn action-btn-edit" title="编辑"><i class="fas fa-edit"></i></button>';
+    btns += '<button onclick="publishRuleConfigConfirm(\'' + config.id + '\')" class="action-btn" title="发布" style="color:#2D936C;"><i class="fas fa-paper-plane"></i></button>';
+    btns += '<button onclick="deleteRuleConfigConfirm(\'' + config.id + '\')" class="action-btn action-btn-delete" title="删除"><i class="fas fa-trash"></i></button>';
+  } else if (status === 'published') {
+    btns += '<button onclick="voidRuleConfigConfirm(\'' + config.id + '\')" class="action-btn" title="作废" style="color:#D4853A;"><i class="fas fa-ban"></i></button>';
+  } else if (status === 'voided') {
+    btns += '<button onclick="copyAndCreateRuleConfig(\'' + config.id + '\')" class="action-btn action-btn-edit" title="复制新增"><i class="fas fa-copy"></i></button>';
+  }
+  return btns;
 }
 
 function getDiscountInfo(config) {
@@ -94,5 +102,7 @@ function _renderDiscountBadge(row) {
 
 window._renderDiscountBadge = _renderDiscountBadge;
 window.renderRuleConfigTable = renderRuleConfigTable;
+window.getStatusBadge = getStatusBadge;
+window.getActionButtons = getActionButtons;
 window.getDiscountInfo = getDiscountInfo;
 window.renderFilterOptions = renderFilterOptions;

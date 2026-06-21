@@ -1,4 +1,11 @@
 window.AdminRenderer = (function () {
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    var div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+  }
+
   function renderEmployeesTable() {
     var tbody = document.getElementById('employeesTableBody');
     if (!tbody) return;
@@ -15,7 +22,6 @@ window.AdminRenderer = (function () {
     });
 
     renderPagination('employees', 'employeesPagination');
-    updateBatchDeleteEmployeesButtonVisibility();
   }
 
   function createEmployeeRow(id, emp, relatedCount) {
@@ -25,8 +31,8 @@ window.AdminRenderer = (function () {
         '<input type="checkbox" class="employee-checkbox w-4 h-4 text-primary border-neutral-300 rounded" data-id="' + id + '">' +
       '</td>' +
       '<td class="table-cell">' + id + '</td>' +
-      '<td class="table-cell">' + emp.name + '</td>' +
-      '<td class="table-cell">' + emp.department + '</td>' +
+      '<td class="table-cell">' + escapeHtml(emp.name) + '</td>' +
+      '<td class="table-cell">' + escapeHtml(emp.department) + '</td>' +
       '<td class="table-cell">' + relatedCount + '</td>' +
       '<td class="table-cell">' +
         '<button class="text-primary hover:text-primary/80 mr-2 edit-employee" data-id="' + id + '">' +
@@ -54,7 +60,6 @@ window.AdminRenderer = (function () {
     });
 
     renderPagination('ratingItems', 'ratingItemsPagination');
-    updateBatchDeleteButtonVisibility();
   }
 
   function createRatingItemRow(id, item, relatedCount) {
@@ -66,7 +71,7 @@ window.AdminRenderer = (function () {
         '<input type="checkbox" class="rating-item-checkbox w-4 h-4 text-primary border-neutral-300 rounded" data-id="' + id + '">' +
       '</td>' +
       '<td class="table-cell">' + id + '</td>' +
-      '<td class="table-cell">' + item.name + '</td>' +
+      '<td class="table-cell">' + escapeHtml(item.name) + '</td>' +
       '<td class="table-cell">' +
         '<span class="text-xs ' + statusClass + ' px-2 py-1 rounded-full">' + statusText + '</span>' +
       '</td>' +
@@ -105,9 +110,9 @@ window.AdminRenderer = (function () {
     var scoreClass = avgScore < 5 ? 'text-danger' : avgScore < 7 ? 'text-secondary' : 'text-success';
     tr.innerHTML = 
       '<td class="table-cell">' + id + '</td>' +
-      '<td class="table-cell">' + result.employee_name + '</td>' +
-      '<td class="table-cell">' + result.employee_department + '</td>' +
-      '<td class="table-cell">' + result.evaluator_name + '</td>' +
+      '<td class="table-cell">' + escapeHtml(result.employee_name) + '</td>' +
+      '<td class="table-cell">' + escapeHtml(result.employee_department) + '</td>' +
+      '<td class="table-cell">' + escapeHtml(result.evaluator_name) + '</td>' +
       '<td class="table-cell">' +
         '<span class="' + scoreClass + ' font-medium">' + avgScore.toFixed(1) + '</span>' +
       '</td>' +
@@ -141,9 +146,11 @@ window.AdminRenderer = (function () {
 
   function renderPagination(type, containerId) {
     var pag = AdminState.getPagination(type);
+    console.log('渲染分页:', type, '当前页:', pag.currentPage, '总页数:', pag.totalPages, '总条数:', pag.totalItems);
     CommonPagination.render(containerId, pag.currentPage, pag.totalPages, function (page) {
       AdminState.setPaginationPage(type, page);
-      rerenderTable(type);
+      // 切换页码时重新请求数据
+      loadPageData(type, page);
     }, {
       infoClass: 'pagination-info',
       controlsClass: 'pagination-controls',
@@ -153,25 +160,46 @@ window.AdminRenderer = (function () {
     });
   }
 
+  function loadPageData(type, page) {
+    var pag = AdminState.getPagination(type);
+    var promise;
+
+    if (type === 'employees') {
+      promise = AdminApi.loadEmployees(page, pag.pageSize).then(function (result) {
+        AdminState.setPartial({
+          employees: result.employees || result,
+          pagination: { employees: result.pagination }
+        });
+        renderEmployeesTable();
+      });
+    } else if (type === 'ratingItems') {
+      promise = AdminApi.loadRatingItems(page, pag.pageSize).then(function (result) {
+        AdminState.setPartial({
+          ratingItems: result.ratingItems || result,
+          pagination: { ratingItems: result.pagination }
+        });
+        renderRatingItemsTable();
+      });
+    } else if (type === 'evaluationResults') {
+      promise = AdminApi.loadEvaluationResults(page, pag.pageSize).then(function (result) {
+        AdminState.setPartial({
+          evaluationResults: result.evaluationResults || result,
+          pagination: { evaluationResults: result.pagination }
+        });
+        renderEvaluationResultsTable();
+      });
+    }
+
+    return promise;
+  }
+
   function rerenderTable(type) {
     if (type === 'employees') renderEmployeesTable();
     else if (type === 'ratingItems') renderRatingItemsTable();
     else if (type === 'evaluationResults') renderEvaluationResultsTable();
   }
 
-  function updateBatchDeleteButtonVisibility() {
-    var btn = document.getElementById('batchDeleteRatingItemsBtn');
-    if (!btn) return;
-    var checkboxes = document.querySelectorAll('.rating-item-checkbox:checked');
-    btn.style.display = checkboxes.length > 0 ? 'inline-flex' : 'none';
-  }
 
-  function updateBatchDeleteEmployeesButtonVisibility() {
-    var btn = document.getElementById('batchDeleteEmployeesBtn');
-    if (!btn) return;
-    var checkboxes = document.querySelectorAll('.employee-checkbox:checked');
-    btn.style.display = checkboxes.length > 0 ? 'inline-flex' : 'none';
-  }
 
   function renderEvaluationResultsStats() {
     var statsEl = document.getElementById('evaluationResultsStats');
@@ -270,9 +298,9 @@ window.AdminRenderer = (function () {
     var infoSection = document.createElement('div');
     infoSection.innerHTML = 
       '<div class="grid grid-cols-2 gap-4">' +
-        '<div><span class="text-neutral-500">员工姓名:</span> <strong>' + result.employee_name + '</strong></div>' +
-        '<div><span class="text-neutral-500">部门:</span> <strong>' + result.employee_department + '</strong></div>' +
-        '<div><span class="text-neutral-500">评价人:</span> <strong>' + result.evaluator_name + '</strong></div>' +
+        '<div><span class="text-neutral-500">员工姓名:</span> <strong>' + escapeHtml(result.employee_name) + '</strong></div>' +
+        '<div><span class="text-neutral-500">部门:</span> <strong>' + escapeHtml(result.employee_department) + '</strong></div>' +
+        '<div><span class="text-neutral-500">评价人:</span> <strong>' + escapeHtml(result.evaluator_name) + '</strong></div>' +
         '<div><span class="text-neutral-500">评价时间:</span> <strong>' + formatDate(result.created_at) + '</strong></div>' +
       '</div>';
     content.appendChild(infoSection);
@@ -291,10 +319,10 @@ window.AdminRenderer = (function () {
         ratingDiv.className = 'mb-4 p-3 bg-neutral-50 rounded-lg';
         ratingDiv.innerHTML = 
           '<div class="flex justify-between items-center mb-2">' +
-            '<span class="font-medium">' + item.name + '</span>' +
+            '<span class="font-medium">' + escapeHtml(item.name) + '</span>' +
             '<span class="' + scoreClass + ' font-bold">' + detail.score.toFixed(1) + '</span>' +
           '</div>' +
-          '<div class="text-sm text-neutral-600">' + (detail.comment || '无评语') + '</div>';
+          '<div class="text-sm text-neutral-600">' + escapeHtml(detail.comment || '无评语') + '</div>';
         ratingsSection.appendChild(ratingDiv);
       }
     });
@@ -314,8 +342,8 @@ window.AdminRenderer = (function () {
     renderRatingItemsTable: renderRatingItemsTable,
     renderEvaluationResultsTable: renderEvaluationResultsTable,
     renderPagination: renderPagination,
-    updateBatchDeleteButtonVisibility: updateBatchDeleteButtonVisibility,
-    updateBatchDeleteEmployeesButtonVisibility: updateBatchDeleteEmployeesButtonVisibility,
+    loadPageData: loadPageData,
+
     renderEvaluationResultsStats: renderEvaluationResultsStats,
     populateRatingItemsCheckboxes: populateRatingItemsCheckboxes,
     populateDepartmentSelects: populateDepartmentSelects,

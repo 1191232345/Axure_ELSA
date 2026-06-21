@@ -24,7 +24,57 @@ window.AdminState = (function () {
     data.ratingItems = loaded.ratingItems || {};
     data.employeeRatingRelations = loaded.employeeRatingRelations || {};
     data.evaluationResults = loaded.evaluationResults || {};
-    updatePaginationInfo();
+
+    // 完全使用后端返回的分页信息
+    if (loaded.pagination) {
+      if (loaded.pagination.employees) {
+        pagination.employees.currentPage = loaded.pagination.employees.page;
+        pagination.employees.pageSize = loaded.pagination.employees.pageSize;
+        pagination.employees.totalItems = loaded.pagination.employees.total;
+        pagination.employees.totalPages = loaded.pagination.employees.totalPages;
+      }
+      if (loaded.pagination.ratingItems) {
+        pagination.ratingItems.currentPage = loaded.pagination.ratingItems.page;
+        pagination.ratingItems.pageSize = loaded.pagination.ratingItems.pageSize;
+        pagination.ratingItems.totalItems = loaded.pagination.ratingItems.total;
+        pagination.ratingItems.totalPages = loaded.pagination.ratingItems.totalPages;
+      }
+      if (loaded.pagination.evaluationResults) {
+        pagination.evaluationResults.currentPage = loaded.pagination.evaluationResults.page;
+        pagination.evaluationResults.pageSize = loaded.pagination.evaluationResults.pageSize;
+        pagination.evaluationResults.totalItems = loaded.pagination.evaluationResults.total;
+        pagination.evaluationResults.totalPages = loaded.pagination.evaluationResults.totalPages;
+      }
+    }
+  }
+
+  // 只更新指定字段，不影响其他数据
+  function setPartial(loaded) {
+    if (loaded.employees) data.employees = loaded.employees;
+    if (loaded.ratingItems) data.ratingItems = loaded.ratingItems;
+    if (loaded.employeeRatingRelations) data.employeeRatingRelations = loaded.employeeRatingRelations;
+    if (loaded.evaluationResults) data.evaluationResults = loaded.evaluationResults;
+
+    if (loaded.pagination) {
+      if (loaded.pagination.employees) {
+        pagination.employees.currentPage = loaded.pagination.employees.page;
+        pagination.employees.pageSize = loaded.pagination.employees.pageSize;
+        pagination.employees.totalItems = loaded.pagination.employees.total;
+        pagination.employees.totalPages = loaded.pagination.employees.totalPages;
+      }
+      if (loaded.pagination.ratingItems) {
+        pagination.ratingItems.currentPage = loaded.pagination.ratingItems.page;
+        pagination.ratingItems.pageSize = loaded.pagination.ratingItems.pageSize;
+        pagination.ratingItems.totalItems = loaded.pagination.ratingItems.total;
+        pagination.ratingItems.totalPages = loaded.pagination.ratingItems.totalPages;
+      }
+      if (loaded.pagination.evaluationResults) {
+        pagination.evaluationResults.currentPage = loaded.pagination.evaluationResults.page;
+        pagination.evaluationResults.pageSize = loaded.pagination.evaluationResults.pageSize;
+        pagination.evaluationResults.totalItems = loaded.pagination.evaluationResults.total;
+        pagination.evaluationResults.totalPages = loaded.pagination.evaluationResults.totalPages;
+      }
+    }
   }
 
   function setDepartments(depts) {
@@ -101,21 +151,13 @@ window.AdminState = (function () {
   }
 
   function getPagedItems(type) {
-    var items = filteredData[type] || data[type];
-    var pag = pagination[type];
-    var keys = Object.keys(items);
-    var start = (pag.currentPage - 1) * pag.pageSize;
-    var end = start + pag.pageSize;
-    var pagedKeys = keys.slice(start, end);
-    var result = {};
-    pagedKeys.forEach(function (key) {
-      result[key] = items[key];
-    });
-    return result;
+    // 数据已经是分页后的，直接返回
+    return filteredData[type] || data[type];
   }
 
   return {
     setAll: setAll,
+    setPartial: setPartial,
     setDepartments: setDepartments,
     getEmployees: getEmployees,
     getEmployee: getEmployee,

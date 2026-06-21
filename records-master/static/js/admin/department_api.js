@@ -51,6 +51,22 @@ window.DepartmentApi = (function () {
     return request(config.departments + '/' + id, { method: 'DELETE' });
   }
 
+  function batchDeleteDepartments(ids) {
+    return request(config.batchDeleteDepartments, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: ids }),
+    });
+  }
+
+  function batchImportDepartments(data) {
+    return request(config.departments + '/batch-import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: data }),
+    });
+  }
+
   return {
     loadDepartments: loadDepartments,
     loadEnabledDepartments: loadEnabledDepartments,
@@ -58,5 +74,7 @@ window.DepartmentApi = (function () {
     addDepartment: addDepartment,
     updateDepartment: updateDepartment,
     deleteDepartment: deleteDepartment,
+    batchDeleteDepartments: batchDeleteDepartments,
+    batchImportDepartments: batchImportDepartments,
   };
 })();

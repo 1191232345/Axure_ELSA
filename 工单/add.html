@@ -277,8 +277,9 @@
             <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">* 工单类型</label>
-                    <select id="orderType" class="form-select">
+                    <select id="orderType" class="form-select" onchange="handleOrderTypeChange()">
                         <option value="">快递索赔-索赔</option>
+                        <option value="change_address">改地址</option>
                     </select>
                 </div>
                 <div>
@@ -302,7 +303,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">* 问题描述</label>
                 <textarea id="description" class="form-textarea" rows="4" placeholder=""></textarea>
                 
-                <!-- 上传按钮和提示信息 -->
+                <!-- 原始上传区域 -->
                 <div id="originalUploadArea" class="upload-transition visible mt-3 flex items-start gap-4">
                     <div class="upload-area w-48 h-20 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
                         <i class="fa fa-upload text-gray-400 text-xl mb-1"></i>
@@ -318,6 +319,118 @@
                             <a href="#" class="link-blue">《常见问题FAQ》</a>
                         </div>
                         <p class="hint-text">请填写详细的问题描述，包括订单号、跟踪号、问题描述等必要信息</p>
+                    </div>
+                </div>
+
+                <!-- 地址填写区域 -->
+                <div id="addressArea" class="upload-transition hidden mt-3">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <!-- 详细地址 1 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">* 详细地址 1</label>
+                                <input type="text" id="addressLine1" class="form-input" placeholder="">
+                            </div>
+                            
+                            <!-- 国家 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">* 国家</label>
+                                <select id="addressCountry" class="form-select">
+                                    <option value="US" selected>美国</option>
+                                    <option value="CN">中国</option>
+                                    <option value="UK">英国</option>
+                                    <option value="DE">德国</option>
+                                    <option value="FR">法国</option>
+                                    <option value="JP">日本</option>
+                                    <option value="CA">加拿大</option>
+                                    <option value="AU">澳大利亚</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <!-- 详细地址 2 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    详细地址 2
+                                    <i class="fa fa-info-circle text-gray-400 text-xs ml-1 cursor-help" title="公寓号、楼层、房间号等"></i>
+                                </label>
+                                <input type="text" id="addressLine2" class="form-input" placeholder="">
+                            </div>
+                            
+                            <!-- 省/州 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">* 省/州</label>
+                                <select id="addressState" class="form-select">
+                                    <option value="">-- 请选择 --</option>
+                                    <option value="AL">阿拉巴马州</option>
+                                    <option value="AK">阿拉斯加州</option>
+                                    <option value="AZ">亚利桑那州</option>
+                                    <option value="AR">阿肯色州</option>
+                                    <option value="CA">加利福尼亚州</option>
+                                    <option value="CO">科罗拉多州</option>
+                                    <option value="CT">康涅狄格州</option>
+                                    <option value="DE">特拉华州</option>
+                                    <option value="FL">佛罗里达州</option>
+                                    <option value="GA">佐治亚州</option>
+                                    <option value="HI">夏威夷州</option>
+                                    <option value="ID">爱达荷州</option>
+                                    <option value="IL">伊利诺伊州</option>
+                                    <option value="IN">印第安纳州</option>
+                                    <option value="IA">爱荷华州</option>
+                                    <option value="KS">堪萨斯州</option>
+                                    <option value="KY">肯塔基州</option>
+                                    <option value="LA">路易斯安那州</option>
+                                    <option value="ME">缅因州</option>
+                                    <option value="MD">马里兰州</option>
+                                    <option value="MA">马萨诸塞州</option>
+                                    <option value="MI">密歇根州</option>
+                                    <option value="MN">明尼苏达州</option>
+                                    <option value="MS">密西西比州</option>
+                                    <option value="MO">密苏里州</option>
+                                    <option value="MT">蒙大拿州</option>
+                                    <option value="NE">内布拉斯加州</option>
+                                    <option value="NV">内华达州</option>
+                                    <option value="NH">新罕布什尔州</option>
+                                    <option value="NJ">新泽西州</option>
+                                    <option value="NM">新墨西哥州</option>
+                                    <option value="NY">纽约州</option>
+                                    <option value="NC">北卡罗来纳州</option>
+                                    <option value="ND">北达科他州</option>
+                                    <option value="OH">俄亥俄州</option>
+                                    <option value="OK">俄克拉荷马州</option>
+                                    <option value="OR">俄勒冈州</option>
+                                    <option value="PA">宾夕法尼亚州</option>
+                                    <option value="RI">罗德岛州</option>
+                                    <option value="SC">南卡罗来纳州</option>
+                                    <option value="SD">南达科他州</option>
+                                    <option value="TN">田纳西州</option>
+                                    <option value="TX">德克萨斯州</option>
+                                    <option value="UT">犹他州</option>
+                                    <option value="VT">佛蒙特州</option>
+                                    <option value="VA">弗吉尼亚州</option>
+                                    <option value="WA">华盛顿州</option>
+                                    <option value="WV">西弗吉尼亚州</option>
+                                    <option value="WI">威斯康星州</option>
+                                    <option value="WY">怀俄明州</option>
+                                    <option value="OTHER">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-0">
+                            <!-- 邮编 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">* 邮编</label>
+                                <input type="text" id="addressZipCode" class="form-input" placeholder="">
+                            </div>
+                            
+                            <!-- 城市 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">* 城市</label>
+                                <input type="text" id="addressCity" class="form-input" placeholder="">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -460,6 +573,48 @@
         // 检查是否为FedEx
         function isFedExSelected() {
             return document.getElementById('channel').value === 'fedex';
+        }
+        
+        // 检查是否为改地址类型
+        function isChangeAddressType() {
+            return document.getElementById('orderType').value === 'change_address';
+        }
+        
+        // 处理工单类型变化
+        function handleOrderTypeChange() {
+            const originalUploadArea = document.getElementById('originalUploadArea');
+            const addressArea = document.getElementById('addressArea');
+            const fedexUploadArea = document.getElementById('fedexUploadArea');
+            
+            if (isChangeAddressType()) {
+                // 显示地址填写区域，隐藏所有上传区域
+                originalUploadArea.classList.remove('visible');
+                originalUploadArea.classList.add('hidden');
+                fedexUploadArea.classList.remove('visible');
+                fedexUploadArea.classList.add('hidden');
+                addressArea.classList.remove('hidden');
+                addressArea.classList.add('visible');
+                
+                showNotification('工单类型已切换', '已切换为改地址模式，请填写新地址信息');
+            } else {
+                // 显示上传区域，隐藏地址填写区域
+                addressArea.classList.remove('visible');
+                addressArea.classList.add('hidden');
+                
+                if (isFedExSelected()) {
+                    originalUploadArea.classList.remove('visible');
+                    originalUploadArea.classList.add('hidden');
+                    fedexUploadArea.classList.remove('hidden');
+                    fedexUploadArea.classList.add('visible');
+                } else {
+                    originalUploadArea.classList.remove('hidden');
+                    originalUploadArea.classList.add('visible');
+                    fedexUploadArea.classList.remove('visible');
+                    fedexUploadArea.classList.add('hidden');
+                }
+                
+                showNotification('工单类型已切换', '已切换为索赔模式');
+            }
         }
         
         // 显示通知
@@ -620,6 +775,13 @@
         // 物流渠道选择事件
         document.getElementById('channel').addEventListener('change', function() {
             const isFedEx = isFedExSelected();
+            const isChangeAddress = isChangeAddressType();
+            
+            // 如果是改地址类型，不切换上传区域
+            if (isChangeAddress) {
+                updateChannelIndicator();
+                return;
+            }
             
             // 控制附件上传区域的显示和隐藏
             const originalUploadArea = document.getElementById('originalUploadArea');
@@ -705,6 +867,13 @@
                         list.innerHTML = '';
                     }
                 });
+                
+                // 重置上传区域显示状态
+                const orderType = document.getElementById('orderType');
+                if (orderType.value === 'change_address') {
+                    orderType.value = '';
+                    handleOrderTypeChange();
+                }
             }
         }
 
@@ -732,13 +901,53 @@
             }
             
             if (!quantity) {
-                alert('请填写*实发数量');
+                alert('请填写实发数量');
                 return;
             }
             
             if (!source) {
                 alert('请选择币种');
                 return;
+            }
+            
+            // 如果是改地址类型，验证地址信息
+            if (orderType === 'change_address') {
+                const trackingNo = document.getElementById('addressTrackingNo').value.trim();
+                const addressLine1 = document.getElementById('addressLine1').value.trim();
+                const country = document.getElementById('addressCountry').value;
+                const state = document.getElementById('addressState').value;
+                const zipCode = document.getElementById('addressZipCode').value.trim();
+                const city = document.getElementById('addressCity').value.trim();
+                
+                if (!trackingNo) {
+                    alert('请填写运单号');
+                    return;
+                }
+                
+                if (!addressLine1) {
+                    alert('请填写详细地址 1');
+                    return;
+                }
+                
+                if (!country) {
+                    alert('请选择国家');
+                    return;
+                }
+                
+                if (!state) {
+                    alert('请选择省/州');
+                    return;
+                }
+                
+                if (!zipCode) {
+                    alert('请填写邮编');
+                    return;
+                }
+                
+                if (!city) {
+                    alert('请填写城市');
+                    return;
+                }
             }
 
             // 提交成功提示

@@ -9,6 +9,10 @@ from models.employee import (
     get_all_departments,
     get_employees_paginated,
 )
+from models.employee_batch import (
+    batch_add_employees,
+    delete_employees_by_filter,
+)
 from models.department import (
     get_all_departments as get_all_departments_from_dept_model,
     get_department_by_id,
@@ -19,6 +23,11 @@ from models.department import (
     delete_department,
     check_department_name_exists,
     count_employees_in_department,
+)
+from models.department_batch import (
+    batch_add_departments,
+    batch_delete_departments,
+    delete_departments_by_filter,
 )
 from models.source import (
     get_all_sources,
@@ -39,6 +48,9 @@ from models.rating_item import (
     delete_rating_item,
     batch_delete_rating_items,
     get_enabled_rating_items,
+    get_rating_items_paginated,
+    batch_add_rating_items,
+    delete_rating_items_by_filter,
 )
 from models.relation import (
     get_all_relations,
@@ -54,4 +66,5 @@ from models.evaluation import (
     delete_evaluation_result,
     clear_all_evaluation_results,
     clear_evaluation_results_by_filter,
+    get_evaluation_results_paginated,
 )

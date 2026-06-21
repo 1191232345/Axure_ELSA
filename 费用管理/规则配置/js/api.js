@@ -145,6 +145,7 @@ function getActiveCustomers() { return customers.filter(function(c) { return c.s
 function getActiveWarehouses() { return warehouses.filter(function(w) { return w.status === 1; }); }
 function getActivePriceCards() { return priceCards.filter(function(p) { return p.status === 1; }); }
 function getActiveRuleConfigs() { return ruleConfigs.filter(function(r) { return !r.effective_end_time || new Date(r.effective_end_time) > new Date(); }); }
+function getAllRuleConfigs() { return ruleConfigs; }
 
 // ---- CRUD ----
 
@@ -171,21 +172,77 @@ function deleteRuleConfig(id) {
   return false;
 }
 
+function publishRuleConfig(id) {
+  var idx = ruleConfigs.findIndex(function(r) { return r.id === id; });
+  if (idx !== -1 && ruleConfigs[idx].status === 'draft') {
+    ruleConfigs[idx].status = 'published';
+    ruleConfigs[idx].updated_at = getCurrentDateTime();
+    saveRuleConfigs();
+    return ruleConfigs[idx];
+  }
+  return null;
+}
+
+function voidRuleConfig(id) {
+  var idx = ruleConfigs.findIndex(function(r) { return r.id === id; });
+  if (idx !== -1 && ruleConfigs[idx].status === 'published') {
+    ruleConfigs[idx].status = 'voided';
+    ruleConfigs[idx].updated_at = getCurrentDateTime();
+    saveRuleConfigs();
+    return ruleConfigs[idx];
+  }
+  return null;
+}
+
 // ---- 唯一性校验 ----
 
 function checkUniqueConfig(customerId, warehouseId, excludeId) {
   if (!excludeId) excludeId = null;
   return !ruleConfigs.find(function(r) {
     return r.customer_id === customerId && r.warehouse_id === warehouseId && r.id !== excludeId &&
-      (!r.effective_end_time || new Date(r.effective_end_time) > new Date());
+      r.status !== 'voided';
   });
 }
 
 function getExistingConfig(customerId, warehouseId) {
   return ruleConfigs.find(function(r) {
     return r.customer_id === customerId && r.warehouse_id === warehouseId &&
-      (!r.effective_end_time || new Date(r.effective_end_time) > new Date());
+      r.status === 'published';
   });
+}
+
+// ---- 发布冲突校验：同客户+同仓库+同费用类型+生效期重叠 ----
+
+function getFeeTypesOfConfig(config) {
+  var types = [];
+  if (config.fee_discounts) {
+    Object.keys(config.fee_discounts).forEach(function(key) {
+      if (config.fee_discounts[key] && config.fee_discounts[key].length > 0) types.push(key);
+    });
+  }
+  return types;
+}
+
+function isTimeOverlap(start1, end1, start2, end2) {
+  if (!start1 || !end1 || !start2 || !end2) return false;
+  return new Date(start1) < new Date(end2) && new Date(start2) < new Date(end1);
+}
+
+function checkPublishConflict(config, excludeId) {
+  if (!excludeId) excludeId = null;
+  var myTypes = getFeeTypesOfConfig(config);
+  if (myTypes.length === 0) return [];
+  var conflicts = [];
+  ruleConfigs.forEach(function(r) {
+    if (r.id === excludeId || r.status !== 'published') return;
+    if (r.customer_id !== config.customer_id || r.warehouse_id !== config.warehouse_id) return;
+    var theirTypes = getFeeTypesOfConfig(r);
+    var hasCommon = myTypes.some(function(t) { return theirTypes.indexOf(t) !== -1; });
+    if (!hasCommon) return;
+    if (!isTimeOverlap(config.effective_start_time, config.effective_end_time, r.effective_start_time, r.effective_end_time)) return;
+    conflicts.push(r);
+  });
+  return conflicts;
 }
 
 // ---- 导出 ----
@@ -212,4 +269,10 @@ window.updateRuleConfig = updateRuleConfig;
 window.deleteRuleConfig = deleteRuleConfig;
 window.checkUniqueConfig = checkUniqueConfig;
 window.getExistingConfig = getExistingConfig;
+window.getAllRuleConfigs = getAllRuleConfigs;
+window.publishRuleConfig = publishRuleConfig;
+window.voidRuleConfig = voidRuleConfig;
+window.getFeeTypesOfConfig = getFeeTypesOfConfig;
+window.isTimeOverlap = isTimeOverlap;
+window.checkPublishConflict = checkPublishConflict;
 window.FEE_CATEGORIES = FEE_CATEGORIES;

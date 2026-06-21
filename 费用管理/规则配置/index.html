@@ -160,12 +160,9 @@
           <thead class="bg-light-bg">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">配置名称</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">状态</th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">客户</th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">仓库</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">引用价卡</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">业务类型</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">折扣配置</th>
-              <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">微调状态</th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">生效周期</th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">创建人/时间</th>
               <th class="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wider">操作</th>
@@ -185,15 +182,25 @@
       </div>
     </div>
 
-    <!-- 逻辑说明 -->
+    <!-- 逻辑说明 & 变更公告 -->
     <div class="bg-white rounded-lg shadow-card mt-4 overflow-hidden">
-      <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="openLogicModal()">
-        <div class="flex items-center">
-          <i class="fas fa-book text-primary mr-2"></i>
-          <span class="font-semibold text-primary">逻辑说明</span>
-          <span class="ml-2 text-xs text-gray-500">(点击查看详细逻辑)</span>
+      <div class="flex">
+        <div class="flex-1 px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-r border-primary/20 flex justify-between items-center cursor-pointer" onclick="openLogicModal()">
+          <div class="flex items-center">
+            <i class="fas fa-book text-primary mr-2"></i>
+            <span class="font-semibold text-primary">逻辑说明</span>
+            <span class="ml-2 text-xs text-gray-500">(点击查看详细逻辑)</span>
+          </div>
+          <i class="fas fa-external-link text-primary"></i>
         </div>
-        <i class="fas fa-external-link text-primary"></i>
+        <div class="flex-1 px-4 py-3 bg-gradient-to-r from-accent/5 to-accent/10 flex justify-between items-center cursor-pointer" onclick="openChangelogModal()">
+          <div class="flex items-center">
+            <i class="fas fa-bullhorn text-accent mr-2"></i>
+            <span class="font-semibold text-accent">变更公告</span>
+            <span class="ml-2 text-xs text-gray-500">(查看版本更新)</span>
+          </div>
+          <i class="fas fa-external-link text-accent"></i>
+        </div>
       </div>
     </div>
 
@@ -234,12 +241,12 @@
                     <td class="px-3 py-2 text-gray-600">页面加载时初始化API、筛选选项、渲染表格</td>
                     <td class="px-3 py-2 text-gray-600">initApi() + localStorage</td>
                     <td class="px-3 py-2 text-gray-600">加载客户/仓库/价卡/规则配置数据，初始化筛选下拉框，渲染列表表格</td>
-                    <td class="px-3 py-2 text-gray-600">首次加载自动生成测试数据（4条规则配置）</td></tr>
+                    <td class="px-3 py-2 text-gray-600">首次加载无示例数据，主表显示空状态</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">测试数据生成</td>
                     <td class="px-3 py-2 text-gray-600">localStorage无数据或版本不匹配时自动生成</td>
                     <td class="px-3 py-2 text-gray-600">api.js loadRuleConfigs()</td>
-                    <td class="px-3 py-2 text-gray-600">生成4条不同业务类型的规则配置（全部/出库/转仓），含微调/未微调状态</td>
-                    <td class="px-3 py-2 text-gray-600">DATA_VERSION=3.1.0控制版本</td></tr>
+                    <td class="px-3 py-2 text-gray-600">不生成示例数据，主表默认显示空状态，引导用户创建首条数据</td>
+                    <td class="px-3 py-2 text-gray-600">DATA_VERSION=3.3.0控制版本</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">列表排序</td>
                     <td class="px-3 py-2 text-gray-600">规则配置按创建时间倒序排列</td>
                     <td class="px-3 py-2 text-gray-600">ruleConfigs数组</td>
@@ -341,26 +348,11 @@
                     <td class="px-3 py-2 text-gray-600">直接显示仓库名称</td>
                     <td class="px-3 py-2 text-gray-600">ruleConfig.warehouse_name</td>
                     <td class="px-3 py-2 text-gray-600">-</td></tr>
-                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">引用价卡</td>
-                    <td class="px-3 py-2 text-gray-600">price_card_name</td>
-                    <td class="px-3 py-2 text-gray-600">显示价卡模板名称</td>
-                    <td class="px-3 py-2 text-gray-600">ruleConfig.price_card_name</td>
-                    <td class="px-3 py-2 text-gray-600">-</td></tr>
-                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">业务类型</td>
-                    <td class="px-3 py-2 text-gray-600">business_type</td>
-                    <td class="px-3 py-2 text-gray-600">枚举值转中文显示</td>
-                    <td class="px-3 py-2 text-gray-600">ruleConfig.business_type</td>
-                    <td class="px-3 py-2 text-gray-600">all→全部业务 inbound→入库 outbound→出库 transfer→转仓 return→退货</td></tr>
-                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">折扣配置</td>
-                    <td class="px-3 py-2 text-gray-600">fee_discounts</td>
-                    <td class="px-3 py-2 text-gray-600">按分类统计费用项数量，格式：分类名(数量)</td>
-                    <td class="px-3 py-2 text-gray-600">Object.keys(fee_discounts)遍历</td>
-                    <td class="px-3 py-2 text-gray-600">多个分类用顿号分隔，空分类不显示</td></tr>
-                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">微调状态</td>
-                    <td class="px-3 py-2 text-gray-600">is_adjusted</td>
-                    <td class="px-3 py-2 text-gray-600">布尔值转标签显示</td>
-                    <td class="px-3 py-2 text-gray-600">ruleConfig.is_adjusted</td>
-                    <td class="px-3 py-2 text-gray-600">true→橙色"已微调"标签 false→灰色"未微调"标签</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">状态</td>
+                    <td class="px-3 py-2 text-gray-600">status</td>
+                    <td class="px-3 py-2 text-gray-600">枚举值转标签显示</td>
+                    <td class="px-3 py-2 text-gray-600">ruleConfig.status</td>
+                    <td class="px-3 py-2 text-gray-600">draft→灰色"草稿" published→绿色"已发布" voided→红色"已作废"</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">生效周期</td>
                     <td class="px-3 py-2 text-gray-600">effective_start_time / effective_end_time</td>
                     <td class="px-3 py-2 text-gray-600">格式化日期范围显示</td>
@@ -387,15 +379,15 @@
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">配置名称</td>
                     <td class="px-3 py-2 text-gray-600">左对齐，字体加粗</td>
                     <td class="px-3 py-2 text-gray-600">鼠标悬停高亮，可点击查看详情</td></tr>
-                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">微调状态</td>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">状态</td>
                     <td class="px-3 py-2 text-gray-600">标签居中</td>
-                    <td class="px-3 py-2 text-gray-600">已微调=橙色badge-warning 未微调=灰色badge-secondary</td></tr>
+                    <td class="px-3 py-2 text-gray-600">草稿=灰色bg-gray-100 已发布=绿色bg-green-100 已作废=红色bg-red-100</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">生效周期</td>
                     <td class="px-3 py-2 text-gray-600">左对齐，小字号</td>
                     <td class="px-3 py-2 text-gray-600">已过期行整体半透明+删除线效果</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">操作列</td>
                     <td class="px-3 py-2 text-gray-600">右对齐</td>
-                    <td class="px-3 py-2 text-gray-600">查看(蓝色) 编辑(橙色) 删除(红色) 三个按钮</td></tr>
+                    <td class="px-3 py-2 text-gray-600">按状态动态显示：草稿→查看/编辑/发布/删除；已发布→查看/作废；已作废→查看/复制新增</td></tr>
                 </tbody>
               </table>
             </div>
@@ -424,7 +416,7 @@
                     <td class="px-3 py-2 text-gray-600">筛选区域下方左侧</td>
                     <td class="px-3 py-2 text-gray-600">跳转到 rule-config-form.html 新建页面</td>
                     <td class="px-3 py-2 text-gray-600">无</td>
-                    <td class="px-3 py-2 text-gray-600">打开新页面，表单为空，准备创建</td></tr>
+                    <td class="px-3 py-2 text-gray-600">打开新页面，表单为空，可"暂存"为草稿或直接"发布"</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">查询</td>
                     <td class="px-3 py-2 text-gray-600">筛选区域右侧</td>
                     <td class="px-3 py-2 text-gray-600">执行筛选，重新渲染表格</td>
@@ -443,20 +435,186 @@
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">编辑</td>
                     <td class="px-3 py-2 text-gray-600">操作列</td>
                     <td class="px-3 py-2 text-gray-600">跳转到 rule-config-form.html?editId=xxx</td>
-                    <td class="px-3 py-2 text-gray-600">规则配置存在</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在且状态为"草稿"</td>
                     <td class="px-3 py-2 text-gray-600">打开新页面，自动填充已有数据到表单和折扣配置</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">删除</td>
                     <td class="px-3 py-2 text-gray-600">操作列</td>
                     <td class="px-3 py-2 text-gray-600">弹出确认对话框，确认后删除</td>
                     <td class="px-3 py-2 text-gray-600">规则配置存在</td>
                     <td class="px-3 py-2 text-gray-600">confirm确认→deleteRuleConfig()→saveRuleConfigs()→刷新表格→Toast成功提示</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">发布</td>
+                    <td class="px-3 py-2 text-gray-600">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">弹出确认对话框，校验冲突后发布</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在且状态为"草稿"</td>
+                    <td class="px-3 py-2 text-gray-600">checkPublishConflict()校验→confirm确认→publishRuleConfig()→刷新表格→Toast成功提示</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">作废</td>
+                    <td class="px-3 py-2 text-gray-600">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">弹出确认对话框，确认后作废</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在且状态为"已发布"</td>
+                    <td class="px-3 py-2 text-gray-600">confirm确认→voidRuleConfig()→刷新表格→Toast成功提示</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">复制新增</td>
+                    <td class="px-3 py-2 text-gray-600">操作列</td>
+                    <td class="px-3 py-2 text-gray-600">复制当前配置数据创建新草稿并跳转编辑</td>
+                    <td class="px-3 py-2 text-gray-600">规则配置存在且状态为"已作废"</td>
+                    <td class="px-3 py-2 text-gray-600">copyAndCreateRuleConfig()→创建新草稿(name+"（副本）")→跳转编辑页</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- 卡片5：属性取值逻辑（主表完整） -->
+        <!-- 卡片5：状态变更流程 -->
+        <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-800 flex items-center">
+              <i class="fas fa-sitemap text-primary mr-2"></i>状态变更流程
+            </h4>
+          </div>
+          <div class="p-4">
+            <!-- 状态变更流程图 -->
+            <div class="flex items-center justify-center gap-3 py-6 flex-wrap bg-gray-50 rounded-lg">
+              <div class="px-4 py-3 bg-blue-50 border-2 border-blue-300 rounded-lg text-center">
+                <i class="fas fa-plus-circle text-blue-600 mb-1"></i>
+                <div class="text-sm font-semibold text-blue-700">新建</div>
+              </div>
+              <div class="flex flex-col items-center text-xs text-gray-500">
+                <span>暂存</span>
+                <i class="fas fa-arrow-right text-gray-400"></i>
+              </div>
+              <div class="px-4 py-3 bg-gray-100 border-2 border-gray-400 rounded-lg text-center">
+                <i class="fas fa-pencil-alt text-gray-600 mb-1"></i>
+                <div class="text-sm font-semibold text-gray-700">草稿</div>
+                <div class="text-xs text-gray-500 mt-1">draft</div>
+              </div>
+              <div class="flex flex-col items-center text-xs text-gray-500">
+                <span>发布</span>
+                <i class="fas fa-arrow-right text-green-500"></i>
+              </div>
+              <div class="px-4 py-3 bg-green-50 border-2 border-green-300 rounded-lg text-center">
+                <i class="fas fa-check-circle text-green-600 mb-1"></i>
+                <div class="text-sm font-semibold text-green-700">已发布</div>
+                <div class="text-xs text-green-500 mt-1">published</div>
+              </div>
+              <div class="flex flex-col items-center text-xs text-gray-500">
+                <span>作废</span>
+                <i class="fas fa-arrow-right text-red-400"></i>
+              </div>
+              <div class="px-4 py-3 bg-red-50 border-2 border-red-300 rounded-lg text-center">
+                <i class="fas fa-ban text-red-600 mb-1"></i>
+                <div class="text-sm font-semibold text-red-700">已作废</div>
+                <div class="text-xs text-red-500 mt-1">voided</div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-center gap-6 text-xs text-gray-500 flex-wrap">
+              <div><i class="fas fa-info-circle mr-1 text-blue-400"></i>新建也可直接"发布"→已发布（跳过草稿阶段）</div>
+              <div><i class="fas fa-info-circle mr-1 text-orange-400"></i>已作废→"复制新增"→新建草稿副本（name+"（副本）"）</div>
+              <div><i class="fas fa-info-circle mr-1 text-gray-400"></i>状态单向流转，不可逆</div>
+            </div>
+
+            <!-- 状态定义表 -->
+            <h5 class="font-semibold text-gray-700 mt-6 mb-2 flex items-center"><i class="fas fa-tag mr-1 text-gray-400"></i>状态定义</h5>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">状态</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">状态码</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">标签样式</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">状态流转入口</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">草稿</td>
+                    <td class="px-3 py-2 text-gray-600">draft</td>
+                    <td class="px-3 py-2 text-gray-600">灰色 bg-gray-100</td>
+                    <td class="px-3 py-2 text-gray-600">新建/编辑中，未生效，可随时暂存</td>
+                    <td class="px-3 py-2 text-gray-600">新建暂存 / 复制新增 / 编辑保存</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">已发布</td>
+                    <td class="px-3 py-2 text-gray-600">published</td>
+                    <td class="px-3 py-2 text-gray-600">绿色 bg-green-100</td>
+                    <td class="px-3 py-2 text-gray-600">正式生效中，不可编辑，可作废</td>
+                    <td class="px-3 py-2 text-gray-600">草稿发布 / 新建直接发布</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">已作废</td>
+                    <td class="px-3 py-2 text-gray-600">voided</td>
+                    <td class="px-3 py-2 text-gray-600">红色 bg-red-100</td>
+                    <td class="px-3 py-2 text-gray-600">已终止，不可编辑不可删除，仅可复制新增</td>
+                    <td class="px-3 py-2 text-gray-600">已发布作废</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 操作权限矩阵 -->
+            <h5 class="font-semibold text-gray-700 mt-6 mb-2 flex items-center"><i class="fas fa-th-large mr-1 text-gray-400"></i>操作权限矩阵</h5>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-center font-medium text-gray-700 border-b">操作</th>
+                      <th class="px-3 py-2 text-center font-medium text-gray-700 border-b">草稿 (draft)</th>
+                      <th class="px-3 py-2 text-center font-medium text-gray-700 border-b">已发布 (published)</th>
+                      <th class="px-3 py-2 text-center font-medium text-gray-700 border-b">已作废 (voided)</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800 text-center">查看</td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800 text-center">编辑</td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800 text-center">发布</td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800 text-center">作废</td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800 text-center">删除</td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800 text-center">复制新增</td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td>
+                    <td class="px-3 py-2 text-center text-gray-300"><i class="fas fa-minus"></i></td>
+                    <td class="px-3 py-2 text-center text-green-600"><i class="fas fa-check"></i></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 发布冲突校验逻辑 -->
+            <h5 class="font-semibold text-gray-700 mt-6 mb-2 flex items-center"><i class="fas fa-shield-alt mr-1 text-gray-400"></i>发布冲突校验逻辑</h5>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm border border-gray-200 rounded">
+                <thead class="bg-gray-50">
+                  <tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">校验项</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">校验条件</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发时机</th>
+                      <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">阻断行为</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">发布冲突校验</td>
+                    <td class="px-3 py-2 text-gray-600">同客户(customer_id) + 同仓库(warehouse_id) + 同费用类型(fee_discounts非空分类键交集) + 生效期重叠(start1 &lt; end2 && start2 &lt; end1)</td>
+                    <td class="px-3 py-2 text-gray-600">仅发布操作触发（表单页发布 + 主表发布按钮）</td>
+                    <td class="px-3 py-2 text-gray-600">阻断发布，Toast提示冲突规则名称</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">草稿暂存</td>
+                    <td class="px-3 py-2 text-gray-600">不校验冲突</td>
+                    <td class="px-3 py-2 text-gray-600">暂存操作</td>
+                    <td class="px-3 py-2 text-gray-600">无阻断，允许保存为草稿</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">重复信息提示</td>
+                    <td class="px-3 py-2 text-gray-600">同客户 + 同仓库的已发布规则</td>
+                    <td class="px-3 py-2 text-gray-600">表单页选择客户/仓库时</td>
+                    <td class="px-3 py-2 text-gray-600">仅信息提示，不阻止暂存</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">复制新增</td>
+                    <td class="px-3 py-2 text-gray-600">深拷贝配置数据，name + "（副本）"，status='draft'</td>
+                    <td class="px-3 py-2 text-gray-600">已作废状态点击"复制新增"</td>
+                    <td class="px-3 py-2 text-gray-600">创建新草稿，跳转编辑页，不校验冲突</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片6：属性取值逻辑（主表完整） -->
         <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
           <div class="flex border-b border-gray-200 bg-gray-50">
             <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="field-attr-logic" data-tab="attr-main" onclick="switchLogicTab(this)">
@@ -490,6 +648,7 @@
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">fee_discounts</td><td class="px-3 py-2 text-gray-600">折扣配置</td><td class="px-3 py-2 text-gray-600">JSON Object</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">按分类存储：{inbound:[], outbound:[], storage:[], express:[], other:[]}</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">adjustments</td><td class="px-3 py-2 text-gray-600">调整记录</td><td class="px-3 py-2 text-gray-600">JSON Array</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">否</td><td class="px-3 py-2 text-gray-600">从价卡继承的调整项 [{type, name, amount, description}]</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">is_adjusted</td><td class="px-3 py-2 text-gray-600">微调状态</td><td class="px-3 py-2 text-gray-600">Boolean</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">计算</td><td class="px-3 py-2 text-gray-600">对比价卡原始折扣与当前折扣是否一致</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">status</td><td class="px-3 py-2 text-gray-600">状态</td><td class="px-3 py-2 text-gray-600">Enum</td><td class="px-3 py-2 text-gray-600">16</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">draft(草稿)/published(已发布)/voided(已作废)，默认draft，单向流转不可逆</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">effective_start_time</td><td class="px-3 py-2 text-gray-600">生效开始时间</td><td class="px-3 py-2 text-gray-600">DateTime</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">格式 YYYY-MM-DD HH:mm</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">effective_end_time</td><td class="px-3 py-2 text-gray-600">生效结束时间</td><td class="px-3 py-2 text-gray-600">DateTime</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">需大于生效开始时间</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">created_by</td><td class="px-3 py-2 text-gray-600">创建人</td><td class="px-3 py-2 text-gray-600">String</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">是</td><td class="px-3 py-2 text-gray-600">手工输入</td></tr>
@@ -513,10 +672,10 @@
                     <td class="px-3 py-2 text-gray-600">name/customer_id/warehouse_id/price_card_id/effective_start_time/effective_end_time/created_by 均不能为空</td>
                     <td class="px-3 py-2 text-gray-600">保存时（createRuleConfig / updateRuleConfig）</td>
                     <td class="px-3 py-2 text-gray-600">"请填写所有必填项"</td></tr>
-                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">唯一性校验</td>
-                    <td class="px-3 py-2 text-gray-600">同一 customer_id + warehouse_id 组合只能有一个有效配置（未过期）</td>
-                    <td class="px-3 py-2 text-gray-600">选择客户/仓库时实时检测 + 保存时再次校验</td>
-                    <td class="px-3 py-2 text-gray-600">"该客户和仓库已存在配置：xxx"</td></tr>
+                  <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">发布冲突校验</td>
+                    <td class="px-3 py-2 text-gray-600">同一 customer_id + warehouse_id + 同费用类型(fee_discounts非空分类键交集) + 生效期重叠(start1 &lt; end2 && start2 &lt; end1)</td>
+                    <td class="px-3 py-2 text-gray-600">仅发布操作触发（表单页发布 + 主表发布按钮），暂存不校验</td>
+                    <td class="px-3 py-2 text-gray-600">"发布失败：与已发布规则[xxx]在相同客户+仓库+费用类型上存在生效期重叠"</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">时间范围校验</td>
                     <td class="px-3 py-2 text-gray-600">effective_end_time 必须 > effective_start_time</td>
                     <td class="px-3 py-2 text-gray-600">保存时</td>
@@ -558,6 +717,7 @@
   <script src="js/renderer.js"></script>
   <script src="js/detail-renderer.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/changelog.js"></script>
 
   <!-- 逻辑说明弹窗JS（与价卡管理/rule-config-form一致） -->
   <script>

@@ -133,7 +133,8 @@
       <!-- 操作按钮 -->
       <div class="flex justify-end gap-3 pt-4">
         <a href="index.html" class="btn btn-secondary"><i class="fas fa-times mr-2"></i>取消</a>
-        <button type="button" onclick="saveRuleConfig()" class="btn btn-primary"><i class="fas fa-save mr-2"></i>保存配置</button>
+        <button type="button" onclick="saveRuleConfig('draft')" class="btn btn-secondary"><i class="fas fa-save mr-2"></i>暂存</button>
+        <button type="button" onclick="saveRuleConfig('published')" class="btn btn-primary"><i class="fas fa-paper-plane mr-2"></i>发布</button>
       </div>
 
     </form>

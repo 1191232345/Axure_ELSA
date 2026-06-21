@@ -1,124 +1,209 @@
 import sqlite3
-from config import DATABASE_PATH
+import logging
+from contextlib import contextmanager
+from config import Config
+
+logger = logging.getLogger(__name__)
+
+# 简单的连接池实现
+_connection_pool = []
+_pool_size = 5
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE_PATH)
+    """获取数据库连接（从连接池）"""
+    global _connection_pool
+    
+    if _connection_pool:
+        conn = _connection_pool.pop()
+        try:
+            # 测试连接是否有效
+            conn.execute('SELECT 1')
+            return conn
+        except sqlite3.Error:
+            # 连接已失效，创建新连接
+            pass
+    
+    # 创建新连接
+    conn = sqlite3.connect(Config.DATABASE_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    # 启用外键约束
+    conn.execute('PRAGMA foreign_keys = ON')
+    # 设置繁忙超时（5秒），避免并发写入时 database is locked
+    conn.execute('PRAGMA busy_timeout = 5000')
     return conn
 
+def return_db_connection(conn):
+    """归还数据库连接到连接池"""
+    global _connection_pool
+    
+    if len(_connection_pool) < _pool_size:
+        try:
+            # 测试连接是否有效
+            conn.execute('SELECT 1')
+            _connection_pool.append(conn)
+        except sqlite3.Error:
+            # 连接已失效，关闭它
+            try:
+                conn.close()
+            except:
+                pass
+    else:
+        # 连接池已满，关闭连接
+        conn.close()
+
+@contextmanager
+def get_db_cursor():
+    """数据库游标上下文管理器"""
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        yield cursor
+        conn.commit()
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        logger.error(f"数据库操作错误: {e}", exc_info=True)
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            return_db_connection(conn)
+
+@contextmanager
+def transaction():
+    """事务上下文管理器"""
+    conn = None
+    try:
+        conn = get_db_connection()
+        conn.execute('BEGIN')
+        yield conn
+        conn.commit()
+        logger.debug("事务提交成功")
+    except Exception as e:
+        if conn:
+            conn.rollback()
+            logger.error(f"事务回滚: {e}", exc_info=True)
+        raise
+    finally:
+        if conn:
+            return_db_connection(conn)
+
 def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    """初始化数据库"""
+    with get_db_cursor() as cursor:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS departments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                description TEXT,
+                enabled INTEGER DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                description TEXT,
+                enabled INTEGER DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS employees (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                department TEXT NOT NULL
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS rating_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                description TEXT,
+                enabled INTEGER DEFAULT 1
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS employee_rating_relations (
+                employee_id TEXT,
+                rating_item_id INTEGER,
+                PRIMARY KEY (employee_id, rating_item_id),
+                FOREIGN KEY (employee_id) REFERENCES employees(id),
+                FOREIGN KEY (rating_item_id) REFERENCES rating_items(id)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS evaluation_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                employee_id TEXT,
+                employee_name TEXT,
+                employee_department TEXT,
+                evaluator_name TEXT,
+                rating_details TEXT,
+                created_at TEXT,
+                status TEXT,
+                FOREIGN KEY (employee_id) REFERENCES employees(id)
+            )
+        ''')
+        
+        # 添加新列（如果不存在）
+        try:
+            cursor.execute('ALTER TABLE employees ADD COLUMN department_id INTEGER')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('ALTER TABLE evaluation_results ADD COLUMN source_id INTEGER')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('ALTER TABLE evaluation_results ADD COLUMN source_name TEXT')
+        except sqlite3.OperationalError:
+            pass
+        
+        # 创建索引
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_departments_enabled ON departments(enabled)')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_departments_sort ON departments(sort_order)')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_sources_enabled ON sources(enabled)')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_sources_sort ON sources(sort_order)')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department_id)')
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_evaluation_source ON evaluation_results(source_id)')
+        except sqlite3.OperationalError:
+            pass
     
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS departments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            description TEXT,
-            enabled INTEGER DEFAULT 1,
-            sort_order INTEGER DEFAULT 0,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS sources (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            description TEXT,
-            enabled INTEGER DEFAULT 1,
-            sort_order INTEGER DEFAULT 0,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS employees (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            department TEXT NOT NULL
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS rating_items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT,
-            enabled INTEGER DEFAULT 1
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS employee_rating_relations (
-            employee_id TEXT,
-            rating_item_id INTEGER,
-            PRIMARY KEY (employee_id, rating_item_id),
-            FOREIGN KEY (employee_id) REFERENCES employees(id),
-            FOREIGN KEY (rating_item_id) REFERENCES rating_items(id)
-        )
-    ''')
-    
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS evaluation_results (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            employee_id TEXT,
-            employee_name TEXT,
-            employee_department TEXT,
-            evaluator_name TEXT,
-            rating_details TEXT,
-            created_at TEXT,
-            status TEXT,
-            FOREIGN KEY (employee_id) REFERENCES employees(id)
-        )
-    ''')
-    
-    try:
-        cursor.execute('ALTER TABLE employees ADD COLUMN department_id INTEGER')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('ALTER TABLE evaluation_results ADD COLUMN source_id INTEGER')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('ALTER TABLE evaluation_results ADD COLUMN source_name TEXT')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_departments_enabled ON departments(enabled)')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_departments_sort ON departments(sort_order)')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_sources_enabled ON sources(enabled)')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_sources_sort ON sources(sort_order)')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_employees_department ON employees(department_id)')
-    except sqlite3.OperationalError:
-        pass
-    
-    try:
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_evaluation_source ON evaluation_results(source_id)')
-    except sqlite3.OperationalError:
-        pass
-    
-    conn.commit()
-    conn.close()
+    logger.info("数据库初始化完成")

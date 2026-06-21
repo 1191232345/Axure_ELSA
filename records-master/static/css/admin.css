@@ -1,3 +1,35 @@
+/* ========================================
+   导航菜单样式
+   ======================================== */
+
+/* 导航项 */
+.nav-item {
+  padding: 0.375rem 0.75rem;
+  color: #5F6368;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background-color: #F0F2F5;
+  color: #1A73E8;
+}
+
+.nav-item.active {
+  background-color: #E8F0FE;
+  color: #1A73E8;
+  font-weight: 600;
+}
+
+/* ========================================
+   侧边栏样式（已弃用，保留兼容性）
+   ======================================== */
+
 .content-auto {
   content-visibility: auto;
 }
@@ -25,9 +57,10 @@
 .btn-primary {
   background-color: #165DFF;
   color: white;
+  font-size: 0.8125rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
   transition: all 0.3s;
   display: inline-flex;
   align-items: center;
@@ -47,9 +80,10 @@
   background-color: white;
   border: 1px solid #165DFF;
   color: #165DFF;
+  font-size: 0.8125rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
   transition: all 0.3s;
   display: inline-flex;
   align-items: center;
@@ -67,9 +101,10 @@
 .btn-danger {
   background-color: #F53F3F;
   color: white;
+  font-size: 0.8125rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
   transition: all 0.3s;
   display: inline-flex;
   align-items: center;
@@ -87,25 +122,64 @@
 .btn-disabled {
   background-color: #E5E6EB;
   color: #86909C;
+  font-size: 0.8125rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
   cursor: not-allowed;
   display: inline-flex;
   align-items: center;
 }
 
+.table-container {
+  overflow-x: auto; /* 只允许水平滚动，用于超宽表格 */
+  border: 1px solid #E5E6EB;
+  border-radius: 0.5rem;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* 固定表头 */
+.table-container thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table-container thead th {
+  background-color: #F5F7FA;
+  border-bottom: 2px solid #E5E6EB;
+}
+
 .table-cell {
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
   border-bottom: 1px solid #E5E6EB;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
   border: 1px solid #C9CDD4;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   transition: all 0.2s;
 }
 
@@ -156,7 +230,7 @@
 }
 
 .pagination-info {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: #4E5969;
 }
 
@@ -167,10 +241,10 @@
 }
 
 .pagination-btn {
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.6rem;
   border: 1px solid #C9CDD4;
   border-radius: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   transition: all 0.2s;
 }
 

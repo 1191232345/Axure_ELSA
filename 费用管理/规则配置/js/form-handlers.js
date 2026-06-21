@@ -23,6 +23,7 @@ async function initFormPage() {
 function loadEditData(editId) {
   var config = getRuleConfigById(editId);
   if (!config) { showToast('未找到配置数据', 'error'); return; }
+  if (config.status && config.status !== 'draft') { showToast('只有草稿状态的配置才能编辑', 'error'); setTimeout(function() { window.location.href = 'index.html'; }, 1500); return; }
   document.getElementById('selectCustomer').value = config.customer_id;
   document.getElementById('selectWarehouse').value = config.warehouse_id;
   document.getElementById('selectPriceCard').value = config.price_card_id;
@@ -67,9 +68,13 @@ function checkDuplicateConfig() {
   var cid = document.getElementById('selectCustomer').value, wid = document.getElementById('selectWarehouse').value;
   var hint = document.getElementById('duplicateHint');
   if (cid && wid) {
-    var ex = getExistingConfig(cid, wid);
-    if (ex && ex.id !== currentEditId) { hint.classList.remove('hidden'); hint.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>该客户和仓库已存在配置：' + ex.name + '，请编辑现有配置'; }
-    else hint.classList.add('hidden');
+    var existing = getAllRuleConfigs().filter(function(r) {
+      return r.customer_id === cid && r.warehouse_id === wid && r.status === 'published' && r.id !== currentEditId;
+    });
+    if (existing.length > 0) {
+      hint.classList.remove('hidden');
+      hint.innerHTML = '<i class="fas fa-info-circle mr-1"></i>该客户和仓库已存在已发布的规则配置：' + existing.map(function(e) { return e.name; }).join('、') + '，发布时需确保费用类型和生效期不重叠';
+    } else hint.classList.add('hidden');
   } else hint.classList.add('hidden');
 }
 
@@ -199,13 +204,22 @@ function _checkIfAdjusted(pc, cfd) {
   return false;
 }
 
-function saveRuleConfig() {
+function saveRuleConfig(status) {
   var name = document.getElementById('configName').value, cid = document.getElementById('selectCustomer').value, wid = document.getElementById('selectWarehouse').value, pcid = document.getElementById('selectPriceCard').value, est = document.getElementById('effectiveStartTime').value, eet = document.getElementById('effectiveEndTime').value;
   if (!name || !cid || !wid || !pcid || !est || !eet) { showToast('请填写所有必填项', 'error'); return; }
-  if (!checkUniqueConfig(cid, wid, currentEditId)) { showToast('该客户和仓库已存在配置：' + getExistingConfig(cid, wid).name, 'error'); return; }
   var data = collectFormData();
-  if (currentEditId) { updateRuleConfig(currentEditId, data); showToast('规则配置更新成功', 'success'); }
-  else { createRuleConfig(data); showToast('规则配置创建成功', 'success'); }
+  data.status = status || 'draft';
+  // 发布时检查生效期重叠冲突
+  if (status === 'published') {
+    var conflicts = checkPublishConflict(data, currentEditId);
+    if (conflicts.length > 0) {
+      var conflictNames = conflicts.map(function(c) { return c.name; }).join('、');
+      showToast('发布失败：与已发布规则[' + conflictNames + ']在相同客户+仓库+费用类型上存在生效期重叠', 'error');
+      return;
+    }
+  }
+  if (currentEditId) { updateRuleConfig(currentEditId, data); showToast(status === 'published' ? '规则配置发布成功' : '规则配置暂存成功', 'success'); }
+  else { createRuleConfig(data); showToast(status === 'published' ? '规则配置发布成功' : '规则配置暂存成功', 'success'); }
   setTimeout(function() { window.location.href = 'index.html'; }, 800);
 }
 

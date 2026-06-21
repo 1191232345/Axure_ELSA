@@ -2,6 +2,81 @@ import json
 from datetime import datetime
 from models.db import get_db_connection
 
+def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, evaluator=None, department=None):
+    """分页获取评价结果"""
+    conn = get_db_connection()
+    offset = (page - 1) * page_size
+
+    # 构建查询条件
+    where_clauses = []
+    params = []
+
+    if employee_id:
+        where_clauses.append('employee_id = ?')
+        params.append(employee_id)
+
+    if evaluator:
+        where_clauses.append('evaluator_name LIKE ?')
+        params.append(f'%{evaluator}%')
+
+    if department:
+        where_clauses.append('employee_department = ?')
+        params.append(department)
+
+    where_sql = ' AND '.join(where_clauses) if where_clauses else '1=1'
+
+    # 查询总数
+    count_query = f'SELECT COUNT(*) as total FROM evaluation_results WHERE {where_sql}'
+    total_row = conn.execute(count_query, params).fetchone()
+    total = total_row['total'] if total_row else 0
+
+    # 查询数据
+    data_query = f'''
+        SELECT * FROM evaluation_results
+        WHERE {where_sql}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
+    '''
+    params.extend([page_size, offset])
+    rows = conn.execute(data_query, params).fetchall()
+
+    results = {}
+    for row in rows:
+        result_id = row['id']
+
+        rating_details = {}
+        if row['rating_details']:
+            try:
+                rating_details = json.loads(row['rating_details'])
+            except json.JSONDecodeError:
+                rating_details = {}
+
+        results[result_id] = {
+            'id': result_id,
+            'employee_id': row['employee_id'],
+            'employee_name': row['employee_name'] or '未知员工',
+            'employee_department': row['employee_department'] or '未知部门',
+            'evaluator_name': row['evaluator_name'] or '匿名',
+            'rating_details': rating_details,
+            'created_at': row['created_at'],
+            'status': row['status'],
+            'source_id': row['source_id'],
+            'source_name': row['source_name']
+        }
+
+    conn.close()
+    total_pages = max(1, (total + page_size - 1) // page_size)
+
+    return {
+        'evaluationResults': results,
+        'pagination': {
+            'page': page,
+            'pageSize': page_size,
+            'total': total,
+            'totalPages': total_pages
+        }
+    }
+
 def get_all_evaluation_results():
     conn = get_db_connection()
     results = {}

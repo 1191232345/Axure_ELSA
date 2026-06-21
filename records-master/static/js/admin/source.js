@@ -5,10 +5,16 @@ window.SourcePage = (function () {
     search: '',
     enabled: '',
     editingId: null,
+    initialized: false,  // 添加初始化标志
   };
 
   function init() {
-    bindEvents();
+    // 只在第一次调用时绑定事件
+    if (!state.initialized) {
+      bindEvents();
+      state.initialized = true;
+    }
+    // 每次都加载数据
     loadSources();
   }
 
@@ -127,6 +133,9 @@ window.SourcePage = (function () {
   }
 
   function openModal(src) {
+    // 先关闭已存在的模态框
+    closeModal();
+    
     state.editingId = src ? src.id : null;
 
     var title = src ? '编辑来源' : '添加来源';
