@@ -94,8 +94,12 @@ app = create_app(os.environ.get('FLASK_ENV', 'default'))
 
 if __name__ == '__main__':
     port = 5002
+    # 开放局域网访问，使用 0.0.0.0 作为 host
+    host = '0.0.0.0'
+    
     if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
         print(f'检查端口 {port} 是否被占用...')
         kill_port_process(port)
         print(f'启动 Flask 应用，端口: {port}')
-    app.run(debug=app.config['DEBUG'], port=port)
+        print(f'局域网访问地址: http://<你的IP地址>:5002/')
+    app.run(debug=app.config['DEBUG'], host=host, port=port)
