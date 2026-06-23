@@ -97,7 +97,7 @@
           <!-- 员工管理筛选区域 -->
           <div class="mb-6">
             <div class="flex flex-col sm:flex-row gap-3">
-              <div class="relative flex-1">
+              <div class="relative" style="width: 300px;">
                 <input type="text" id="employeeSearch" placeholder="搜索员工姓名..." class="form-input pl-10">
                 <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
               </div>
@@ -152,7 +152,7 @@
           <!-- 部门筛选区域 -->
           <div class="mb-6">
             <div class="flex flex-col sm:flex-row gap-3">
-              <div class="relative flex-1">
+              <div class="relative" style="width: 300px;">
                 <input type="text" id="departmentSearch" placeholder="搜索部门名称..." class="form-input pl-10">
                 <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
               </div>
@@ -285,13 +285,25 @@
       <div class="page-content hidden" id="evaluation-results-page">
         <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 mb-4 md:mb-0">
               <button id="exportEvaluationBtn" class="btn-secondary">
                 <i class="fa fa-download mr-1"></i> 导出数据
               </button>
               <button id="exportEvaluationStatsBtn" class="btn-secondary">
                 <i class="fa fa-file-text-o mr-1"></i> 导出统计
               </button>
+            </div>
+            <!-- 搜索区域 -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="relative" style="width: 300px;">
+                <input type="text" id="evaluationEmployeeSearch" placeholder="搜索员工姓名..." class="form-input pl-10">
+                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+              </div>
+              <div class="w-full sm:w-48">
+                <select id="evaluationDepartmentFilter" class="form-input">
+                  <option value="">所有部门</option>
+                </select>
+              </div>
             </div>
           </div>
           <!-- 评价结果表格 -->

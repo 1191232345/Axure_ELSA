@@ -91,20 +91,44 @@ window.Events = (function () {
     var searchInput = document.getElementById('searchInput');
     if (!searchInput) return;
 
+    var debounceTimer = null;
+    
     searchInput.addEventListener('input', function () {
-      var searchTerm = this.value.toLowerCase().trim();
-      document.querySelectorAll('.evaluation-item').forEach(function (employee) {
-        var nameElement = employee.querySelector('h3');
-        var deptElement = employee.querySelector('p');
-        var name = nameElement ? nameElement.textContent.toLowerCase() : '';
-        var department = deptElement ? deptElement.textContent.toLowerCase() : '';
-
-        if (name.indexOf(searchTerm) !== -1 || department.indexOf(searchTerm) !== -1) {
-          employee.style.display = '';
-        } else {
-          employee.style.display = 'none';
-        }
-      });
+      var searchTerm = this.value.trim();
+      
+      // 清除之前的定时器
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      
+      // 设置新的定时器，300ms 后执行搜索
+      debounceTimer = setTimeout(function () {
+        // 更新筛选条件
+        State.setFilters(searchTerm, State.getFilters().department);
+        
+        // 调用后端 API 进行搜索
+        Renderer.showLoading();
+        Api.loadAllData(1, 10, searchTerm, State.getFilters().department)
+          .then(function (loaded) {
+            State.setAll(loaded);
+            Renderer.renderEvaluationList();
+            Renderer.renderPagination();
+            initSliders();
+            initExpandCollapse();
+            initRatingEvents();
+            initClearEvaluationButtons();
+            initCommentTextareaEvents();
+            initRatingDescriptionButtons();
+            Renderer.updateSubmitButton();
+          })
+          .catch(function (error) {
+            console.error('搜索失败:', error);
+            UI.showToast('搜索失败，请重试', 'error');
+          })
+          .finally(function () {
+            Renderer.hideLoading();
+          });
+      }, 300);
     });
   }
 
@@ -131,30 +155,37 @@ window.Events = (function () {
         this.classList.add('bg-primary', 'text-white');
 
         var filterText = this.textContent.trim();
-        var employees = document.querySelectorAll('.evaluation-item');
-        var visibleCount = 0;
-
-        employees.forEach(function (employee) {
-          var deptElement = employee.querySelector('p:first-of-type');
-          if (deptElement) {
-            var fullText = deptElement.textContent;
-            var parts = fullText.split(' \u00B7 ');
-            var department = parts.length > 0 ? parts[0].trim().toLowerCase() : '';
-            var filterTextLower = filterText.toLowerCase();
-
-            if (filterText === '全部' || department.indexOf(filterTextLower) !== -1) {
-              employee.style.display = '';
-              visibleCount++;
-            } else {
-              employee.style.display = 'none';
-            }
-          } else {
-            employee.style.display = '';
-            visibleCount++;
-          }
-        });
-
-        countElement.textContent = '共 ' + visibleCount + ' 名被评人';
+        
+        // 更新筛选条件
+        var department = filterText === '全部' ? '' : filterText;
+        State.setFilters(State.getFilters().search, department);
+        
+        // 调用后端 API 进行筛选
+        Renderer.showLoading();
+        Api.loadAllData(1, 10, State.getFilters().search, department)
+          .then(function (loaded) {
+            State.setAll(loaded);
+            Renderer.renderEvaluationList();
+            Renderer.renderPagination();
+            initSliders();
+            initExpandCollapse();
+            initRatingEvents();
+            initClearEvaluationButtons();
+            initCommentTextareaEvents();
+            initRatingDescriptionButtons();
+            Renderer.updateSubmitButton();
+            
+            // 更新显示数量
+            var pagination = State.getPagination();
+            countElement.textContent = '共 ' + pagination.total + ' 名被评人';
+          })
+          .catch(function (error) {
+            console.error('筛选失败:', error);
+            UI.showToast('筛选失败，请重试', 'error');
+          })
+          .finally(function () {
+            Renderer.hideLoading();
+          });
       });
     });
   }

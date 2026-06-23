@@ -45,16 +45,22 @@ window.AdminApi = (function () {
     });
   }
 
-  function loadEmployees(page, pageSize) {
-    return request(config.employees + '?page=' + page + '&pageSize=' + pageSize);
+  function loadEmployees(page, pageSize, search, department) {
+    var url = config.employees + '?page=' + page + '&pageSize=' + pageSize;
+    if (search) url += '&search=' + encodeURIComponent(search);
+    if (department) url += '&department=' + encodeURIComponent(department);
+    return request(url);
   }
 
   function loadRatingItems(page, pageSize) {
     return request(config.ratingItems + '?page=' + page + '&pageSize=' + pageSize);
   }
 
-  function loadEvaluationResults(page, pageSize) {
-    return request(config.evaluationResults + '?page=' + page + '&pageSize=' + pageSize);
+  function loadEvaluationResults(page, pageSize, employeeName, department) {
+    var url = config.evaluationResults + '?page=' + page + '&pageSize=' + pageSize;
+    if (employeeName) url += '&employee_name=' + encodeURIComponent(employeeName);
+    if (department) url += '&department=' + encodeURIComponent(department);
+    return request(url);
   }
 
   function loadDepartments() {

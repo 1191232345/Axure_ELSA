@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from models.db import get_db_connection
 
-def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, evaluator=None, department=None):
+def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, evaluator=None, department=None, employee_name=None):
     """分页获取评价结果"""
     conn = get_db_connection()
     offset = (page - 1) * page_size
@@ -14,6 +14,10 @@ def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, eva
     if employee_id:
         where_clauses.append('employee_id = ?')
         params.append(employee_id)
+
+    if employee_name:
+        where_clauses.append('employee_name LIKE ?')
+        params.append(f'%{employee_name}%')
 
     if evaluator:
         where_clauses.append('evaluator_name LIKE ?')

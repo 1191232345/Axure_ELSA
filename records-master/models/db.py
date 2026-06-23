@@ -91,6 +91,42 @@ def transaction():
         if conn:
             return_db_connection(conn)
 
+def clean_duplicate_relations():
+    """清理员工-评分项关系表中的重复记录"""
+    with get_db_cursor() as cursor:
+        # 查找重复记录
+        cursor.execute('''
+            SELECT employee_id, rating_item_id, COUNT(*) as count
+            FROM employee_rating_relations
+            GROUP BY employee_id, rating_item_id
+            HAVING count > 1
+        ''')
+        duplicates = cursor.fetchall()
+        
+        if duplicates:
+            logger.info(f"发现 {len(duplicates)} 组重复记录，开始清理...")
+            
+            # 删除所有重复记录，然后重新插入一条
+            for dup in duplicates:
+                emp_id = dup['employee_id']
+                rating_id = dup['rating_item_id']
+                
+                # 删除该员工-评分项的所有记录
+                cursor.execute(
+                    'DELETE FROM employee_rating_relations WHERE employee_id = ? AND rating_item_id = ?',
+                    (emp_id, rating_id)
+                )
+                
+                # 重新插入一条记录
+                cursor.execute(
+                    'INSERT INTO employee_rating_relations (employee_id, rating_item_id) VALUES (?, ?)',
+                    (emp_id, rating_id)
+                )
+            
+            logger.info("重复记录清理完成")
+        else:
+            logger.info("未发现重复记录")
+
 def init_db():
     """初始化数据库"""
     with get_db_cursor() as cursor:
@@ -205,5 +241,8 @@ def init_db():
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_evaluation_source ON evaluation_results(source_id)')
         except sqlite3.OperationalError:
             pass
+    
+    # 清理重复记录
+    clean_duplicate_relations()
     
     logger.info("数据库初始化完成")

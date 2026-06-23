@@ -5,22 +5,23 @@
   window.EvaluationManager = {
     // 初始化评价事件
     initEvaluationEvents: function() {
+      // 查看评价详情按钮
       document.addEventListener('click', function (e) {
         if (e.target.classList.contains('view-evaluation') || e.target.parentElement.classList.contains('view-evaluation')) {
           var btn = e.target.classList.contains('view-evaluation') ? e.target : e.target.parentElement;
           var id = btn.getAttribute('data-id');
           window.EvaluationManager.viewEvaluationDetail(id);
         }
+        
+        // 删除评价详情按钮（动态绑定）
+        if (e.target.id === 'deleteEvaluationDetailBtn' || e.target.parentElement.id === 'deleteEvaluationDetailBtn') {
+          var btn = e.target.id === 'deleteEvaluationDetailBtn' ? e.target : e.target.parentElement;
+          var id = btn.getAttribute('data-id');
+          window.EvaluationManager.deleteEvaluationResult(id);
+        }
       });
 
-      var deleteDetailBtn = document.getElementById('deleteEvaluationDetailBtn');
-      if (deleteDetailBtn) {
-        deleteDetailBtn.addEventListener('click', function () {
-          var id = this.getAttribute('data-id');
-          window.EvaluationManager.deleteEvaluationResult(id);
-        });
-      }
-
+      // 导出按钮
       var exportBtn = document.getElementById('exportEvaluationBtn');
       if (exportBtn) {
         exportBtn.addEventListener('click', window.EvaluationManager.exportEvaluationData);
@@ -30,6 +31,57 @@
       if (exportStatsBtn) {
         exportStatsBtn.addEventListener('click', window.EvaluationManager.exportEvaluationStats);
       }
+
+      // 搜索功能
+      var searchInput = document.getElementById('evaluationEmployeeSearch');
+      if (searchInput) {
+        var debounceTimer = null;
+        searchInput.addEventListener('input', function () {
+          var searchTerm = this.value.trim();
+          
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          
+          debounceTimer = setTimeout(function () {
+            window.EvaluationManager.searchEvaluationResults(searchTerm);
+          }, 300);
+        });
+      }
+
+      // 部门筛选
+      var departmentFilter = document.getElementById('evaluationDepartmentFilter');
+      if (departmentFilter) {
+        departmentFilter.addEventListener('change', function () {
+          var department = this.value;
+          var searchTerm = document.getElementById('evaluationEmployeeSearch')?.value.trim() || '';
+          window.EvaluationManager.searchEvaluationResults(searchTerm, department);
+        });
+      }
+    },
+
+    // 搜索评价结果
+    searchEvaluationResults: function(searchTerm, department) {
+      var empPage = AdminState.getPagination('evaluationResults');
+      AdminApi.loadEvaluationResults(empPage.currentPage, empPage.pageSize, searchTerm, department)
+        .then(function (result) {
+          // 处理API返回的数据格式
+          var evaluationResults = result.evaluationResults || result;
+          var pagination = result.pagination || null;
+          
+          AdminState.setPartial({
+            evaluationResults: evaluationResults,
+            pagination: {
+              evaluationResults: pagination
+            }
+          });
+          AdminRenderer.renderEvaluationResultsTable();
+          AdminRenderer.renderEvaluationResultsStats();
+        })
+        .catch(function (error) {
+          console.error('搜索失败:', error);
+          AdminUI.showNotification('搜索失败', '请重试', 'error');
+        });
     },
 
     // 查看评价详情
@@ -40,11 +92,6 @@
 
       AdminRenderer.renderEvaluationDetail(result);
       AdminUI.showModal('evaluationDetailModal');
-
-      var deleteBtn = document.getElementById('deleteEvaluationDetailBtn');
-      if (deleteBtn) {
-        deleteBtn.setAttribute('data-id', id);
-      }
     },
 
     // 删除评价结果

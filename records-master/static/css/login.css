@@ -1,53 +1,137 @@
-@layer utilities {
-  .content-auto {
-    content-visibility: auto;
-  }
-  .btn-primary {
-    @apply bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50;
-  }
-  .form-input {
-    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all;
-  }
-  .required-indicator {
-    @apply text-danger text-xs ml-1;
-  }
-  .field-error {
-    @apply border-danger focus:ring-danger/50 focus:border-danger;
-  }
-  .error-message {
-    @apply text-danger text-sm mt-1 flex items-center;
-  }
-  .login-container {
-    @apply min-h-screen flex items-center justify-center bg-neutral-100;
-  }
-  .login-card {
-    @apply bg-white rounded-2xl shadow-lg p-8 w-full max-w-md transform transition-all duration-300 hover:shadow-xl;
-  }
-  .login-header {
-    @apply mb-8 text-center;
-  }
-  .login-title {
-    @apply text-2xl font-bold text-neutral-700 mb-2;
-  }
-  .login-subtitle {
-    @apply text-neutral-500;
-  }
-  .form-group {
-    @apply mb-4;
-  }
-  .form-label {
-    @apply block text-sm font-medium text-neutral-700 mb-1;
-  }
-  .input-icon {
-    @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400;
-  }
-  .input-wrapper {
-    @apply relative;
-  }
-  .input-with-icon {
-    @apply pl-10;
-  }
-  .login-footer {
-    @apply mt-6 text-center text-sm text-neutral-500;
-  }
+/* 登录页样式 */
+
+.content-auto {
+  content-visibility: auto;
+}
+
+.btn-primary {
+  background-color: #165DFF;
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover {
+  background-color: rgba(22, 93, 255, 0.9);
+  transform: translateY(-0.125rem);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.5);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #C9CDD4;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.5);
+  border-color: #165DFF;
+}
+
+.required-indicator {
+  color: #F53F3F;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.field-error {
+  border-color: #F53F3F;
+}
+
+.field-error:focus {
+  box-shadow: 0 0 0 2px rgba(245, 63, 63, 0.5);
+  border-color: #F53F3F;
+}
+
+.error-message {
+  color: #F53F3F;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F5F7FA;
+}
+
+.login-card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 28rem;
+  transition: all 0.3s;
+}
+
+.login-card:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.login-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.login-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1D2129;
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: #4E5969;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #272E3B;
+  margin-bottom: 0.25rem;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #86909C;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-with-icon {
+  padding-left: 2.5rem;
+}
+
+.login-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #4E5969;
 }

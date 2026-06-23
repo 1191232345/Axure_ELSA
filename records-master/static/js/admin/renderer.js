@@ -250,6 +250,7 @@ window.AdminRenderer = (function () {
       'employeeDepartment',
       'batchDepartment',
       'associateDepartment',
+      'evaluationDepartmentFilter',
     ];
 
     selects.forEach(function (selectId) {

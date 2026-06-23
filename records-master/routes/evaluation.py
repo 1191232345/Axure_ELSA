@@ -18,6 +18,7 @@ def list_evaluation_results():
         page = request.args.get('page', 1, type=int)
         page_size = request.args.get('pageSize', 15, type=int)
         employee_id = request.args.get('employee_id', '').strip()
+        employee_name = request.args.get('employee_name', '').strip()
         evaluator = request.args.get('evaluator', '').strip()
         department = request.args.get('department', '').strip()
 
@@ -30,7 +31,8 @@ def list_evaluation_results():
             page, page_size,
             employee_id if employee_id else None,
             evaluator if evaluator else None,
-            department if department else None
+            department if department else None,
+            employee_name if employee_name else None
         )
         return jsonify(result)
     except Exception as e:

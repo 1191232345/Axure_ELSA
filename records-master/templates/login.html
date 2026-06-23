@@ -48,6 +48,15 @@
       
       <form id="loginForm" method="POST" action="/login">
         <!-- 错误消息区域 -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <div class="error-message mb-4 p-3 bg-danger/10 rounded-lg">
+            <i class="fa fa-exclamation-circle mr-2"></i>
+            {{ messages[0] }}
+          </div>
+          {% endif %}
+        {% endwith %}
+        
         {% if error %}
         <div class="error-message mb-4 p-3 bg-danger/10 rounded-lg">
           <i class="fa fa-exclamation-circle mr-2"></i>
@@ -103,7 +112,7 @@
       </form>
       
       <div class="login-footer">
-        <p>若有账号问题，请联系管理员/p>
+        <p>若有账号问题，请联系管理员</p>
       </div>
     </div>
   </div>

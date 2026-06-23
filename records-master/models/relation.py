@@ -12,14 +12,17 @@ def get_all_relations():
         emp_id = row['employee_id']
         if emp_id not in relations:
             relations[emp_id] = []
-        relations[emp_id].append(row['rating_item_id'])
+        # 确保不重复添加同一个评分项
+        rating_item_id = row['rating_item_id']
+        if rating_item_id not in relations[emp_id]:
+            relations[emp_id].append(rating_item_id)
     return relations
 
 def get_relations_for_employee(employee_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        'SELECT rating_item_id FROM employee_rating_relations WHERE employee_id = ?',
+        'SELECT DISTINCT rating_item_id FROM employee_rating_relations WHERE employee_id = ?',
         (employee_id,)
     )
     rows = cursor.fetchall()
@@ -30,7 +33,7 @@ def get_employees_for_rating_item(rating_item_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        'SELECT employee_id FROM employee_rating_relations WHERE rating_item_id = ?',
+        'SELECT DISTINCT employee_id FROM employee_rating_relations WHERE rating_item_id = ?',
         (rating_item_id,)
     )
     rows = cursor.fetchall()
@@ -43,7 +46,9 @@ def set_relations_for_employee(employee_id, rating_item_ids):
     
     cursor.execute('DELETE FROM employee_rating_relations WHERE employee_id = ?', (employee_id,))
     
-    for rating_item_id in rating_item_ids:
+    # 去重后再插入
+    unique_rating_items = list(set(rating_item_ids))
+    for rating_item_id in unique_rating_items:
         cursor.execute(
             'INSERT INTO employee_rating_relations (employee_id, rating_item_id) VALUES (?, ?)',
             (employee_id, rating_item_id)

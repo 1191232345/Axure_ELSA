@@ -25,7 +25,7 @@ window.Api = (function () {
       return {
         employees: results[0].employees || results[0],
         pagination: results[0].pagination || null,
-        ratingItems: results[1],
+        ratingItems: results[1].ratingItems || results[1],
         employeeRatingRelations: results[2],
         evaluationResults: results[3],
       };
