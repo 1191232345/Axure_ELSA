@@ -31,8 +31,8 @@ def list_departments():
         
         if page < 1:
             page = 1
-        if page_size < 1 or page_size > 100:
-            page_size = 10
+        if page_size < 1 or page_size > 1000:
+            page_size = 1000
         
         result = get_departments_paginated(page, page_size, search if search else None, enabled)
         return jsonify(result)

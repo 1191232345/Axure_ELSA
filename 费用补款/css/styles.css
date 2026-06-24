@@ -1,0 +1,343 @@
+/* 费用补收模块专用样式 */
+
+/* 状态卡片悬停效果 */
+.status-card {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.status-card:hover {
+  border-color: #2a3b7d;
+  transform: translateY(-2px);
+}
+
+/* 步骤条样式 */
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.step-item.active .step-circle {
+  background-color: #2a3b7d;
+  color: white;
+  border-color: #3a4ca7;
+  box-shadow: 0 4px 12px rgba(42, 59, 125, 0.3);
+}
+
+.step-item.completed .step-circle {
+  background-color: #00B42A;
+  color: white;
+  border-color: #33D161;
+}
+
+.step-label {
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+  max-width: 80px;
+}
+
+.step-item.active .step-label {
+  color: #2a3b7d;
+  font-weight: 600;
+}
+
+.step-item.completed .step-label {
+  color: #006B19;
+  font-weight: 500;
+}
+
+/* 费用对比卡片 */
+.fee-compare-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.fee-compare-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #2a3b7d 0%, #1677FF 100%);
+}
+
+/* 尺寸差异显示 */
+.dimension-diff-positive {
+  color: #F53F3F;
+  font-weight: 600;
+}
+
+.dimension-diff-negative {
+  color: #00B42A;
+  font-weight: 600;
+}
+
+/* 倒计时样式 */
+.countdown-urgent {
+  animation: pulse 1s infinite;
+  color: #F53F3F !important;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* 时间线样式 */
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 28px;
+  bottom: -12px;
+  width: 2px;
+  background-color: #e5e7eb;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #2a3b7d;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px #2a3b7d;
+}
+
+.timeline-dot.system {
+  background-color: #1677FF;
+  box-shadow: 0 0 0 2px #1677FF;
+}
+
+.timeline-dot.customer {
+  background-color: #00B42A;
+  box-shadow: 0 0 0 2px #00B42A;
+}
+
+.timeline-dot.warning {
+  background-color: #FF7D00;
+  box-shadow: 0 0 0 2px #FF7D00;
+}
+
+.timeline-content {
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 4px;
+}
+
+.timeline-action {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.timeline-detail {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* 图片预览 */
+.evidence-image-wrapper {
+  position: relative;
+  width: 120px;
+  height: 90px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.evidence-image-wrapper:hover {
+  border-color: #2a3b7d;
+  box-shadow: 0 2px 8px rgba(42, 59, 125, 0.15);
+}
+
+.evidence-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.evidence-image-wrapper .remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(245, 63, 63, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.evidence-image-wrapper:hover .remove-btn {
+  opacity: 1;
+}
+
+/* 表格增强 */
+.fee-detail-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.fee-diff-positive {
+  color: #F53F3F;
+  font-weight: 600;
+}
+
+.fee-diff-negative {
+  color: #00B42A;
+  font-weight: 600;
+}
+
+/* 操作按钮增强 */
+.btn-confirm {
+  background: linear-gradient(135deg, #2a3b7d 0%, #3a4ca7 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(42, 59, 125, 0.3);
+}
+
+.btn-appeal {
+  border: 2px solid #FF7D00;
+  color: #FF7D00;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.btn-appeal:hover {
+  background-color: #FFF7E8;
+  transform: translateY(-1px);
+}
+
+/* 弹窗增强 */
+.erp-modal {
+  display: none;
+}
+
+.erp-modal.show {
+  display: flex;
+}
+
+.erp-modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 状态标签 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-pending_input {
+  background-color: #FFF7E8;
+  color: #994D00;
+}
+
+.status-pending_confirm {
+  background-color: #E8F3FF;
+  color: #094D8C;
+}
+
+.status-confirmed {
+  background-color: #E8FFEC;
+  color: #006B19;
+}
+
+.status-appealed {
+  background-color: #FFECE8;
+  color: #B3261E;
+}
+
+/* 加载动画 */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2a3b7d;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .step-label {
+    font-size: 11px;
+    max-width: 60px;
+  }
+
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .fee-compare-card .grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

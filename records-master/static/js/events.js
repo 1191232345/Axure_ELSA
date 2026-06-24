@@ -346,6 +346,19 @@ window.Events = (function () {
     return Api.loadAllData(1, 10)
       .then(function (loaded) {
         State.setAll(loaded);
+        // 加载部门管理数据用于筛选
+        return Api.loadDepartments();
+      })
+      .then(function (departments) {
+        // 将部门数据合并到 State 中
+        var currentData = {
+          employees: State.getEmployees(),
+          ratingItems: State.getRatingItems(),
+          employeeRatingRelations: State.getRelations(),
+          departments: departments.departments || departments,  // 支持两种格式
+        };
+        State.setAll(currentData);
+
         Renderer.renderEvaluationList();
         Renderer.renderFilterButtons();
         Renderer.renderPagination();

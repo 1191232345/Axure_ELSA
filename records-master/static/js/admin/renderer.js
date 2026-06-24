@@ -233,14 +233,14 @@ window.AdminRenderer = (function () {
 
     Object.keys(items).forEach(function (id) {
       var item = items[id];
-      if (item.enabled) {
-        var div = document.createElement('div');
-        div.className = 'checkbox-group-item';
-        div.innerHTML = 
-          '<input type="checkbox" class="checkbox-group-checkbox" value="' + id + '">' +
-          '<span>' + item.name + '</span>';
-        group.appendChild(div);
-      }
+      // 显示所有评分项（包括禁用的），禁用的用灰色标识
+      var div = document.createElement('div');
+      div.className = 'checkbox-group-item' + (item.enabled ? '' : ' opacity-50');
+      div.innerHTML =
+        '<input type="checkbox" class="checkbox-group-checkbox" value="' + id + '"' +
+        (item.enabled ? '' : ' disabled title="该评分项已禁用"') + '>' +
+        '<span>' + item.name + (item.enabled ? '' : ' (已禁用)') + '</span>';
+      group.appendChild(div);
     });
   }
 

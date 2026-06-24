@@ -79,6 +79,9 @@
       document.getElementById('employeeName').value = emp.name;
       document.getElementById('employeeDepartment').value = emp.department;
 
+      // 重新填充评分项复选框组（确保展示最新的评分项数据）
+      AdminRenderer.populateRatingItemsCheckboxes();
+
       var relations = AdminState.getRelations()[id] || [];
       var checkboxes = document.querySelectorAll('#ratingItemsGroup input');
       checkboxes.forEach(function (cb) {

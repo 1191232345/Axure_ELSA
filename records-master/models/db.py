@@ -241,6 +241,43 @@ def init_db():
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_evaluation_source ON evaluation_results(source_id)')
         except sqlite3.OperationalError:
             pass
+        
+        # 创建公告表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS announcements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                content TEXT,
+                type TEXT DEFAULT 'info',
+                enabled INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # 创建公告索引
+        try:
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_announcements_enabled ON announcements(enabled)')
+        except sqlite3.OperationalError:
+            pass
+        
+        # 添加示例公告（如果表为空）
+        try:
+            count = cursor.execute('SELECT COUNT(*) FROM announcements').fetchone()[0]
+            if count == 0:
+                from datetime import datetime
+                now = datetime.now().isoformat()
+                cursor.execute('''
+                    INSERT INTO announcements (title, content, type, enabled, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', ('系统功能更新', '1. 评价结果页面搜索条件布局已优化，与其他页面保持一致\n2. 新增公告弹窗功能，页面加载时自动显示重要通知\n3. 支持手动查看公告及"不再提示"选项', 'info', 1, now, now))
+                cursor.execute('''
+                    INSERT INTO announcements (title, content, type, enabled, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', ('使用提示', '请在评价完成后及时保存数据，避免数据丢失。如有问题请联系管理员。', 'warning', 1, now, now))
+                logger.info("已添加系统公告数据")
+        except sqlite3.OperationalError as e:
+            logger.warning(f"添加公告失败: {e}")
     
     # 清理重复记录
     clean_duplicate_relations()

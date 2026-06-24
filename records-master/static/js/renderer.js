@@ -123,7 +123,8 @@ window.Renderer = (function () {
     departments.forEach(function (dept) {
       var btn = document.createElement('button');
       btn.className = 'filter-btn px-3 py-1 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 text-sm transition-colors';
-      btn.textContent = dept;
+      // 处理部门数据格式：可能是字符串或对象
+      btn.textContent = typeof dept === 'string' ? dept : dept.name;
       filterContainer.appendChild(btn);
     });
   }

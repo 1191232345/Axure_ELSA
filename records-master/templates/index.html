@@ -67,8 +67,11 @@
         </nav>
       </div>
 
-      <!-- 右侧：评价页面链接 -->
-      <div class="flex items-center">
+      <!-- 右侧：评价页面链接 + 公告按钮 -->
+      <div class="flex items-center space-x-4">
+        <button id="showAnnouncementBtn" class="text-primary hover:text-primary/80 transition-colors flex items-center">
+          <i class="fa fa-bullhorn mr-1"></i>公告
+        </button>
         <a href="/" class="text-primary hover:text-primary/80 transition-colors">
           <i class="fa fa-external-link mr-1"></i>评价页面
         </a>
@@ -285,7 +288,7 @@
       <div class="page-content hidden" id="evaluation-results-page">
         <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-            <div class="flex flex-wrap gap-2 mb-4 md:mb-0">
+            <div class="flex flex-wrap gap-2">
               <button id="exportEvaluationBtn" class="btn-secondary">
                 <i class="fa fa-download mr-1"></i> 导出数据
               </button>
@@ -293,7 +296,9 @@
                 <i class="fa fa-file-text-o mr-1"></i> 导出统计
               </button>
             </div>
-            <!-- 搜索区域 -->
+          </div>
+          <!-- 评价结果筛选区域 -->
+          <div class="mb-6">
             <div class="flex flex-col sm:flex-row gap-3">
               <div class="relative" style="width: 300px;">
                 <input type="text" id="evaluationEmployeeSearch" placeholder="搜索员工姓名..." class="form-input pl-10">
@@ -338,8 +343,8 @@
   <!-- 模态框组件 -->
   <!-- 员工模态框 -->
   <div id="employeeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-      <div class="p-6 border-b border-neutral-200">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col">
+      <div class="p-6 border-b border-neutral-200 flex-shrink-0">
         <div class="flex justify-between items-center">
           <h3 class="font-semibold text-lg" id="employeeModalTitle">添加员工</h3>
           <button class="close-modal text-neutral-400 hover:text-neutral-700">
@@ -347,7 +352,7 @@
           </button>
         </div>
       </div>
-      <form id="employeeForm" class="p-6 space-y-4">
+      <form id="employeeForm" class="p-6 space-y-4 flex-1 overflow-y-auto">
         <input type="hidden" name="employeeId" id="employeeId">
         
         <div>
@@ -373,19 +378,19 @@
           <label class="block text-neutral-700 mb-2">
             关联评分项 <span class="required-indicator">*</span>
           </label>
-          <div id="ratingItemsGroup" class="checkbox-group">
+          <div id="ratingItemsGroup" class="checkbox-group overflow-y-auto border border-neutral-200 rounded-lg p-3 space-y-1" style="height: 300px; max-height: 300px;">
           </div>
           <div class="error-message hidden" id="ratingItemsError">请至少选择一项评分项</div>
         </div>
         
-        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+        <div class="pt-4 border-t border-neutral-200 flex justify-end flex-shrink-0 bg-white -mx-6 -mb-6 px-6 pb-6 mt-4">
           <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
           <button type="submit" class="btn-primary">保存</button>
         </div>
       </form>
     </div>
   </div>
-  
+
   <!-- 评分项模态框 -->
   <div id="ratingItemModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -446,6 +451,36 @@
     </div>
   </div>
   
+  <!-- 公告弹窗 -->
+  <div id="announcementPopup" class="fixed inset-0 bg-black/20 z-50 hidden items-center justify-center p-4 announcement-overlay">
+    <div class="bg-white rounded-lg w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-xl transform scale-95 opacity-0 transition-all duration-200 announcement-modal flex flex-col">
+      <!-- 头部 -->
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="w-1 h-4 bg-blue-500 rounded-full"></span>
+          <h3 class="text-sm font-semibold text-gray-800">变更公告</h3>
+        </div>
+        <span class="text-xs text-gray-400">最近更新</span>
+      </div>
+      
+      <!-- 公告内容区域 -->
+      <div class="flex-1 overflow-y-auto px-6 py-5" id="announcementContent" style="min-height: 180px;">
+        <!-- 公告列表将动态加载 -->
+      </div>
+      
+      <!-- 底部操作栏 -->
+      <div class="px-6 py-3 border-t border-gray-100 flex justify-between items-center bg-gray-50/30">
+        <label class="flex items-center text-xs text-gray-400 cursor-pointer select-none hover:text-gray-600 transition-colors">
+          <input type="checkbox" id="dontShowAgain" class="w-3 h-3 mr-1.5 cursor-pointer accent-blue-600">
+          <span>不再自动提醒</span>
+        </label>
+        <button id="confirmAnnouncement" class="px-5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium transition-colors shadow-sm hover:shadow">
+          我知道了
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <!-- 通知提示 -->
   <div id="notification" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 max-w-sm flex items-start">
     <div id="notificationIcon" class="mr-3 text-success text-xl">
@@ -479,11 +514,13 @@
   <script src="/static/js/admin/form-handler.js"></script>
   <script src="/static/js/admin/evaluation.js"></script>
   <script src="/static/js/admin/events.js"></script>
+  <script src="/static/js/admin/announcement_popup.js"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       AdminEvents.init();
       AdminEvents.loadDataAndRefresh();
+      AnnouncementPopup.init();
     });
   </script>
 </body>

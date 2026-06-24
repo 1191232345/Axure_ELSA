@@ -41,7 +41,7 @@ window.Api = (function () {
   }
 
   function loadDepartments() {
-    return request(config.departments);
+    return request(config.departments + '?page=1&pageSize=1000');
   }
 
   return {

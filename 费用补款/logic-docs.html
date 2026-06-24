@@ -1,0 +1,593 @@
+<div class="bg-white rounded shadow-card p-6 mt-6">
+  <h3 class="text-xl font-semibold mb-4 flex items-center text-primary">
+    <i class="fas fa-book-open mr-2"></i>逻辑说明文档
+  </h3>
+
+  <!-- 入口卡片 -->
+  <div class="border border-gray-200 rounded-lg p-4 mb-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <h4 class="font-semibold mb-2">费用补收流程模块</h4>
+    <p class="text-sm text-gray-600 mb-3">本模块实现从尺寸输入到补收确认/申诉的完整业务流程，包含列表管理、详情展示、费用计算和操作处理四大核心功能。</p>
+    <div class="flex gap-2 flex-wrap">
+      <button class="erp-btn erp-btn-primary text-sm" onclick="this.nextElementSibling.classList.toggle('hidden'); this.textContent = this.textContent === '展开详情' ? '收起详情' : '展开详情'">
+        展开详情
+      </button>
+      <span class="hidden">
+        <button class="tab-btn active" onclick="showLogicSection('init')">初始化</button>
+        <button class="tab-btn" onclick="showLogicSection('filter')">筛选</button>
+        <button class="tab-btn" onclick="showLogicSection('buttons')">按钮</button>
+        <button class="tab-btn" onclick="showLogicSection('fields')">字段</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- Tab 内容区域 -->
+  <div id="logicContent">
+
+    <!-- 初始化页面数据展示逻辑 -->
+    <div id="section-init" class="logic-section">
+      <h5 class="text-lg font-semibold mb-3 pb-2 border-b border-gray-200">
+        <i class="fas fa-database mr-2 text-primary"></i>1. 初始化页面数据展示逻辑
+      </h5>
+
+      <div class="space-y-4">
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">1.1 补收列表页加载</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">逻辑项</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">说明</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">数据来源</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">展示规则</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">任务列表加载</td>
+                <td class="px-3 py-2">页面加载时获取当前客户的补收任务</td>
+                <td class="px-3 py-2"><code>data/supplement-data.json</code></td>
+                <td class="px-3 py-2">默认显示全部状态任务，按创建时间倒序排列</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">状态统计</td>
+                <td class="px-3 py-2">统计各状态下的任务数量</td>
+                <td class="px-3 py-2">同上</td>
+                <td class="px-3 py-2">在顶部统计卡片中显示：全部/待输入/待确认/已申诉</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">默认筛选定位</td>
+                <td class="px-3 py-2">自动定位到有待处理的任务Tab</td>
+                <td class="px-3 py-2">同上</td>
+                <td class="px-3 py-2">如果有待输入或待确认任务，优先显示该状态</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">1.2 补收详情页加载</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">逻辑项</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">说明</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">数据来源</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">展示规则</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">任务详情加载</td>
+                <td class="px-3 py-2">根据 task_id 加载完整任务信息</td>
+                <td class="px-3 py-2"><code>supplement_tasks[task_id]</code></td>
+                <td class="px-3 py-2">展示所有字段信息，包括历史记录</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">步骤条状态</td>
+                <td class="px-3 py-2">根据任务状态确定当前步骤</td>
+                <td class="px-3 py-2"><code>task.status</code></td>
+                <td class="px-3 py-2">
+                  pending_input → 步骤1高亮<br>
+                  pending_confirm → 步骤2高亮<br>
+                  confirmed/appealed → 步骤3高亮
+                </td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">倒计时显示</td>
+                <td class="px-3 py-2">计算距离截止时间的剩余时间</td>
+                <td class="px-3 py-2"><code>task.deadline - now()</code></td>
+                <td class="px-3 py-2">&lt;24小时显示红色并闪烁，&lt;72小时显示橙色</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">费用对比数据</td>
+                <td class="px-3 py-2">加载费用重算结果</td>
+                <td class="px-3 py-2"><code>task.fee_details[]</code></td>
+                <td class="px-3 py-2">如果尚未重算，显示"等待费用重算中..."</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 检索条件 -->
+    <div id="section-filter" class="logic-section hidden">
+      <h5 class="text-lg font-semibold mb-3 pb-2 border-b border-gray-200">
+        <i class="fas fa-filter mr-2 text-primary"></i>2. 检索条件
+      </h5>
+
+      <div class="space-y-4">
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">2.1 筛选器配置</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">筛选项</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">类型</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">可选值</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">默认值</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">筛选逻辑</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">状态筛选</td>
+                <td class="px-3 py-2">下拉选择框</td>
+                <td class="px-3 py-2">全部 / 待输入 / 待确认 / 已完成 / 已申诉</td>
+                <td class="px-3 py-2">全部（空值）</td>
+                <td class="px-3 py-2">精确匹配 <code>task.status</code></td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">关键字搜索</td>
+                <td class="px-3 py-2">文本输入框</td>
+                <td class="px-3 py-2">任意文本</td>
+                <td class="px-3 py-2">空字符串</td>
+                <td class="px-3 py-2">模糊匹配 <code>task.task_id</code> 或 <code>task.order_id</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 text-sm">
+          <p><strong>交互规则：</strong></p>
+          <ul class="list-disc list-inside mt-2 space-y-1 text-gray-700">
+            <li>点击搜索按钮或按 Enter 键触发筛选</li>
+            <li>点击重置按钮清空所有筛选条件</li>
+            <li>点击统计卡片可快速切换到对应状态的筛选结果</li>
+            <li>多个筛选条件为 AND 关系</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模块按钮逻辑 -->
+    <div id="section-buttons" class="logic-section hidden">
+      <h5 class="text-lg font-semibold mb-3 pb-2 border-b border-gray-200">
+        <i class="fas fa-mouse-pointer mr-2 text-primary"></i>3. 模块按钮逻辑
+      </h5>
+
+      <div class="space-y-4">
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">3.1 补收列表页按钮</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">按钮</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">位置</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">触发动作</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">前置条件</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">后续操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">查看详情</td>
+                <td class="px-3 py-2">每行操作列</td>
+                <td class="px-3 py-2"><code>SupplementApp.showDetail(taskId)</code></td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">跳转到详情页，携带 task_id 参数</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">状态卡片</td>
+                <td class="px-3 py-2">顶部统计区</td>
+                <td class="px-3 py-2">设置筛选器值并刷新</td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">快速过滤到对应状态的任务列表</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">搜索按钮</td>
+                <td class="px-3 py-2">筛选栏右侧</td>
+                <td class="px-3 py-2"><code>SupplementApp.renderList()</code></td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">根据当前筛选条件重新渲染表格</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">重置按钮</td>
+                <td class="px-3 py-2">搜索按钮左侧</td>
+                <td class="px-3 py-2"><code>SupplementApp.resetFilter()</code></td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">清空所有筛选条件并刷新列表</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">3.2 补收详情页按钮</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">按钮</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">位置</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">触发动作</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">前置条件</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">后续操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">返回列表</td>
+                <td class="px-3 py-2">左上角导航栏</td>
+                <td class="px-3 py-2"><code>SupplementApp.showList()</code></td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">隐藏详情视图，显示列表视图，刷新数据</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">编辑尺寸</td>
+                <td class="px-3 py-2">尺寸对比区域右上角</td>
+                <td class="px-3 py-2"><code>SupplementApp.openDimensionModal()</code></td>
+                <td class="px-3 py-2">status in ['pending_input', 'pending_confirm']</td>
+                <td class="px-3 py-2">打开尺寸编辑弹窗，预填当前值</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">查看费用明细</td>
+                <td class="px-3 py-2">费用汇总卡片下方</td>
+                <td class="px-3 py-2"><code>SupplementApp.toggleFeeDetail()</code></td>
+                <td class="px-3 py-2">费用已重算完成</td>
+                <td class="px-3 py-2">展开/收起费用明细表格</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">确认补收</td>
+                <td class="px-3 py-2">底部操作区主按钮（蓝色）</td>
+                <td class="px-3 py-2"><code>SupplementApp.openConfirmModal()</code></td>
+                <td class="px-3 py-2">已输入尺寸 && 费用已重算 && status='pending_confirm'</td>
+                <td class="px-3 py-2">弹出二次确认对话框</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">发起申诉</td>
+                <td class="px-3 py-2">底部操作区次按钮（橙色边框）</td>
+                <td class="px-3 py-2"><code>SupplementApp.openAppealModal()</code></td>
+                <td class="px-3 py-2">无硬性前置条件</td>
+                <td class="px-3 py-2">打开申诉表单弹窗</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">3.3 尺寸编辑弹窗按钮</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">按钮</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">位置</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">触发动作</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">前置条件</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">后续操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">保存并计算</td>
+                <td class="px-3 py-2">弹窗底部右侧</td>
+                <td class="px-3 py-2"><code>SupplementApp.saveDimensions()</code></td>
+                <td class="px-3 py-2">通过所有校验规则</td>
+                <td class="px-3 py-2">关闭弹窗 → 触发TMS费用重算 → 更新详情页数据</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">取消</td>
+                <td class="px-3 py-2">弹窗底部左侧</td>
+                <td class="px-3 py-2"><code>closeModal('dimensionModal')</code></td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">关闭弹窗，不保存任何修改</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">上传图片</td>
+                <td class="px-3 py-2">证明图片区域</td>
+                <td class="px-3 py-2"><code>handleEvidenceUpload(event)</code></td>
+                <td class="px-3 py-2">文件类型、大小、数量校验通过</td>
+                <td class="px-3 py-2">立即显示图片预览，支持删除</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">3.4 二次确认弹窗按钮</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">按钮</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">位置</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">触发动作</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">前置条件</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">后续操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">确认补收</td>
+                <td class="px-3 py-2">弹窗底部右侧</td>
+                <td class="px-3 py-2"><code>SupplementApp.finalConfirm()</code></td>
+                <td class="px-3 py-2">必须勾选协议条款复选框</td>
+                <td class="px-3 py-2">生成账单号 → 显示成功Toast → 状态变为'confirmed' → 刷新详情</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">取消</td>
+                <td class="px-3 py-2">弹窗底部左侧</td>
+                <td class="px-3 py-2"><code>closeModal('confirmModal')</code></td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">关闭弹窗，返回详情页，无状态变更</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">协议勾选</td>
+                <td class="px-3 py-2">弹窗内复选框</td>
+                <td class="px-3 py-2">启用/禁用确认按钮</td>
+                <td class="px-3 py-2">无</td>
+                <td class="px-3 py-2">未勾选时确认按钮置灰不可点击</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">3.5 申诉表单弹窗按钮</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">按钮</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">位置</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">触发动作</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">前置条件</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">后续操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">提交申诉</td>
+                <td class="px-3 py-2">弹窗底部右侧</td>
+                <td class="px-3 py-2"><code>SupplementApp.submitAppeal()</code></td>
+                <td class="px-3 py-2">所有必填项已填写且通过校验</td>
+                <td class="px-3 py-2">创建工单号 → 显示成功提示 → 状态变为'appealed' → 刷新详情</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">保存草稿</td>
+                <td class="px-3 py-2">弹窗底部左侧</td>
+                <td class="px-3 py-2"><code>SupplementApp.saveAppealDraft()</code></td>
+                <td class="px-3 py-2">至少填写了申诉理由</td>
+                <td class="px-3 py-2">提示"草稿已保存"，关闭弹窗（原型阶段仅提示）</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">取消/关闭</td>
+                <td class="px-3 py-2">弹窗顶部或底部</td>
+                <td class="px-3 py-2"><code>closeModal('appealModal')</code></td>
+                <td class="px-3 py-2">有未保存内容时需确认</td>
+                <td class="px-3 py-2">关闭弹窗（原型阶段直接关闭）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 属性取值逻辑 -->
+    <div id="section-fields" class="logic-section hidden">
+      <h5 class="text-lg font-semibold mb-3 pb-2 border-b border-gray-200">
+        <i class="fas fa-table mr-2 text-primary"></i>4. 字段取值逻辑
+      </h5>
+
+      <div class="space-y-4">
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">4.1 补收列表页字段</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">字段</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">数据来源</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">取值规则</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">显示格式</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">任务ID</td>
+                <td class="px-3 py-2"><code>task.task_id</code></td>
+                <td class="px-3 py-2">直接取值</td>
+                <td class="px-3 py-2"><code>SUP-YYYYMMDD-NNN</code> 格式，蓝色加粗</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">订单号</td>
+                <td class="px-3 py-2"><code>task.order_id</code></td>
+                <td class="px-3 py-2">直接取值</td>
+                <td class="px-3 py-2"><code>ORD-YYYYMMDD-NNN</code> 格式</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">补收金额</td>
+                <td class="px-3 py-2"><code>task.supplement_amount</code></td>
+                <td class="px-3 py-2">计算：<code>recalculated_fee - original_fee</code></td>
+                <td class="px-3 py-2"><code>¥ XXX.XX</code> 格式，正值红色加粗</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">状态</td>
+                <td class="px-3 py-2"><code>task.status</code></td>
+                <td class="px-3 py-2">映射显示名称</td>
+                <td class="px-3 py-2">彩色标签：待输入(橙)/待确认(蓝)/已完成(绿)/已申诉(红)</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">截止时间</td>
+                <td class="px-3 py-2"><code>task.deadline</code></td>
+                <td class="px-3 py-2">时间戳转日期</td>
+                <td class="px-3 py-2"><code>YYYY-MM-DD</code>，&lt;3天橙色，过期红色</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">创建时间</td>
+                <td class="px-3 py-2"><code>task.created_at</code></td>
+                <td class="px-3 py-2">时间戳转日期</td>
+                <td class="px-3 py-2"><code>YYYY-MM-DD</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">4.2 补收详情页字段</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">字段</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">数据来源</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">取值规则</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">显示格式</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">原/新长度</td>
+                <td class="px-3 py-2"><code>original_dimensions.length</code> / <code>actual_dimensions.length</code></td>
+                <td class="px-3 py-2">直接取值</td>
+                <td class="px-3 py-2"><code>XX.X cm</code>，新值蓝色加粗</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">尺寸差异</td>
+                <td class="px-3 py-2">计算得出</td>
+                <td class="px-3 py-2"><code>(新体积-原体积) / 原体积 * 100</code></td>
+                <td class="px-3 py-2"><code>+XX.X%</code> 增大红色，减小绿色</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">原费用</td>
+                <td class="px-3 py-2"><code>task.original_fee</code></td>
+                <td class="px-3 py-2">直接取值</td>
+                <td class="px-3 py-2"><code>¥ XXX.XX</code></td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">新费用</td>
+                <td class="px-3 py-2"><code>task.recalculated_fee</code></td>
+                <td class="px-3 py-2">TMS 返回或前端模拟计算</td>
+                <td class="px-3 py-2"><code>¥ XXX.XX</code></td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">补收金额</td>
+                <td class="px-3 py-2"><code>task.supplement_amount</code></td>
+                <td class="px-3 py-2"><code>new_fee - original_fee</code></td>
+                <td class="px-3 py-2"><code>¥ XXX.XX</code> 大号红色加粗</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">剩余时间</td>
+                <td class="px-3 py-2"><code>deadline - now()</code></td>
+                <td class="px-3 py-2">动态计算，每分钟更新</td>
+                <td class="px-3 py-2"><code>X天X小时X分钟</code>，&lt;24小时红色闪烁</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-gray-50 rounded p-4">
+          <h6 class="font-semibold mb-2">4.3 费用明细字段</h6>
+          <table class="w-full text-sm">
+            <thead class="bg-white border-b">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">字段</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">数据来源</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">取值规则</th>
+                <th class="px-3 py-2 text-left font-medium text-gray-700">显示格式</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <tr>
+                <td class="px-3 py-2">费用类别</td>
+                <td class="px-3 py-2"><code>fee_detail.category</code></td>
+                <td class="px-3 py-2">枚举映射</td>
+                <td class="px-3 py-2">标签样式：仓储费/操作费/其他</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">项目名称</td>
+                <td class="px-3 py-2"><code>fee_detail.item_name</code></td>
+                <td class="px-3 py-2">直接取值</td>
+                <td class="px-3 py-2">如"月度仓储费"、"入库操作费"</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">原费用小计</td>
+                <td class="px-3 py-2"><code>fee_detail.original_subtotal</code></td>
+                <td class="px-3 py-2"><code>unit_price * quantity_original</code></td>
+                <td class="px-3 py-2"><code>¥ XXX.XX</code></td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">新费用小计</td>
+                <td class="px-3 py-2"><code>fee_detail.new_subtotal</code></td>
+                <td class="px-3 py-2"><code>unit_price * quantity_actual</code></td>
+                <td class="px-3 py-2"><code>¥ XXX.XX</code></td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2">差额</td>
+                <td class="px-3 py-2"><code>fee_detail.difference</code></td>
+                <td class="px-3 py-2"><code>new_subtotal - original_subtotal</code></td>
+                <td class="px-3 py-2"><code>+¥ XX.XX</code> 正值红色，负值绿色</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.logic-section {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  border-color: #2a3b7d;
+  color: #2a3b7d;
+}
+
+.tab-btn.active {
+  background: #2a3b7d;
+  color: white;
+  border-color: #2a3b7d;
+}
+</style>
+
+<script>
+function showLogicSection(sectionId) {
+  // 隐藏所有 section
+  document.querySelectorAll('.logic-section').forEach(section => {
+    section.classList.add('hidden');
+  });
+
+  // 显示目标 section
+  document.getElementById('section-' + sectionId).classList.remove('hidden');
+
+  // 更新 tab 按钮状态
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+}
+</script>

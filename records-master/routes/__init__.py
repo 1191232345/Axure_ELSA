@@ -4,6 +4,7 @@ from routes.evaluation import evaluation_bp
 from routes.main import main_bp
 from routes.department import department_bp
 from routes.source import source_bp
+from routes.announcement import announcement_bp
 
 def register_routes(app):
     app.register_blueprint(employee_bp)
@@ -12,3 +13,4 @@ def register_routes(app):
     app.register_blueprint(main_bp)
     app.register_blueprint(department_bp)
     app.register_blueprint(source_bp)
+    app.register_blueprint(announcement_bp)

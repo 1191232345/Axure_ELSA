@@ -7,6 +7,12 @@ window.AdminEvents = (function () {
     initEvaluationEvents();
     initSearchEvents();
     initNotificationClose();
+    
+    // 初始化公告弹窗
+    if (typeof window.AnnouncementPopup !== 'undefined') {
+      window.AnnouncementPopup.init();
+      console.log('[系统] 公告弹窗已初始化');
+    }
   }
 
   function initPageNavigation() {

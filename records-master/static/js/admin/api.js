@@ -20,7 +20,7 @@ window.AdminApi = (function () {
 
     return Promise.all([
       request(config.employees + '?page=' + empPage.currentPage + '&pageSize=' + empPage.pageSize),
-      request(config.ratingItems + '?page=' + ratingPage.currentPage + '&pageSize=' + ratingPage.pageSize),
+      request(config.ratingItems + '?page=1&pageSize=1000'),  // 获取所有评分项（不分页）
       request(config.evaluationResults + '?page=' + evalPage.currentPage + '&pageSize=' + evalPage.pageSize),
       request(config.relations),
     ]).then(function (results) {

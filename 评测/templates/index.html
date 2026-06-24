@@ -321,8 +321,8 @@
   <!-- 模态框组件 -->
   <!-- 员工模态框 -->
   <div id="employeeModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-      <div class="p-6 border-b border-neutral-200">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col">
+      <div class="p-6 border-b border-neutral-200 flex-shrink-0">
         <div class="flex justify-between items-center">
           <h3 class="font-semibold text-lg" id="employeeModalTitle">添加员工</h3>
           <button class="close-modal text-neutral-400 hover:text-neutral-700">
@@ -330,7 +330,7 @@
           </button>
         </div>
       </div>
-      <form id="employeeForm" class="p-6 space-y-4">
+      <form id="employeeForm" class="p-6 space-y-4 flex-1 overflow-y-auto">
         <input type="hidden" name="employeeId" id="employeeId">
         
         <div>
@@ -362,20 +362,20 @@
           <label class="block text-neutral-700 mb-2">
             关联评分项 <span class="required-indicator">*</span>
           </label>
-          <div id="ratingItemsGroup" class="checkbox-group">
+          <div id="ratingItemsGroup" class="checkbox-group max-h-80 overflow-y-auto border border-neutral-200 rounded-lg p-3 space-y-1">
             <!-- 评分项将通过JS动态加载 -->
           </div>
           <div class="error-message hidden" id="ratingItemsError">请至少选择一项评分项</div>
         </div>
-        
-        <div class="pt-4 border-t border-neutral-200 flex justify-end">
+
+        <div class="pt-4 border-t border-neutral-200 flex justify-end flex-shrink-0 bg-white -mx-6 -mb-6 px-6 pb-6 mt-4">
           <button type="button" class="btn-secondary mr-3 close-modal">取消</button>
           <button type="submit" class="btn-primary">保存</button>
         </div>
       </form>
     </div>
   </div>
-  
+
   <!-- 评分项模态框 -->
   <div id="ratingItemModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -1737,17 +1737,20 @@
     async function editEmployee(id) {
       const employee = globalData.employees[id];
       if (!employee) return;
-      
+
       document.getElementById('employeeModalTitle').textContent = '编辑员工';
       document.getElementById('employeeId').value = id;
       document.getElementById('employeeName').value = employee.name;
       document.getElementById('employeeDepartment').value = employee.department;
-      
+
+      // 重新填充评分项复选框组（确保展示最新的评分项数据）
+      populateRatingItemsCheckboxes();
+
       // 清空之前的选择
       document.querySelectorAll('input[name="ratingItems"]').forEach(checkbox => {
         checkbox.checked = false;
       });
-      
+
       try {
         // 调用API获取最新的员工-评分项关联数据
         const response = await fetch('/api/employee-rating-relations');
@@ -1760,7 +1763,7 @@
         console.error('获取评分项关联数据失败:', error);
         // 出错时继续使用本地已有数据
       }
-      
+
       // 勾选已关联的评分项
       const relationIds = globalData.employeeRatingRelations[id] || [];
       relationIds.forEach(rid => {

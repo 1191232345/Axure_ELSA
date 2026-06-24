@@ -23,7 +23,8 @@ window.State = (function () {
     data.ratingItems = loaded.ratingItems || {};
     data.employeeRatingRelations = loaded.employeeRatingRelations || {};
     data.evaluationResults = loaded.evaluationResults || {};
-    
+    data.departments = loaded.departments || null;  // 支持部门数据
+
     if (loaded.pagination) {
       pagination.currentPage = loaded.pagination.page || 1;
       pagination.pageSize = loaded.pagination.pageSize || 10;
@@ -57,6 +58,18 @@ window.State = (function () {
   }
 
   function getDepartments() {
+    // 如果有部门管理数据，优先使用
+    if (data.departments) {
+      // 支持数组格式
+      if (Array.isArray(data.departments)) {
+        return data.departments;
+      }
+      // 支持对象格式 {id: {name: "xxx"}, ...}
+      if (typeof data.departments === 'object' && !Array.isArray(data.departments)) {
+        return Object.values(data.departments);
+      }
+    }
+    // 否则从员工数据中提取
     var deptSet = {};
     Object.keys(data.employees).forEach(function (id) {
       var dept = data.employees[id].department;
