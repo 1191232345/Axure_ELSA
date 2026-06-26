@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>订单详情 - 指令下发管理 - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            accent: '#E8A838',
+            success: '#2D936C',
+            warning: '#D4853A',
+            danger: '#C44536',
+            dark: '#1A1A2E',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF'
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/detail.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <span class="text-lg font-display font-semibold tracking-wide">ELSA</span>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <a href="index.html" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors">指令下发管理</a>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm hidden sm:inline-block">管理员</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="detail-page">
+    <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+
+      <!-- 页头 -->
+      <div class="info-card">
+        <div class="flex items-center gap-3">
+          <button id="detailBackBtn" class="detail-back-btn" title="返回列表">
+            <i class="fa fa-arrow-left text-lg"></i>
+          </button>
+          <h1 class="text-xl font-semibold text-primary">订单详情</h1>
+        </div>
+      </div>
+
+      <!-- 单号信息 -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <div class="info-card-title-left">
+            <i class="fa fa-barcode text-primary mr-2"></i>单号信息
+          </div>
+          <span id="detailStatusTag" class="detail-status-tag status-pending">未处理</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-5 gap-y-3">
+          <div class="info-field">
+            <div class="info-label">订单号</div>
+            <div class="info-value" id="fieldOrderNo">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">指令编号</div>
+            <div class="info-value text-primary" id="fieldInstructionNo">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">参考号</div>
+            <div class="info-value" id="fieldRefNo">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 基本信息 -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <div class="info-card-title-left">
+            <i class="fa fa-info-circle text-primary mr-2"></i>基本信息
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-5 gap-y-3">
+          <div class="info-field">
+            <div class="info-label">仓库</div>
+            <div class="info-value" id="fieldWarehouse">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">仓库代码</div>
+            <div class="info-value" id="fieldWarehouseCode">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">客户代码</div>
+            <div class="info-value" id="fieldCustomerCode">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">客户名称</div>
+            <div class="info-value" id="fieldCustomerName">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">创建人</div>
+            <div class="info-value" id="fieldCreatedBy">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">创建时间</div>
+            <div class="info-value" id="fieldCreatedAt">-</div>
+          </div>
+          <div class="info-field">
+            <div class="info-label">完成时间</div>
+            <div class="info-value" id="fieldUpdatedAt">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 收费明细 -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <div class="info-card-title-left">
+            <i class="fa fa-money text-primary mr-2"></i>收费明细
+          </div>
+        </div>
+        <div class="detail-table-wrap">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>收费项目</th>
+                <th>单位</th>
+                <th>数量</th>
+                <th>单价</th>
+                <th>金额</th>
+              </tr>
+            </thead>
+            <tbody id="feeItemsBody"></tbody>
+          </table>
+        </div>
+        <div class="detail-fee-total" id="feeTotal">合计：$0.00</div>
+      </div>
+
+      <!-- 备注 -->
+      <div class="info-card">
+        <div class="info-card-title">
+          <div class="info-card-title-left">
+            <i class="fa fa-sticky-note text-primary mr-2"></i>备注
+          </div>
+        </div>
+        <div class="detail-remark-box" id="detailRemark">-</div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/detail.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      await initApi();
+      initDetailPage();
+    });
+  </script>
+</body>
+</html>

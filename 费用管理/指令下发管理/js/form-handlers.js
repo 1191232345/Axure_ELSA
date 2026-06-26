@@ -1,17 +1,7 @@
 // form-handlers.js - 表单处理模块
 
 function viewOrder(orderId) {
-  var order = getOrderById(orderId);
-  if (!order) {
-    showToast('订单不存在', 'error');
-    return;
-  }
-  renderOrderDetail(order);
-}
-
-function closeDetailModal() {
-  var modal = document.getElementById('detailModal');
-  if (modal) modal.classList.add('hidden');
+  window.location.href = 'order-detail.html?id=' + orderId;
 }
 
 function editOrder(orderId) {
@@ -66,7 +56,7 @@ function completeOrder(orderId) {
 
   if (confirm('确认开始处理订单 "' + order.order_no + '" 吗？')) {
     updateOrderStatus(orderId, 'processing');
-    showToast('订单已进入已完成', 'success');
+    showToast('订单已进入处理中', 'success');
     applyFilters();
   }
 }
@@ -195,7 +185,6 @@ function cancelOrderForm() {
 }
 
 window.viewOrder = viewOrder;
-window.closeDetailModal = closeDetailModal;
 window.editOrder = editOrder;
 window.deleteOrderConfirm = deleteOrderConfirm;
 window.completeOrder = completeOrder;

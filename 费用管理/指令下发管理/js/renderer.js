@@ -134,51 +134,11 @@ function renderFilterOptions() {
   if (ss) {
     ss.innerHTML = '<option value="">全部状态</option>' +
       '<option value="pending">未处理</option>' +
-      '<option value="processing">已完成</option>';
+      '<option value="processing">处理中</option>';
   }
-}
-
-function renderOrderDetail(order) {
-  var modal = document.getElementById('detailModal');
-  var content = document.getElementById('detailContent');
-
-  var serviceIcon = SERVICE_TYPES[order.service_type] ?
-    '<i class="fa ' + SERVICE_TYPES[order.service_type].icon + ' text-accent mr-2"></i>' : '';
-
-  content.innerHTML =
-    '<div class="detail-section">' +
-      '<h4 class="detail-section-title"><i class="fa fa-info-circle text-primary mr-2"></i>基本信息</h4>' +
-      '<div class="detail-grid">' +
-        '<div class="detail-item"><div class="detail-label">订单号</div><div class="detail-value">' + order.order_no + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">客户</div><div class="detail-value">' + order.customer_name + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">仓库</div><div class="detail-value">' + order.warehouse_name + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">状态</div><div class="detail-value">' +
-          '<span class="status-badge status-' + order.status + '">' +
-          getStatusText(order.status) + '</span></div></div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="detail-section">' +
-      '<h4 class="detail-section-title"><i class="fa fa-star text-primary mr-2"></i>服务详情</h4>' +
-      '<div class="detail-grid">' +
-        '<div class="detail-item"><div class="detail-label">服务类型</div><div class="detail-value">' + serviceIcon + order.service_name + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">数量</div><div class="detail-value">' + order.quantity + ' ' + (SERVICE_TYPES[order.service_type] ? SERVICE_TYPES[order.service_type].unit : '件') + '</div></div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="detail-section">' +
-      '<h4 class="detail-section-title"><i class="fa fa-clock-o text-primary mr-2"></i>时间信息</h4>' +
-      '<div class="detail-grid">' +
-        '<div class="detail-item"><div class="detail-label">创建时间</div><div class="detail-value">' + formatDateTime(order.created_at) + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">创建人</div><div class="detail-value">' + order.created_by + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">更新时间</div><div class="detail-value">' + formatDateTime(order.updated_at) + '</div></div>' +
-      '</div>' +
-    '</div>' +
-    (order.remark ? '<div class="detail-section"><h4 class="detail-section-title"><i class="fa fa-comment-o text-primary mr-2"></i>备注</h4><div class="detail-item"><div class="detail-value">' + order.remark + '</div></div></div>' : '');
-
-  modal.classList.remove('hidden');
 }
 
 window.renderOrderTable = renderOrderTable;
 window.renderFilterOptions = renderFilterOptions;
-window.renderOrderDetail = renderOrderDetail;
 window.openLogicModal = openLogicModal;
 window.closeLogicModal = closeLogicModal;

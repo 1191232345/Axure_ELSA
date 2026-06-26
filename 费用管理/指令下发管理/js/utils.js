@@ -63,7 +63,7 @@ function deepCopy(obj) {
 function getStatusText(status) {
   var statusMap = {
     'pending': '未处理',
-    'processing': '已完成'
+    'processing': '处理中'
   };
   return statusMap[status] || status;
 }

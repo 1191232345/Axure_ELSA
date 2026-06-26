@@ -59,22 +59,6 @@ function initListPage() {
     });
   }
 
-  // 绑定详情弹窗关闭事件
-  var closeBtn = document.getElementById('closeDetailBtn');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeDetailModal);
-  }
-
-  // 点击弹窗背景关闭
-  var detailModal = document.getElementById('detailModal');
-  if (detailModal) {
-    detailModal.addEventListener('click', function(e) {
-      if (e.target === detailModal) {
-        closeDetailModal();
-      }
-    });
-  }
-
   console.log('列表页初始化完成');
 }
 

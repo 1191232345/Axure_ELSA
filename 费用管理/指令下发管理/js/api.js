@@ -149,7 +149,11 @@ function generateTestOrders() {
       service_type: 'custom_pack', service_name: '定制包装',
       quantity: 30,
       status: 'processing', remark: '特殊商品定制包装',
-      created_by: 'DEMO管理员', created_at: '2024-01-03 10:00:00', updated_at: '2024-01-03 10:00:00'
+      created_by: 'DEMO管理员', created_at: '2024-01-03 10:00:00', updated_at: '2024-01-03 10:00:00',
+      fees: [
+        { item: '定制包装', unit: '件', qty: 30, price: '2.50', amount: '75.00' },
+        { item: '材料费', unit: '件', qty: 30, price: '1.00', amount: '30.00' }
+      ]
     }
   ];
 }
