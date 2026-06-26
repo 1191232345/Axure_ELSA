@@ -46,7 +46,7 @@ window.State = (function () {
   }
 
   function getRatingItem(id) {
-    return data.ratingItems[id] || null;
+    return data.ratingItems[id] || data.ratingItems[String(id)] || null;
   }
 
   function getRelations() {
@@ -54,7 +54,9 @@ window.State = (function () {
   }
 
   function getRelationsForEmployee(employeeId) {
-    return data.employeeRatingRelations[employeeId] || [];
+    return data.employeeRatingRelations[employeeId]
+      || data.employeeRatingRelations[String(employeeId)]
+      || [];
   }
 
   function getDepartments() {

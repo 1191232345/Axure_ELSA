@@ -27,7 +27,7 @@ function renderOrderTable(filters) {
   }
 
   if (filteredOrders.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" class="px-6 py-12 text-center text-text-muted"><i class="fa fa-inbox text-3xl mb-2"></i><p>暂无订单数据</p></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-12 text-center text-text-muted"><i class="fa fa-inbox text-3xl mb-2"></i><p>暂无订单数据</p></td></tr>';
     return;
   }
 
@@ -43,7 +43,7 @@ function renderOrderTable(filters) {
     if (order.status === 'pending') {
       actionButtons =
         '<div class="action-btns">' +
-          '<button onclick="completeOrder(\'' + order.id + '\')" class="action-btn" title="完成"><i class="fa fa-check-circle"></i></button>' +
+          '<button onclick="completeOrder(\'' + order.id + '\')" class="action-btn" title="开始处理"><i class="fa fa-play-circle"></i></button>' +
           '<button onclick="editOrder(\'' + order.id + '\')" class="action-btn" title="编辑"><i class="fa fa-edit"></i></button>' +
           '<button onclick="deleteOrderConfirm(\'' + order.id + '\')" class="action-btn danger" title="删除"><i class="fa fa-trash"></i></button>' +
         '</div>';
@@ -72,9 +72,6 @@ function renderOrderTable(filters) {
       '<td style="width:100px;">' +
         '<div class="text-dark">' + order.quantity + ' ' + (SERVICE_TYPES[order.service_type] ? SERVICE_TYPES[order.service_type].unit : '件') + '</div>' +
       '</td>' +
-      '<td style="width:100px;">' +
-        '<div class="price-display">' + formatCurrency(order.total_amount) + '</div>' +
-      '</td>' +
       '<td style="width:100px;">' + statusBadge + '</td>' +
       '<td style="width:150px;">' +
         '<div class="text-dark">' + formatDateTime(order.created_at) + '</div>' +
@@ -88,7 +85,7 @@ function renderOrderTable(filters) {
 function getStatusIcon(status) {
   var iconMap = {
     'pending': 'fa-clock',
-    'completed': 'fa-check-circle'
+    'processing': 'fa-spinner'
   };
   return iconMap[status] || 'fa-question';
 }
@@ -136,8 +133,8 @@ function renderFilterOptions() {
   var ss = document.getElementById('filterStatus');
   if (ss) {
     ss.innerHTML = '<option value="">全部状态</option>' +
-      '<option value="pending">待处理</option>' +
-      '<option value="completed">已完成</option>';
+      '<option value="pending">未处理</option>' +
+      '<option value="processing">已完成</option>';
   }
 }
 
@@ -165,8 +162,6 @@ function renderOrderDetail(order) {
       '<div class="detail-grid">' +
         '<div class="detail-item"><div class="detail-label">服务类型</div><div class="detail-value">' + serviceIcon + order.service_name + '</div></div>' +
         '<div class="detail-item"><div class="detail-label">数量</div><div class="detail-value">' + order.quantity + ' ' + (SERVICE_TYPES[order.service_type] ? SERVICE_TYPES[order.service_type].unit : '件') + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">单价</div><div class="detail-value">' + formatCurrency(order.unit_price) + '</div></div>' +
-        '<div class="detail-item"><div class="detail-label">总金额</div><div class="detail-value text-accent font-bold">' + formatCurrency(order.total_amount) + '</div></div>' +
       '</div>' +
     '</div>' +
     '<div class="detail-section">' +

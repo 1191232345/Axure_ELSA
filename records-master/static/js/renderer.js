@@ -53,7 +53,7 @@ window.Renderer = (function () {
 
       relatedRatingIds.forEach(function (ratingId) {
         var ratingItem = State.getRatingItem(ratingId.toString());
-        if (ratingItem && ratingItem.enabled) {
+        if (ratingItem && ratingItem.enabled !== 0 && ratingItem.enabled !== false) {
           var newRatingItem = ratingItemTemplate.cloneNode(true);
           newRatingItem.removeAttribute('id');
           newRatingItem.classList.remove('hidden');

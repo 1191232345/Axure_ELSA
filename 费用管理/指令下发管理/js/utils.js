@@ -62,8 +62,8 @@ function deepCopy(obj) {
 
 function getStatusText(status) {
   var statusMap = {
-    'pending': '待处理',
-    'completed': '已完成'
+    'pending': '未处理',
+    'processing': '已完成'
   };
   return statusMap[status] || status;
 }
@@ -71,9 +71,7 @@ function getStatusText(status) {
 function getStatusBadgeClass(status) {
   var classMap = {
     'pending': 'bg-warning-light text-warning',
-    'processing': 'bg-blue-100 text-blue-800',
-    'completed': 'bg-success-light text-success',
-    'cancelled': 'bg-gray-100 text-gray-800'
+    'processing': 'bg-blue-50 text-blue-600'
   };
   return classMap[status] || 'bg-gray-100 text-gray-800';
 }

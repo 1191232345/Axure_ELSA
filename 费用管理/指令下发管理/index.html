@@ -209,7 +209,6 @@
                 <th style="width:120px;">仓库</th>
                 <th style="width:150px;">服务类型</th>
                 <th style="width:100px;">数量</th>
-                <th style="width:100px;">总金额</th>
                 <th style="width:100px;">状态</th>
                 <th style="width:150px;">创建时间</th>
                 <th style="width:100px;">操作</th>
@@ -290,8 +289,7 @@
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">仓库</td><td class="px-3 py-2 text-gray-600">执行服务的仓库</td><td class="px-3 py-2 text-gray-600">手工输入</td><td class="px-3 py-2 text-gray-600">仓库ID + 仓库名称</td></tr>
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">服务类型</td><td class="px-3 py-2 text-gray-600">具体的服务项目</td><td class="px-3 py-2 text-gray-600">手工选择</td><td class="px-3 py-2 text-gray-600">拍照/测量/质检/定制包装/贴标/退货处理</td></tr>
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">数量</td><td class="px-3 py-2 text-gray-600">服务的数量</td><td class="px-3 py-2 text-gray-600">手工输入</td><td class="px-3 py-2 text-gray-600">根据服务类型显示单位</td></tr>
-                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">总金额</td><td class="px-3 py-2 text-gray-600">订单的总费用</td><td class="px-3 py-2 text-gray-600">系统计算</td><td class="px-3 py-2 text-gray-600">单价 × 数量</td></tr>
-                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">状态</td><td class="px-3 py-2 text-gray-600">订单的处理状态</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">待处理/已完成</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">状态</td><td class="px-3 py-2 text-gray-600">订单的处理状态</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">未处理/已完成</td></tr>
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建时间</td><td class="px-3 py-2 text-gray-600">订单创建的时间</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td></tr>
                     </tbody>
                   </table>
@@ -314,9 +312,9 @@
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">新增</td><td class="px-3 py-2 text-gray-600">/</td><td class="px-3 py-2 text-gray-600">打开新增页，操作人仅允许在新增页操作</td><td class="px-3 py-2 text-gray-600">/</td></tr>
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">导入</td><td class="px-3 py-2 text-gray-600">/</td><td class="px-3 py-2 text-gray-600">打卡导入弹窗，操作人仅支持在弹窗内操作</td><td class="px-3 py-2 text-gray-600">/</td></tr>
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">导出</td><td class="px-3 py-2 text-gray-600">兼容勾选导和条件导出</td><td class="px-3 py-2 text-gray-600">触发后导出数据</td><td class="px-3 py-2 text-gray-600">/</td></tr>
-                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">完成</td><td class="px-3 py-2 text-gray-600">仅待处理</td><td class="px-3 py-2 text-gray-600">将订单状态从待处理改为已完成</td><td class="px-3 py-2 text-gray-600">更新状态为已完成，记录完成时间</td></tr>
-                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">编辑</td><td class="px-3 py-2 text-gray-600">仅待处理</td><td class="px-3 py-2 text-gray-600">修改订单信息（客户、仓库、服务类型、数量等）</td><td class="px-3 py-2 text-gray-600">跳转到编辑页面，保存后更新订单信息</td></tr>
-                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">删除</td><td class="px-3 py-2 text-gray-600">仅待处理</td><td class="px-3 py-2 text-gray-600">删除订单记录</td><td class="px-3 py-2 text-gray-600">确认后删除订单，不可恢复</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">开始处理</td><td class="px-3 py-2 text-gray-600">仅未处理</td><td class="px-3 py-2 text-gray-600">将订单状态从未处理改为已完成</td><td class="px-3 py-2 text-gray-600">更新状态为已完成</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">编辑</td><td class="px-3 py-2 text-gray-600">仅未处理</td><td class="px-3 py-2 text-gray-600">修改订单信息（客户、仓库、服务类型、数量等）</td><td class="px-3 py-2 text-gray-600">跳转到编辑页面，保存后更新订单信息</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">删除</td><td class="px-3 py-2 text-gray-600">仅未处理</td><td class="px-3 py-2 text-gray-600">删除订单记录</td><td class="px-3 py-2 text-gray-600">确认后删除订单，不可恢复</td></tr>
                       <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">查看</td><td class="px-3 py-2 text-gray-600">仅已完成</td><td class="px-3 py-2 text-gray-600">查看订单详情</td><td class="px-3 py-2 text-gray-600">弹窗显示订单详细信息</td></tr>
                     </tbody>
                   </table>
@@ -335,14 +333,14 @@
                 <div class="bg-gray-50 p-4 rounded-lg">
                   <div class="flex items-center justify-center space-x-4">
                     <div class="flex items-center">
-                      <span class="px-4 py-2 bg-warning-light text-warning rounded-lg font-semibold">待处理</span>
+                      <span class="px-4 py-2 bg-warning-light text-warning rounded-lg font-semibold">未处理</span>
                       <i class="fa fa-arrow-right text-gray-400 mx-4"></i>
-                      <span class="px-4 py-2 bg-success-light text-success rounded-lg font-semibold">已完成</span>
+                      <span class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-semibold">已完成</span>
                     </div>
                   </div>
                   <div class="mt-4 text-center text-gray-600 text-sm">
-                    <p>新建订单默认状态为"待处理"</p>
-                    <p>点击"完成"按钮后，状态流转为"已完成"</p>
+                    <p>新建订单默认状态为"未处理"</p>
+                    <p>点击"开始处理"按钮后，状态流转为"已完成"</p>
                     <p>已完成的订单不可编辑和删除，只能查看详情</p>
                   </div>
                 </div>

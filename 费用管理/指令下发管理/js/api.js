@@ -7,12 +7,12 @@ let orders = [];
 
 // 增值服务类型定义
 const SERVICE_TYPES = {
-  photo: { name: '拍照服务', icon: 'fa-camera', price: 5, unit: '张' },
-  measure: { name: '测量服务', icon: 'fa-arrows-h', price: 10, unit: '件' },
-  quality_check: { name: '质检服务', icon: 'fa-check-square-o', price: 20, unit: '件' },
-  custom_pack: { name: '定制包装', icon: 'fa-cube', price: 30, unit: '件' },
-  label_service: { name: '贴标服务', icon: 'fa-tag', price: 8, unit: '件' },
-  return_handle: { name: '退货处理', icon: 'fa-undo', price: 15, unit: '件' }
+  photo: { name: '拍照服务', icon: 'fa-camera', unit: '张' },
+  measure: { name: '测量服务', icon: 'fa-arrows-h', unit: '件' },
+  quality_check: { name: '质检服务', icon: 'fa-check-square-o', unit: '件' },
+  custom_pack: { name: '定制包装', icon: 'fa-cube', unit: '件' },
+  label_service: { name: '贴标服务', icon: 'fa-tag', unit: '件' },
+  return_handle: { name: '退货处理', icon: 'fa-undo', unit: '件' }
 };
 
 async function initApi() {
@@ -30,6 +30,10 @@ function loadOrders() {
       var data = JSON.parse(stored);
       if (data.version === DATA_VERSION) {
         orders = data.orders || [];
+        orders.forEach(function(o) {
+          if (o.status === 'draft') o.status = 'pending';
+          if (o.status === 'completed') o.status = 'processing';
+        });
       }
     }
   } catch (error) {
@@ -73,8 +77,6 @@ function createOrder(orderData) {
     service_type: orderData.service_type,
     service_name: getServiceTypeText(orderData.service_type),
     quantity: orderData.quantity || 1,
-    unit_price: SERVICE_TYPES[orderData.service_type].price,
-    total_amount: (orderData.quantity || 1) * SERVICE_TYPES[orderData.service_type].price,
     status: 'pending',
     remark: orderData.remark || '',
     created_by: orderData.created_by || 'DEMO管理员',
@@ -95,9 +97,6 @@ function updateOrder(id, updateData) {
     }
   });
   order.updated_at = getCurrentDateTime();
-  if (updateData.quantity) {
-    order.total_amount = updateData.quantity * order.unit_price;
-  }
   saveOrders();
   return order;
 }
@@ -130,7 +129,7 @@ function generateTestOrders() {
       customer_id: 'C001', customer_name: 'DEMO客户001',
       warehouse_id: 'W001', warehouse_name: 'DEMO仓库001',
       service_type: 'photo', service_name: '拍照服务',
-      quantity: 50, unit_price: 5, total_amount: 250,
+      quantity: 50,
       status: 'pending', remark: '产品上架前拍照',
       created_by: 'DEMO管理员', created_at: '2024-01-01 10:00:00', updated_at: '2024-01-01 10:00:00'
     },
@@ -139,8 +138,8 @@ function generateTestOrders() {
       customer_id: 'C002', customer_name: 'DEMO客户002',
       warehouse_id: 'W002', warehouse_name: 'DEMO仓库002',
       service_type: 'quality_check', service_name: '质检服务',
-      quantity: 100, unit_price: 20, total_amount: 2000,
-      status: 'processing', remark: '入库质检',
+      quantity: 100,
+      status: 'pending', remark: '入库质检',
       created_by: 'DEMO管理员', created_at: '2024-01-02 10:00:00', updated_at: '2024-01-02 10:00:00'
     },
     {
@@ -148,8 +147,8 @@ function generateTestOrders() {
       customer_id: 'C003', customer_name: 'DEMO客户003',
       warehouse_id: 'W003', warehouse_name: 'DEMO仓库003',
       service_type: 'custom_pack', service_name: '定制包装',
-      quantity: 30, unit_price: 30, total_amount: 900,
-      status: 'completed', remark: '特殊商品定制包装',
+      quantity: 30,
+      status: 'processing', remark: '特殊商品定制包装',
       created_by: 'DEMO管理员', created_at: '2024-01-03 10:00:00', updated_at: '2024-01-03 10:00:00'
     }
   ];

@@ -20,6 +20,12 @@ function editOrder(orderId) {
     showToast('订单不存在', 'error');
     return;
   }
+
+  if (order.status !== 'pending') {
+    showToast('只能编辑未处理状态的订单', 'error');
+    return;
+  }
+
   // 跳转到编辑页面
   window.location.href = 'order-form.html?id=' + orderId;
 }
@@ -32,7 +38,7 @@ function deleteOrderConfirm(orderId) {
   }
 
   if (order.status !== 'pending') {
-    showToast('只能删除待处理状态的订单', 'error');
+    showToast('只能删除未处理状态的订单', 'error');
     return;
   }
 
@@ -54,13 +60,13 @@ function completeOrder(orderId) {
   }
 
   if (order.status !== 'pending') {
-    showToast('只能完成待处理状态的订单', 'error');
+    showToast('只能对未处理状态的订单开始处理', 'error');
     return;
   }
 
-  if (confirm('确认完成订单 "' + order.order_no + '" 吗？')) {
-    updateOrderStatus(orderId, 'completed');
-    showToast('订单已完成', 'success');
+  if (confirm('确认开始处理订单 "' + order.order_no + '" 吗？')) {
+    updateOrderStatus(orderId, 'processing');
+    showToast('订单已进入已完成', 'success');
     applyFilters();
   }
 }
@@ -102,8 +108,7 @@ function renderServiceTypeOptions() {
   var html = '<option value="">请选择服务类型</option>';
   Object.keys(SERVICE_TYPES).forEach(function(key) {
     var service = SERVICE_TYPES[key];
-    html += '<option value="' + key + '" data-price="' + service.price + '" data-unit="' + service.unit + '">' +
-      service.name + ' (' + formatCurrency(service.price) + '/' + service.unit + ')</option>';
+    html += '<option value="' + key + '">' + service.name + '</option>';
   });
   select.innerHTML = html;
 }
@@ -125,38 +130,6 @@ function loadOrderForEdit(orderId) {
   document.getElementById('serviceType').value = order.service_type;
   document.getElementById('quantity').value = order.quantity;
   document.getElementById('remark').value = order.remark || '';
-
-  updatePricePreview();
-}
-
-function onServiceTypeChange() {
-  updatePricePreview();
-}
-
-function onQuantityChange() {
-  updatePricePreview();
-}
-
-function updatePricePreview() {
-  var serviceType = document.getElementById('serviceType').value;
-  var quantity = parseInt(document.getElementById('quantity').value) || 0;
-  var preview = document.getElementById('pricePreview');
-
-  if (!serviceType || quantity <= 0) {
-    preview.innerHTML = '<span class="text-text-muted">请选择服务类型并输入数量</span>';
-    return;
-  }
-
-  var service = SERVICE_TYPES[serviceType];
-  var total = service.price * quantity;
-
-  preview.innerHTML =
-    '<div class="price-preview">' +
-      '<div class="price-row"><span class="price-label">服务类型:</span><span class="price-value">' + service.name + '</span></div>' +
-      '<div class="price-row"><span class="price-label">单价:</span><span class="price-value">' + formatCurrency(service.price) + '/' + service.unit + '</span></div>' +
-      '<div class="price-row"><span class="price-label">数量:</span><span class="price-value">' + quantity + ' ' + service.unit + '</span></div>' +
-      '<div class="price-row price-total"><span class="price-label">总金额:</span><span class="price-value text-accent font-bold">' + formatCurrency(total) + '</span></div>' +
-    '</div>';
 }
 
 function submitOrderForm(event) {
@@ -229,7 +202,5 @@ window.completeOrder = completeOrder;
 window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
 window.initOrderForm = initOrderForm;
-window.onServiceTypeChange = onServiceTypeChange;
-window.onQuantityChange = onQuantityChange;
 window.submitOrderForm = submitOrderForm;
 window.cancelOrderForm = cancelOrderForm;

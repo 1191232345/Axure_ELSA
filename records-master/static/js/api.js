@@ -18,7 +18,7 @@ window.Api = (function () {
     
     return Promise.all([
       request(employeesUrl),
-      request(config.ratingItems),
+      request(config.ratingItems + '?page=1&pageSize=1000'),
       request(config.relations),
       request(config.evaluationResults),
     ]).then(function (results) {

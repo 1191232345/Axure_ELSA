@@ -103,7 +103,7 @@
   border: 1px solid #91d5ff;
 }
 
-.status-draft {
+.status-pending {
   background: #fff7e6;
   color: #d46b08;
   border: 1px solid #ffd591;
@@ -115,22 +115,10 @@
   border: 1px solid #ffa39e;
 }
 
-.status-pending {
-  background: #fff7e6;
-  color: #d46b08;
-  border: 1px solid #ffd591;
-}
-
 .status-processing {
   background: #e6f7ff;
   color: #096dd9;
   border: 1px solid #91d5ff;
-}
-
-.status-completed {
-  background: #f6ffed;
-  color: #52c41a;
-  border: 1px solid #b7eb8f;
 }
 
 /* 操作按钮组 */
