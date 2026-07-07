@@ -75,6 +75,7 @@
                 <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
                 <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
                 <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                <a href="/费用管理/快递费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">快递费规则</a>
                 <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
                 <a href="/费用管理/增值服务规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务规则</a>
                 <a href="/费用管理/增值服务指令下单/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务指令下单</a>
@@ -166,9 +167,9 @@
     </div>
 
     <div class="mb-6 flex justify-start">
-      <a href="package-create.html" class="btn btn-primary">
-        <i class="fas fa-plus mr-2"></i>创建价卡
-      </a>
+      <button onclick="openCreateModal()" class="btn btn-primary">
+        <i class="fas fa-plus mr-2"></i>新增价卡
+      </button>
     </div>
 
     <div class="bg-white rounded-lg shadow-card overflow-hidden">
@@ -522,8 +523,87 @@
 
 
 
-  <!-- 创建价卡弹窗已改为独立页面 package-create.html -->
+  <!-- 新增价卡弹窗 -->
+  <div id="createModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-plus-circle mr-2 text-accent"></i>新增价卡
+        </h3>
+        <button class="modal-close" onclick="closeCreateModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
+      <div class="modal-body">
+        <form id="createPackageForm">
+          <div class="form-group">
+            <label class="form-label">价卡名称 <span class="text-danger">*</span></label>
+            <input type="text" id="createPackageName" required
+                   class="form-input" placeholder="请输入价卡名称">
+          </div>
+
+          <div class="form-group mt-4">
+            <label class="form-label">价卡描述</label>
+            <textarea id="createPackageDescription" rows="3"
+                      class="form-input" placeholder="请输入价卡描述"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button onclick="closeCreateModal()" class="btn btn-secondary">
+          <i class="fas fa-times mr-2"></i>取消
+        </button>
+        <button onclick="createPackage()" class="btn btn-primary">
+          <i class="fas fa-save mr-2"></i>保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑价卡弹窗 -->
+  <div id="editModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fas fa-edit mr-2 text-accent"></i>编辑价卡
+        </h3>
+        <button class="modal-close" onclick="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="editPackageForm">
+          <input type="hidden" id="editPackageId">
+          
+          <div class="form-group">
+            <label class="form-label">价卡名称 <span class="text-danger">*</span></label>
+            <input type="text" id="editPackageName" required
+                   class="form-input" placeholder="请输入价卡名称">
+          </div>
+
+          <div class="form-group mt-4">
+            <label class="form-label">价卡描述</label>
+            <textarea id="editPackageDescription" rows="3"
+                      class="form-input" placeholder="请输入价卡描述"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button onclick="closeEditModal()" class="btn btn-secondary">
+          <i class="fas fa-times mr-2"></i>取消
+        </button>
+        <button onclick="updatePackage()" class="btn btn-primary">
+          <i class="fas fa-save mr-2"></i>保存
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 价卡详情弹窗 -->
   <div id="detailModal" class="modal-overlay">
     <div class="modal-container">
       <div class="modal-header">
@@ -546,51 +626,10 @@
     </div>
   </div>
 
-  <script>
-    // 打开逻辑说明弹窗
-    function openLogicModal() {
-      document.getElementById('logic-modal').classList.remove('hidden');
-    }
-
-    // 关闭逻辑说明弹窗
-    function closeLogicModal() {
-      document.getElementById('logic-modal').classList.add('hidden');
-    }
-
-    // 切换逻辑说明Tab
-    function switchLogicTab(button) {
-      const group = button.getAttribute('data-group');
-      const tab = button.getAttribute('data-tab');
-      
-      // 更新Tab按钮样式
-      const tabs = document.querySelectorAll(`.logic-tab[data-group="${group}"]`);
-      tabs.forEach(tabBtn => {
-        tabBtn.classList.remove('text-primary', 'border-b-2', 'border-primary');
-        tabBtn.classList.add('text-gray-500', 'hover:text-gray-700');
-      });
-      
-      button.classList.remove('text-gray-500', 'hover:text-gray-700');
-      button.classList.add('text-primary', 'border-b-2', 'border-primary');
-      
-      // 显示对应面板
-      const panels = document.querySelectorAll(`.logic-panel[data-group="${group}"]`);
-      panels.forEach(panel => {
-        panel.classList.add('hidden');
-      });
-      
-      const activePanel = document.querySelector(`.logic-panel[data-group="${group}"][data-panel="${tab}"]`);
-      if (activePanel) {
-        activePanel.classList.remove('hidden');
-      }
-    }
-
-    // 点击弹窗外部关闭
-    document.getElementById('logic-modal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeLogicModal();
-      }
-    });
-  </script>
+  <!-- 弹窗模块 -->
+  <script src="js/modal-create-package.js"></script>
+  <script src="js/modal-edit-package.js"></script>
+  <script src="js/modal-logic-description.js"></script>
 
   <!-- 引用入库费规则数据 -->
   <script src="../入库费规则/js/inbound-fee-rule-data.js"></script>

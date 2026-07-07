@@ -10,11 +10,22 @@ function renderRuleConfigTable(filters) {
   var filteredConfigs = getAllRuleConfigs();
 
   if (filters.customer_id) filteredConfigs = filteredConfigs.filter(function(c) { return c.customer_id === filters.customer_id; });
-  if (filters.warehouse_id) filteredConfigs = filteredConfigs.filter(function(c) { return c.warehouse_id === filters.warehouse_id; });
+  if (filters.warehouse_ids && filters.warehouse_ids.length) {
+    filteredConfigs = filteredConfigs.filter(function(c) {
+      return filters.warehouse_ids.indexOf(c.warehouse_id) !== -1;
+    });
+  } else if (filters.warehouse_id) {
+    filteredConfigs = filteredConfigs.filter(function(c) { return c.warehouse_id === filters.warehouse_id; });
+  }
   if (filters.business_type) filteredConfigs = filteredConfigs.filter(function(c) { return c.business_type === filters.business_type; });
   if (filters.created_by) {
     var kw = filters.created_by.toLowerCase();
     filteredConfigs = filteredConfigs.filter(function(c) { return c.created_by && c.created_by.toLowerCase().indexOf(kw) !== -1; });
+  }
+  if (filters.effective_status) {
+    filteredConfigs = filteredConfigs.filter(function(c) {
+      return computeEffectiveStatus(c) === filters.effective_status;
+    });
   }
 
   if (filteredConfigs.length === 0) {
@@ -26,21 +37,17 @@ function renderRuleConfigTable(filters) {
   emptyState.classList.add('hidden');
 
   tbody.innerHTML = filteredConfigs.map(function(config) {
-    return '<tr class="hover:bg-hover transition-colors">' +
+    var effStatus = computeEffectiveStatus(config);
+    var periodClass = effStatus === 'expired' ? ' opacity-60' : '';
+    return '<tr class="hover:bg-hover transition-colors' + (effStatus === 'expired' ? ' opacity-75' : '') + '">' +
       '<td class="px-6 py-4"><div class="text-sm font-medium text-primary">' + config.name + '</div><div class="text-xs text-text-muted mt-1">ID: ' + config.id + '</div></td>' +
-      '<td class="px-6 py-4">' + getStatusBadge(config.status) + '</td>' +
+      '<td class="px-6 py-4">' + getEffectiveStatusBadge(effStatus) + '</td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + config.customer_name + '</div><div class="text-xs text-text-muted mt-1">' + (getCustomerById(config.customer_id) ? getCustomerById(config.customer_id).code : '-') + '</div></td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + config.warehouse_name + '</div><div class="text-xs text-text-muted mt-1">' + (getWarehouseById(config.warehouse_id) ? getWarehouseById(config.warehouse_id).location : '-') + '</div></td>' +
-      '<td class="px-6 py-4"><div class="text-sm text-dark">' + formatDateTime(config.effective_start_time) + '</div><div class="text-xs text-text-muted mt-1">至 ' + formatDateTime(config.effective_end_time) + '</div></td>' +
+      '<td class="px-6 py-4' + periodClass + '"><div class="text-sm text-dark">' + formatDateTime(config.effective_start_time) + '</div><div class="text-xs text-text-muted mt-1">至 ' + formatDateTime(config.effective_end_time) + '</div></td>' +
       '<td class="px-6 py-4"><div class="text-sm text-dark">' + (config.created_by || '-') + '</div><div class="text-xs text-text-muted mt-1">' + formatDateTime(config.created_at) + '</div></td>' +
       '<td class="px-6 py-4"><div class="action-buttons">' + getActionButtons(config) + '</div></td></tr>';
   }).join('');
-}
-
-function getStatusBadge(status) {
-  if (status === 'published') return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>已发布</span>';
-  if (status === 'voided') return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800"><i class="fas fa-ban mr-1"></i>已作废</span>';
-  return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800"><i class="fas fa-pencil-alt mr-1"></i>草稿</span>';
 }
 
 function getActionButtons(config) {
@@ -77,9 +84,12 @@ function getDiscountInfo(config) {
 
 function renderFilterOptions() {
   var cs = document.getElementById('filterCustomer');
-  var ws = document.getElementById('filterWarehouse');
   cs.innerHTML = '<option value="">全部客户</option>' + getActiveCustomers().map(function(c) { return '<option value="'+c.id+'">'+c.name+'</option>'; }).join('');
-  ws.innerHTML = '<option value="">全部仓库</option>' + getActiveWarehouses().map(function(w) { return '<option value="'+w.id+'">'+w.name+'</option>'; }).join('');
+  var warehouseOptions = getActiveWarehouses().map(function(w) { return { value: w.id, label: w.name }; });
+  MultiSelect.init('filterWarehouse', warehouseOptions, {
+    placeholder: '全部仓库',
+    onChange: applyFilters,
+  });
 }
 
 // 折扣徽章渲染（与价卡管理 fee-table.js._renderDiscountBadge 完全一致）
@@ -102,7 +112,6 @@ function _renderDiscountBadge(row) {
 
 window._renderDiscountBadge = _renderDiscountBadge;
 window.renderRuleConfigTable = renderRuleConfigTable;
-window.getStatusBadge = getStatusBadge;
 window.getActionButtons = getActionButtons;
 window.getDiscountInfo = getDiscountInfo;
 window.renderFilterOptions = renderFilterOptions;

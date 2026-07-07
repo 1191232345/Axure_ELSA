@@ -29,6 +29,7 @@
 /* ========== 弹窗 ========== */
 .modal-overlay { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999 !important; padding: 20px; animation: fadeIn 0.2s ease; overflow-y: auto; box-sizing: border-box; }
 .modal-overlay.active { display: flex !important; }
+.modal-container { background: white; border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -164,6 +165,13 @@
 .std-tier-budget-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5A6275; }
 .std-tier-budget-item i { color: #8B93A5; }
 .std-tier-budget-item strong { color: #1B3A4B; }
+
+/* ========== 基础费用Tab栏 ========== */
+.warehouse-fee-tab { padding: 12px 20px; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: 500; color: #5A6275; border-bottom: 2px solid transparent; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+.warehouse-fee-tab:hover { color: #E8A838; background: #EDE9E3; }
+.warehouse-fee-tab.active { color: #1B3A4B; border-bottom: 2px solid #E8A838; background: #F5F3EF; font-weight: 600; }
+.tab-content { display: block; }
+.tab-content.hidden { display: none; }
 
 /* ========== 费用项表格 ========== */
 #feeItemsTableBody select, #feeItemsTableBody input { min-width: 100px; }

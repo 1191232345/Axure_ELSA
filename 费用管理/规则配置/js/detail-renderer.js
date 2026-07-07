@@ -42,7 +42,7 @@ function _renderBasicInfo(rc, businessTypeText) {
     : '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800"><i class="fas fa-check mr-1"></i>未微调</span>';
   return _renderInfoGrid([
     { label: '配置名称', value: rc.name },
-    { label: '状态', value: getStatusBadge(rc.status) },
+    { label: '生效状态', value: getEffectiveStatusBadge(computeEffectiveStatus(rc)) },
     { label: '业务类型', value: businessTypeText },
     { label: '客户', value: rc.customer_name },
     { label: '仓库', value: rc.warehouse_name },
@@ -53,8 +53,9 @@ function _renderBasicInfo(rc, businessTypeText) {
 
 function _renderEffectivePeriod(rc) {
   return _renderInfoGrid([
-    { label: '生效开始时间', value: formatDateTime(rc.effective_start_time) },
-    { label: '生效结束时间', value: formatDateTime(rc.effective_end_time) }
+    { label: '生效开始时间', value: formatDateTime(rc.effective_start_time) + '（00:00:00）' },
+    { label: '生效结束时间', value: formatDateTime(rc.effective_end_time) + '（23:59:59）' },
+    { label: '匹配规则', value: '闭区间：start ≤ 业务时间 ≤ end' }
   ]);
 }
 

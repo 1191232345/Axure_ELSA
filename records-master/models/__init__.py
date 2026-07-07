@@ -67,6 +67,7 @@ from models.evaluation import (
     clear_all_evaluation_results,
     clear_evaluation_results_by_filter,
     get_evaluation_results_paginated,
+    get_evaluation_results_filtered,
 )
 from models.announcement import (
     get_enabled_announcements,

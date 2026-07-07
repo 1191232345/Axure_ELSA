@@ -51,7 +51,10 @@ const PackageList = {
         <td class="px-6 py-4"><div class="text-sm text-text-secondary">${pkg.updatedAt || '-'}</div></td>
         <td class="px-6 py-4"><div class="action-buttons">
           <button class="action-btn action-btn-view" onclick="PackageList.view(${pkg.id})"><i class="fas fa-eye mr-1"></i>查看</button>
-          <a href="package-edit.html?id=${pkg.id}" class="action-btn action-btn-edit"><i class="fas fa-edit mr-1"></i>编辑</a>
+          <button class="action-btn action-btn-edit" onclick="openEditModal(${pkg.id})"><i class="fas fa-edit mr-1"></i>编辑</button>
+          <a href="warehouse-fee.html?id=${pkg.id}" class="action-btn action-btn-maintenance" style="background-color: #2D936C;"><i class="fas fa-warehouse mr-1"></i>维护库内费用</a>
+          <a href="express-fee.html?id=${pkg.id}" class="action-btn action-btn-maintenance" style="background-color: #D4853A;"><i class="fas fa-truck mr-1"></i>快递费用</a>
+          <a href="other-fee.html?id=${pkg.id}" class="action-btn action-btn-maintenance" style="background-color: #8B93A5;"><i class="fas fa-ellipsis-h mr-1"></i>其他费用</a>
           <button class="action-btn action-btn-delete" onclick="PackageList.deletePkg(${pkg.id})"><i class="fas fa-trash mr-1"></i>删除</button>
         </div></td></tr>`;
     }).join('');

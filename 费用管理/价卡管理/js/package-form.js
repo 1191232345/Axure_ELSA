@@ -12,6 +12,12 @@ const PackageForm = {
     this._loadFromUrl();
   },
 
+  // 只编辑基本信息(名称和描述)
+  initEditBasicInfo() {
+    DataService.loadPackages();
+    this._loadBasicInfoFromUrl();
+  },
+
   _loadFromUrl() {
     const packageId = new URLSearchParams(window.location.search).get('id');
     if (!packageId) { alert('缺少价卡ID参数'); window.location.href = 'index.html'; return; }
@@ -44,6 +50,31 @@ const PackageForm = {
 
     FeeTable.render();
     if (AppState.feeRows.length === 0) FeeTable.addRow();
+  },
+
+  _loadBasicInfoFromUrl() {
+    const packageId = new URLSearchParams(window.location.search).get('id');
+    if (!packageId) { alert('缺少价卡ID参数'); window.location.href = 'index.html'; return; }
+
+    const pkg = AppState.packages.find(p => p.id == packageId);
+    if (!pkg) { alert('价卡不存在'); window.location.href = 'index.html'; return; }
+
+    document.getElementById('packageId').value = pkg.id;
+    document.getElementById('packageName').value = pkg.name;
+    document.getElementById('packageDescription').value = pkg.description || '';
+
+    // 显示创建和更新信息
+    const createdByEl = document.getElementById('createdBy');
+    const createdAtEl = document.getElementById('createdAt');
+    const updatedByEl = document.getElementById('updatedBy');
+    const updatedAtEl = document.getElementById('updatedAt');
+
+    if (createdByEl) createdByEl.textContent = pkg.createdBy || '-';
+    if (createdAtEl) createdAtEl.textContent = pkg.createdAt || '-';
+    if (updatedByEl) updatedByEl.textContent = pkg.updatedBy || '-';
+    if (updatedAtEl) updatedAtEl.textContent = pkg.updatedAt || '-';
+
+    AppState.editingPackageId = pkg.id;
   },
 
   save() {
@@ -89,8 +120,45 @@ const PackageForm = {
     DataService.savePackages();
     alert(AppState.editingPackageId ? '价卡更新成功！' : '价卡创建成功！');
     window.location.href = 'index.html';
+  },
+
+  // 只保存基本信息(名称和描述)
+  saveBasicInfo() {
+    const name = document.getElementById('packageName').value.trim();
+    const description = document.getElementById('packageDescription').value.trim();
+
+    if (!name) {
+      alert('请输入价卡名称');
+      return;
+    }
+
+    // 检查价卡名称是否与其他价卡重复(排除当前价卡)
+    const packageId = parseInt(document.getElementById('packageId').value);
+    const duplicate = AppState.packages.find(p => p.id !== packageId && p.name === name);
+    if (duplicate) {
+      alert('价卡名称已存在，请使用其他名称');
+      return;
+    }
+
+    // 更新价卡基本信息
+    const pkg = AppState.packages.find(p => p.id === packageId);
+    if (!pkg) {
+      alert('价卡不存在');
+      return;
+    }
+
+    pkg.name = name;
+    pkg.description = description;
+    pkg.updatedBy = '管理员';
+    pkg.updatedAt = DataService.getCurrentTime();
+
+    DataService.savePackages();
+
+    alert('价卡基本信息更新成功！');
+    window.location.href = 'index.html';
   }
 };
 
 // 全局函数兼容
 function savePackage() { PackageForm.save(); }
+function savePackageBasicInfo() { PackageForm.saveBasicInfo(); }

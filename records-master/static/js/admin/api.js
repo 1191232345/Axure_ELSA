@@ -56,10 +56,23 @@ window.AdminApi = (function () {
     return request(config.ratingItems + '?page=' + page + '&pageSize=' + pageSize);
   }
 
-  function loadEvaluationResults(page, pageSize, employeeName, department) {
+  function loadEvaluationResults(page, pageSize, employeeName, department, startDate, endDate) {
     var url = config.evaluationResults + '?page=' + page + '&pageSize=' + pageSize;
     if (employeeName) url += '&employee_name=' + encodeURIComponent(employeeName);
     if (department) url += '&department=' + encodeURIComponent(department);
+    if (startDate) url += '&start_date=' + encodeURIComponent(startDate);
+    if (endDate) url += '&end_date=' + encodeURIComponent(endDate);
+    return request(url);
+  }
+
+  function loadAllEvaluationResults(employeeName, department, startDate, endDate) {
+    var url = config.evaluationResults + '/export?';
+    var params = [];
+    if (employeeName) params.push('employee_name=' + encodeURIComponent(employeeName));
+    if (department) params.push('department=' + encodeURIComponent(department));
+    if (startDate) params.push('start_date=' + encodeURIComponent(startDate));
+    if (endDate) params.push('end_date=' + encodeURIComponent(endDate));
+    url += params.join('&');
     return request(url);
   }
 
@@ -183,6 +196,7 @@ window.AdminApi = (function () {
     loadEmployees: loadEmployees,
     loadRatingItems: loadRatingItems,
     loadEvaluationResults: loadEvaluationResults,
+    loadAllEvaluationResults: loadAllEvaluationResults,
     loadDepartments: loadDepartments,
     addEmployee: addEmployee,
     updateEmployee: updateEmployee,

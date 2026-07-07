@@ -7,24 +7,42 @@ const MainPage = {
   pageSize: CommonConstants.PAGE_SIZE,
   totalCount: 0,
   selectedRows: [],
-  currentTabType: CommonConstants.TAB_TYPES.INBOUND,
+  currentTabType: CommonConstants.TAB_TYPES.OUTBOUND,
   recalculateTableData: [],
   
   init() {
     this.bindEvents();
     this.bindTabButtons();
     this.toggleInfoSection(this.currentTabType);
-    this.loadInitialData();
+    // 初始化页面时不加载数据，只显示空表格
+    this.renderEmptyTable();
   },
   
   bindEvents() {
     document.addEventListener('click', (e) => {
-      this.handleClickEvent(e);
-    });
-    
-    document.addEventListener('click', () => {
+      // 点击批量操作按钮时，切换下拉菜单
+      if (e.target.closest('#adjustFeeBtn')) {
+        this.toggleAdjustDropdown(e);
+        return;
+      }
+      
+      // 点击下拉菜单选项时，处理相应操作并隐藏
+      const dropdownItem = e.target.closest('#adjustDropdown a[data-action]');
+      if (dropdownItem) {
+        const action = dropdownItem.dataset.action;
+        this.handleDropdownAction(action);
+        const adjustDropdown = document.getElementById('adjustDropdown');
+        if (adjustDropdown) adjustDropdown.classList.add('hidden');
+        return;
+      }
+      
+      // 其他点击时隐藏下拉菜单
       const adjustDropdown = document.getElementById('adjustDropdown');
-      if (adjustDropdown) adjustDropdown.classList.add('hidden');
+      if (adjustDropdown && !e.target.closest('#adjustDropdown')) {
+        adjustDropdown.classList.add('hidden');
+      }
+      
+      this.handleClickEvent(e);
     });
     
     // 直接绑定弹窗关闭按钮事件
@@ -71,6 +89,10 @@ const MainPage = {
       this.handleSearch();
     } else if (e.target.closest('#resetBtn')) {
       this.handleReset();
+    } else if (e.target.closest('#addFeeBtn')) {
+      this.handleAddFee();
+    } else if (e.target.closest('#saveFeeBtn')) {
+      this.handleSaveFee();
     } else if (e.target.closest('#batchRecalculateBtn')) {
       this.handleBatchRecalculate();
     } else if (e.target.closest('#recalculateBtn')) {
@@ -89,43 +111,109 @@ const MainPage = {
       this.closeFeeDetailModal();
     }
   },
+
+  handleDropdownAction(action) {
+    ToastManager.show(`批量操作：${action}`, 'info');
+    // TODO: 根据不同操作类型打开相应的弹窗或执行相应逻辑
+  },
+
+  handleAddFee() {
+    const feeTableBody = document.getElementById('feeTableBody');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (emptyState) emptyState.classList.add('hidden');
+    
+    const newRow = document.createElement('tr');
+    newRow.className = 'border-t border-gray-100 table-hover-row';
+    newRow.innerHTML = `
+      <td class="px-4 py-3 text-sm">
+        <input type="text" class="form-input w-full" placeholder="费用名称" data-field="name">
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <select class="form-input" data-field="unit">
+          <option value="票">票</option>
+          <option value="KG">KG</option>
+          <option value="件">件</option>
+          <option value="次">次</option>
+        </select>
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <input type="number" class="form-input w-20 text-right" value="0.00" data-field="originalAmount" step="0.01" readonly>
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <input type="number" class="form-input w-24 text-right" value="0.00" data-field="newAmount" step="0.01">
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <select class="form-input" data-field="currency">
+          <option value="USD">USD</option>
+          <option value="CNY">CNY</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <input type="text" class="form-input w-full" placeholder="备注" data-field="remark">
+      </td>
+      <td class="px-4 py-3 text-sm">
+        <button class="table-action-btn text-danger" onclick="removeFeeRow(this)">删除</button>
+      </td>
+    `;
+    
+    feeTableBody.appendChild(newRow);
+    ToastManager.show('已添加新费用项', 'success');
+  },
+
+  handleSaveFee() {
+    ToastManager.show('费用数据已保存', 'success');
+  },
+
+  toggleAdjustDropdown(e) {
+    e.stopPropagation();
+    const dropdown = document.getElementById('adjustDropdown');
+    if (dropdown) {
+      dropdown.classList.toggle('hidden');
+    }
+  },
   
   bindTabButtons() {
     const outboundTabBtn = document.getElementById('outboundTabBtn');
     const inboundTabBtn = document.getElementById('inboundTabBtn');
     const valueAddedTabBtn = document.getElementById('valueAddedTabBtn');
-    
+
     if (outboundTabBtn && inboundTabBtn && valueAddedTabBtn) {
       outboundTabBtn.addEventListener('click', () => {
         CommonRenderer.setActiveTab(outboundTabBtn, [inboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.OUTBOUND;
         this.toggleInfoSection(CommonConstants.TAB_TYPES.OUTBOUND);
-        this.loadInitialData();
+        this.renderEmptyTable();
       });
-      
+
       inboundTabBtn.addEventListener('click', () => {
         CommonRenderer.setActiveTab(inboundTabBtn, [outboundTabBtn, valueAddedTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.INBOUND;
         this.toggleInfoSection(CommonConstants.TAB_TYPES.INBOUND);
-        this.loadInitialData();
+        this.renderEmptyTable();
       });
-      
+
       valueAddedTabBtn.addEventListener('click', () => {
         CommonRenderer.setActiveTab(valueAddedTabBtn, [outboundTabBtn, inboundTabBtn]);
         this.currentTabType = CommonConstants.TAB_TYPES.VALUE_ADDED;
         this.toggleInfoSection(CommonConstants.TAB_TYPES.VALUE_ADDED);
-        this.loadInitialData();
+        this.renderEmptyTable();
       });
     }
   },
   
   toggleInfoSection(tabType) {
     const outboundInfoSection = document.getElementById('outboundInfoSection');
+    const storageInfoSection = document.getElementById('storageInfoSection');
     const inboundInfoSection = document.getElementById('inboundInfoSection');
     const valueAddedInfoSection = document.getElementById('valueAddedInfoSection');
-    
+
     if (outboundInfoSection) {
       outboundInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.OUTBOUND);
+    }
+    if (storageInfoSection) {
+      storageInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.STORAGE);
     }
     if (inboundInfoSection) {
       inboundInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.INBOUND);
@@ -133,16 +221,20 @@ const MainPage = {
     if (valueAddedInfoSection) {
       valueAddedInfoSection.classList.toggle('hidden', tabType !== CommonConstants.TAB_TYPES.VALUE_ADDED);
     }
-    
+
     // 更新搜索框标签和占位符
     const orderNumberLabel = document.getElementById('orderNumberLabel');
     const feeNumberInput = document.getElementById('feeNumber');
-    
+
     if (orderNumberLabel && feeNumberInput) {
       switch (tabType) {
         case CommonConstants.TAB_TYPES.OUTBOUND:
           orderNumberLabel.textContent = '出库单号';
           feeNumberInput.placeholder = '输入出库单号查询（例如：OUT-240126-0059）';
+          break;
+        case CommonConstants.TAB_TYPES.STORAGE:
+          orderNumberLabel.textContent = '仓储单号';
+          feeNumberInput.placeholder = '输入仓储单号查询（例如：STR-240126-0059）';
           break;
         case CommonConstants.TAB_TYPES.INBOUND:
           orderNumberLabel.textContent = '入库单号';
@@ -155,11 +247,35 @@ const MainPage = {
       }
     }
   },
-  
+
+  renderEmptyTable() {
+    const tbody = document.getElementById('orderTableBody');
+    const totalCountEl = document.getElementById('totalCount');
+
+    if (tbody) {
+      const showLogisticsProduct = this.currentTabType === CommonConstants.TAB_TYPES.OUTBOUND;
+      const showServiceType = this.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED;
+      const colCount = (showLogisticsProduct || showServiceType) ? 10 : 9;
+
+      MainRenderer.renderMainTableHead(showLogisticsProduct, showServiceType);
+
+      tbody.innerHTML = `<tr class="border-t border-gray-100">
+        <td colspan="${colCount}" class="px-4 py-12 text-center text-gray-400">
+          <i class="fa fa-inbox text-4xl mb-2 block"></i>
+          <p>暂无数据</p>
+        </td>
+      </tr>`;
+    }
+
+    if (totalCountEl) {
+      totalCountEl.textContent = '0';
+    }
+  },
+
   async loadInitialData() {
     const feeTableBody = document.getElementById('feeTableBody');
     if (!feeTableBody) return;
-    
+
     // 模拟加载费用明细数据
     const mockFeeData = this.generateMockFeeData(this.currentTabType);
     this.renderFeeTable(mockFeeData);
@@ -343,7 +459,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function viewOrderDetail(orderNo) {
-  if (MainPage.currentTabType === CommonConstants.TAB_TYPES.INBOUND) {
+  if (MainPage.currentTabType === CommonConstants.TAB_TYPES.INBOUND ||
+      MainPage.currentTabType === CommonConstants.TAB_TYPES.VALUE_ADDED) {
     MainRenderer.openFeeDetailModal(orderNo);
   } else {
     ToastManager.show(`查看订单详情：${orderNo}`, 'info');

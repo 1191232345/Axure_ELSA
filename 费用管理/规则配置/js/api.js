@@ -9,10 +9,12 @@ let feeCategoriesData = null;
 
 const FEE_CATEGORIES = {
   inbound: { name: '入库费', icon: 'fa-download' },
-  outbound: { name: '出库费', icon: 'fa-upload' },
   storage: { name: '仓储费', icon: 'fa-warehouse' },
-  express: { name: '快递费', icon: 'fa-truck' },
+  outbound_onepiece: { name: '出库（一件代发）', icon: 'fa-parachute-box' },
+  outbound_transfer: { name: '出库（中转）', icon: 'fa-exchange-alt' },
   value_service: { name: '增值服务', icon: 'fa-star' },
+  outbound: { name: '出库费', icon: 'fa-upload' },
+  express: { name: '快递费', icon: 'fa-truck' },
   other: { name: '其他费用', icon: 'fa-ellipsis-h' }
 };
 
@@ -144,7 +146,12 @@ function getRuleConfigById(id) { return ruleConfigs.find(function(r) { return r.
 function getActiveCustomers() { return customers.filter(function(c) { return c.status === 1; }); }
 function getActiveWarehouses() { return warehouses.filter(function(w) { return w.status === 1; }); }
 function getActivePriceCards() { return priceCards.filter(function(p) { return p.status === 1; }); }
-function getActiveRuleConfigs() { return ruleConfigs.filter(function(r) { return !r.effective_end_time || new Date(r.effective_end_time) > new Date(); }); }
+function getActiveRuleConfigs() {
+  var now = new Date();
+  return ruleConfigs.filter(function(r) {
+    return r.status === 'published' && computeEffectiveStatus(r, now) === 'active';
+  });
+}
 function getAllRuleConfigs() { return ruleConfigs; }
 
 // ---- CRUD ----
@@ -172,15 +179,47 @@ function deleteRuleConfig(id) {
   return false;
 }
 
+function applyTruncationForPublish(config, excludeId) {
+  if (!excludeId) excludeId = null;
+  var overlaps = checkPublishConflict(config, excludeId);
+  var truncations = [];
+
+  overlaps.forEach(function(r) {
+    var idx = ruleConfigs.findIndex(function(item) { return item.id === r.id; });
+    if (idx === -1) return;
+
+    var newEnd = computeTruncateEndBefore(config.effective_start_time);
+    var oldEnd = ruleConfigs[idx].effective_end_time;
+    var oldStart = parseDateTime(ruleConfigs[idx].effective_start_time);
+    var truncEndDate = parseDateTime(newEnd);
+
+    if (!truncEndDate || !oldStart || truncEndDate < oldStart) {
+      ruleConfigs[idx].status = 'voided';
+      truncations.push({ id: r.id, name: r.name, action: 'void', oldEnd: oldEnd });
+    } else {
+      ruleConfigs[idx].effective_end_time = newEnd;
+      truncations.push({ id: r.id, name: r.name, action: 'truncate', oldEnd: oldEnd, newEnd: newEnd });
+    }
+    ruleConfigs[idx].updated_at = getCurrentDateTime();
+  });
+
+  if (truncations.length) saveRuleConfigs();
+  return truncations;
+}
+
 function publishRuleConfig(id) {
   var idx = ruleConfigs.findIndex(function(r) { return r.id === id; });
-  if (idx !== -1 && ruleConfigs[idx].status === 'draft') {
-    ruleConfigs[idx].status = 'published';
-    ruleConfigs[idx].updated_at = getCurrentDateTime();
-    saveRuleConfigs();
-    return ruleConfigs[idx];
-  }
-  return null;
+  if (idx === -1 || ruleConfigs[idx].status !== 'draft') return null;
+
+  var config = ruleConfigs[idx];
+  config.effective_start_time = normalizeEffectiveStart(config.effective_start_time);
+  config.effective_end_time = normalizeEffectiveEnd(config.effective_end_time);
+
+  var truncations = applyTruncationForPublish(config, id);
+  config.status = 'published';
+  config.updated_at = getCurrentDateTime();
+  saveRuleConfigs();
+  return { config: ruleConfigs[idx], truncations: truncations };
 }
 
 function voidRuleConfig(id) {
@@ -221,11 +260,6 @@ function getFeeTypesOfConfig(config) {
     });
   }
   return types;
-}
-
-function isTimeOverlap(start1, end1, start2, end2) {
-  if (!start1 || !end1 || !start2 || !end2) return false;
-  return new Date(start1) < new Date(end2) && new Date(start2) < new Date(end1);
 }
 
 function checkPublishConflict(config, excludeId) {
@@ -273,6 +307,6 @@ window.getAllRuleConfigs = getAllRuleConfigs;
 window.publishRuleConfig = publishRuleConfig;
 window.voidRuleConfig = voidRuleConfig;
 window.getFeeTypesOfConfig = getFeeTypesOfConfig;
-window.isTimeOverlap = isTimeOverlap;
 window.checkPublishConflict = checkPublishConflict;
+window.applyTruncationForPublish = applyTruncationForPublish;
 window.FEE_CATEGORIES = FEE_CATEGORIES;

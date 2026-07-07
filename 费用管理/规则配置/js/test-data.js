@@ -1,7 +1,7 @@
 // test-data.js - 测试数据生成
 // 从 api.js 拆分，负责所有模块的默认测试数据
 
-const DATA_VERSION = '3.3.0';
+const DATA_VERSION = '3.4.0';
 
 function generateCustomers() {
   return [
@@ -84,7 +84,69 @@ function generatePriceCards() {
 }
 
 function generateRuleConfigs() {
-  return [];
+  var feeDiscounts = {
+    inbound: [
+      { fee_item_id: 'unload_fee', fee_item_name: '卸货费', unit: '柜', discount_type: 'percentage', discount_value: 10, discount_description: '入库费9折' }
+    ],
+    outbound: [
+      { fee_item_id: 'pick_fee', fee_item_name: '拣货费', unit: '件', discount_type: 'percentage', discount_value: 8, discount_description: '拣货费92折' }
+    ],
+    storage: [], express: [], value_service: [], other: []
+  };
+
+  return [
+    {
+      id: 'RC001',
+      name: 'DEMO客户001-DEMO仓库001规则配置',
+      customer_id: 'C001', customer_name: 'DEMO客户001',
+      warehouse_id: 'W001', warehouse_name: 'DEMO仓库001',
+      price_card_id: 'PC001', price_card_name: 'VIP客户折扣方案',
+      business_type: 'all',
+      fee_discounts: feeDiscounts,
+      adjustments: [],
+      is_adjusted: true,
+      effective_start_time: '2026-01-01 00:00:00',
+      effective_end_time: '2026-12-31 23:59:59',
+      status: 'published',
+      created_by: 'DEMO管理员',
+      created_at: '2026-01-05 10:00:00',
+      updated_at: '2026-01-05 10:00:00'
+    },
+    {
+      id: 'RC002',
+      name: 'DEMO客户001-DEMO仓库001规则配置（新价卡）',
+      customer_id: 'C001', customer_name: 'DEMO客户001',
+      warehouse_id: 'W001', warehouse_name: 'DEMO仓库001',
+      price_card_id: 'PC002', price_card_name: '标准客户折扣方案',
+      business_type: 'all',
+      fee_discounts: feeDiscounts,
+      adjustments: [],
+      is_adjusted: false,
+      effective_start_time: '2026-09-01 00:00:00',
+      effective_end_time: '2026-12-31 23:59:59',
+      status: 'draft',
+      created_by: 'DEMO管理员',
+      created_at: '2026-07-01 14:00:00',
+      updated_at: '2026-07-01 14:00:00'
+    },
+    {
+      id: 'RC003',
+      name: 'DEMO客户002-DEMO仓库002规则配置',
+      customer_id: 'C002', customer_name: 'DEMO客户002',
+      warehouse_id: 'W002', warehouse_name: 'DEMO仓库002',
+      price_card_id: 'PC002', price_card_name: '标准客户折扣方案',
+      business_type: 'all',
+      fee_discounts: feeDiscounts,
+      adjustments: [],
+      is_adjusted: false,
+      effective_start_time: '2025-01-01 00:00:00',
+      effective_end_time: '2025-12-31 23:59:59',
+      status: 'published',
+      created_by: 'DEMO管理员',
+      created_at: '2025-01-10 09:00:00',
+      updated_at: '2025-01-10 09:00:00'
+    }
+  ];
 }
 
 window.DATA_VERSION = DATA_VERSION;

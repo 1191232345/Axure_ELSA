@@ -2,12 +2,15 @@ import json
 from datetime import datetime
 from models.db import get_db_connection
 
-def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, evaluator=None, department=None, employee_name=None):
-    """分页获取评价结果"""
-    conn = get_db_connection()
-    offset = (page - 1) * page_size
-
-    # 构建查询条件
+def _build_evaluation_where_clause(
+    employee_id=None,
+    evaluator=None,
+    department=None,
+    employee_name=None,
+    start_date=None,
+    end_date=None,
+):
+    """构建评价结果查询条件"""
     where_clauses = []
     params = []
 
@@ -27,7 +30,62 @@ def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, eva
         where_clauses.append('employee_department = ?')
         params.append(department)
 
+    if start_date:
+        where_clauses.append('created_at >= ?')
+        params.append(f'{start_date}T00:00:00' if len(start_date) <= 10 else start_date)
+
+    if end_date:
+        where_clauses.append('created_at <= ?')
+        params.append(f'{end_date}T23:59:59' if len(end_date) <= 10 else end_date)
+
     where_sql = ' AND '.join(where_clauses) if where_clauses else '1=1'
+    return where_sql, params
+
+
+def _row_to_evaluation_result(row):
+    rating_details = {}
+    if row['rating_details']:
+        try:
+            rating_details = json.loads(row['rating_details'])
+        except json.JSONDecodeError:
+            rating_details = {}
+
+    return {
+        'id': row['id'],
+        'employee_id': row['employee_id'],
+        'employee_name': row['employee_name'] or '未知员工',
+        'employee_department': row['employee_department'] or '未知部门',
+        'evaluator_name': row['evaluator_name'] or '匿名',
+        'rating_details': rating_details,
+        'created_at': row['created_at'],
+        'status': row['status'],
+        'source_id': row['source_id'],
+        'source_name': row['source_name'],
+    }
+
+
+def get_evaluation_results_paginated(
+    page=1,
+    page_size=15,
+    employee_id=None,
+    evaluator=None,
+    department=None,
+    employee_name=None,
+    start_date=None,
+    end_date=None,
+):
+    """分页获取评价结果"""
+    conn = get_db_connection()
+    offset = (page - 1) * page_size
+
+    where_sql, params = _build_evaluation_where_clause(
+        employee_id=employee_id,
+        evaluator=evaluator,
+        department=department,
+        employee_name=employee_name,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
     # 查询总数
     count_query = f'SELECT COUNT(*) as total FROM evaluation_results WHERE {where_sql}'
@@ -41,32 +99,13 @@ def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, eva
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
     '''
-    params.extend([page_size, offset])
-    rows = conn.execute(data_query, params).fetchall()
+    query_params = params + [page_size, offset]
+    rows = conn.execute(data_query, query_params).fetchall()
 
     results = {}
     for row in rows:
-        result_id = row['id']
-
-        rating_details = {}
-        if row['rating_details']:
-            try:
-                rating_details = json.loads(row['rating_details'])
-            except json.JSONDecodeError:
-                rating_details = {}
-
-        results[result_id] = {
-            'id': result_id,
-            'employee_id': row['employee_id'],
-            'employee_name': row['employee_name'] or '未知员工',
-            'employee_department': row['employee_department'] or '未知部门',
-            'evaluator_name': row['evaluator_name'] or '匿名',
-            'rating_details': rating_details,
-            'created_at': row['created_at'],
-            'status': row['status'],
-            'source_id': row['source_id'],
-            'source_name': row['source_name']
-        }
+        result = _row_to_evaluation_result(row)
+        results[result['id']] = result
 
     conn.close()
     total_pages = max(1, (total + page_size - 1) // page_size)
@@ -80,6 +119,42 @@ def get_evaluation_results_paginated(page=1, page_size=15, employee_id=None, eva
             'totalPages': total_pages
         }
     }
+
+
+def get_evaluation_results_filtered(
+    employee_id=None,
+    evaluator=None,
+    department=None,
+    employee_name=None,
+    start_date=None,
+    end_date=None,
+):
+    """按条件获取全部评价结果（用于导出）"""
+    conn = get_db_connection()
+
+    where_sql, params = _build_evaluation_where_clause(
+        employee_id=employee_id,
+        evaluator=evaluator,
+        department=department,
+        employee_name=employee_name,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    data_query = f'''
+        SELECT * FROM evaluation_results
+        WHERE {where_sql}
+        ORDER BY created_at DESC
+    '''
+    rows = conn.execute(data_query, params).fetchall()
+
+    results = {}
+    for row in rows:
+        result = _row_to_evaluation_result(row)
+        results[result['id']] = result
+
+    conn.close()
+    return results
 
 def get_all_evaluation_results():
     conn = get_db_connection()

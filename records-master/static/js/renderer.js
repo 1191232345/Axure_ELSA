@@ -1,4 +1,16 @@
 window.Renderer = (function () {
+  function findEmployeeItem(employeeId) {
+    var outer = document.querySelector(
+      '#evaluationForm > div[data-employee-id="' + employeeId + '"]:not(#employeeTemplate)'
+    );
+    if (outer) {
+      return outer.querySelector('.evaluation-item') || outer;
+    }
+    return document.querySelector(
+      '#evaluationForm .evaluation-item[data-employee-id="' + employeeId + '"]'
+    );
+  }
+
   function renderEvaluationList() {
     var evaluationForm = document.getElementById('evaluationForm');
     var employeeTemplate = document.getElementById('employeeTemplate');
@@ -20,6 +32,11 @@ window.Renderer = (function () {
       employeeItem.removeAttribute('id');
       employeeItem.classList.remove('hidden');
       employeeItem.setAttribute('data-employee-id', employeeId);
+
+      var innerEvaluationItem = employeeItem.querySelector('.evaluation-item');
+      if (innerEvaluationItem) {
+        innerEvaluationItem.setAttribute('data-employee-id', employeeId);
+      }
 
       var namePlaceholder = employeeItem.querySelector('h3');
       namePlaceholder.textContent = employee.name;
@@ -59,19 +76,25 @@ window.Renderer = (function () {
           newRatingItem.classList.remove('hidden');
           newRatingItem.setAttribute('data-rating-id', ratingId);
 
-          var titlePlaceholder = newRatingItem.querySelector('label.font-medium');
+          var innerRatingItem = newRatingItem.querySelector('.rating-item');
+          if (innerRatingItem) {
+            innerRatingItem.setAttribute('data-rating-id', ratingId);
+          }
+
+          var ratingItemEl = innerRatingItem || newRatingItem;
+          var titlePlaceholder = ratingItemEl.querySelector('label.font-medium');
           titlePlaceholder.innerHTML = titlePlaceholder.innerHTML.replace('__RATING_TITLE__', ratingItem.name);
 
-          var descPlaceholder = newRatingItem.querySelector('.rating-description-content');
+          var descPlaceholder = ratingItemEl.querySelector('.rating-description-content');
           descPlaceholder.textContent = ratingItem.description;
 
-          var slider = newRatingItem.querySelector('.rating-slider');
+          var slider = ratingItemEl.querySelector('.rating-slider');
           slider.setAttribute('data-for', 'rating_' + employeeId + '_' + ratingId);
 
-          var hiddenInput = newRatingItem.querySelector('.rating-input');
+          var hiddenInput = ratingItemEl.querySelector('.rating-input');
           hiddenInput.name = 'rating_' + employeeId + '_' + ratingId;
 
-          var commentTextarea = newRatingItem.querySelector('.comment-textarea');
+          var commentTextarea = ratingItemEl.querySelector('.comment-textarea');
           commentTextarea.name = 'comment_' + employeeId + '_' + ratingId;
 
           ratingItemsContainer.insertBefore(newRatingItem, overallCommentSection);
@@ -172,6 +195,44 @@ window.Renderer = (function () {
       statusElement.className = 'evaluation-status text-sm px-2 py-1 rounded-full bg-neutral-100 text-neutral-500';
       statusElement.textContent = '未评价';
     }
+  }
+
+  function applyDraftsToPage() {
+    Object.keys(State.getEmployees()).forEach(function (employeeId) {
+      var draft = State.getDraftForEmployee(employeeId);
+      if (!draft || !draft.rating_details) return;
+
+      var employeeItem = findEmployeeItem(employeeId);
+      if (!employeeItem) return;
+
+      Object.keys(draft.rating_details).forEach(function (ratingId) {
+        var detail = draft.rating_details[ratingId];
+        var ratingInput = employeeItem.querySelector('input[name="rating_' + employeeId + '_' + ratingId + '"]');
+        var commentTextarea = employeeItem.querySelector('textarea[name="comment_' + employeeId + '_' + ratingId + '"]');
+        var ratingItem = employeeItem.querySelector('.rating-item[data-rating-id="' + ratingId + '"]');
+        if (!ratingItem && ratingInput) {
+          ratingItem = ratingInput.closest('.rating-item') || ratingInput.parentElement;
+        }
+        var slider = ratingItem ? ratingItem.querySelector('.rating-slider') : null;
+        var valueDisplay = slider ? slider.nextElementSibling : null;
+
+        if (detail.score && detail.score > 0) {
+          if (slider) slider.value = detail.score;
+          if (ratingInput) ratingInput.value = detail.score;
+          if (valueDisplay) valueDisplay.textContent = detail.score + '分';
+        }
+
+        if (commentTextarea && detail.comment) {
+          commentTextarea.value = detail.comment;
+        }
+
+        if (slider && detail.score > 0) {
+          Validator.handleLowScoreRequired(slider);
+        }
+      });
+
+      updateEmployeeStatus(employeeItem);
+    });
   }
 
   function showLoading() {
@@ -277,11 +338,13 @@ window.Renderer = (function () {
   }
 
   return {
+    findEmployeeItem: findEmployeeItem,
     renderEvaluationList: renderEvaluationList,
     updateEmployeeStatus: updateEmployeeStatus,
     renderFilterButtons: renderFilterButtons,
     updateSubmitButton: updateSubmitButton,
     resetEmployeeEvaluation: resetEmployeeEvaluation,
+    applyDraftsToPage: applyDraftsToPage,
     showLoading: showLoading,
     hideLoading: hideLoading,
     renderPagination: renderPagination,

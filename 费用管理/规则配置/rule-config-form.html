@@ -60,8 +60,9 @@
             <select id="selectCustomer" class="form-input" onchange="updateConfigName();checkDuplicateConfig();"></select>
           </div>
           <div>
-            <label class="form-label">仓库代码</label>
-            <select id="selectWarehouse" class="form-input" onchange="updateConfigName();checkDuplicateConfig();"></select>
+            <label class="form-label">*仓库代码</label>
+            <div id="selectWarehouse" class="multiselect-root"></div>
+            <p class="text-xs text-text-muted mt-1"><i class="fas fa-info-circle mr-1"></i>可多选；保存/发布时为每个仓库各生成一条规则配置</p>
           </div>
         </div>
         <div id="duplicateHint" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"></div>
@@ -121,13 +122,15 @@
           <div></div>
           <div>
             <label class="form-label">*生效时间</label>
-            <input type="datetime-local" id="effectiveStartTime" class="form-input">
+            <input type="datetime-local" id="effectiveStartTime" class="form-input" onchange="updateEffectiveStartHint()" oninput="updateEffectiveStartHint()">
           </div>
           <div>
             <label class="form-label">*失效时间</label>
             <input type="datetime-local" id="effectiveEndTime" class="form-input">
+            <p class="text-xs text-text-muted mt-1">默认取当日 23:59:59</p>
           </div>
         </div>
+        <p id="effectiveStartHint" class="text-xs mt-2 text-text-muted"></p>
       </div>
 
       <!-- 操作按钮 -->
@@ -195,10 +198,10 @@
                     <td class="px-3 py-2 text-gray-600">有editId→编辑模式，无→新建模式</td>
                     <td class="px-3 py-2 text-gray-600">编辑模式自动填充已有数据</td></tr>
                   <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">默认生效时间</td>
-                    <td class="px-3 py-2 text-gray-600">新建模式下自动设置生效时间为当前时间</td>
+                    <td class="px-3 py-2 text-gray-600">新建模式：生效=当日 00:00，失效=当年 12-31 23:59</td>
                     <td class="px-3 py-2 text-gray-600">new Date()</td>
-                    <td class="px-3 py-2 text-gray-600">datetime-local格式，精确到分钟</td>
-                    <td class="px-3 py-2 text-gray-600">提升用户体验</td></tr>
+                    <td class="px-3 py-2 text-gray-600">保存时规范化为 00:00:00 / 23:59:59</td>
+                    <td class="px-3 py-2 text-gray-600">提升填写效率</td></tr>
                 </tbody>
               </table>
             </div>
@@ -523,6 +526,7 @@
   <!-- Scripts -->
   <script src="js/test-data.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/effective-time.js"></script>
   <script src="js/api.js"></script>
   <script src="../价卡管理/js/discount-calculator.js"></script>
   <script src="../价卡管理/js/state.js"></script>
@@ -533,6 +537,7 @@
   <script src="../价卡管理/js/modal-standard-discount.js"></script>
   <script src="../价卡管理/js/modal-tier-discount.js"></script>
 
+  <script src="js/multiselect.js"></script>
   <script src="js/form-handlers.js"></script>
 
   <script>

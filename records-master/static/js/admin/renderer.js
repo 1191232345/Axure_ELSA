@@ -93,8 +93,11 @@ window.AdminRenderer = (function () {
 
     tbody.innerHTML = '';
     var results = AdminState.getPagedItems('evaluationResults');
+    var sortedIds = window.EvaluationManager
+      ? window.EvaluationManager.getSortedEvaluationResultIds(results)
+      : Object.keys(results);
 
-    Object.keys(results).forEach(function (id) {
+    sortedIds.forEach(function (id) {
       var result = results[id];
       var row = createEvaluationResultRow(id, result);
       tbody.appendChild(row);
@@ -181,7 +184,17 @@ window.AdminRenderer = (function () {
         renderRatingItemsTable();
       });
     } else if (type === 'evaluationResults') {
-      promise = AdminApi.loadEvaluationResults(page, pag.pageSize).then(function (result) {
+      var filters = window.EvaluationManager
+        ? window.EvaluationManager.getEvaluationFilters()
+        : { employeeName: '', department: '', startDate: '', endDate: '' };
+      promise = AdminApi.loadEvaluationResults(
+        page,
+        pag.pageSize,
+        filters.employeeName,
+        filters.department,
+        filters.startDate,
+        filters.endDate
+      ).then(function (result) {
         AdminState.setPartial({
           evaluationResults: result.evaluationResults || result,
           pagination: { evaluationResults: result.pagination }

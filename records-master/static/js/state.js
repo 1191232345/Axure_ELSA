@@ -18,6 +18,9 @@ window.State = (function () {
     department: '',
   };
 
+  // 跨页草稿：换页/筛选时保留未提交的评价
+  var draftEvaluations = {};
+
   function setAll(loaded) {
     data.employees = loaded.employees || {};
     data.ratingItems = loaded.ratingItems || {};
@@ -97,7 +100,7 @@ window.State = (function () {
     return filters;
   }
 
-  function collectEmployeeEvaluation(employeeId, evaluatorName) {
+  function collectEmployeeEvaluationFromDom(employeeId, evaluatorName) {
     var employee = getEmployee(employeeId);
     var evaluationData = {
       employee_id: employeeId,
@@ -109,28 +112,120 @@ window.State = (function () {
       status: 'draft',
     };
 
+    var employeeItem = typeof Renderer !== 'undefined' && Renderer.findEmployeeItem
+      ? Renderer.findEmployeeItem(employeeId)
+      : null;
+    var scope = employeeItem || document;
+
     var relatedIds = getRelationsForEmployee(employeeId);
     relatedIds.forEach(function (ratingId) {
-      var ratingInput = document.querySelector('input[name="rating_' + employeeId + '_' + ratingId + '"]');
-      var commentTextarea = document.querySelector('textarea[name="comment_' + employeeId + '_' + ratingId + '"]');
+      var ratingInput = scope.querySelector('input[name="rating_' + employeeId + '_' + ratingId + '"]');
+      var commentTextarea = scope.querySelector('textarea[name="comment_' + employeeId + '_' + ratingId + '"]');
 
       if (ratingInput && ratingInput.value) {
         evaluationData.rating_details[ratingId] = {
           score: parseFloat(ratingInput.value),
           comment: commentTextarea ? commentTextarea.value : '',
         };
+      } else if (commentTextarea && commentTextarea.value && commentTextarea.value.trim() !== '') {
+        evaluationData.rating_details[ratingId] = {
+          score: 0,
+          comment: commentTextarea.value,
+        };
+      } else if (!employeeItem) {
+        var slider = scope.querySelector('.rating-item[data-rating-id="' + ratingId + '"] .rating-slider');
+        if (slider && parseFloat(slider.value) > 0) {
+          evaluationData.rating_details[ratingId] = {
+            score: parseFloat(slider.value),
+            comment: commentTextarea ? commentTextarea.value : '',
+          };
+        }
       }
     });
 
     return evaluationData;
   }
 
-  function collectAllEvaluations(evaluatorName) {
-    var all = [];
+  function collectEmployeeEvaluation(employeeId, evaluatorName) {
+    return collectEmployeeEvaluationFromDom(employeeId, evaluatorName);
+  }
+
+  function hasEvaluationContent(evalData) {
+    if (!evalData || !evalData.rating_details) return false;
+    return Object.keys(evalData.rating_details).some(function (ratingId) {
+      var detail = evalData.rating_details[ratingId];
+      return (detail.score && detail.score > 0) || (detail.comment && detail.comment.trim() !== '');
+    });
+  }
+
+  function saveCurrentPageDrafts() {
     Object.keys(data.employees).forEach(function (employeeId) {
-      var evalData = collectEmployeeEvaluation(employeeId, evaluatorName);
-      if (evalData.rating_details && Object.keys(evalData.rating_details).length > 0) {
-        evalData.status = 'submitted';
+      var employeeItem = typeof Renderer !== 'undefined' && Renderer.findEmployeeItem
+        ? Renderer.findEmployeeItem(employeeId)
+        : null;
+      if (!employeeItem) return;
+
+      var evalData = collectEmployeeEvaluationFromDom(employeeId);
+      if (hasEvaluationContent(evalData)) {
+        draftEvaluations[employeeId] = evalData;
+      } else {
+        delete draftEvaluations[employeeId];
+      }
+    });
+  }
+
+  function syncCurrentPageDraftsToStore() {
+    Object.keys(data.employees).forEach(function (employeeId) {
+      var employeeItem = typeof Renderer !== 'undefined' && Renderer.findEmployeeItem
+        ? Renderer.findEmployeeItem(employeeId)
+        : null;
+      if (!employeeItem) return;
+
+      var evalData = collectEmployeeEvaluationFromDom(employeeId);
+      if (hasEvaluationContent(evalData)) {
+        draftEvaluations[employeeId] = evalData;
+      }
+    });
+  }
+
+  function getDraftEvaluations() {
+    return draftEvaluations;
+  }
+
+  function getDraftForEmployee(employeeId) {
+    return draftEvaluations[employeeId] || null;
+  }
+
+  function clearDraftForEmployee(employeeId) {
+    delete draftEvaluations[employeeId];
+  }
+
+  function clearAllDrafts() {
+    draftEvaluations = {};
+  }
+
+  function evaluationHasLowScoreWithoutComment(evalData) {
+    if (!evalData || !evalData.rating_details) return false;
+    return Object.keys(evalData.rating_details).some(function (ratingId) {
+      var detail = evalData.rating_details[ratingId];
+      var score = detail.score || 0;
+      if (score !== 0 && score < AppConfig.rating.lowScoreThreshold) {
+        return !detail.comment || detail.comment.trim() === '';
+      }
+      return false;
+    });
+  }
+
+  function collectAllEvaluations(evaluatorName) {
+    saveCurrentPageDrafts();
+
+    var all = [];
+    Object.keys(draftEvaluations).forEach(function (employeeId) {
+      var evalData = Object.assign({}, draftEvaluations[employeeId], {
+        evaluator_name: evaluatorName || '匿名评价人',
+        status: 'submitted',
+      });
+      if (hasEvaluationContent(evalData)) {
         all.push(evalData);
       }
     });
@@ -138,37 +233,15 @@ window.State = (function () {
   }
 
   function hasAnyLowScoreWithoutComment() {
-    var items = document.querySelectorAll('.evaluation-item');
-    var found = false;
-    items.forEach(function (employeeItem) {
-      var ratingItems = employeeItem.querySelectorAll('.rating-item');
-      ratingItems.forEach(function (ratingItem) {
-        var hiddenInput = ratingItem.querySelector('.rating-input');
-        var ratingValue = hiddenInput && hiddenInput.value ? parseFloat(hiddenInput.value) : 0;
-        var commentTextarea = ratingItem.querySelector('.comment-textarea');
-        if (ratingValue !== 0 && ratingValue < AppConfig.rating.lowScoreThreshold) {
-          if (!commentTextarea || !commentTextarea.value || commentTextarea.value.trim() === '') {
-            found = true;
-          }
-        }
-      });
+    syncCurrentPageDraftsToStore();
+    return Object.keys(draftEvaluations).some(function (employeeId) {
+      return evaluationHasLowScoreWithoutComment(draftEvaluations[employeeId]);
     });
-    return found;
   }
 
   function hasAnyRatingOrComment() {
-    var canSubmit = false;
-    document.querySelectorAll('.evaluation-item').forEach(function (employeeItem) {
-      var sliders = employeeItem.querySelectorAll('.rating-slider');
-      var textareas = employeeItem.querySelectorAll('textarea');
-      sliders.forEach(function (slider) {
-        if (parseFloat(slider.value) > 0) canSubmit = true;
-      });
-      textareas.forEach(function (textarea) {
-        if (textarea.value && textarea.value.trim() !== '') canSubmit = true;
-      });
-    });
-    return canSubmit;
+    syncCurrentPageDraftsToStore();
+    return Object.keys(draftEvaluations).length > 0;
   }
 
   return {
@@ -188,5 +261,10 @@ window.State = (function () {
     collectAllEvaluations: collectAllEvaluations,
     hasAnyLowScoreWithoutComment: hasAnyLowScoreWithoutComment,
     hasAnyRatingOrComment: hasAnyRatingOrComment,
+    saveCurrentPageDrafts: saveCurrentPageDrafts,
+    getDraftEvaluations: getDraftEvaluations,
+    getDraftForEmployee: getDraftForEmployee,
+    clearDraftForEmployee: clearDraftForEmployee,
+    clearAllDrafts: clearAllDrafts,
   };
 })();

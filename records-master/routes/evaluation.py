@@ -7,6 +7,7 @@ from models import (
     clear_all_evaluation_results,
     clear_evaluation_results_by_filter,
     get_evaluation_results_paginated,
+    get_evaluation_results_filtered,
 )
 from utils.response import success, error
 
@@ -21,6 +22,8 @@ def list_evaluation_results():
         employee_name = request.args.get('employee_name', '').strip()
         evaluator = request.args.get('evaluator', '').strip()
         department = request.args.get('department', '').strip()
+        start_date = request.args.get('start_date', '').strip()
+        end_date = request.args.get('end_date', '').strip()
 
         if page < 1:
             page = 1
@@ -32,11 +35,35 @@ def list_evaluation_results():
             employee_id if employee_id else None,
             evaluator if evaluator else None,
             department if department else None,
-            employee_name if employee_name else None
+            employee_name if employee_name else None,
+            start_date if start_date else None,
+            end_date if end_date else None,
         )
         return jsonify(result)
     except Exception as e:
         return error('获取评价结果列表失败')
+
+@evaluation_bp.route('/api/evaluation-results/export')
+def export_evaluation_results():
+    try:
+        employee_id = request.args.get('employee_id', '').strip()
+        employee_name = request.args.get('employee_name', '').strip()
+        evaluator = request.args.get('evaluator', '').strip()
+        department = request.args.get('department', '').strip()
+        start_date = request.args.get('start_date', '').strip()
+        end_date = request.args.get('end_date', '').strip()
+
+        results = get_evaluation_results_filtered(
+            employee_id if employee_id else None,
+            evaluator if evaluator else None,
+            department if department else None,
+            employee_name if employee_name else None,
+            start_date if start_date else None,
+            end_date if end_date else None,
+        )
+        return jsonify({'evaluationResults': results})
+    except Exception as e:
+        return error('导出评价结果失败')
 
 @evaluation_bp.route('/api/evaluation-results/<id>', methods=['DELETE'])
 def delete_evaluation_result_route(id):

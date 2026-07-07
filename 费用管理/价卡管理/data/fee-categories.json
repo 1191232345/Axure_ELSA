@@ -105,6 +105,34 @@
         }
       ]
     },
+    "outbound_onepiece": {
+      "name": "出库（一件代发）",
+      "icon": "fa-parachute-box",
+      "categories": [
+        {
+          "id": "outbound_onepiece_standard",
+          "name": "一件代发出库",
+          "feeItems": [
+            { "id": "onepiece_pick_fee", "name": "拣货费", "price": 2, "unit": "件", "description": "一件代发拣货费用" },
+            { "id": "onepiece_pack_fee", "name": "打包费", "price": 3, "unit": "件", "description": "一件代发打包费用" }
+          ]
+        }
+      ]
+    },
+    "outbound_transfer": {
+      "name": "出库（中转）",
+      "icon": "fa-exchange-alt",
+      "categories": [
+        {
+          "id": "outbound_transfer_standard",
+          "name": "中转出库",
+          "feeItems": [
+            { "id": "transfer_process_fee", "name": "中转处理费", "price": 30, "unit": "托", "description": "货物中转处理费用" },
+            { "id": "transfer_pallet_fee", "name": "打托费", "price": 15, "unit": "托", "description": "中转打托费用" }
+          ]
+        }
+      ]
+    },
     "value_service": {
       "name": "增值服务",
       "icon": "fa-star",

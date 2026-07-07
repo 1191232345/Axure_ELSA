@@ -3,6 +3,31 @@
   'use strict';
 
   window.EvaluationManager = {
+    getEvaluationFilters: function() {
+      return {
+        employeeName: document.getElementById('evaluationEmployeeSearch')?.value.trim() || '',
+        department: document.getElementById('evaluationDepartmentFilter')?.value || '',
+        startDate: document.getElementById('evaluationStartDate')?.value || '',
+        endDate: document.getElementById('evaluationEndDate')?.value || '',
+      };
+    },
+
+    getSortedEvaluationResultIds: function(results) {
+      return Object.keys(results).sort(function (a, b) {
+        var dateA = results[a].created_at || '';
+        var dateB = results[b].created_at || '';
+        return dateB.localeCompare(dateA);
+      });
+    },
+
+    validateDateRange: function(startDate, endDate) {
+      if (startDate && endDate && startDate > endDate) {
+        AdminUI.showNotification('日期无效', '开始日期不能晚于结束日期', 'error');
+        return false;
+      }
+      return true;
+    },
+
     // 初始化评价事件
     initEvaluationEvents: function() {
       // 查看评价详情按钮
@@ -44,7 +69,7 @@
           }
           
           debounceTimer = setTimeout(function () {
-            window.EvaluationManager.searchEvaluationResults(searchTerm);
+            window.EvaluationManager.searchEvaluationResults();
           }, 300);
         });
       }
@@ -53,17 +78,38 @@
       var departmentFilter = document.getElementById('evaluationDepartmentFilter');
       if (departmentFilter) {
         departmentFilter.addEventListener('change', function () {
-          var department = this.value;
-          var searchTerm = document.getElementById('evaluationEmployeeSearch')?.value.trim() || '';
-          window.EvaluationManager.searchEvaluationResults(searchTerm, department);
+          window.EvaluationManager.searchEvaluationResults();
         });
       }
+
+      // 评价日期筛选
+      ['evaluationStartDate', 'evaluationEndDate'].forEach(function (id) {
+        var dateInput = document.getElementById(id);
+        if (dateInput) {
+          dateInput.addEventListener('change', function () {
+            window.EvaluationManager.searchEvaluationResults();
+          });
+        }
+      });
     },
 
     // 搜索评价结果
-    searchEvaluationResults: function(searchTerm, department) {
+    searchEvaluationResults: function() {
+      var filters = window.EvaluationManager.getEvaluationFilters();
+      if (!window.EvaluationManager.validateDateRange(filters.startDate, filters.endDate)) {
+        return;
+      }
+
+      AdminState.setPaginationPage('evaluationResults', 1);
       var empPage = AdminState.getPagination('evaluationResults');
-      AdminApi.loadEvaluationResults(empPage.currentPage, empPage.pageSize, searchTerm, department)
+      AdminApi.loadEvaluationResults(
+        empPage.currentPage,
+        empPage.pageSize,
+        filters.employeeName,
+        filters.department,
+        filters.startDate,
+        filters.endDate
+      )
         .then(function (result) {
           // 处理API返回的数据格式
           var evaluationResults = result.evaluationResults || result;
@@ -115,61 +161,161 @@
 
     // 导出评价数据
     exportEvaluationData: function() {
-      var results = AdminState.getEvaluationResults();
-      var data = [];
-      Object.keys(results).forEach(function (id) {
-        var r = results[id];
-        data.push({
-          id: id,
-          employee_name: r.employee_name,
-          employee_department: r.employee_department,
-          evaluator_name: r.evaluator_name,
-          average_score: AdminRenderer.calculateAverageScore(r.rating_details).toFixed(2),
-          created_at: r.created_at,
-          rating_details: r.rating_details,
-        });
-      });
+      var filters = window.EvaluationManager.getEvaluationFilters();
+      if (!window.EvaluationManager.validateDateRange(filters.startDate, filters.endDate)) {
+        return;
+      }
 
-      window.EvaluationManager.downloadJSON(data, 'evaluation_results.json');
-      AdminUI.showNotification('导出成功', '评价数据已导出', 'success');
+      AdminApi.loadAllEvaluationResults(
+        filters.employeeName,
+        filters.department,
+        filters.startDate,
+        filters.endDate
+      ).then(function (result) {
+        var results = result.evaluationResults || result;
+        window.EvaluationManager.downloadEvaluationResults(results, 'evaluation_results.xls');
+      }).catch(function (error) {
+        console.error('导出失败:', error);
+        AdminUI.showNotification('导出失败', '请重试', 'error');
+      });
     },
 
     // 导出评价统计
     exportEvaluationStats: function() {
-      var results = AdminState.getEvaluationResults();
-      var stats = {
-        total_count: Object.keys(results).length,
-        average_score: 0,
-        department_stats: {},
-      };
+      var filters = window.EvaluationManager.getEvaluationFilters();
+      if (!window.EvaluationManager.validateDateRange(filters.startDate, filters.endDate)) {
+        return;
+      }
+
+      AdminApi.loadAllEvaluationResults(
+        filters.employeeName,
+        filters.department,
+        filters.startDate,
+        filters.endDate
+      ).then(function (result) {
+        var results = result.evaluationResults || result;
+        window.EvaluationManager.downloadEvaluationStats(results, 'evaluation_stats.xls');
+      }).catch(function (error) {
+        console.error('导出失败:', error);
+        AdminUI.showNotification('导出失败', '请重试', 'error');
+      });
+    },
+
+    downloadEvaluationResults: function(results, filename) {
+      var ratingItems = AdminState.getRatingItems();
+      var ratingItemIds = Object.keys(ratingItems).sort(function (a, b) {
+        return (ratingItems[a].name || '').localeCompare(ratingItems[b].name || '', 'zh-CN');
+      });
+
+      var headers = [
+        '记录ID',
+        '员工姓名',
+        '部门',
+        '评价人',
+        '平均分',
+        '评价时间',
+      ];
+      ratingItemIds.forEach(function (ratingId) {
+        var itemName = ratingItems[ratingId].name || ratingId;
+        headers.push(itemName + '_得分');
+        headers.push(itemName + '_评语');
+      });
+
+      var sortedIds = window.EvaluationManager.getSortedEvaluationResultIds(results);
+      var rows = sortedIds.map(function (id) {
+        var r = results[id];
+        var row = [
+          id,
+          r.employee_name,
+          r.employee_department,
+          r.evaluator_name,
+          AdminRenderer.calculateAverageScore(r.rating_details).toFixed(2),
+          AdminRenderer.formatDate(r.created_at),
+        ];
+        ratingItemIds.forEach(function (ratingId) {
+          var detail = (r.rating_details && r.rating_details[ratingId]) || {};
+          row.push(detail.score != null ? Number(detail.score).toFixed(1) : '');
+          row.push(detail.comment || '');
+        });
+        return row;
+      });
+
+      if (rows.length === 0) {
+        AdminUI.showNotification('导出失败', '当前筛选条件下没有可导出的评价数据', 'error');
+        return;
+      }
+
+      window.EvaluationManager.downloadExcel(headers, rows, filename);
+      AdminUI.showNotification('导出成功', '评价数据已导出为 Excel', 'success');
+    },
+
+    downloadEvaluationStats: function(results, filename) {
+      var sortedIds = window.EvaluationManager.getSortedEvaluationResultIds(results);
+      var totalCount = sortedIds.length;
+      if (totalCount === 0) {
+        AdminUI.showNotification('导出失败', '当前筛选条件下没有可导出的统计数据', 'error');
+        return;
+      }
 
       var totalScore = 0;
-      Object.keys(results).forEach(function (id) {
+      var departmentStats = {};
+      sortedIds.forEach(function (id) {
         var r = results[id];
         var score = AdminRenderer.calculateAverageScore(r.rating_details);
         totalScore += score;
 
-        if (!stats.department_stats[r.employee_department]) {
-          stats.department_stats[r.employee_department] = { count: 0, total_score: 0 };
+        var dept = r.employee_department || '未知部门';
+        if (!departmentStats[dept]) {
+          departmentStats[dept] = { count: 0, totalScore: 0 };
         }
-        stats.department_stats[r.employee_department].count++;
-        stats.department_stats[r.employee_department].total_score += score;
+        departmentStats[dept].count++;
+        departmentStats[dept].totalScore += score;
       });
 
-      stats.average_score = stats.total_count > 0 ? (totalScore / stats.total_count).toFixed(2) : 0;
+      var averageScore = totalCount > 0 ? (totalScore / totalCount).toFixed(2) : '0';
+      var rows = [
+        ['总记录数', totalCount],
+        ['平均得分', averageScore],
+        [],
+        ['部门', '记录数', '平均得分'],
+      ];
 
-      Object.keys(stats.department_stats).forEach(function (dept) {
-        var ds = stats.department_stats[dept];
-        ds.average_score = ds.count > 0 ? (ds.total_score / ds.count).toFixed(2) : 0;
+      Object.keys(departmentStats).sort(function (a, b) {
+        return a.localeCompare(b, 'zh-CN');
+      }).forEach(function (dept) {
+        var ds = departmentStats[dept];
+        rows.push([
+          dept,
+          ds.count,
+          ds.count > 0 ? (ds.totalScore / ds.count).toFixed(2) : '0',
+        ]);
       });
 
-      window.EvaluationManager.downloadJSON(stats, 'evaluation_stats.json');
-      AdminUI.showNotification('导出成功', '统计数据已导出', 'success');
+      window.EvaluationManager.downloadExcel(null, rows, filename);
+      AdminUI.showNotification('导出成功', '统计数据已导出为 Excel', 'success');
     },
 
-    // 下载JSON文件
-    downloadJSON: function(data, filename) {
-      var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    escapeExcelCell: function(value) {
+      var text = value == null ? '' : String(value);
+      if (/[",\r\n]/.test(text)) {
+        return '"' + text.replace(/"/g, '""') + '"';
+      }
+      return text;
+    },
+
+    // 下载 Excel 文件（UTF-8 BOM CSV，Excel 可直接打开）
+    downloadExcel: function(headers, rows, filename) {
+      var lines = [];
+      if (headers && headers.length) {
+        lines.push(headers.map(window.EvaluationManager.escapeExcelCell).join(','));
+      }
+      rows.forEach(function (row) {
+        lines.push(row.map(window.EvaluationManager.escapeExcelCell).join(','));
+      });
+
+      var blob = new Blob(['\ufeff' + lines.join('\n')], {
+        type: 'application/vnd.ms-excel;charset=utf-8;',
+      });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;

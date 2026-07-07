@@ -1,7 +1,39 @@
 window.Events = (function () {
+  function refreshEvaluationUI() {
+    initSliders();
+    initExpandCollapse();
+    initRatingEvents();
+    initClearEvaluationButtons();
+    initCommentTextareaEvents();
+    initRatingDescriptionButtons();
+    Renderer.applyDraftsToPage();
+    Renderer.updateSubmitButton();
+  }
+
+  function reloadEvaluationData(page, search, department) {
+    State.saveCurrentPageDrafts();
+    Renderer.showLoading();
+
+    return Api.loadAllData(page, 10, search, department)
+      .then(function (loaded) {
+        State.setAll(loaded);
+        Renderer.renderEvaluationList();
+        Renderer.renderPagination();
+        refreshEvaluationUI();
+      })
+      .catch(function (error) {
+        console.error('加载数据失败:', error);
+        UI.showToast('加载失败，请重试', 'error');
+      })
+      .finally(function () {
+        Renderer.hideLoading();
+      });
+  }
+
   function initSliders() {
-    var sliders = document.querySelectorAll('.rating-slider');
+    var sliders = document.querySelectorAll('#evaluationForm .rating-slider');
     sliders.forEach(function (slider) {
+      if (slider.closest('#employeeTemplate') || slider.closest('#ratingItemTemplate')) return;
       var valueDisplay = slider.nextElementSibling;
       var hiddenInput = slider.parentElement.querySelector('.rating-input');
 
@@ -107,27 +139,7 @@ window.Events = (function () {
         State.setFilters(searchTerm, State.getFilters().department);
         
         // 调用后端 API 进行搜索
-        Renderer.showLoading();
-        Api.loadAllData(1, 10, searchTerm, State.getFilters().department)
-          .then(function (loaded) {
-            State.setAll(loaded);
-            Renderer.renderEvaluationList();
-            Renderer.renderPagination();
-            initSliders();
-            initExpandCollapse();
-            initRatingEvents();
-            initClearEvaluationButtons();
-            initCommentTextareaEvents();
-            initRatingDescriptionButtons();
-            Renderer.updateSubmitButton();
-          })
-          .catch(function (error) {
-            console.error('搜索失败:', error);
-            UI.showToast('搜索失败，请重试', 'error');
-          })
-          .finally(function () {
-            Renderer.hideLoading();
-          });
+        reloadEvaluationData(1, searchTerm, State.getFilters().department);
       }, 300);
     });
   }
@@ -161,30 +173,11 @@ window.Events = (function () {
         State.setFilters(State.getFilters().search, department);
         
         // 调用后端 API 进行筛选
-        Renderer.showLoading();
-        Api.loadAllData(1, 10, State.getFilters().search, department)
-          .then(function (loaded) {
-            State.setAll(loaded);
-            Renderer.renderEvaluationList();
-            Renderer.renderPagination();
-            initSliders();
-            initExpandCollapse();
-            initRatingEvents();
-            initClearEvaluationButtons();
-            initCommentTextareaEvents();
-            initRatingDescriptionButtons();
-            Renderer.updateSubmitButton();
-            
+        reloadEvaluationData(1, State.getFilters().search, department)
+          .then(function () {
             // 更新显示数量
             var pagination = State.getPagination();
             countElement.textContent = '共 ' + pagination.total + ' 名被评人';
-          })
-          .catch(function (error) {
-            console.error('筛选失败:', error);
-            UI.showToast('筛选失败，请重试', 'error');
-          })
-          .finally(function () {
-            Renderer.hideLoading();
           });
       });
     });
@@ -197,6 +190,8 @@ window.Events = (function () {
           var employeeItem = this.closest('.evaluation-item');
           if (!employeeItem) return;
           Renderer.resetEmployeeEvaluation(employeeItem);
+          var employeeId = employeeItem.getAttribute('data-employee-id');
+          if (employeeId) State.clearDraftForEmployee(employeeId);
           Renderer.updateSubmitButton();
           UI.showToast('评价已清空', 'info');
         }
@@ -314,16 +309,13 @@ window.Events = (function () {
 
     return Api.loadAllData()
       .then(function (loaded) {
+        State.clearAllDrafts();
         State.setAll(loaded);
         Renderer.renderEvaluationList();
-        initSliders();
-        initExpandCollapse();
-        initRatingEvents();
+        refreshEvaluationUI();
         initFormValidation();
         initSearch();
         initFilterButtons();
-        initClearEvaluationButtons();
-        initCommentTextareaEvents();
 
         var submitAllBtn = document.getElementById('submitAllBtn');
         if (submitAllBtn) {
@@ -362,15 +354,10 @@ window.Events = (function () {
         Renderer.renderEvaluationList();
         Renderer.renderFilterButtons();
         Renderer.renderPagination();
-        initSliders();
-        initExpandCollapse();
-        initRatingEvents();
+        refreshEvaluationUI();
         initFormValidation();
         initSearch();
         initFilterButtons();
-        initClearEvaluationButtons();
-        initCommentTextareaEvents();
-        initRatingDescriptionButtons();
       })
       .catch(function (error) {
         console.error('加载数据失败:', error);
@@ -379,30 +366,8 @@ window.Events = (function () {
   }
 
   function loadPage(page) {
-    Renderer.showLoading();
-    
     var filters = State.getFilters();
-    
-    return Api.loadAllData(page, 10, filters.search, filters.department)
-      .then(function (loaded) {
-        State.setAll(loaded);
-        Renderer.renderEvaluationList();
-        Renderer.renderPagination();
-        initSliders();
-        initExpandCollapse();
-        initRatingEvents();
-        initClearEvaluationButtons();
-        initCommentTextareaEvents();
-        initRatingDescriptionButtons();
-        Renderer.updateSubmitButton();
-      })
-      .catch(function (error) {
-        console.error('加载页面数据失败:', error);
-        UI.showToast('加载失败，请重试', 'error');
-      })
-      .finally(function () {
-        Renderer.hideLoading();
-      });
+    return reloadEvaluationData(page, filters.search, filters.department);
   }
 
   return {

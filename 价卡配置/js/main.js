@@ -296,7 +296,7 @@ function updateBillingModeUI() {
     }
 }
 
-// ========== 快递公司默认设置 ==========
+// ========== 承运商默认设置 ==========
 
 function updateCarrierDefaults() {
     const carrier = document.getElementById('expressFeeCarrier')?.value;

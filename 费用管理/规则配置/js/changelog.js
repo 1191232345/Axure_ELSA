@@ -7,7 +7,7 @@
 /* ========== 变更公告配置 ========== */
 
 // 公告版本号（内容更新时递增，用户查看后不再自动弹出）
-var CHANGELOG_VERSION = '1.0.0';
+var CHANGELOG_VERSION = '1.1.0';
 
 // localStorage 存储键
 var CHANGELOG_STORAGE_KEY = 'elsa_rule_config_changelog_v';
@@ -15,6 +15,19 @@ var CHANGELOG_STORAGE_KEY = 'elsa_rule_config_changelog_v';
 /* ========== 变更公告数据（按版本倒序） ========== */
 
 var CHANGELOG_DATA = [
+  {
+    version: 'v3.4.0',
+    date: '2026-07-05',
+    title: '生效期永久替代与自动截断',
+    icon: 'fa-calendar-check',
+    color: 'text-green-600',
+    changes: [
+      { item: '生效逻辑', desc: '永久替代：有重叠则截断旧规则', before: '重叠时阻断发布', after: '发布前预览截断，自动将旧 end 改为新 start 前一日 23:59:59' },
+      { item: '生效状态列', desc: '列表新增动态生效状态', before: '仅工作流状态（草稿/已发布/作废）', after: '新增生效中/待生效/已过期/未发布' },
+      { item: '时间边界', desc: '闭区间匹配', before: '结束默认 23:00', after: '开始 00:00:00，结束 23:59:59' },
+      { item: '示例数据', desc: '内置演示规则', before: '空列表', after: '含生效中、待发布替换、已过期样例' }
+    ]
+  },
   {
     version: 'v3.3.0',
     date: '2026-06-21',

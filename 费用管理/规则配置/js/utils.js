@@ -84,14 +84,18 @@ function deepCopy(obj) {
 
 function processDateTimeDefault(str, isEffective) {
   if (!str) return '';
-  if (str.length === 10) return str + 'T' + (isEffective !== false ? '00:00' : '23:00');
+  if (str.length === 10) return str + 'T' + (isEffective !== false ? '00:00' : '23:59');
   return str;
 }
 
 function isValidEffectiveTime(start, end) {
   if (!start) return false;
-  var s = new Date(start), now = new Date();
-  if (end) { return s <= now && now <= new Date(end); }
+  var s = parseDateTime(normalizeEffectiveStart(start));
+  var now = new Date();
+  if (end) {
+    var e = parseDateTime(normalizeEffectiveEnd(end));
+    return s <= now && now <= e;
+  }
   return s <= now;
 }
 

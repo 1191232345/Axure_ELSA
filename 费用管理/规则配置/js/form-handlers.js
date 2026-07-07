@@ -14,10 +14,22 @@ async function initFormPage() {
   if (editId) { currentEditId = editId; loadEditData(editId); }
   else {
     var now = new Date();
+    var y = now.getFullYear();
     document.getElementById('effectiveStartTime').value =
-      now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0')
-      + 'T' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      y + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + 'T00:00';
+    document.getElementById('effectiveEndTime').value = y + '-12-31T23:59';
+    updateEffectiveStartHint();
   }
+}
+
+function updateEffectiveStartHint() {
+  var hint = document.getElementById('effectiveStartHint');
+  var est = document.getElementById('effectiveStartTime');
+  if (!hint || !est) return;
+  hint.textContent = getEffectiveStartHint(est.value);
+  hint.className = isStartAfterToday(normalizeEffectiveStart(est.value))
+    ? 'text-xs mt-2 text-blue-600'
+    : 'text-xs mt-2 text-green-700';
 }
 
 function loadEditData(editId) {
@@ -25,11 +37,12 @@ function loadEditData(editId) {
   if (!config) { showToast('未找到配置数据', 'error'); return; }
   if (config.status && config.status !== 'draft') { showToast('只有草稿状态的配置才能编辑', 'error'); setTimeout(function() { window.location.href = 'index.html'; }, 1500); return; }
   document.getElementById('selectCustomer').value = config.customer_id;
-  document.getElementById('selectWarehouse').value = config.warehouse_id;
+  MultiSelect.setValues('selectWarehouse', [config.warehouse_id]);
   document.getElementById('selectPriceCard').value = config.price_card_id;
   document.getElementById('configName').value = config.name;
   document.getElementById('effectiveStartTime').value = processDateTimeDefault(config.effective_start_time, true);
   document.getElementById('effectiveEndTime').value = processDateTimeDefault(config.effective_end_time, false);
+  updateEffectiveStartHint();
   document.getElementById('backLink').href = 'index.html';
 
   feeRows = [];
@@ -54,26 +67,44 @@ function loadEditData(editId) {
 
 function renderCreateModalOptions() {
   document.getElementById('selectCustomer').innerHTML = '<option value="">请选择客户</option>' + getActiveCustomers().map(function(c) { return '<option value="'+c.id+'">'+c.name+'</option>'; }).join('');
-  document.getElementById('selectWarehouse').innerHTML = '<option value="">请选择仓库</option>' + getActiveWarehouses().map(function(w) { return '<option value="'+w.id+'">'+w.name+'</option>'; }).join('');
+  var warehouseOptions = getActiveWarehouses().map(function(w) { return { value: w.id, label: w.name }; });
+  MultiSelect.init('selectWarehouse', warehouseOptions, {
+    placeholder: '请选择仓库（可多选）',
+    onChange: function() { updateConfigName(); checkDuplicateConfig(); },
+  });
   document.getElementById('selectPriceCard').innerHTML = '<option value="">请选择价卡模板</option>' + getActivePriceCards().map(function(p) { return '<option value="'+p.id+'">'+p.name+'</option>'; }).join('');
 }
 
+function getSelectedWarehouseIds() {
+  return MultiSelect.getValues('selectWarehouse');
+}
+
 function updateConfigName() {
-  var cs = document.getElementById('selectCustomer'), ws = document.getElementById('selectWarehouse'), cn = document.getElementById('configName');
-  var c = cs.options[cs.selectedIndex], w = ws.options[ws.selectedIndex];
-  if (c.value && w.value && (!cn.value || cn.value.includes('规则配置'))) cn.value = c.text + '-' + w.text + '规则配置';
+  var cs = document.getElementById('selectCustomer'), cn = document.getElementById('configName');
+  var c = cs.options[cs.selectedIndex];
+  var warehouseIds = getSelectedWarehouseIds();
+  if (!c.value || !warehouseIds.length) return;
+  if (!cn.value || cn.value.includes('规则配置')) {
+    if (warehouseIds.length === 1) {
+      var w = getWarehouseById(warehouseIds[0]);
+      cn.value = c.text + '-' + (w ? w.name : warehouseIds[0]) + '规则配置';
+    } else {
+      cn.value = c.text + '-' + warehouseIds.length + '个仓库规则配置';
+    }
+  }
 }
 
 function checkDuplicateConfig() {
-  var cid = document.getElementById('selectCustomer').value, wid = document.getElementById('selectWarehouse').value;
+  var cid = document.getElementById('selectCustomer').value;
+  var warehouseIds = getSelectedWarehouseIds();
   var hint = document.getElementById('duplicateHint');
-  if (cid && wid) {
+  if (cid && warehouseIds.length) {
     var existing = getAllRuleConfigs().filter(function(r) {
-      return r.customer_id === cid && r.warehouse_id === wid && r.status === 'published' && r.id !== currentEditId;
+      return r.customer_id === cid && warehouseIds.indexOf(r.warehouse_id) !== -1 && r.status === 'published' && r.id !== currentEditId;
     });
     if (existing.length > 0) {
       hint.classList.remove('hidden');
-      hint.innerHTML = '<i class="fas fa-info-circle mr-1"></i>该客户和仓库已存在已发布的规则配置：' + existing.map(function(e) { return e.name; }).join('、') + '，发布时需确保费用类型和生效期不重叠';
+      hint.innerHTML = '<i class="fas fa-info-circle mr-1"></i>部分仓库已存在已发布规则：' + existing.map(function(e) { return e.warehouse_name + '（' + e.name + '）'; }).join('、') + '。发布时若时间重叠，将自动截断旧规则';
     } else hint.classList.add('hidden');
   } else hint.classList.add('hidden');
 }
@@ -182,14 +213,21 @@ function renderFeeTable() {
 
 // ---- 数据收集/保存 ----
 
-function collectFormData() {
-  var cid = document.getElementById('selectCustomer').value, wid = document.getElementById('selectWarehouse').value, pcid = document.getElementById('selectPriceCard').value;
+function collectFormData(warehouseId) {
+  var cid = document.getElementById('selectCustomer').value;
+  var wid = warehouseId || getSelectedWarehouseIds()[0];
+  var pcid = document.getElementById('selectPriceCard').value;
   var c = getCustomerById(cid), w = getWarehouseById(wid), pc = getPriceCardById(pcid);
-  var fd = { inbound:[], outbound:[], storage:[], express:[], value_service:[], other:[] };
+  var fd = { inbound:[], outbound:[], storage:[], outbound_onepiece:[], outbound_transfer:[], express:[], value_service:[], other:[] };
   feeRows.forEach(function(r) {
     if (r.fee_item_id && r.fee_item_name) { (fd[r.fee_category] = fd[r.fee_category] || []).push({ fee_item_id:r.fee_item_id, fee_item_name:r.fee_item_name, unit:r.unit||'', discount_type:r.discount_type||'none', discount_value:r.discount_value||0, discount_description:r.discount_description||'' }); }
   });
-  return { name: document.getElementById('configName').value, customer_id:cid, customer_name:c?c.name:'', warehouse_id:wid, warehouse_name:w?w.name:'', price_card_id:pcid, price_card_name:pc?pc.name:'', business_type:'all', fee_discounts:fd, adjustments:pc?deepCopy(pc.adjustments||[]):[], is_adjusted:_checkIfAdjusted(pc, fd), effective_start_time: document.getElementById('effectiveStartTime').value, effective_end_time: document.getElementById('effectiveEndTime').value, created_by: 'DEMO管理员' };
+  var baseName = document.getElementById('configName').value;
+  var name = baseName;
+  if (warehouseId && getSelectedWarehouseIds().length > 1 && w) {
+    name = (c ? c.name : '') + '-' + w.name + '规则配置';
+  }
+  return { name: name, customer_id:cid, customer_name:c?c.name:'', warehouse_id:wid, warehouse_name:w?w.name:'', price_card_id:pcid, price_card_name:pc?pc.name:'', business_type:'all', fee_discounts:fd, adjustments:pc?deepCopy(pc.adjustments||[]):[], is_adjusted:_checkIfAdjusted(pc, fd), effective_start_time: document.getElementById('effectiveStartTime').value, effective_end_time: document.getElementById('effectiveEndTime').value, created_by: 'DEMO管理员' };
 }
 
 function _checkIfAdjusted(pc, cfd) {
@@ -205,21 +243,76 @@ function _checkIfAdjusted(pc, cfd) {
 }
 
 function saveRuleConfig(status) {
-  var name = document.getElementById('configName').value, cid = document.getElementById('selectCustomer').value, wid = document.getElementById('selectWarehouse').value, pcid = document.getElementById('selectPriceCard').value, est = document.getElementById('effectiveStartTime').value, eet = document.getElementById('effectiveEndTime').value;
-  if (!name || !cid || !wid || !pcid || !est || !eet) { showToast('请填写所有必填项', 'error'); return; }
-  var data = collectFormData();
-  data.status = status || 'draft';
-  // 发布时检查生效期重叠冲突
+  var name = document.getElementById('configName').value;
+  var cid = document.getElementById('selectCustomer').value;
+  var warehouseIds = getSelectedWarehouseIds();
+  var pcid = document.getElementById('selectPriceCard').value;
+  var est = document.getElementById('effectiveStartTime').value;
+  var eet = document.getElementById('effectiveEndTime').value;
+  if (!name || !cid || !warehouseIds.length || !pcid || !est || !eet) { showToast('请填写所有必填项（含至少一个仓库）', 'error'); return; }
+
+  if (currentEditId && warehouseIds.length > 1) {
+    showToast('编辑模式下请只选择一个仓库', 'error');
+    return;
+  }
+
+  var startNorm = normalizeEffectiveStart(est);
+  var endNorm = normalizeEffectiveEnd(eet);
+  if (parseDateTime(endNorm) <= parseDateTime(startNorm)) {
+    showToast('失效时间必须晚于生效时间', 'error');
+    return;
+  }
+
   if (status === 'published') {
-    var conflicts = checkPublishConflict(data, currentEditId);
-    if (conflicts.length > 0) {
-      var conflictNames = conflicts.map(function(c) { return c.name; }).join('、');
-      showToast('发布失败：与已发布规则[' + conflictNames + ']在相同客户+仓库+费用类型上存在生效期重叠', 'error');
-      return;
+    if (warehouseIds.length === 1) {
+      var previewData = collectFormData(warehouseIds[0]);
+      previewData.effective_start_time = startNorm;
+      previewData.effective_end_time = endNorm;
+      var msg = buildPublishPreviewMessage(previewData, currentEditId);
+      if (!confirm(msg)) return;
+    } else {
+      var whNames = warehouseIds.map(function(id) {
+        var w = getWarehouseById(id);
+        return w ? w.name : id;
+      }).join('、');
+      if (!confirm('将为 ' + warehouseIds.length + ' 个仓库各生成一条规则并冻结快照：\n' + whNames + '\n\n若存在时间重叠，将自动截断对应旧规则。确定发布？')) return;
     }
   }
-  if (currentEditId) { updateRuleConfig(currentEditId, data); showToast(status === 'published' ? '规则配置发布成功' : '规则配置暂存成功', 'success'); }
-  else { createRuleConfig(data); showToast(status === 'published' ? '规则配置发布成功' : '规则配置暂存成功', 'success'); }
+
+  var totalTruncations = 0;
+  var savedCount = 0;
+
+  warehouseIds.forEach(function(wid) {
+    var data = collectFormData(wid);
+    data.effective_start_time = startNorm;
+    data.effective_end_time = endNorm;
+    data.status = 'draft';
+
+    var savedId = currentEditId;
+    if (currentEditId && warehouseIds.length === 1) {
+      updateRuleConfig(currentEditId, data);
+    } else {
+      var created = createRuleConfig(data);
+      savedId = created.id;
+    }
+
+    if (status === 'published') {
+      var result = publishRuleConfig(savedId);
+      if (result && result.truncations) totalTruncations += result.truncations.length;
+    }
+    savedCount++;
+  });
+
+  if (status === 'published') {
+    var tip = savedCount > 1
+      ? '已为 ' + savedCount + ' 个仓库发布规则配置'
+      : '规则配置发布成功';
+    if (totalTruncations) tip += '，共截断 ' + totalTruncations + ' 条重叠规则';
+    showToast(tip, 'success');
+  } else {
+    showToast(savedCount > 1 ? '已为 ' + savedCount + ' 个仓库暂存草稿' : '规则配置暂存成功', 'success');
+  }
+
   setTimeout(function() { window.location.href = 'index.html'; }, 800);
 }
 
@@ -234,4 +327,4 @@ function checkPendingData() {
 }
 
 // ---- 导出 ----
-['initFormPage','updateConfigName','checkDuplicateConfig','loadPriceCardDiscount','switchFeeCategory','addFeeRow','removeFeeRow','updateFeeRow','openDiscountConfigForRow','renderFeeCategoryTabs','renderFeeTable','collectFormData','saveRuleConfig','checkPendingData'].forEach(function(fn) { window[fn] = eval(fn); });
+['initFormPage','updateConfigName','checkDuplicateConfig','getSelectedWarehouseIds','loadPriceCardDiscount','switchFeeCategory','addFeeRow','removeFeeRow','updateFeeRow','openDiscountConfigForRow','renderFeeCategoryTabs','renderFeeTable','collectFormData','saveRuleConfig','checkPendingData','updateEffectiveStartHint'].forEach(function(fn) { window[fn] = eval(fn); });

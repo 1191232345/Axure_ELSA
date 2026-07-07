@@ -7,9 +7,9 @@ async function init() {
   renderRuleConfigTable();
 
   document.getElementById('filterCustomer').addEventListener('change', applyFilters);
-  document.getElementById('filterWarehouse').addEventListener('change', applyFilters);
   document.getElementById('filterBusinessType').addEventListener('change', applyFilters);
   document.getElementById('filterCreatedBy').addEventListener('input', applyFilters);
+  document.getElementById('filterEffectiveStatus').addEventListener('change', applyFilters);
   document.getElementById('resetFilters').addEventListener('click', resetFilters);
   document.getElementById('applyFilters').addEventListener('click', applyFilters);
 }
@@ -51,17 +51,18 @@ function deleteRuleConfigConfirm(ruleConfigId) {
 function publishRuleConfigConfirm(ruleConfigId) {
   var config = getRuleConfigById(ruleConfigId);
   if (!config) return;
-  // 发布前检查生效期重叠冲突
-  var conflicts = checkPublishConflict(config, ruleConfigId);
-  if (conflicts.length > 0) {
-    var conflictNames = conflicts.map(function(c) { return c.name; }).join('、');
-    showToast('发布失败：与已发布规则[' + conflictNames + ']在相同客户+仓库+费用类型上存在生效期重叠', 'error');
-    return;
-  }
-  if (confirm('确定要发布这条规则配置吗？发布后将立即生效。')) {
-    var result = publishRuleConfig(ruleConfigId);
-    if (result) { showToast('规则配置发布成功', 'success'); renderRuleConfigTable(); }
-    else { showToast('发布失败，只有草稿状态的配置才能发布', 'error'); }
+  var msg = buildPublishPreviewMessage(config, ruleConfigId);
+  if (!confirm(msg)) return;
+  var result = publishRuleConfig(ruleConfigId);
+  if (result) {
+    var tip = '规则配置发布成功';
+    if (result.truncations && result.truncations.length) {
+      tip += '，已截断 ' + result.truncations.length + ' 条重叠规则';
+    }
+    showToast(tip, 'success');
+    renderRuleConfigTable();
+  } else {
+    showToast('发布失败，只有草稿状态的配置才能发布', 'error');
   }
 }
 
@@ -98,20 +99,23 @@ function copyAndCreateRuleConfig(ruleConfigId) {
 // ---- 筛选 ----
 
 function applyFilters() {
+  var warehouseIds = MultiSelect.getValues('filterWarehouse');
   var filters = {
     customer_id: document.getElementById('filterCustomer').value,
-    warehouse_id: document.getElementById('filterWarehouse').value,
+    warehouse_ids: warehouseIds,
     business_type: document.getElementById('filterBusinessType').value,
-    created_by: document.getElementById('filterCreatedBy').value
+    created_by: document.getElementById('filterCreatedBy').value,
+    effective_status: document.getElementById('filterEffectiveStatus').value
   };
   renderRuleConfigTable(filters);
 }
 
 function resetFilters() {
   document.getElementById('filterCustomer').value = '';
-  document.getElementById('filterWarehouse').value = '';
+  MultiSelect.setValues('filterWarehouse', []);
   document.getElementById('filterBusinessType').value = '';
   document.getElementById('filterCreatedBy').value = '';
+  document.getElementById('filterEffectiveStatus').value = '';
   renderRuleConfigTable();
 }
 
