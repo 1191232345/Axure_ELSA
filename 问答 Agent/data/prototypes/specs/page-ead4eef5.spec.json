@@ -1,0 +1,183 @@
+{
+  "moduleName": "2113",
+  "pageId": "page-ead4eef5",
+  "breadcrumb": "Test",
+  "pageType": "list-crud",
+  "version": "1.0.0",
+  "dataFile": "data/page-ead4eef5-data.json",
+  "columns": [
+    {
+      "field": "name",
+      "label": "价卡名称"
+    },
+    {
+      "field": "customer",
+      "label": "客户"
+    },
+    {
+      "field": "status",
+      "label": "状态",
+      "type": "status"
+    },
+    {
+      "field": "createdAt",
+      "label": "创建时间",
+      "type": "datetime",
+      "sortable": true
+    }
+  ],
+  "filters": [],
+  "toolbarButtons": [
+    {
+      "id": "addBtn",
+      "label": "新增价卡",
+      "icon": "fa-plus",
+      "action": "create",
+      "variant": "primary"
+    },
+    {
+      "id": "exportBtn",
+      "label": "导出",
+      "icon": "fa-download",
+      "action": "export",
+      "variant": "secondary"
+    },
+    {
+      "id": "importBtn",
+      "label": "导入",
+      "icon": "fa-upload",
+      "action": "import",
+      "variant": "secondary"
+    }
+  ],
+  "rowActions": [
+    "edit",
+    "delete"
+  ],
+  "formFields": [
+    {
+      "id": "fieldName",
+      "label": "价卡名称",
+      "field": "name",
+      "required": true,
+      "type": "text",
+      "placeholder": "请输入价卡名称"
+    },
+    {
+      "id": "fieldCustomer",
+      "label": "客户",
+      "field": "customer",
+      "required": true,
+      "type": "text",
+      "placeholder": "请输入客户"
+    },
+    {
+      "id": "fieldStatus",
+      "label": "状态",
+      "field": "status",
+      "required": true,
+      "type": "select",
+      "options": [
+        {
+          "value": "active",
+          "label": "启用"
+        },
+        {
+          "value": "inactive",
+          "label": "禁用"
+        }
+      ]
+    }
+  ],
+  "statusLabels": {
+    "active": {
+      "label": "启用",
+      "class": "badge-success"
+    },
+    "inactive": {
+      "label": "禁用",
+      "class": "badge-secondary"
+    }
+  },
+  "mockData": [
+    {
+      "id": "pc_001",
+      "name": "美国仓标准价卡",
+      "customer": "示例客户 A",
+      "status": "active",
+      "createdAt": "2026-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "pc_002",
+      "name": "欧洲仓经济价卡",
+      "customer": "示例客户 B",
+      "status": "inactive",
+      "createdAt": "2026-06-15T14:30:00.000Z"
+    }
+  ],
+  "logicDocs": {
+    "init": [
+      [
+        "列表数据",
+        "加载 mock 数据并渲染表格",
+        "data/demo-list-data.json",
+        "按 createdAt 展示"
+      ]
+    ],
+    "filters": [
+      [
+        "状态",
+        "下拉",
+        "精确匹配 status"
+      ],
+      [
+        "价卡名称",
+        "文本",
+        "模糊匹配 name"
+      ]
+    ],
+    "buttons": [
+      [
+        "新增价卡",
+        "工具栏",
+        "无",
+        "打开表单弹窗"
+      ],
+      [
+        "编辑",
+        "行操作",
+        "无",
+        "打开表单并回填"
+      ],
+      [
+        "删除",
+        "行操作",
+        "confirm",
+        "从列表移除"
+      ]
+    ],
+    "fields": [
+      [
+        "name",
+        "价卡名称",
+        "String",
+        "是",
+        "手工输入"
+      ],
+      [
+        "customer",
+        "客户",
+        "String",
+        "是",
+        "手工输入"
+      ],
+      [
+        "status",
+        "状态",
+        "Enum",
+        "是",
+        "active/inactive"
+      ]
+    ]
+  }
+}

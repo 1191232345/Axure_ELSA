@@ -1,0 +1,125 @@
+.edit-pending-bar {
+  margin: 0 24px 12px;
+  padding: 14px 16px;
+  background: #fffef8;
+  border: 2px solid #c4b89e;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(114 93 66 / 8%);
+}
+
+.edit-pending-bar--collapsed {
+  padding: 8px 12px;
+  background: #f0ece2;
+  border-style: dashed;
+}
+
+.edit-pending-bar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.edit-pending-bar__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-pending-bar__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #794f27;
+}
+
+.edit-pending-bar__revision {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3d6b4f;
+  background: rgb(61 107 79 / 10%);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.edit-pending-bar__collapse,
+.edit-pending-bar__toggle {
+  border: none;
+  background: transparent;
+  color: #9f927d;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.edit-pending-bar__collapse:hover,
+.edit-pending-bar__toggle:hover {
+  background: rgb(196 184 158 / 20%);
+  color: #725d42;
+}
+
+.edit-pending-bar__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.edit-pending-bar__badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #794f27;
+  background: #f0ece2;
+  border: 1px solid #c4b89e;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.edit-pending-bar__hint {
+  font-size: 12px;
+  color: #725d42;
+}
+
+.edit-pending-bar__meta {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #725d42;
+}
+
+.edit-pending-bar__summary {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5c4a32;
+}
+
+.edit-pending-bar__history {
+  margin: 0 0 10px;
+  padding-left: 1.2rem;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #725d42;
+}
+
+.edit-pending-bar__path {
+  display: block;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
+  background: rgb(247 243 223);
+  border: 1px solid #d8d5ce;
+  border-radius: 6px;
+  color: #5c4a32;
+}
+
+.edit-pending-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

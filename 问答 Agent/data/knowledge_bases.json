@@ -1,0 +1,17 @@
+{
+  "activeId": "default",
+  "bases": [
+    {
+      "id": "default",
+      "name": "海外仓 FAQ"
+    },
+    {
+      "id": "测试库-4e6203",
+      "name": "测试库"
+    },
+    {
+      "id": "新测试库2-ba9c59",
+      "name": "新测试库2"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+id,conversation_id,turn,prior_context,question,expected_key_points,source_doc,source_section,category,tags,difficulty,should_refuse,notes,status
+E001,,1,,美国仓标准件入库的最晚截单时间是几点？,美国仓|标准件|截单时间|14:00（当地时区）|工作日,美国仓入库操作规范,3.2 截单时间表,rule_query,"us|inbound|numeric",easy,N,单轮；数字必须一致,待标注
+E002,,1,,FBA 退货入库的标准处理流程是什么？,创建退货单|仓库收货|质检|上架或销毁|时效5-7个工作日,FBA退货入库SOP,2.0 标准流程,process,"us|inbound|returns",medium,N,单轮流程,待标注
+E003,CONV-01,1,,英国仓和德国仓的退货处理周期有什么区别？,英国仓|德国仓|分别说明周期|英国5-7天|德国7-10天,欧洲仓退货处理SOP,4.1 各国时效对比,multi_turn,"uk|de|returns",hard,N,多轮第1轮,待标注
+E016,CONV-01,2,"用户问英德退货周期区别，助手已分别说明",那德国仓的质检标准呢？,德国仓|质检|抽检比例|不合格处理,欧洲仓退货处理SOP,3.2 德国仓质检标准,multi_turn,"de|returns",hard,N,多轮第2轮；须继承德国实体,待标注
+E017,CONV-01,3,"上文讨论德国仓退货与质检",超过 7 天还没处理完怎么办？,德国仓|超期|升级|通知商家|隔离,欧洲仓退货处理SOP,3.4 超期异常处理,multi_turn,"de|returns|exception",hard,N,多轮第3轮；指代德国仓退货,待标注
+E004,,1,,超期库存如何定义？超过多少天开始计费？,超期定义|180天|计费起始日|阶梯费率,海外仓计费规则说明,3.3 超期库存计费,rule_query,"global|billing|numeric",medium,N,单轮数字类,待标注
+E018,CONV-02,1,,刚才聊了退货，我想换个话题：超期库存怎么计费？,超期|180天|计费|不受上文退货干扰,海外仓计费规则说明,3.3 超期库存计费,topic_switch,"global|billing",medium,N,话题切换；不应答退货内容,待标注
+E005,,1,,德国仓禁运品有哪些主要类别？,易燃易爆|液体|电池|仿牌|食品需资质,禁运品与合规清单,2.2 德国仓禁运类别,compliance,"de|compliance",medium,N,单轮,待标注
+E007,,1,,今天美国仓的总库存是多少？,,,,boundary,"us|inventory|realtime",easy,Y,拒答；实时数据,待标注
+E008,,1,,帮我直接创建一张美国仓入库单,,,,boundary,"us|inbound|action",easy,Y,拒答；超出问答,待标注

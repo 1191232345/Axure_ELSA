@@ -1,0 +1,219 @@
+{
+  "moduleName": "Test",
+  "pageId": "test",
+  "breadcrumb": "基础信息",
+  "pageType": "list-crud",
+  "version": "1.0.0",
+  "dataFile": "data/test-data.json",
+  "filters": [
+    {
+      "id": "filter0",
+      "label": "状态",
+      "type": "select",
+      "field": "status",
+      "match": "exact",
+      "options": [
+        {
+          "value": "",
+          "label": "全部"
+        },
+        {
+          "value": "active",
+          "label": "启用"
+        },
+        {
+          "value": "inactive",
+          "label": "禁用"
+        }
+      ],
+      "defaultValue": "全部"
+    },
+    {
+      "id": "filter1",
+      "label": "价卡名称",
+      "type": "text",
+      "field": "name",
+      "match": "contains",
+      "placeholder": "请输入"
+    }
+  ],
+  "columns": [
+    {
+      "field": "name",
+      "label": "价卡名称"
+    },
+    {
+      "field": "customer",
+      "label": "客户"
+    },
+    {
+      "field": "status",
+      "label": "状态",
+      "type": "status"
+    },
+    {
+      "field": "createdAt",
+      "label": "创建时间",
+      "type": "datetime",
+      "sortable": true
+    }
+  ],
+  "rowActions": [
+    "edit",
+    "delete"
+  ],
+  "toolbarButtons": [
+    {
+      "id": "toolbarBtn0",
+      "label": "新增价卡",
+      "icon": "fa-plus",
+      "action": "create"
+    },
+    {
+      "id": "toolbarBtn1",
+      "label": "导出",
+      "icon": "fa-download",
+      "action": "custom"
+    },
+    {
+      "id": "toolbarBtn0",
+      "label": "批量删除",
+      "icon": "fa-plus",
+      "action": "create"
+    }
+  ],
+  "formFields": [
+    {
+      "id": "fieldName",
+      "label": "价卡名称",
+      "field": "name",
+      "required": true,
+      "type": "text",
+      "placeholder": "请输入价卡名称"
+    },
+    {
+      "id": "fieldCustomer",
+      "label": "客户",
+      "field": "customer",
+      "required": true,
+      "type": "text",
+      "placeholder": "请输入客户"
+    },
+    {
+      "id": "fieldStatus",
+      "label": "状态",
+      "field": "status",
+      "required": true,
+      "type": "select",
+      "options": [
+        {
+          "value": "active",
+          "label": "启用"
+        },
+        {
+          "value": "inactive",
+          "label": "禁用"
+        }
+      ]
+    }
+  ],
+  "statusLabels": {
+    "active": {
+      "label": "启用",
+      "class": "badge-success"
+    },
+    "inactive": {
+      "label": "禁用",
+      "class": "badge-secondary"
+    }
+  },
+  "mockData": [
+    {
+      "id": "row_001",
+      "name": "示例价卡名称",
+      "customer": "示例客户",
+      "status": "active",
+      "createdAt": "2026-06-27T10:00:00.000Z"
+    }
+  ],
+  "logicDocs": {
+    "init": [
+      [
+        "列表数据",
+        "加载 mock 并渲染 data/test-data.json",
+        "mock 数据",
+        "默认排序"
+      ]
+    ],
+    "filters": [
+      [
+        "状态",
+        "下拉单选",
+        "全部/启用/禁用"
+      ],
+      [
+        "价卡名称",
+        "文本输入",
+        "请输入"
+      ]
+    ],
+    "buttons": [
+      [
+        "新增价卡",
+        "工具栏",
+        "无",
+        "打开新增表单弹窗，提交后刷新列表"
+      ],
+      [
+        "导出",
+        "工具栏",
+        "有检索结果",
+        "按当前检索条件导出 Excel"
+      ],
+      [
+        "编辑",
+        "行操作",
+        "无",
+        "打开编辑弹窗并回填"
+      ],
+      [
+        "删除",
+        "行操作",
+        "无",
+        "二次确认后删除"
+      ],
+      [
+        "批量删除",
+        "工具栏",
+        "无",
+        "批量删除逻辑"
+      ]
+    ],
+    "fields": [
+      [
+        "价卡名称",
+        "文本",
+        "否",
+        "—"
+      ],
+      [
+        "客户",
+        "文本",
+        "否",
+        "—"
+      ],
+      [
+        "状态",
+        "状态标签",
+        "否",
+        "—"
+      ],
+      [
+        "创建时间",
+        "日期时间",
+        "是",
+        "—"
+      ]
+    ]
+  }
+}

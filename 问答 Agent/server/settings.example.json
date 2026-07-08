@@ -1,0 +1,10 @@
+{
+  "llmProvider": "ollama",
+  "openaiApiKey": "ollama",
+  "openaiBaseUrl": "http://localhost:11434/v1",
+  "chatModel": "qwen2.5:3b",
+  "embedModel": "bge-m3:latest",
+  "topK": 5,
+  "minScore": 0.35,
+  "historyTurns": 5
+}

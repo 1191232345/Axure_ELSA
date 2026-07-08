@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ModuleSpec",
+  "description": "prototype-skeleton 槽位配置",
+  "type": "object",
+  "required": ["moduleName", "pageId", "columns"],
+  "properties": {
+    "moduleName": { "type": "string", "description": "模块中文名" },
+    "pageId": { "type": "string", "description": "英文 page id" },
+    "breadcrumb": { "type": "string", "description": "顶栏面包屑/域" },
+    "pageType": { "type": "string", "enum": ["list-crud"], "default": "list-crud" },
+    "version": { "type": "string", "default": "1.0.0" },
+    "dataFile": { "type": "string", "description": "相对模块目录的数据文件路径" },
+    "filters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "type", "field"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "enum": ["text", "select"] },
+          "field": { "type": "string" },
+          "match": { "enum": ["exact", "contains"] },
+          "placeholder": { "type": "string" },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": { "type": "string" },
+                "label": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "label"],
+        "properties": {
+          "field": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "enum": ["text", "status", "datetime"] }
+        }
+      }
+    },
+    "rowActions": {
+      "type": "array",
+      "items": { "enum": ["view", "edit", "delete"] }
+    },
+    "toolbarButtons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "icon": { "type": "string" },
+          "action": { "enum": ["create", "export", "import", "custom"] },
+          "variant": { "enum": ["primary", "secondary", "danger", "purple", "accent", "success", "warning"] }
+        }
+      }
+    },
+    "formFields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "field", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "field": { "type": "string" },
+          "type": { "enum": ["text", "select"] },
+          "required": { "type": "boolean" },
+          "placeholder": { "type": "string" },
+          "options": { "type": "array" }
+        }
+      }
+    },
+    "statusLabels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "class": { "type": "string" }
+        }
+      }
+    },
+    "mockData": { "type": "array" },
+    "logicDocs": {
+      "type": "object",
+      "properties": {
+        "init": { "type": "array" },
+        "filters": { "type": "array" },
+        "buttons": { "type": "array" },
+        "fields": { "type": "array" }
+      }
+    }
+  }
+}

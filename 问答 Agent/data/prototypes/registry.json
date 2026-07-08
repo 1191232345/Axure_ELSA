@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "id": "3309468f-d45d-42df-a960-f485a0503213",
+      "pageId": "page-ead4eef5",
+      "moduleName": "2113",
+      "breadcrumb": "Test",
+      "previewUrl": "/api/prototype-files/generated/page-ead4eef5/index.html",
+      "createdAt": "2026-06-28T13:05:51+00:00",
+      "updatedAt": "2026-06-28T13:05:51+00:00"
+    },
+    {
+      "id": "4b30b7ce-d132-4d23-abfa-fbbe266f167e",
+      "pageId": "test",
+      "moduleName": "Test",
+      "breadcrumb": "基础信息",
+      "previewUrl": "/api/prototype-files/generated/test/index.html",
+      "createdAt": "2026-06-26T18:04:40+00:00",
+      "updatedAt": "2026-06-26T18:45:58+00:00"
+    },
+    {
+      "id": "a99ff532-8ab3-45a3-8495-ee541934e167",
+      "pageId": "demo-list",
+      "moduleName": "价卡查询示例",
+      "breadcrumb": "费用管理",
+      "previewUrl": "/api/prototype-files/generated/demo-list/index.html",
+      "createdAt": "2026-06-26T17:41:33+00:00",
+      "updatedAt": "2026-06-26T18:40:37+00:00"
+    },
+    {
+      "id": "a627a41f-e4e8-4cc7-9d2b-67b5e1502215",
+      "pageId": "page-3f65deb1",
+      "moduleName": "价卡查询",
+      "breadcrumb": "费用管理",
+      "previewUrl": "/api/prototype-files/generated/page-3f65deb1/index.html",
+      "createdAt": "2026-06-26T18:13:10+00:00",
+      "updatedAt": "2026-06-26T18:13:10+00:00"
+    },
+    {
+      "id": "c1fbe57b-0eaf-496f-9617-be5b3eccf052",
+      "pageId": "page-faadbf1a",
+      "moduleName": "价卡查询",
+      "breadcrumb": "费用管理",
+      "previewUrl": "/api/prototype-files/generated/page-faadbf1a/index.html",
+      "createdAt": "2026-06-26T18:06:36+00:00",
+      "updatedAt": "2026-06-26T18:06:36+00:00"
+    },
+    {
+      "id": "36b15601-731f-4e89-9629-b1c21fb78800",
+      "pageId": "page-3db418f8",
+      "moduleName": "价卡查询",
+      "breadcrumb": "<业务域/面包屑或null>",
+      "previewUrl": "/api/prototype-files/generated/page-3db418f8/index.html",
+      "createdAt": "2026-06-26T17:46:58+00:00",
+      "updatedAt": "2026-06-26T17:46:58+00:00"
+    }
+  ]
+}

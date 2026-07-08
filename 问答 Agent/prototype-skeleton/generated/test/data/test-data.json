@@ -1,0 +1,9 @@
+[
+  {
+    "id": "row_001",
+    "name": "示例价卡名称",
+    "customer": "示例客户",
+    "status": "active",
+    "createdAt": "2026-06-27T10:00:00.000Z"
+  }
+]

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>快递费规则 - ELSA</title>
+
+  <!-- CDN 资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            'card': '0 4px 16px rgba(27, 58, 75, 0.08)',
+            'card-hover': '0 8px 32px rgba(27, 58, 75, 0.1)',
+            'dropdown': '0 4px 16px rgba(27, 58, 75, 0.1)',
+            'header': '0 1px 3px rgba(27, 58, 75, 0.06)',
+            'accent': '0 4px 20px rgba(232, 168, 56, 0.15)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- 模块样式 -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <!-- 头部导航 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-display font-semibold tracking-wide">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                费用管理
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/费用管理/价卡管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡管理</a>
+                <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
+                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
+                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                <a href="/费用管理/快递费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">快递费规则</a>
+                <a href="/费用管理/增值服务规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务规则</a>
+                <a href="/费用管理/增值服务指令下单/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务指令下单</a>
+                <a href="/费用管理/客户中心/价卡查询/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡查询</a>
+              </div>
+            </div>
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                对账
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/对账/成本明细/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">成本明细</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 原型/PRD/测试用例 Tab -->
+  <div class="tabs">
+    <button id="tab-prototype" class="tab active" onclick="switchMainTab('prototype')">原型</button>
+    <button id="tab-prd" class="tab" onclick="switchMainTab('prd')">PRD</button>
+    <button id="tab-testcases" class="tab" onclick="switchMainTab('testcases')">测试用例</button>
+  </div>
+
+  <!-- PRD 内容区域 -->
+  <main id="main-prd" class="main-content">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+        <div class="text-center py-16">
+          <i class="fa fa-file-text-o text-5xl text-primary mb-4"></i>
+          <p class="text-lg text-text-muted">PRD文档待补充</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 测试用例内容区域 -->
+  <main id="main-testcases" class="main-content">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
+        <div class="text-center py-16">
+          <i class="fa fa-check-square-o text-5xl text-primary mb-4"></i>
+          <p class="text-lg text-text-muted">测试用例待补充</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 原型内容区域 -->
+  <main id="main-prototype" class="main-content active">
+    <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+      <!-- 筛选区域 -->
+      <div class="filter-section animate-fade-in-up">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-display font-semibold text-dark">检索条件</h3>
+        </div>
+        <div class="filter-grid" id="filterContainer">
+          <div class="filter-item">
+            <label>承运商</label>
+            <input type="text" id="filterCarrierName" placeholder="请输入承运商">
+          </div>
+          <div class="filter-item">
+          <label>渠道</label>
+          <input type="text" id="filterChannel" placeholder="请输入渠道">
+        </div>
+          <div class="filter-item">
+            <label>计费类型</label>
+            <select id="filterChargeType">
+              <option value="">全部</option>
+              <option value="基础价">基础价</option>
+              <option value="附加费">附加费</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>创建人</label>
+            <input type="text" id="filterCreator" placeholder="请输入">
+          </div>
+          <div class="filter-item">
+            <label>创建时间</label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="filterCreateTimeStart" class="flex-1">
+              <span class="text-gray-500">至</span>
+              <input type="date" id="filterCreateTimeEnd" class="flex-1">
+            </div>
+          </div>
+          <div class="filter-item">
+            <label>更新时间</label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="filterUpdateTimeStart" class="flex-1">
+              <span class="text-gray-500">至</span>
+              <input type="date" id="filterUpdateTimeEnd" class="flex-1">
+            </div>
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button id="btnReset" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-refresh mr-1"></i> 重置
+          </button>
+          <button id="btnSearch" class="erp-btn erp-btn-primary">
+            <i class="fa fa-search mr-1"></i> 搜索
+          </button>
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="content-section animate-fade-in-up">
+        <div class="table-toolbar" id="tableToolbar">
+          <button id="btnAddCarrier" class="erp-btn erp-btn-success">
+            <i class="fa fa-plus-circle mr-1"></i> 新增
+          </button>
+          <button id="btnExport" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-download mr-1"></i> 导出
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="dataTable">
+            <thead id="tableHead">
+              <tr>
+                <th style="width:60px;">序号</th>
+                <th style="width:150px;">快递公司</th>
+                <th style="width:150px;">渠道</th>
+                <th style="width:100px;">计费类型</th>
+                <th style="width:100px;">创建人</th>
+                <th style="width:150px;">创建时间</th>
+                <th style="width:100px;">更新人</th>
+                <th style="width:150px;">更新时间</th>
+                <th style="width:100px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="statisticsText">共 <strong>0</strong> 个承运商</span>
+        </div>
+      </div>
+
+      <!-- 逻辑说明 -->
+      <div class="bg-white rounded shadow-card mt-4 overflow-hidden">
+        <div class="px-4 py-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center cursor-pointer" onclick="openLogicModal()">
+          <div class="flex items-center">
+            <i class="fa fa-book text-primary mr-2"></i>
+            <span class="font-semibold text-primary">逻辑说明</span>
+            <span class="ml-2 text-xs text-gray-500">(点击查看详细逻辑)</span>
+          </div>
+          <i class="fa fa-external-link text-primary"></i>
+        </div>
+      </div>
+
+      <!-- 逻辑说明弹窗 -->
+      <div id="logic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <!-- 弹窗头部 -->
+          <div class="px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/20 flex justify-between items-center">
+            <div class="flex items-center">
+              <i class="fa fa-book text-primary mr-2"></i>
+              <span class="font-semibold text-primary text-lg">逻辑说明</span>
+            </div>
+            <button onclick="closeLogicModal()" class="text-gray-500 hover:text-gray-700 transition-colors">
+              <i class="fa fa-times text-xl"></i>
+            </button>
+          </div>
+          
+          <!-- 弹窗内容区域 -->
+          <div class="flex-1 overflow-y-auto p-6" id="logic-modal-content">
+            <!-- 卡片1:初始化逻辑 -->
+            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+              <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <h4 class="font-semibold text-gray-800 flex items-center">
+                  <i class="fa fa-database text-primary mr-2"></i>初始化逻辑
+                </h4>
+              </div>
+              <div class="p-4">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">逻辑项</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">展示规则</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">备注</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">主表初始化</td><td class="px-3 py-2 text-gray-600">展示所有承运商列表,包含名称、代码、状态等信息</td><td class="px-3 py-2 text-gray-600">快递费规则配置表</td><td class="px-3 py-2 text-gray-600">按创建时间倒序排列</td><td class="px-3 py-2 text-gray-600">-</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">统计信息展示</td><td class="px-3 py-2 text-gray-600">显示所有承运商的总数</td><td class="px-3 py-2 text-gray-600">前端计算</td><td class="px-3 py-2 text-gray-600">格式:共 X 个承运商</td><td class="px-3 py-2 text-gray-600">-</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 卡片2:主表逻辑 -->
+            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+              <div class="flex border-b border-gray-200 bg-gray-50">
+                <button class="logic-tab px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary" data-group="main-table-logic" data-tab="field-main" onclick="switchLogicTab(this)"><i class="fa fa-list-alt mr-1"></i>属性取值逻辑(主表)</button>
+                <button class="logic-tab px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700" data-group="main-table-logic" data-tab="button-logic" onclick="switchLogicTab(this)"><i class="fa fa-mouse-pointer mr-1"></i>功能逻辑(主要按钮)</button>
+              </div>
+              <!-- 主表属性取值 -->
+              <div class="logic-panel p-4" data-group="main-table-logic" data-panel="field-main">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">字段</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">说明</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">数据来源</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">取值规则</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">显示格式</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">存储长度</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">属性存储类型</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">序号</td><td class="px-3 py-2 text-gray-600">行号</td><td class="px-3 py-2 text-gray-600">前端计算</td><td class="px-3 py-2 text-gray-600">从1开始递增</td><td class="px-3 py-2 text-gray-600">数字</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">数值型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">名称</td><td class="px-3 py-2 text-gray-600">快递名称</td><td class="px-3 py-2 text-gray-600">手工输入</td><td class="px-3 py-2 text-gray-600">新增/编辑输入数据</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">代码</td><td class="px-3 py-2 text-gray-600">承运商唯一标识码</td><td class="px-3 py-2 text-gray-600">手工输入</td><td class="px-3 py-2 text-gray-600">新增/编辑输入数据</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">32</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">状态</td><td class="px-3 py-2 text-gray-600">承运商启用状态</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增时默认启用</td><td class="px-3 py-2 text-gray-600">启用/禁用</td><td class="px-3 py-2 text-gray-600">16</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建人</td><td class="px-3 py-2 text-gray-600">创建该承运商的用户</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增时自动获取当前登录用户</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">创建时间</td><td class="px-3 py-2 text-gray-600">承运商创建的时间</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">新增时自动生成当前时间</td><td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">DATETIME</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">更新人</td><td class="px-3 py-2 text-gray-600">最后更新该承运商的用户</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">编辑保存时自动获取当前登录用户</td><td class="px-3 py-2 text-gray-600">文本显示</td><td class="px-3 py-2 text-gray-600">64</td><td class="px-3 py-2 text-gray-600">字符型</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">更新时间</td><td class="px-3 py-2 text-gray-600">承运商最后更新的时间</td><td class="px-3 py-2 text-gray-600">系统生成</td><td class="px-3 py-2 text-gray-600">编辑保存时自动更新为当前时间</td><td class="px-3 py-2 text-gray-600">YYYY-MM-DD HH:mm:ss</td><td class="px-3 py-2 text-gray-600">-</td><td class="px-3 py-2 text-gray-600">DATETIME</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- 按钮逻辑 -->
+              <div class="logic-panel p-4 hidden" data-group="main-table-logic" data-panel="button-logic">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-sm border border-gray-200 rounded">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">按钮</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">位置</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">触发动作</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">前置条件</th><th class="px-3 py-2 text-left font-medium text-gray-700 border-b">后续操作</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">新增</td><td class="px-3 py-2 text-gray-600">页面右上角</td><td class="px-3 py-2 text-gray-600">打开新增弹窗</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">填写表单后保存,刷新列表</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">导出</td><td class="px-3 py-2 text-gray-600">页面右上角</td><td class="px-3 py-2 text-gray-600">导出承运商数据为CSV文件</td><td class="px-3 py-2 text-gray-600">当前有数据</td><td class="px-3 py-2 text-gray-600">下载CSV文件</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">查看详情</td><td class="px-3 py-2 text-gray-600">每行操作列</td><td class="px-3 py-2 text-gray-600">跳转到承运商分区价格维护页面</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">展示分区价格维护页面,可CRUD分区价格</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">编辑</td><td class="px-3 py-2 text-gray-600">每行操作列</td><td class="px-3 py-2 text-gray-600">打开编辑承运商弹窗,预填充当前数据</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">修改后保存,刷新列表</td></tr>
+                      <tr class="hover:bg-gray-50"><td class="px-3 py-2 text-gray-800">删除</td><td class="px-3 py-2 text-gray-600">每行操作列</td><td class="px-3 py-2 text-gray-600">弹出确认对话框</td><td class="px-3 py-2 text-gray-600">无</td><td class="px-3 py-2 text-gray-600">确认后删除,刷新列表</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </main>
+
+  <!-- 新增弹窗 -->
+  <div id="carrier-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="font-semibold text-lg text-gray-800">新增承运商</h3>
+        <button onclick="closeCarrierModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="p-6">
+        <form id="carrierForm">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">快递公司 *</label>
+            <input type="text" id="carrierName" class="form-input w-full" placeholder="请输入快递公司" required>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">渠道 *</label>
+            <input type="text" id="carrierChannel" class="form-input w-full" placeholder="请输入渠道" required>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">计费类型 *</label>
+            <select id="carrierChargeType" class="form-input w-full" required>
+              <option value="">请选择计费类型</option>
+              <option value="基础价">基础价(重量段计费)</option>
+              <option value="附加费">附加费</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
+            <textarea id="carrierRemark" class="form-input w-full" rows="3" placeholder="请输入备注"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-2">
+        <button onclick="closeCarrierModal()" class="erp-btn erp-btn-secondary">取消</button>
+        <button onclick="saveCarrier()" class="erp-btn erp-btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工具函数 -->
+  <script src="js/utils.js"></script>
+  <!-- 承运商数据 -->
+  <script src="js/carrier-data.js"></script>
+  <!-- 重量段价格数据 -->
+  <script src="js/weight-tier-data.js"></script>
+  <!-- 费用项数据 -->
+  <script src="js/fee-items-data.js"></script>
+  <!-- UI处理 -->
+  <script src="js/main-ui.js"></script>
+  <!-- 搜索和导出 -->
+  <script src="js/main-search.js"></script>
+  <!-- 主表初始化 -->
+  <script src="js/main-init.js"></script>
+</body>
+</html>

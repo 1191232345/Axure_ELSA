@@ -1,0 +1,119 @@
+{
+  "moduleName": "价卡查询",
+  "pageId": "page-3db418f8",
+  "breadcrumb": "<业务域/面包屑或null>",
+  "pageType": "list-crud",
+  "version": "1.0.0",
+  "dataFile": "data/page-3db418f8-data.json",
+  "filters": [],
+  "columns": [
+    {
+      "field": "field1",
+      "label": "需求"
+    },
+    {
+      "field": "field2",
+      "label": "功能点"
+    }
+  ],
+  "rowActions": [
+    "edit",
+    "delete"
+  ],
+  "toolbarButtons": [
+    {
+      "id": "addBtn",
+      "label": "新增价卡查询",
+      "icon": "fa-plus",
+      "action": "create"
+    }
+  ],
+  "formFields": [
+    {
+      "id": "fieldField1",
+      "label": "需求",
+      "field": "field1",
+      "required": true,
+      "type": "text",
+      "placeholder": "请输入需求"
+    },
+    {
+      "id": "fieldField2",
+      "label": "功能点",
+      "field": "field2",
+      "required": true,
+      "type": "text",
+      "placeholder": "请输入功能点"
+    }
+  ],
+  "statusLabels": {
+    "active": {
+      "label": "启用",
+      "class": "badge-success"
+    },
+    "inactive": {
+      "label": "禁用",
+      "class": "badge-secondary"
+    }
+  },
+  "mockData": [
+    {
+      "id": "row_001",
+      "field1": "示例需求",
+      "field2": "示例功能点"
+    }
+  ],
+  "logicDocs": {
+    "init": [
+      [
+        "列表数据",
+        "加载 mock 并渲染",
+        "data/page-3db418f8-data.json",
+        "默认排序"
+      ]
+    ],
+    "filters": [
+      [
+        "无",
+        "-",
+        "展示全部"
+      ]
+    ],
+    "buttons": [
+      [
+        "新增价卡查询",
+        "工具栏",
+        "无",
+        "打开表单弹窗"
+      ],
+      [
+        "编辑",
+        "行操作",
+        "无",
+        "回填并编辑"
+      ],
+      [
+        "删除",
+        "行操作",
+        "confirm",
+        "从列表移除"
+      ]
+    ],
+    "fields": [
+      [
+        "field1",
+        "需求",
+        "text",
+        "是",
+        "手工输入"
+      ],
+      [
+        "field2",
+        "功能点",
+        "text",
+        "是",
+        "手工输入"
+      ]
+    ]
+  }
+}

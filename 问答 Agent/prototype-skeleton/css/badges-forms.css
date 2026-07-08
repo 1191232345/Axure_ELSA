@@ -1,0 +1,76 @@
+/* 徽章与状态 — 方案 C 骨架 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-accent { background: #E8A838; color: white; }
+.badge-primary { background: #1B3A4B; color: white; }
+.badge-success { background: #2D936C; color: white; }
+.badge-warning { background: #D4853A; color: white; }
+.badge-danger { background: #C44536; color: white; }
+.badge-secondary { background: #E8E5DF; color: #5A6275; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-cancelled,
+.status-inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.skel-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #D8D5CE;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1A1A2E;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.skel-input:focus {
+  border-color: #E8A838;
+  box-shadow: 0 0 0 3px rgba(232, 168, 56, 0.12);
+}
+
+.skel-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #5A6275;
+  margin-bottom: 0.5rem;
+}
+
+.skel-field-error {
+  font-size: 0.75rem;
+  color: #C44536;
+  margin-top: 0.25rem;
+}
+
+.skel-field-error.hidden {
+  display: none;
+}

@@ -1,0 +1,91 @@
+/* 布局、Toast — 方案 C 骨架 */
+.skel-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(27, 58, 75, 0.08);
+}
+
+.skel-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .skel-filter-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 3000;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success {
+  background: linear-gradient(135deg, #2D936C 0%, #3DB87F 100%);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, #C44536 0%, #D65F52 100%);
+}
+
+.toast-warning {
+  background: linear-gradient(135deg, #D4853A 0%, #E09B55 100%);
+}
+
+.skel-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #8B93A5;
+}
+
+.skel-empty.hidden {
+  display: none;
+}
+
+.skel-table-wrap {
+  overflow-x: auto;
+}
+
+.skel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.skel-table thead {
+  background: #f9fafb;
+}
+
+.skel-table th,
+.skel-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.skel-table tbody tr:hover {
+  background: #EDE9E3;
+}
+
+.skel-footer-count {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #8B93A5;
+  border-top: 1px solid #f3f4f6;
+}

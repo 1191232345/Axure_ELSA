@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>维护快递费用 - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            'card': '0 4px 16px rgba(27, 58, 75, 0.08)',
+            'card-hover': '0 8px 32px rgba(27, 58, 75, 0.1)',
+            'dropdown': '0 4px 16px rgba(27, 58, 75, 0.1)',
+            'header': '0 1px 3px rgba(27, 58, 75, 0.06)',
+            'accent': '0 4px 20px rgba(232, 168, 56, 0.15)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <span class="text-lg font-display font-semibold tracking-wide">ELSA</span>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                费用管理
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">价卡管理</a>
+                <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
+                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
+                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                <a href="/费用管理/快递费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">快递费规则</a>
+                <a href="/费用管理/操作费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">操作费规则</a>
+                <a href="/费用管理/增值服务规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务规则</a>
+                <a href="/费用管理/客户中心/价卡查询/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡查询</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fas fa-bell"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+              <i class="fas fa-user text-sm"></i>
+            </div>
+            <span class="text-sm font-medium">管理员</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-2 sm:px-3 lg:px-4 py-6">
+    <div class="mb-6">
+      <div class="flex items-center justify-between">
+        <a href="index.html" class="btn btn-secondary">
+          <i class="fas fa-arrow-left mr-2"></i>返回
+        </a>
+        <div class="text-sm text-text-secondary">
+          <i class="fas fa-info-circle mr-1"></i>
+          当前价卡：<span id="packageNameDisplay" class="font-semibold text-primary">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 页面标题 -->
+    <div class="bg-white rounded-lg shadow-card p-6 mb-6">
+      <h2 class="text-xl font-semibold text-primary flex items-center mb-2">
+        <i class="fas fa-truck mr-3 text-warning"></i>维护快递费用
+      </h2>
+      <p class="text-sm text-text-secondary">管理价卡的快递费用，包括快递渠道、配送方式及相关费用项</p>
+    </div>
+
+    <!-- 费用项管理区域 -->
+    <div class="bg-white rounded-lg shadow-card overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-border-light flex justify-between items-center">
+        <h3 class="font-semibold text-primary flex items-center">
+          <i class="fas fa-list mr-2 text-accent"></i>快递费用项列表
+        </h3>
+        <button onclick="addExpressFeeRow()" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus mr-2"></i>新增
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-light-bg">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">渠道</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">承运商</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">费用类型</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">折扣</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">备注</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="expressFeeTableBody" class="divide-y divide-border-light">
+          </tbody>
+        </table>
+      </div>
+
+      <div id="emptyState" class="hidden py-12 text-center">
+        <i class="fas fa-truck text-4xl text-text-muted mb-4"></i>
+        <p class="text-text-secondary">暂无快递费用项</p>
+        <button onclick="addExpressFeeRow()" class="btn btn-primary mt-4">
+          <i class="fas fa-plus mr-2"></i>添加第一个费用项
+        </button>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="flex justify-end gap-3">
+      <a href="index.html" class="btn btn-secondary">
+        <i class="fas fa-times mr-2"></i>取消
+      </a>
+      <button onclick="saveExpressFees()" class="btn btn-primary">
+        <i class="fas fa-save mr-2"></i>保存
+      </button>
+    </div>
+
+    <!-- 逻辑说明 -->
+    <div class="bg-white rounded-lg shadow-card mt-6 overflow-hidden">
+      <div class="px-4 py-3 bg-gradient-to-r from-warning/5 to-warning/10 border-b border-warning/20">
+        <h4 class="font-semibold text-warning flex items-center">
+          <i class="fas fa-book mr-2"></i>逻辑说明
+        </h4>
+      </div>
+      <div class="p-4 text-sm text-text-secondary">
+        <p><strong>快递费用包括：</strong></p>
+        <ul class="list-disc list-inside mt-2 space-y-1">
+          <li>快递配送费（按重量、按体积等）</li>
+          <li>快递渠道费（不同快递公司费用）</li>
+          <li>配送附加费（偏远地区、特殊配送等）</li>
+        </ul>
+        <p class="mt-3"><strong>费用项来源：</strong>引用快递费规则数据</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 折扣编辑弹窗 -->
+  <div id="discountModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-percent"></i> 设置折扣方式</h3>
+        <button class="modal-close" onclick="DiscountModal.close()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="discountEditTab">
+        <input type="hidden" id="discountEditIndex">
+        <div class="mb-4">
+          <label class="form-label">折扣方式</label>
+          <select id="discountType" class="form-input">
+            <option value="none">无折扣</option>
+            <option value="percentage">折扣率</option>
+            <option value="fixed">增减</option>
+            <option value="fixed_price">一口价</option>
+          </select>
+        </div>
+        <div class="mb-4 hidden" id="discountValueGroup">
+          <label class="form-label">折扣值</label>
+          <input type="number" id="discountValue" class="form-input" min="0" step="0.01">
+        </div>
+        <div class="hidden bg-light-bg rounded-lg p-3" id="discountPreview">
+          <p class="text-sm text-text-secondary">预览：</p>
+          <p class="text-sm font-medium" id="discountPreviewContent"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="DiscountModal.close()">取消</button>
+        <button class="btn btn-primary" onclick="saveExpressDiscount()"><i class="fas fa-save mr-1"></i>保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 引用数据 -->
+  <script src="../快递费规则/js/carrier-data.js"></script>
+  <script src="../快递费规则/js/weight-tier-data.js"></script>
+  <script src="../快递费规则/js/fee-items-data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/data-service.js"></script>
+  <script src="js/fee-maintenance-common.js"></script>
+  <script src="js/discount-calculator.js"></script>
+  <script src="js/modal-discount.js"></script>
+  <script src="js/express-fee.js"></script>
+</body>
+</html>

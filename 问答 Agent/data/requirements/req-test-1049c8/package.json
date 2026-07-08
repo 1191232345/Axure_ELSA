@@ -1,0 +1,38 @@
+{
+  "problem": "123",
+  "users": [
+    "123"
+  ],
+  "scenarios": [
+    "123"
+  ],
+  "scopeIn": [
+    "123"
+  ],
+  "scopeOut": [],
+  "constraints": [],
+  "successMetrics": [],
+  "pages": [
+    {
+      "name": "2113",
+      "type": "crud-list",
+      "description": ""
+    }
+  ],
+  "notes": "",
+  "id": "req-test-1049c8",
+  "title": "Test",
+  "createdAt": "2026-06-28T13:04:32+00:00",
+  "updatedAt": "2026-06-28T13:05:51+00:00",
+  "templateIds": {
+    "prd": "prd-standard",
+    "manual": "manual-standard",
+    "prototype": "standard"
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "manual": "manual.md",
+    "prototypePageId": "page-ead4eef5"
+  },
+  "status": "generated"
+}

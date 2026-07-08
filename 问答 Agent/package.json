@@ -1,0 +1,9 @@
+{
+  "name": "qa-agent",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix demo run build",
+    "start": "npm run build && cd server && ./run.sh",
+    "dev": "npm run build && cd server && ./run.sh"
+  }
+}

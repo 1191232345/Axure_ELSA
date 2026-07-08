@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分区价格维护 - ELSA</title>
+
+  <!-- CDN 资源 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            'primary-light': '#2A5568',
+            'primary-dark': '#0F2430',
+            accent: '#E8A838',
+            'accent-light': '#F0C060',
+            success: '#2D936C',
+            'success-light': '#3DB87F',
+            warning: '#D4853A',
+            'warning-light': '#E09B55',
+            danger: '#C44536',
+            'danger-light': '#D65F52',
+            dark: '#1A1A2E',
+            'light-bg': '#F5F3EF',
+            'card-bg': '#FFFFFF',
+            border: '#D8D5CE',
+            'border-light': '#E8E5DF',
+            surface: '#F5F3EF',
+            hover: '#EDE9E3',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            'card': '0 4px 16px rgba(27, 58, 75, 0.08)',
+            'card-hover': '0 8px 32px rgba(27, 58, 75, 0.1)',
+            'dropdown': '0 4px 16px rgba(27, 58, 75, 0.1)',
+            'header': '0 1px 3px rgba(27, 58, 75, 0.06)',
+            'accent': '0 4px 20px rgba(232, 168, 56, 0.15)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- 模块样式 -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <!-- 头部导航 -->
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom: 2px solid #E8A838;">
+    <div class="container mx-auto px-2 sm:px-3 lg:px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <a href="index.html" class="text-lg font-display font-semibold tracking-wide hover:text-accent-light transition-colors">ELSA</a>
+          </div>
+          <nav class="hidden md:ml-10 md:flex md:space-x-6">
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                费用管理
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/费用管理/价卡管理/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡管理</a>
+                <a href="/费用管理/价卡配置系统/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡配置</a>
+                <a href="/费用管理/入库费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">入库费规则</a>
+                <a href="/费用管理/仓储规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">仓储规则</a>
+                <a href="/费用管理/快递费规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover bg-hover font-medium">快递费规则</a>
+                <a href="/费用管理/增值服务规则/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务规则</a>
+                <a href="/费用管理/增值服务指令下单/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">增值服务指令下单</a>
+                <a href="/费用管理/客户中心/价卡查询/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">价卡查询</a>
+              </div>
+            </div>
+            <div class="relative group">
+              <a href="javascript:void(0)" class="px-3 py-2 text-sm hover:bg-primary/80 transition-colors flex items-center">
+                对账
+                <i class="fa fa-angle-down ml-1 text-xs"></i>
+              </a>
+              <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <a href="/对账/成本明细/index.html" class="block px-4 py-2 text-sm text-dark hover:bg-hover">成本明细</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <button class="p-1.5 rounded hover:bg-primary/80 transition-colors">
+              <i class="fa fa-bell-o"></i>
+              <span class="absolute top-0 right-0 w-2 h-2 bg-warning rounded-full"></span>
+            </button>
+          </div>
+          <div class="flex items-center">
+            <span class="ml-2 text-sm hidden sm:inline-block">管理员</span>
+            <i class="fa fa-angle-down ml-1 text-xs"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 原型内容区域 -->
+  <main class="main-content active">
+    <div class="container mx-auto px-4 py-6 max-w-[1920px]">
+      <!-- 承运商信息卡片 -->
+      <div class="bg-white rounded-lg shadow-card p-6 mb-6 animate-fade-in-up">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-display font-semibold text-dark flex items-center">
+            <i class="fa fa-info-circle text-primary mr-2"></i>基础信息
+          </h3>
+          <button onclick="window.location.href='index.html'" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-arrow-left mr-1"></i> 返回列表
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="carrierInfo">
+          <!-- 动态填充承运商信息 -->
+        </div>
+      </div>
+
+      <!-- 分区价格数据表格 -->
+      <div class="content-section animate-fade-in-up">
+        <div class="table-toolbar" id="tableToolbar">
+          <button id="btnAddRow" class="erp-btn erp-btn-success">
+            <i class="fa fa-plus-circle mr-1"></i> 添加行
+          </button>
+          <button id="btnSaveAll" class="erp-btn erp-btn-primary">
+            <i class="fa fa-save mr-1"></i> 保存全部
+          </button>
+          <button id="btnExport" class="erp-btn erp-btn-secondary">
+            <i class="fa fa-download mr-1"></i> 导出
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="data-table" id="dataTable">
+            <thead id="tableHead">
+              <tr>
+                <th style="width:60px;">序号</th>
+                <th style="width:180px;">重量段(KG)</th>
+                <th style="width:100px;">2区费用</th>
+                <th style="width:100px;">3区费用</th>
+                <th style="width:100px;">4区费用</th>
+                <th style="width:100px;">5区费用</th>
+                <th style="width:100px;">6区费用</th>
+                <th style="width:100px;">7区费用</th>
+                <th style="width:100px;">8区费用</th>
+                <th style="width:150px;">备注</th>
+                <th style="width:80px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="statisticsText">共 <strong>0</strong> 个重量段</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 工具函数 -->
+  <script src="js/utils.js"></script>
+  <!-- 承运商数据 -->
+  <script src="js/carrier-data.js"></script>
+  <!-- 重量段价格数据 -->
+  <script src="js/weight-tier-data.js"></script>
+  <!-- 费用项数据 -->
+  <script src="js/fee-items-data.js"></script>
+  <!-- 基础价处理 -->
+  <script src="js/basic-price.js"></script>
+  <!-- 附加费处理 -->
+  <script src="js/additional-fee.js"></script>
+  <!-- 行处理 -->
+  <script src="js/row-handler.js"></script>
+  <!-- UI处理 -->
+  <script src="js/detail-ui.js"></script>
+  <!-- 详情页主入口 -->
+  <script src="js/detail-main.js"></script>
+</body>
+</html>

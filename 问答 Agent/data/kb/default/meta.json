@@ -1,0 +1,9 @@
+{
+  "id": "default",
+  "name": "海外仓 FAQ",
+  "description": "预置海外仓业务规范文档",
+  "chunkSize": 400,
+  "chunkOverlap": 80,
+  "createdAt": "2026-06-26T15:49:13.629679+00:00",
+  "updatedAt": "2026-06-26T16:23:07.923844+00:00"
+}

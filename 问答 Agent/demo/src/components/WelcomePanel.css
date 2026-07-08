@@ -1,0 +1,34 @@
+.welcome-panel {
+  padding: 8px 4px 16px;
+  max-width: 720px;
+}
+
+.welcome-panel__greeting,
+.welcome-panel__tip {
+  margin: 0 0 10px;
+  line-height: 1.7;
+  color: #725d42;
+}
+
+.welcome-panel__label {
+  margin: 16px 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #794f27;
+}
+
+.welcome-panel__chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.welcome-panel__chips button {
+  text-align: left;
+  white-space: normal;
+  height: auto;
+  line-height: 1.5;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}

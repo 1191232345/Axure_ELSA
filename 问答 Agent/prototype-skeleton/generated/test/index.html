@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test - ELSA</title>
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="../../css/buttons.css">
+  <link rel="stylesheet" href="../../css/badges-forms.css">
+  <link rel="stylesheet" href="../../css/modals.css">
+  <link rel="stylesheet" href="../../css/layout.css">
+  <link rel="stylesheet" href="../../css/logic-changelog.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1B3A4B',
+            accent: '#E8A838',
+            surface: '#F5F3EF',
+            dark: '#1A1A2E',
+            hover: '#EDE9E3',
+            border: '#D8D5CE',
+            'text-secondary': '#5A6275',
+            'text-muted': '#8B93A5'
+          },
+          boxShadow: {
+            card: '0 4px 16px rgba(27, 58, 75, 0.08)',
+            header: '0 1px 3px rgba(27, 58, 75, 0.06)'
+          },
+          fontFamily: {
+            display: ['DM Sans', 'sans-serif'],
+            body: ['Source Sans 3', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="font-body bg-surface text-dark min-h-screen">
+
+  <header class="bg-primary text-white shadow-header sticky top-0 z-50" style="border-bottom:2px solid #E8A838">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex items-center gap-3">
+          <span id="skel-module-title" class="text-lg font-display font-semibold">ELSA</span>
+          <span id="skel-breadcrumb" class="text-sm opacity-80 hidden sm:inline"></span>
+        </div>
+        <div class="flex items-center gap-3 text-sm">
+          <i class="fas fa-bell"></i>
+          <i class="fas fa-user-circle text-lg"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="skel-main">
+    <div class="container mx-auto px-4 py-6">
+      <div id="skel-filter-host"></div>
+      <div id="skel-toolbar-host"></div>
+
+      <div class="skel-card overflow-hidden mb-6">
+        <div class="skel-table-wrap">
+          <table class="skel-table">
+            <thead id="skel-table-head"></thead>
+            <tbody id="skel-table-body"></tbody>
+          </table>
+        </div>
+        <div id="skel-empty" class="skel-empty hidden">
+          <i class="fas fa-inbox text-4xl mb-3"></i>
+          <p class="mb-4">暂无数据</p>
+          <button type="button" id="skel-empty-create" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus mr-1"></i>新增第一条
+          </button>
+        </div>
+        <div class="skel-footer-count">共 <span id="skel-total-count">0</span> 条</div>
+      </div>
+
+      <div class="skel-doc-bar skel-card mt-4 overflow-hidden">
+        <div class="skel-doc-bar__inner">
+          <div class="skel-doc-bar__item skel-doc-bar__item--logic" onclick="SkelLogic.open()">
+            <div>
+              <i class="fas fa-book text-primary mr-2"></i>
+              <span class="skel-doc-bar__title skel-doc-bar__title--primary">逻辑说明</span>
+              <span class="skel-doc-bar__hint">(点击查看详细逻辑)</span>
+            </div>
+            <i class="fas fa-external-link-alt text-primary"></i>
+          </div>
+          <div class="skel-doc-bar__item skel-doc-bar__item--changelog" onclick="SkelChangelog.open()">
+            <div>
+              <i class="fas fa-bullhorn mr-2" style="color:#E8A838"></i>
+              <span class="skel-doc-bar__title skel-doc-bar__title--accent">变更公告</span>
+              <span class="skel-doc-bar__hint">(查看版本更新)</span>
+            </div>
+            <i class="fas fa-external-link-alt" style="color:#E8A838"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="skel-form-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="skel-form-title" class="modal-title">表单</h3>
+        <button type="button" class="modal-close" onclick="SkelUtils.closeModal('skel-form-modal')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="skel-form-fields"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="SkelUtils.closeModal('skel-form-modal')">取消</button>
+        <button type="button" id="skel-save-btn" class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="skel-delete-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">确认删除</h3>
+        <button type="button" class="modal-close" onclick="SkelUtils.closeModal('skel-delete-modal')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body"><p>确定要删除这条记录吗？此操作不可恢复。</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="SkelUtils.closeModal('skel-delete-modal')">取消</button>
+        <button type="button" id="skel-confirm-delete" class="btn btn-danger">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="skel-logic-modal" class="skel-overlay hidden">
+    <div class="skel-overlay-panel">
+      <div class="skel-overlay-head">
+        <div class="skel-overlay-head__title">
+          <i class="fas fa-book"></i>
+          <span id="skel-logic-modal-title">逻辑说明</span>
+        </div>
+        <button type="button" class="skel-overlay-close" onclick="SkelLogic.close()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="skel-overlay-body" id="skel-logic-modal-content"></div>
+    </div>
+  </div>
+
+  <script src="../../js/utils.js"></script>
+  <script src="../../js/data-store.js"></script>
+  <script src="../../js/dom-builder.js"></script>
+  <script src="../../js/filter-core.js"></script>
+  <script src="../../js/table-renderer.js"></script>
+  <script src="../../js/form-modal.js"></script>
+  <script src="../../js/logic-modal.js"></script>
+  <script src="../../js/changelog.js"></script>
+  <script src="../../js/list-page.js"></script>
+  <script src="js/module-config.js"></script>
+  <script src="../../js/bootstrap.js"></script>
+</body>
+</html>

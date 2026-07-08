@@ -1,0 +1,148 @@
+/* 按钮 — 源自费用管理/规则配置，方案 C 骨架 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1B3A4B 0%, #2A5568 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(27, 58, 75, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(27, 58, 75, 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  color: #1A1A2E;
+  border: 1px solid #D8D5CE;
+}
+
+.btn-secondary:hover {
+  border-color: #1B3A4B;
+  background: #f8fafc;
+}
+
+.btn-danger {
+  background: white;
+  color: #C44536;
+  border: 1px solid #C44536;
+}
+
+.btn-danger:hover {
+  background: #C44536;
+  color: white;
+}
+
+.btn-purple {
+  background: white;
+  color: #7C3AED;
+  border: 1px solid #7C3AED;
+}
+
+.btn-purple:hover {
+  background: #7C3AED;
+  color: white;
+}
+
+.btn-accent {
+  background: white;
+  color: #E8A838;
+  border: 1px solid #E8A838;
+}
+
+.btn-accent:hover {
+  background: #E8A838;
+  color: white;
+}
+
+.btn-success {
+  background: white;
+  color: #2D936C;
+  border: 1px solid #2D936C;
+}
+
+.btn-success:hover {
+  background: #2D936C;
+  color: white;
+}
+
+.btn-warning {
+  background: white;
+  color: #D4853A;
+  border: 1px solid #D4853A;
+}
+
+.btn-warning:hover {
+  background: #D4853A;
+  color: white;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  background: white;
+}
+
+.action-btn-view {
+  color: #1B3A4B;
+  border-color: #1B3A4B;
+}
+
+.action-btn-view:hover {
+  background: #1B3A4B;
+  color: white;
+}
+
+.action-btn-edit {
+  color: #E8A838;
+  border-color: #E8A838;
+}
+
+.action-btn-edit:hover {
+  background: #E8A838;
+  color: white;
+}
+
+.action-btn-delete {
+  color: #C44536;
+  border-color: #C44536;
+}
+
+.action-btn-delete:hover {
+  background: #C44536;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "pc_001",
+    "name": "美国仓标准价卡",
+    "customer": "示例客户 A",
+    "status": "active",
+    "createdAt": "2026-06-01T10:00:00.000Z"
+  },
+  {
+    "id": "pc_002",
+    "name": "欧洲仓经济价卡",
+    "customer": "示例客户 B",
+    "status": "inactive",
+    "createdAt": "2026-06-15T14:30:00.000Z"
+  }
+]
