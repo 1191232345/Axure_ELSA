@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>尾货库存预警 - PRD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    :root {
+      --bg: #f5f3ef;
+      --bg-pattern: #ebe8e2;
+      --card: #fffcf8;
+      --text: #1c1917;
+      --text-secondary: #57534e;
+      --muted: #78716c;
+      --border: #d6d3d1;
+      --border-light: #e7e5e4;
+      --accent: #c2410c;
+      --accent-dark: #9a3412;
+      --accent-soft: #fff7ed;
+      --accent-border: #fed7aa;
+      --success: #0d9488;
+      --success-soft: #f0fdfa;
+      --warning: #d97706;
+      --warning-soft: #fffbeb;
+      --warning-border: #fde68a;
+      --nav-width: 248px;
+      --header-height: 56px;
+      --radius: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.06);
+      --shadow-md: 0 4px 16px rgba(28, 25, 23, 0.08);
+      --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 24px); }
+
+    body {
+      font-family: "Nunito Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 15px;
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(194, 65, 12, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(13, 148, 136, 0.04) 0%, transparent 50%);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #ea580c);
+      z-index: 200;
+      transition: width 0.1s linear;
+    }
+
+    /* Mobile header */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-height);
+      background: rgba(255, 252, 248, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-light);
+      z-index: 150;
+      padding: 0 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mobile-header .doc-title {
+      font-family: "Noto Serif SC", serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: calc(100% - 52px);
+    }
+    .menu-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .menu-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 25, 23, 0.4);
+      z-index: 160;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .nav-overlay.open { display: block; opacity: 1; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: var(--nav-width) 1fr;
+      max-width: 1320px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 28px 16px 32px;
+      border-right: 1px solid var(--border-light);
+      background: var(--card);
+      overflow-y: auto;
+      z-index: 170;
+    }
+    .nav-brand {
+      padding: 4px 12px 20px;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 20px;
+    }
+    .nav-brand .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .nav-brand .title {
+      font-family: "Noto Serif SC", serif;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text);
+    }
+    .nav-brand .version {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    nav h2 {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 0 12px 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    nav ul { list-style: none; }
+    nav li { margin-bottom: 2px; }
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: var(--transition);
+      border-left: 3px solid transparent;
+    }
+    nav a i {
+      width: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      transition: var(--transition);
+    }
+    nav a:hover {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+    nav a:hover i { color: var(--accent); }
+    nav a.active {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+    nav a.active i { color: var(--accent); }
+
+    /* Main content */
+    main {
+      padding: 40px 48px 100px 56px;
+      max-width: 920px;
+    }
+
+    /* Hero */
+    .hero {
+      margin-bottom: 36px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .hero-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .badge-warn {
+      background: var(--warning-soft);
+      color: var(--warning);
+      border: 1px solid var(--warning-border);
+    }
+    .badge-version {
+      background: var(--bg);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .meta-item {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .meta-item .key {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .meta-item .val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .summary {
+      position: relative;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px 20px 56px;
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--text-secondary);
+    }
+    .summary::before {
+      content: "\f0eb";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      left: 22px;
+      top: 22px;
+      color: var(--accent);
+      font-size: 18px;
+    }
+    .summary strong { color: var(--accent-dark); font-weight: 700; }
+
+    /* KPI strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 28px 0 8px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .kpi-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .kpi-card .kpi-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .kpi-card:nth-child(1) .kpi-icon { background: #fef2f2; color: #dc2626; }
+    .kpi-card:nth-child(2) .kpi-icon { background: var(--success-soft); color: var(--success); }
+    .kpi-card:nth-child(3) .kpi-icon { background: var(--warning-soft); color: var(--warning); }
+    .kpi-card .kpi-val {
+      font-family: "Noto Serif SC", serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .kpi-card .kpi-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Sections */
+    .section {
+      margin-top: 48px;
+      animation: fadeUp 0.5s ease both;
+    }
+    h2 {
+      font-family: "Noto Serif SC", serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border-light);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .sec-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 6px;
+      font-family: "Nunito Sans", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 28px 0 14px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h3::before {
+      content: "";
+      width: 4px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    p { margin: 10px 0; color: var(--text-secondary); line-height: 1.85; }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border-light);
+      margin: 40px 0;
+    }
+
+    /* Flow steps */
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin: 20px 0 28px;
+      position: relative;
+    }
+    .flow-steps::before {
+      content: "";
+      position: absolute;
+      top: 24px;
+      left: 12%;
+      right: 12%;
+      height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .flow-step {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      padding: 0 8px;
+    }
+    .flow-step .step-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-family: "Noto Serif SC", serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: var(--transition);
+    }
+    .flow-step:hover .step-circle {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+    .flow-step .step-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .flow-step .step-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 14px 0 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--card);
+    }
+    th, td {
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: top;
+    }
+    th {
+      background: #f5f3ef;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background var(--transition); }
+    tbody tr:hover td { background: #faf9f7; }
+    td strong { color: var(--accent-dark); }
+
+    .flow-img-wrap {
+      position: relative;
+      margin: 20px 0 24px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
+    }
+    .flow-img-wrap .img-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 16px;
+      background: linear-gradient(transparent, rgba(28, 25, 23, 0.65));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .flow-img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Tips & callouts */
+    .tip {
+      display: flex;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 12px 0 20px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      background: var(--success-soft);
+      border: 1px solid #99f6e4;
+      line-height: 1.7;
+    }
+    .tip i {
+      color: var(--success);
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+
+    .confirm-box {
+      display: flex;
+      gap: 14px;
+      background: var(--warning-soft);
+      border: 1px solid var(--warning-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin: 16px 0 20px;
+      font-size: 14px;
+      color: #92400e;
+      line-height: 1.7;
+    }
+    .confirm-box i {
+      font-size: 18px;
+      color: var(--warning);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Scope badges in table */
+    .scope-in {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .scope-out {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 48px;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: 14px;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-sm);
+    }
+    .status-bar i { color: var(--warning); font-size: 16px; }
+    .status-bar strong { color: var(--text); }
+
+    /* Back to top */
+    .back-top {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: var(--transition);
+      z-index: 140;
+    }
+    .back-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .back-top:hover { background: var(--accent-dark); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .meta-grid { grid-template-columns: repeat(2, 1fr); }
+      .kpi-strip { grid-template-columns: 1fr; }
+      .flow-steps { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+      .flow-steps::before { display: none; }
+    }
+
+    @media (max-width: 900px) {
+      .mobile-header { display: flex; }
+      .progress-bar { top: var(--header-height); }
+      html { scroll-padding-top: calc(var(--header-height) + 16px); }
+
+      .layout { grid-template-columns: 1fr; }
+
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(300px, 85vw);
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform var(--transition);
+        box-shadow: var(--shadow-md);
+      }
+      nav.open { transform: translateX(0); }
+
+      main {
+        padding: calc(var(--header-height) + 24px) 20px 80px;
+        max-width: 100%;
+      }
+      h1 { font-size: 26px; }
+      h2 { font-size: 19px; }
+      .flow-steps { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media print {
+      .mobile-header, nav, .progress-bar, .back-top, .nav-overlay { display: none !important; }
+      .layout { display: block; }
+      main { padding: 0; max-width: 100%; }
+      body { background: #fff; }
+      .kpi-card:hover { transform: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progressBar"></div>
+
+  <header class="mobile-header">
+    <span class="doc-title">尾货库存预警 PRD</span>
+    <button class="menu-btn" id="menuBtn" aria-label="打开目录">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </header>
+
+  <div class="nav-overlay" id="navOverlay"></div>
+
+  <div class="layout">
+    <nav id="sidebar">
+      <div class="nav-brand">
+        <div class="label">Product Doc</div>
+        <div class="title">尾货库存预警</div>
+        <div class="version">V1.0 · 2026-07-08</div>
+      </div>
+      <h2>目录</h2>
+      <ul id="navList">
+        <li><a href="#sec1"><i class="fa-solid fa-bullseye"></i>背景及目标</a></li>
+        <li><a href="#sec2"><i class="fa-solid fa-diagram-project"></i>业务流程</a></li>
+        <li><a href="#sec3"><i class="fa-solid fa-list-check"></i>功能需求</a></li>
+        <li><a href="#sec4"><i class="fa-solid fa-user-shield"></i>角色与权限</a></li>
+        <li><a href="#sec5"><i class="fa-solid fa-flag"></i>一期范围</a></li>
+        <li><a href="#sec6"><i class="fa-solid fa-circle-question"></i>待确认事项</a></li>
+        <li><a href="#sec7"><i class="fa-solid fa-book"></i>名词解释</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <div class="hero">
+        <div class="hero-top">
+          <h1>尾货库存预警系统<br />PRD</h1>
+          <div class="hero-badges">
+            <span class="badge badge-version">V1.0</span>
+            <span class="badge badge-warn"><i class="fa-solid fa-clock"></i> 待确认</span>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item"><div class="key">版本</div><div class="val">V1.0</div></div>
+          <div class="meta-item"><div class="key">负责人</div><div class="val">zsw</div></div>
+          <div class="meta-item"><div class="key">更新日期</div><div class="val">2026-07-08</div></div>
+          <div class="meta-item"><div class="key">状态</div><div class="val" style="color: var(--warning);">待确认</div></div>
+        </div>
+
+        <div class="summary">
+          <strong>一句话：</strong>库存低于 5 件时系统自动提醒 → 仓库负责人去现场数货 → 账对上了就消警，对不上就报国内审核改库存。
+        </div>
+
+        <div class="kpi-strip">
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="kpi-val">&lt; 5 件</div>
+            <div class="kpi-label">预警阈值（后台可调）</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="kpi-val">3 个月</div>
+            <div class="kpi-label">免重复盘点周期</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+            <div class="kpi-val">4 步闭环</div>
+            <div class="kpi-label">预警 → 盘点 → 提交 → 审核</div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section" id="sec1">
+        <h2><span class="sec-num">1</span>背景及目标</h2>
+
+        <h3>1.1 为什么要做</h3>
+        <p>尾货数量少、品种杂，平时没人专门管。系统里显示有货，现场却找不到，客户下单后就缺货、客诉、赔钱。</p>
+
+        <h3>1.2 现在的问题</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>问题</th><th>具体表现</th></tr></thead>
+            <tbody>
+              <tr><td>账实不符</td><td>系统有库存，仓库里实际没有或放错了</td></tr>
+              <tr><td>没人管尾货</td><td>低库存 SKU 长期不盘点，出问题才发现</td></tr>
+              <tr><td>改库存没规矩</td><td>发现差异后各自改数，说不清、追不回</td></tr>
+              <tr><td>客诉成本高</td><td>客户下单缺货，要取消、补发或赔付</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>1.3 要做到什么</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>目标</th><th>具体做法</th><th>谁受益</th></tr></thead>
+            <tbody>
+              <tr><td>账实一致</td><td>低库存自动提醒，必须现场核实</td><td>仓库、客户</td></tr>
+              <tr><td>流程有标准</td><td>预警 → 盘点 → 审核 → 改库存，全程留记录</td><td>国内运营</td></tr>
+              <tr><td>少重复劳动</td><td>确认过的 SKU，3 个月内不再反复提醒</td><td>仓库负责人</td></tr>
+              <tr><td>降低客诉</td><td>尾货库存经确认后才正常售卖</td><td>客服、运营</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr />
+
+      <section class="section" id="sec2">
+        <h2><span class="sec-num">2</span>业务流程</h2>
+
+        <h3>2.1 主流程（4 步）</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-circle">①</div>
+            <div class="step-title">系统预警</div>
+            <div class="step-desc">库存 &lt; 5 件<br />列表标红</div>
+          </div>
+          <div class="flow-step">
+            <div class="step-circle">②</div>
+            <div class="step-title">仓库盘点</div>
+            <div class="step-desc">负责人去<br />现场数货</div>
+          </div>
+          <div class="flow-step">
+            <div class="step-circle">③</div>
+            <div class="step-title">提交结果</div>
+            <div class="step-desc">一致消警<br />不一致提单</div>
+          </div>
+          <div class="flow-step">
+            <div class="step-circle">④</div>
+            <div class="step-title">国内审核</div>
+            <div class="step-desc">改库存 / 驳回<br />建虚拟库位</div>
+          </div>
+        </div>
+
+        <div class="flow-img-wrap">
+          <img class="flow-img" src="image1.png" alt="系统预警 → 仓库负责人盘点 → 输入实际数量 → 一致消警 / 不一致国内审核" />
+          <div class="img-caption"><i class="fa-solid fa-image"></i> 业务流程示意图</div>
+        </div>
+
+        <h3>2.2 分步说明</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>步骤</th><th>执行人</th><th>做什么</th><th>结果</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>① 自动预警</strong></td>
+                <td>系统</td>
+                <td>每天检查，库存低于阈值就标红提醒</td>
+                <td>生成待盘点任务</td>
+              </tr>
+              <tr>
+                <td><strong>② 现场盘点</strong></td>
+                <td>仓库负责人</td>
+                <td>去货架数货，扫码或勾选确认实物</td>
+                <td>得到实际数量</td>
+              </tr>
+              <tr>
+                <td><strong>③ 提交结果</strong></td>
+                <td>仓库负责人</td>
+                <td>实际数 = 系统数 → 点确认；不等 → 填差异单</td>
+                <td>消警 或 待审核</td>
+              </tr>
+              <tr>
+                <td><strong>④ 国内审核</strong></td>
+                <td>国内管理员</td>
+                <td>看差异单，决定怎么改库存</td>
+                <td>库存更新完成</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr />
+
+      <section class="section" id="sec3">
+        <h2><span class="sec-num">3</span>功能需求</h2>
+
+        <h3>3.1 自动预警</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>功能</th><th>说明（白话）</th><th>默认设置</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>预警阈值</td>
+                <td>库存低于多少件就提醒去盘点</td>
+                <td><strong>5 件</strong>，后台可改</td>
+              </tr>
+              <tr>
+                <td>自动标红</td>
+                <td>低于阈值的 SKU 在列表里标红，弹窗提醒</td>
+                <td>每日自动检查</td>
+              </tr>
+              <tr>
+                <td>免重复盘点</td>
+                <td>刚盘完确认 OK 的 SKU，一段时间内不再提醒</td>
+                <td><strong>3 个月</strong>，后台可改</td>
+              </tr>
+              <tr>
+                <td>入库重置</td>
+                <td>免盘期间如果又进了货、库存超过阈值，重新纳入监测</td>
+                <td>库存 ≥ 阈值即重置</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tip">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>举例：某 SKU 剩 3 件 → 亮红灯 → 盘完确认没问题 → 3 个月内不再提醒 → 中途又进了 20 件 → 重新纳入监测。</span>
+        </div>
+
+        <h3>3.2 仓库盘点</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>功能</th><th>说明（白话）</th><th>备注</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>谁能操作</td>
+                <td>只有仓库固定负责人能提交盘点、解除预警</td>
+                <td>其他人只能看</td>
+              </tr>
+              <tr>
+                <td>扫码模式</td>
+                <td>一件一件扫 RFID 标签，系统自动核对</td>
+                <td>适合货少、要精准</td>
+              </tr>
+              <tr>
+                <td>勾选模式</td>
+                <td>扫 SKU 后列出所有 RFID，勾选找不到的</td>
+                <td>适合货多、省时间</td>
+              </tr>
+              <tr>
+                <td>账实一致</td>
+                <td>现场数和系统数一样 → 点确认 → 预警消除</td>
+                <td>进入 3 个月免盘期</td>
+              </tr>
+              <tr>
+                <td>账实不符</td>
+                <td>现场数和系统数不一样 → 填实际数 → 提交差异单</td>
+                <td>推送给国内审核</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>3.3 国内审核</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>操作</th><th>什么时候用</th><th>系统怎么做</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>确认修正</td>
+                <td>认可仓库盘的结果</td>
+                <td>把库存改成实际数量</td>
+              </tr>
+              <tr>
+                <td>驳回</td>
+                <td>不认可差异，维持原库存</td>
+                <td>库存不变，必填驳回原因</td>
+              </tr>
+              <tr>
+                <td>创建虚拟库位</td>
+                <td>实物少了但不想直接删账</td>
+                <td>原库位留实盘数；找不到的货移到虚拟库位（不参与拣货）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tip">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <span>所有差异单汇总到国内管理员任务栏，每一步操作都有记录，可以追溯。</span>
+        </div>
+      </section>
+
+      <hr />
+
+      <section class="section" id="sec4">
+        <h2><span class="sec-num">4</span>角色与权限</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>角色</th><th>日常做什么</th><th>权限</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>理货员</td>
+                <td>处理标红预警、去现场盘点</td>
+                <td>处理并提交盘点结果</td>
+              </tr>
+              <tr>
+                <td>对仓人员</td>
+                <td>审核提交差异单</td>
+                <td>修正或驳回，选择差异处理方式（直接下架，或创建虚拟库位移库）</td>
+              </tr>
+              <tr>
+                <td>系统管理员</td>
+                <td>调整预警规则</td>
+                <td>改阈值、改免盘周期</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr />
+
+      <section class="section" id="sec5">
+        <h2><span class="sec-num">5</span>一期范围</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>分类</th><th>内容</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="scope-in"><i class="fa-solid fa-circle-check"></i> 本期做</span></td>
+                <td>低库存自动预警 · 扫码/勾选盘点 · 国内审核（三种操作）· 虚拟库位拆分</td>
+              </tr>
+              <tr>
+                <td><span class="scope-out"><i class="fa-solid fa-clock"></i> 后续做</span></td>
+                <td>预警看板 · 超期自动催办 · 订单联动禁超卖 · 批量盘点</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr />
+
+      <section class="section" id="sec6">
+        <h2><span class="sec-num">6</span>待确认事项</h2>
+
+        <div class="confirm-box">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>以下 3 项需要业务方确认。如无异议按「建议方案」执行；有修改请标注条目编号。</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>待确认问题</th><th>建议方案</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>提交差异单时要不要拍现场照片？</td><td>一期暂不开发</td></tr>
+              <tr><td>2</td><td>国内驳回后，要不要立刻重新预警？</td><td>要，立刻重新标红</td></tr>
+              <tr><td>3</td><td>预警处理是否需要仓库经理指定，还是由理货员自认领？</td><td>要，立刻重新标红</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr />
+
+      <section class="section" id="sec7">
+        <h2><span class="sec-num">7</span>名词解释</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>名词</th><th>通俗解释</th></tr></thead>
+            <tbody>
+              <tr><td>尾货</td><td>卖得慢、清仓处理、有瑕疵的低周转库存</td></tr>
+              <tr><td>预警阈值</td><td>库存低于多少件就提醒，默认 5 件</td></tr>
+              <tr><td>免盘周期</td><td>盘完确认 OK 后，多久内不再提醒，默认 3 个月</td></tr>
+              <tr><td>差异单</td><td>现场数和系统数对不上时，仓库提交、国内审核的单据</td></tr>
+              <tr><td>虚拟库位</td><td>系统里的「占位库位」，专门放账上有、实物没有的货，不参与拣货</td></tr>
+              <tr><td>RFID</td><td>贴在货品上的电子标签，扫一下就能识别是哪一件</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="status-bar">
+        <i class="fa-solid fa-hourglass-half"></i>
+        <span>文档状态：<strong>待业务方确认</strong></span>
+      </div>
+    </main>
+  </div>
+
+  <button class="back-top" id="backTop" aria-label="回到顶部">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
+  <script>
+    (function () {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.getElementById('menuBtn');
+      const navOverlay = document.getElementById('navOverlay');
+      const navLinks = document.querySelectorAll('#navList a');
+      const sections = document.querySelectorAll('section[id]');
+      const progressBar = document.getElementById('progressBar');
+      const backTop = document.getElementById('backTop');
+
+      function openNav() {
+        sidebar.classList.add('open');
+        navOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeNav() {
+        sidebar.classList.remove('open');
+        navOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      menuBtn.addEventListener('click', openNav);
+      navOverlay.addEventListener('click', closeNav);
+      navLinks.forEach(function (link) {
+        link.addEventListener('click', closeNav);
+      });
+
+      function onScroll() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = progress + '%';
+
+        backTop.classList.toggle('visible', scrollTop > 400);
+
+        let current = '';
+        sections.forEach(function (sec) {
+          if (scrollTop >= sec.offsetTop - 120) {
+            current = sec.getAttribute('id');
+          }
+        });
+        navLinks.forEach(function (link) {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+        });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      backTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    })();
+  </script>
+</body>
+</html>
